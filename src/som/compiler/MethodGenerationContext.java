@@ -115,6 +115,7 @@ public class MethodGenerationContext {
     som.interpreter.nodes.Method truffleMethod =
         new som.interpreter.nodes.Method(expressions,
             selfSlot, argSlots, localSlots, nonLocalReturnMarker, universe);
+    truffleMethod.assignSourceSection(expressions.getSourceSection());
 
     Method meth = universe.newMethod(signature, truffleMethod, frameDescriptor);
 
