@@ -106,4 +106,12 @@ public class Method extends RootNode {
      throw new RuntimeException("Should not happen, since we only have one type currently!");
     }
   }
+
+  @Override
+  public String toString() {
+    final String name = "method-name-here";
+    final String location = getSourceSection() == null ? "unknown" : getSourceSection().toString();
+    return "Method " + name + ":" + location + "@" + Integer.toHexString(hashCode());
+  }
+
 }
