@@ -11,7 +11,10 @@ import som.vmobjects.Invokable;
 import som.vmobjects.Object;
 import som.vmobjects.Symbol;
 
+import com.oracle.graal.truffle.FrameWithoutBoxing;
+
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.FrameFactory;
 
@@ -42,7 +45,7 @@ public class AbstractInlinedMessageNode extends MessageNode {
   }
 
   @Override
-  public Object executeGeneric(final VirtualFrame frame) {
+  public Object executeGeneric(final MaterializedFrame frame) {
     // evaluate all the expressions: first determine receiver
     Object rcvr = receiver.executeGeneric(frame);
 
@@ -58,20 +61,19 @@ public class AbstractInlinedMessageNode extends MessageNode {
     }
   }
 
-  private Object executeInlined(final VirtualFrame caller, final Object rcvr,
+  private Object executeInlined(final MaterializedFrame caller, final Object rcvr,
       final Object[] args) {
     // CompilerDirectives.transferToInterpreter();
-    final VirtualFrame frame = frameFactory.create(
+    final MaterializedFrame frame = frameFactory.create(
         inlinedMethod.getFrameDescriptor(), caller.pack(),
-        new Arguments(rcvr, args));
+        new Arguments(rcvr, args)).materialize();
 
-    final FrameOnStackMarker marker = Method.initializeFrame(inlinedMethod,
-        frame.materialize());
+    final FrameOnStackMarker marker = Method.initializeFrame(inlinedMethod, frame);
 
     return Method.messageSendExecution(marker, frame, methodBody);
   }
 
-  private Object generalizeNode(final VirtualFrame frame, final Object rcvr,
+  private Object generalizeNode(final MaterializedFrame frame, final Object rcvr,
       final Object[] args, final Class currentRcvrClass) {
     CompilerDirectives.transferToInterpreter();
     // So, it might just be a polymorphic send site.

@@ -33,7 +33,7 @@ import som.vmobjects.Object;
 import som.vmobjects.Symbol;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 
 // TODO: I need to add a check that the invokable has not changed
 
@@ -68,7 +68,7 @@ public class MessageNode extends ExpressionNode {
     return new MessageNode(receiver, arguments, selector, universe);
   }
 
-  protected Object[] determineArguments(final VirtualFrame frame) {
+  protected Object[] determineArguments(final MaterializedFrame frame) {
     int numArgs = (arguments == null) ? 0 : arguments.length;
 
     Object[] args = new Object[numArgs];
@@ -80,7 +80,7 @@ public class MessageNode extends ExpressionNode {
     return args;
   }
 
-  protected Object doFullSend(final VirtualFrame frame, final Object rcvr,
+  protected Object doFullSend(final MaterializedFrame frame, final Object rcvr,
       final Object[] args, final Class rcvrClass) {
     // now lookup selector
     Invokable invokable = rcvrClass.lookupInvokable(selector);
@@ -104,7 +104,7 @@ public class MessageNode extends ExpressionNode {
   }
 
   @Override
-  public Object executeGeneric(final VirtualFrame frame) {
+  public Object executeGeneric(final MaterializedFrame frame) {
     // evaluate all the expressions: first determine receiver
     Object rcvr = receiver.executeGeneric(frame);
 
@@ -137,7 +137,7 @@ public class MessageNode extends ExpressionNode {
   }
 
 
-  private Object specializeAndExecute(final VirtualFrame frame, Object rcvr,
+  private Object specializeAndExecute(final MaterializedFrame frame, Object rcvr,
       Class rcvrClass, Invokable invokable, Object[] args) {
     CompilerDirectives.transferToInterpreter();
 

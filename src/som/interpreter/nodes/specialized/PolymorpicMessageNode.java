@@ -9,7 +9,7 @@ import som.vmobjects.Object;
 import som.vmobjects.Symbol;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 
 public class PolymorpicMessageNode extends MessageNode {
   private static final int CACHE_SIZE = 8;
@@ -49,7 +49,7 @@ public class PolymorpicMessageNode extends MessageNode {
   }
 
   @Override
-  public Object executeGeneric(final VirtualFrame frame) {
+  public Object executeGeneric(final MaterializedFrame frame) {
     // evaluate all the expressions: first determine receiver
     Object rcvr = receiver.executeGeneric(frame);
 

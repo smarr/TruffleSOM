@@ -64,12 +64,13 @@ public class Method extends RootNode {
 
   @Override
   public Object execute(VirtualFrame frame) {
-    final FrameOnStackMarker marker = initializeFrame(this, frame.materialize());
-    return messageSendExecution(marker, frame, expressionOrSequence);
+    MaterializedFrame mframe = frame.materialize();
+    final FrameOnStackMarker marker = initializeFrame(this, mframe);
+    return messageSendExecution(marker, mframe, expressionOrSequence);
   }
 
   public static som.vmobjects.Object messageSendExecution(final FrameOnStackMarker marker,
-      final VirtualFrame frame,
+      final MaterializedFrame frame,
       final ExpressionNode expr) {
     som.vmobjects.Object  result;
     boolean restart;

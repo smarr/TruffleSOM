@@ -21,11 +21,11 @@
  */
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-
 import som.vm.Universe;
 import som.vmobjects.Method;
 import som.vmobjects.Object;
+
+import com.oracle.truffle.api.frame.MaterializedFrame;
 
 public class LiteralNode extends ExpressionNode {
 
@@ -36,7 +36,7 @@ public class LiteralNode extends ExpressionNode {
   }
 
   @Override
-  public Object executeGeneric(VirtualFrame frame) {
+  public Object executeGeneric(final MaterializedFrame frame) {
     return this.value;
   }
 
@@ -56,9 +56,9 @@ public class LiteralNode extends ExpressionNode {
     }
 
     @Override
-    public Object executeGeneric(VirtualFrame frame) {
+    public Object executeGeneric(final MaterializedFrame frame) {
       Method method = (Method) value;
-      return universe.newBlock(method, frame.materialize(), method.getNumberOfArguments());
+      return universe.newBlock(method, frame, method.getNumberOfArguments());
     }
 
     // TODO: should we do something else for cloneForInlining() in this class?

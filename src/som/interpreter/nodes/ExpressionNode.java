@@ -21,13 +21,13 @@
  */
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-
 import som.vmobjects.Object;
+
+import com.oracle.truffle.api.frame.MaterializedFrame;
 
 public abstract class ExpressionNode extends SOMNode {
 
-  public abstract Object executeGeneric(final VirtualFrame frame);
+  public abstract Object executeGeneric(final MaterializedFrame frame);
 
   public abstract ExpressionNode cloneForInlining();
 

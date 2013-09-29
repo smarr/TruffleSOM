@@ -11,7 +11,7 @@ import som.vmobjects.Symbol;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.nodes.FrameFactory;
 import com.oracle.truffle.api.nodes.InlinableCallSite;
 import com.oracle.truffle.api.nodes.Node;
@@ -36,7 +36,7 @@ public class MonomorpicMessageNode extends MessageNode
   }
 
   @Override
-  public Object executeGeneric(final VirtualFrame frame) {
+  public Object executeGeneric(final MaterializedFrame frame) {
     callCount++;
 
     // evaluate all the expressions: first determine receiver

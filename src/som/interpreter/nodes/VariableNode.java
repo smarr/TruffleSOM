@@ -27,7 +27,6 @@ import com.oracle.truffle.api.CompilerDirectives.SlowPath;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 public abstract class VariableNode extends ContextualNode {
 
@@ -50,8 +49,8 @@ public abstract class VariableNode extends ContextualNode {
     }
 
     @Override
-    public Object executeGeneric(VirtualFrame frame) {
-      MaterializedFrame ctx = determineContext(frame.materialize());
+    public Object executeGeneric(final MaterializedFrame frame) {
+      MaterializedFrame ctx = determineContext(frame);
 
       try {
         Object value = (Object) ctx.getObject(slot);
@@ -91,9 +90,9 @@ public abstract class VariableNode extends ContextualNode {
     }
 
     @Override
-    public Object executeGeneric(final VirtualFrame frame) {
+    public Object executeGeneric(final MaterializedFrame frame) {
       Object result = exp.executeGeneric(frame);
-      MaterializedFrame ctx = determineContext(frame.materialize());
+      MaterializedFrame ctx = determineContext(frame);
 
       ctx.setObject(slot, result);
 

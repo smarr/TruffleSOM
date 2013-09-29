@@ -30,7 +30,6 @@ import som.vmobjects.Object;
 
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class ReturnNonLocalNode extends ContextualNode {
 
@@ -54,7 +53,7 @@ public class ReturnNonLocalNode extends ContextualNode {
     }
   }
 
-  private Block getBlockFromVirtual(final VirtualFrame frame) {
+  private Block getBlockFromVirtual(final MaterializedFrame frame) {
     try {
       return (Block) frame.getObject(MethodGenerationContext.getStandardSelfSlot());
     } catch (FrameSlotTypeException e) {
@@ -71,8 +70,8 @@ public class ReturnNonLocalNode extends ContextualNode {
   }
 
   @Override
-  public Object executeGeneric(final VirtualFrame frame) {
-    MaterializedFrame ctx = determineContext(frame.materialize());
+  public Object executeGeneric(final MaterializedFrame frame) {
+    MaterializedFrame ctx = determineContext(frame);
     FrameOnStackMarker marker = getMarker(ctx);
 
     if (marker.isOnStack()) {

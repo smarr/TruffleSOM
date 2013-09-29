@@ -27,7 +27,7 @@ import som.vmobjects.Object;
 import som.vmobjects.Symbol;
 
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 
 
 public abstract class GlobalNode extends ExpressionNode {
@@ -40,7 +40,7 @@ public abstract class GlobalNode extends ExpressionNode {
     this.universe   = universe;
   }
 
-  protected Object getSelfFromVirtual(final VirtualFrame frame) {
+  protected Object getSelfFromVirtual(final MaterializedFrame frame) {
     try {
       return (Object) frame.getObject(MethodGenerationContext.getStandardSelfSlot());
     } catch (FrameSlotTypeException e) {
@@ -55,7 +55,7 @@ public abstract class GlobalNode extends ExpressionNode {
     }
 
     @Override
-    public Object executeGeneric(VirtualFrame frame) {
+    public Object executeGeneric(final MaterializedFrame frame) {
       // Get the global from the universe
       Object global = universe.getGlobal(globalName);
 

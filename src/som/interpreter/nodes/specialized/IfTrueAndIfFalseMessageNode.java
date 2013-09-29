@@ -10,7 +10,7 @@ import som.vmobjects.Object;
 import som.vmobjects.Symbol;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 
 public class IfTrueAndIfFalseMessageNode extends MessageNode {
   private final Class falseClass;
@@ -31,7 +31,7 @@ public class IfTrueAndIfFalseMessageNode extends MessageNode {
   }
 
   @Override
-  public Object executeGeneric(final VirtualFrame frame) {
+  public Object executeGeneric(final MaterializedFrame frame) {
     // determine receiver, determine arguments is not necessary, because
     // the node is specialized only when the argument is a literal node
     Object rcvr = receiver.executeGeneric(frame);
@@ -39,12 +39,12 @@ public class IfTrueAndIfFalseMessageNode extends MessageNode {
     return evaluateBody(frame, rcvr);
   }
 
-  public Object evaluateBody(final VirtualFrame frame, Object rcvr) {
+  public Object evaluateBody(final MaterializedFrame frame, Object rcvr) {
     Class currentRcvrClass = classOfReceiver(rcvr, receiver);
 
     if ((executeIf  && (currentRcvrClass == trueClass)) ||
         (!executeIf && (currentRcvrClass == falseClass))) {
-      Block b = universe.newBlock(blockMethod, frame.materialize(), 1);
+      Block b = universe.newBlock(blockMethod, frame, 1);
       // this is the case True>>#ifTrue: or False>>#ifFalse
       return blockMethod.invoke(frame.pack(), b, noArgs);
     } else if ((!executeIf && currentRcvrClass == trueClass) ||
@@ -56,14 +56,14 @@ public class IfTrueAndIfFalseMessageNode extends MessageNode {
     }
   }
 
-  public Object fallbackForNonBoolReceiver(final VirtualFrame frame,
+  public Object fallbackForNonBoolReceiver(final MaterializedFrame frame,
       Object rcvr, Class currentRcvrClass) {
     CompilerDirectives.transferToInterpreter();
 
     // So, it might just be a polymorphic send site.
     PolymorpicMessageNode poly = new PolymorpicMessageNode(receiver,
         arguments, selector, universe, currentRcvrClass);
-    Block b = universe.newBlock(blockMethod, frame.materialize(), 1);
+    Block b = universe.newBlock(blockMethod, frame, 1);
     replace(poly, "Receiver wasn't a boolean. So, we need to do the actual send.");
     return doFullSend(frame, rcvr, new Object[] {b}, currentRcvrClass);
   }
