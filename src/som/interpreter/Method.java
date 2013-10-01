@@ -29,9 +29,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.SourceSection;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 
 
@@ -40,8 +38,19 @@ public class Method extends RootNode {
   @Child private ExpressionNode expressionOrSequence;
 
   private final FrameSlot   selfSlot;
-  @CompilationFinal private final FrameSlot[]  argumentSlots;
-  @CompilationFinal private final FrameSlot[] temporarySlots;
+//  @CompilationFinal private final FrameSlot[]  argumentSlots;
+//  @CompilationFinal private final FrameSlot[] temporarySlots;
+
+  @CompilationFinal private final FrameSlot argumentSlot1;
+  @CompilationFinal private final FrameSlot argumentSlot2;
+  @CompilationFinal private final FrameSlot argumentSlot3;
+  @CompilationFinal private final FrameSlot argumentSlot4;
+
+  @CompilationFinal private final FrameSlot temporarySlot1;
+  @CompilationFinal private final FrameSlot temporarySlot2;
+  @CompilationFinal private final FrameSlot temporarySlot3;
+  @CompilationFinal private final FrameSlot temporarySlot4;
+
   private final FrameSlot   nonLocalReturnMarker;
   private final Universe    universe;
 
@@ -56,8 +65,27 @@ public class Method extends RootNode {
                 final FrameDescriptor frameDescriptor) {
     this.expressionOrSequence = adoptChild(expressions);
     this.selfSlot        = selfSlot;
-    this.argumentSlots   = argumentSlots;
-    this.temporarySlots  = temporarySlots;
+
+    if (argumentSlots.length > 4) {
+      throw new RuntimeException("We did not expect that many arguments!");
+    }
+
+    if (temporarySlots.length > 4) {
+      throw new RuntimeException("We did not expect that many temporaries!");
+    }
+
+    // --- init arguments ---
+    if (argumentSlots.length == 4) { this.argumentSlot4 = argumentSlots[3]; } else { this.argumentSlot4 = null; }
+    if (argumentSlots.length >= 3) { this.argumentSlot3 = argumentSlots[2]; } else { this.argumentSlot3 = null; }
+    if (argumentSlots.length >= 2) { this.argumentSlot2 = argumentSlots[1]; } else { this.argumentSlot2 = null; }
+    if (argumentSlots.length >= 1) { this.argumentSlot1 = argumentSlots[0]; } else { this.argumentSlot1 = null; }
+
+    // --- init temps ---
+    if (temporarySlots.length == 4) { this.temporarySlot4 = temporarySlots[3]; } else { this.temporarySlot4 = null; }
+    if (temporarySlots.length >= 3) { this.temporarySlot3 = temporarySlots[2]; } else { this.temporarySlot3 = null; }
+    if (temporarySlots.length >= 2) { this.temporarySlot2 = temporarySlots[1]; } else { this.temporarySlot2 = null; }
+    if (temporarySlots.length >= 1) { this.temporarySlot1 = temporarySlots[0]; } else { this.temporarySlot1 = null; }
+
     this.nonLocalReturnMarker = nonLocalReturnMarker;
     this.universe        = universe;
     this.frameDescriptor = frameDescriptor;
@@ -65,7 +93,7 @@ public class Method extends RootNode {
 
   @Override
   public Object execute(final VirtualFrame frame) {
-    final FrameOnStackMarker marker = initializeFrame(this, frame.materialize());
+    final FrameOnStackMarker marker = initializeFrame(this, frame);
     return messageSendExecution(marker, frame, expressionOrSequence);
   }
 
@@ -96,22 +124,55 @@ public class Method extends RootNode {
     return result;
   }
 
-  @ExplodeLoop
+//  static int maxArgs = 0;
+//  static int maxTemps = 0;
+//
+//  if (maxArgs  < method.argumentSlots.length)  { maxArgs  = method.argumentSlots.length;  System.out.println("MAX ARGS: " + maxArgs); }
+//  if (maxTemps < method.temporarySlots.length) { maxTemps = method.temporarySlots.length; System.out.println("MAX TMPS: " + maxTemps);}
+
+
+  // @ExplodeLoop
   public static FrameOnStackMarker initializeFrame(final Method method,
-      final MaterializedFrame frame) {
+      final VirtualFrame frame) {
     frame.setObject(method.selfSlot, frame.getArguments(Arguments.class).self);
 
     final FrameOnStackMarker marker = new FrameOnStackMarker();
     frame.setObject(method.nonLocalReturnMarker, marker);
 
     Object[] args = frame.getArguments(Arguments.class).arguments;
-    for (int i = 0; i < method.argumentSlots.length; i++) {
-      frame.setObject(method.argumentSlots[i], args[i]);
+//    for (int i = 0; i < method.argumentSlots.length; i++) {
+//      frame.setObject(method.argumentSlots[i], args[i]);
+//    }
+    if (args.length > 0) {
+      frame.setObject(method.argumentSlot1, args[0]);
+      if (args.length > 1) {
+        frame.setObject(method.argumentSlot2, args[1]);
+        if (args.length > 2) {
+          frame.setObject(method.argumentSlot3, args[2]);
+          if (args.length > 3) {
+            frame.setObject(method.argumentSlot4, args[3]);
+          }
+        }
+      }
     }
 
-    for (int i = 0; i < method.temporarySlots.length; i++) {
-      frame.setObject(method.temporarySlots[i], method.universe.nilObject);
+//    for (int i = 0; i < method.temporarySlots.length; i++) {
+//      frame.setObject(method.temporarySlots[i], method.universe.nilObject);
+//    }
+
+    if (method.temporarySlot1 != null) {
+      frame.setObject(method.temporarySlot1, method.universe.nilObject);
+      if (method.temporarySlot2 != null) {
+        frame.setObject(method.temporarySlot2, method.universe.nilObject);
+        if (method.temporarySlot3 != null) {
+          frame.setObject(method.temporarySlot3, method.universe.nilObject);
+          if (method.temporarySlot4 != null) {
+            frame.setObject(method.temporarySlot4, method.universe.nilObject);
+          }
+        }
+      }
     }
+
     return marker;
   }
 
