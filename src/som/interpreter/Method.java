@@ -143,7 +143,7 @@ public class Method extends RootNode {
 //    for (int i = 0; i < method.argumentSlots.length; i++) {
 //      frame.setObject(method.argumentSlots[i], args[i]);
 //    }
-    if (args.length > 0) {
+    if (args != null && args.length > 0) {
       frame.setObject(method.argumentSlot1, args[0]);
       if (args.length > 1) {
         frame.setObject(method.argumentSlot2, args[1]);
