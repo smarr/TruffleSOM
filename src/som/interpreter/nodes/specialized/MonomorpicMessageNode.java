@@ -11,6 +11,7 @@ import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.FrameFactory;
 import com.oracle.truffle.api.nodes.InlinableCallSite;
@@ -22,7 +23,7 @@ public class MonomorpicMessageNode extends MessageNode
   private final SClass      rcvrClass;
   private final SInvokable  invokable;
 
-  private int callCount;
+  @CompilationFinal private int callCount;
 
   public MonomorpicMessageNode(final ExpressionNode receiver,
       final ExpressionNode[] arguments, final SSymbol selector,
@@ -37,7 +38,9 @@ public class MonomorpicMessageNode extends MessageNode
 
   @Override
   public SObject executeGeneric(final VirtualFrame frame) {
-    callCount++;
+    if (CompilerDirectives.inInterpreter()) {
+      callCount++;
+    }
 
     // evaluate all the expressions: first determine receiver
     SObject rcvr = receiver.executeGeneric(frame);
