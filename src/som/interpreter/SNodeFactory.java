@@ -20,7 +20,6 @@ import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode;
-import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
@@ -35,11 +34,6 @@ import com.oracle.truffle.api.source.SourceSection;
 
 
 public final class SNodeFactory {
-
-  public static CatchNonLocalReturnNode createCatchNonLocalReturn(
-      final ExpressionNode methodBody, final FrameSlot frameOnStackMarker) {
-    return new CatchNonLocalReturnNode(methodBody, frameOnStackMarker);
-  }
 
   public static FieldReadNode createFieldRead(final ExpressionNode self,
       final int fieldIndex, final SourceSection source) {
