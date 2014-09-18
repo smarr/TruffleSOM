@@ -10,45 +10,14 @@ import som.vmobjects.SInvokable.SMethod;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-public class BlockNode extends LiteralNode {
-
-  protected final SMethod  blockMethod;
-
-  public BlockNode(final SMethod blockMethod,
-      final SourceSection source) {
-    super(source);
-    this.blockMethod  = blockMethod;
-  }
-
-  @Override
-  public SBlock executeSBlock(final VirtualFrame frame) {
-    return Universe.newBlock(blockMethod, null);
-  }
-
-  @Override
-  public final Object executeGeneric(final VirtualFrame frame) {
-    return executeSBlock(frame);
-  }
-
-  @Override
-  public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-    SMethod forInlining = (SMethod) cloneMethod(inliner);
-    replace(new BlockNode(forInlining, getSourceSection()));
-  }
-
-  protected SInvokable cloneMethod(final Inliner inliner) {
-    Invokable clonedInvokable = blockMethod.getInvokable().
-        cloneWithNewLexicalContext(inliner.getLexicalContext());
-    SInvokable forInlining = Universe.newMethod(blockMethod.getSignature(),
-        clonedInvokable, false, new SMethod[0]);
-    return forInlining;
-  }
-
-  public static final class BlockNodeWithContext extends BlockNode {
+public abstract class BlockNode   {
+  public static final class BlockNodeWithContext extends LiteralNode {
+    protected final SMethod  blockMethod;
 
     public BlockNodeWithContext(final SMethod blockMethod,
         final SourceSection source) {
-      super(blockMethod, source);
+      super(source);
+      this.blockMethod  = blockMethod;
     }
 
     public BlockNodeWithContext(final BlockNodeWithContext node) {
@@ -58,6 +27,19 @@ public class BlockNode extends LiteralNode {
     @Override
     public SBlock executeSBlock(final VirtualFrame frame) {
       return Universe.newBlock(blockMethod, frame.materialize());
+    }
+
+    @Override
+    public final Object executeGeneric(final VirtualFrame frame) {
+      return executeSBlock(frame);
+    }
+
+    protected SInvokable cloneMethod(final Inliner inliner) {
+      Invokable clonedInvokable = blockMethod.getInvokable().
+          cloneWithNewLexicalContext(inliner.getLexicalContext());
+      SInvokable forInlining = Universe.newMethod(blockMethod.getSignature(),
+          clonedInvokable, false, new SMethod[0]);
+      return forInlining;
     }
 
     @Override

@@ -24,7 +24,6 @@ import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
-import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.vm.Universe;
 import som.vmobjects.SInvokable.SMethod;
@@ -97,13 +96,9 @@ public final class SNodeFactory {
     return new SequenceNode(exps.toArray(new ExpressionNode[0]), source);
   }
 
-  public static BlockNode createBlockNode(final SMethod blockMethod,
-      final boolean withContext, final SourceSection source) {
-    if (withContext) {
-      return new BlockNodeWithContext(blockMethod, source);
-    } else {
-      return new BlockNode(blockMethod, source);
-    }
+  public static BlockNodeWithContext createBlockNode(final SMethod blockMethod,
+      final SourceSection source) {
+    return new BlockNodeWithContext(blockMethod, source);
   }
 
   public static AbstractMessageSendNode createMessageSend(final SSymbol msg,

@@ -32,7 +32,6 @@ import static som.interpreter.SNodeFactory.createGlobalRead;
 import static som.interpreter.SNodeFactory.createNonLocalReturn;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -66,9 +65,6 @@ public final class MethodGenerationContext {
   private SSymbol signature;
   private boolean primitive;
   private boolean needsToCatchNonLocalReturn;
-  private boolean throwsNonLocalReturn;
-
-  private boolean accessesVariablesOfOuterContext;
 
   private final LinkedHashMap<String, Argument> arguments = new LinkedHashMap<String, Argument>();
   private final LinkedHashMap<String, Local>    locals    = new LinkedHashMap<String, Local>();
@@ -96,8 +92,6 @@ public final class MethodGenerationContext {
     this.blockMethod     = isBlockMethod;
 
     frameDescriptor = new FrameDescriptor();
-    accessesVariablesOfOuterContext = false;
-    throwsNonLocalReturn            = false;
     needsToCatchNonLocalReturn      = false;
     embeddedBlockMethods = new ArrayList<SMethod>();
   }
@@ -134,15 +128,9 @@ public final class MethodGenerationContext {
   }
 
   public void makeCatchNonLocalReturn() {
-    throwsNonLocalReturn = true;
-
     MethodGenerationContext ctx = getOuterContext();
     assert ctx != null;
     ctx.needsToCatchNonLocalReturn = true;
-  }
-
-  public boolean requiresContext() {
-    return throwsNonLocalReturn || accessesVariablesOfOuterContext;
   }
 
   private MethodGenerationContext getOuterContext() {
@@ -158,27 +146,10 @@ public final class MethodGenerationContext {
     return needsToCatchNonLocalReturn && outerGenc == null;
   }
 
-  private void separateVariables(final Collection<? extends Variable> variables,
-      final ArrayList<Variable> onlyLocalAccess,
-      final ArrayList<Variable> nonLocalAccess) {
-    for (Variable l : variables) {
-      if (l.isAccessedOutOfContext()) {
-        nonLocalAccess.add(l);
-      } else {
-        onlyLocalAccess.add(l);
-      }
-    }
-  }
-
   public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection) {
     if (primitive) {
       return Primitives.constructEmptyPrimitive(signature);
     }
-
-    ArrayList<Variable> onlyLocalAccess = new ArrayList<>(arguments.size() + locals.size());
-    ArrayList<Variable> nonLocalAccess  = new ArrayList<>(arguments.size() + locals.size());
-    separateVariables(arguments.values(), onlyLocalAccess, nonLocalAccess);
-    separateVariables(locals.values(),    onlyLocalAccess, nonLocalAccess);
 
     if (needsToCatchNonLocalReturn()) {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarkerSlot());
@@ -292,9 +263,6 @@ public final class MethodGenerationContext {
 
     if (outerGenc != null) {
       Variable outerVar = outerGenc.getVariable(varName);
-      if (outerVar != null) {
-        accessesVariablesOfOuterContext = true;
-      }
       return outerVar;
     }
     return null;
@@ -325,9 +293,6 @@ public final class MethodGenerationContext {
 
     if (outerGenc != null) {
       Local outerLocal = outerGenc.getLocal(varName);
-      if (outerLocal != null) {
-        accessesVariablesOfOuterContext = true;
-      }
       return outerLocal;
     }
     return null;
