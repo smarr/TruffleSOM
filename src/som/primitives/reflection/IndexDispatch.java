@@ -1,6 +1,7 @@
 package som.primitives.reflection;
 
 import som.interpreter.nodes.dispatch.DispatchChain;
+import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.nodes.Node;

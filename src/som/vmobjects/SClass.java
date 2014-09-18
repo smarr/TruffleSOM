@@ -29,14 +29,12 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
-import som.interpreter.objectstorage.ObjectLayout;
 import som.primitives.Primitives;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SInvokable.SPrimitive;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
@@ -48,8 +46,6 @@ public final class SClass extends SObject {
     super(numberOfFields);
     invokablesTable = new HashMap<SSymbol, SInvokable>();
     this.superclass = Nil.nilObject;
-
-    layoutForInstances = new ObjectLayout(numberOfFields, this);
   }
 
   public SClass(final SClass clazz) {
@@ -87,11 +83,6 @@ public final class SClass extends SObject {
   public void setInstanceFields(final SArray fields) {
     transferToInterpreterAndInvalidate("SClass.setInstanceFields");
     instanceFields = fields;
-    if (layoutForInstances == null ||
-        instanceFields.getObjectStorage().length != layoutForInstances.getNumberOfFields()) {
-      layoutForInstances = new ObjectLayout(
-          fields.getObjectStorage().length, this);
-    }
   }
 
   public SArray getInstanceInvokables() {
@@ -163,6 +154,8 @@ public final class SClass extends SObject {
   }
 
   public int lookupFieldIndex(final SSymbol fieldName) {
+    CompilerAsserts.neverPartOfCompilation("SClass.lookupFieldIndex");
+
     // Lookup field with given name in array of instance fields
     for (int i = getNumberOfInstanceFields() - 1; i >= 0; i--) {
       // Return the current index if the name matches
@@ -249,31 +242,6 @@ public final class SClass extends SObject {
     }
   }
 
-  public ObjectLayout getLayoutForInstances() {
-    return layoutForInstances;
-  }
-
-  public ObjectLayout updateInstanceLayoutWithInitializedField(final long index, final Class<?> type) {
-    ObjectLayout updated = layoutForInstances.withInitializedField(index, type);
-
-    if (updated != layoutForInstances) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      layoutForInstances = updated;
-    }
-    return layoutForInstances;
-  }
-
-  public ObjectLayout updateInstanceLayoutWithGeneralizedField(final long index) {
-    ObjectLayout updated = layoutForInstances.withGeneralizedField(index);
-
-    if (updated != layoutForInstances) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      layoutForInstances = updated;
-    }
-    return layoutForInstances;
-  }
-
-
   @Override
   public String toString() {
     return "Class(" + getName().getString() + ")";
@@ -286,6 +254,4 @@ public final class SClass extends SObject {
   @CompilationFinal private SSymbol name;
   @CompilationFinal private SArray  instanceInvokables;
   @CompilationFinal private SArray  instanceFields;
-
-  @CompilationFinal private ObjectLayout layoutForInstances;
 }
