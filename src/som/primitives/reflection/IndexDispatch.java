@@ -2,9 +2,6 @@ package som.primitives.reflection;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.interpreter.nodes.dispatch.DispatchChain;
-import som.interpreter.objectstorage.FieldAccessorNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
@@ -83,8 +80,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   private static final class CachedReadDispatchNode extends IndexDispatch {
     private final int index;
     private final SClass clazz;
-    @Child private AbstractReadFieldNode access;
-    // TODO: have a second cached class for the writing...
+
     @Child private IndexDispatch next;
 
     public CachedReadDispatchNode(final SClass clazz, final int index,
@@ -93,13 +89,12 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       this.index = index;
       this.clazz = clazz;
       this.next = next;
-      access = FieldAccessorNode.createRead(index);
     }
 
     @Override
     public Object executeDispatch(final SObject obj, final int index) {
       if (this.index == index && this.clazz == obj.getSOMClass()) {
-        return access.read(obj);
+        return obj.getField(index);
       } else {
         return next.executeDispatch(obj, index);
       }
@@ -120,7 +115,6 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   private static final class CachedWriteDispatchNode extends IndexDispatch {
     private final int index;
     private final SClass clazz;
-    @Child private AbstractWriteFieldNode access;
     @Child private IndexDispatch next;
 
     public CachedWriteDispatchNode(final SClass clazz, final int index,
@@ -129,7 +123,6 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       this.index = index;
       this.clazz = clazz;
       this.next = next;
-      access = FieldAccessorNode.createWrite(index);
     }
 
     @Override
@@ -141,7 +134,8 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     @Override
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
       if (this.index == index && this.clazz == obj.getSOMClass()) {
-        return access.write(obj, value);
+        obj.setField(index, value);
+        return value;
       } else {
         return next.executeDispatch(obj, index, value);
       }
