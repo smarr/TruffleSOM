@@ -74,7 +74,6 @@ import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
-import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.literals.DoubleLiteralNode;
 import som.interpreter.nodes.literals.IntegerLiteralNode;
@@ -559,11 +558,7 @@ public final class Parser {
         SMethod blockMethod = (SMethod) bgenc.assemble(blockBody, lastMethodsSourceSection);
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
-        if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod, getSource(coord));
-        } else {
-          return new BlockNode(blockMethod, getSource(coord));
-        }
+        return new BlockNodeWithContext(blockMethod, getSource(coord));
       }
       default: {
         return literal();

@@ -7,7 +7,7 @@ import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
-import som.interpreter.nodes.literals.BlockNode;
+import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerTernaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
@@ -247,31 +247,31 @@ public final class MessageSendNode {
                 argumentNodes[0], argumentNodes[1],
                 PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
         case "whileTrue:": {
-          if (argumentNodes[1] instanceof BlockNode &&
-              argumentNodes[0] instanceof BlockNode) {
-            BlockNode argBlockNode = (BlockNode) argumentNodes[1];
+          if (argumentNodes[1] instanceof BlockNodeWithContext &&
+              argumentNodes[0] instanceof BlockNodeWithContext) {
+            BlockNodeWithContext argBlockNode = (BlockNodeWithContext) argumentNodes[1];
             SBlock    argBlock     = (SBlock)    arguments[1];
             return replace(new WhileTrueStaticBlocksNode(
-                (BlockNode) argumentNodes[0], argBlockNode,
+                (BlockNodeWithContext) argumentNodes[0], argBlockNode,
                 (SBlock) arguments[0],
                 argBlock, getSourceSection()));
           }
           break; // use normal send
         }
         case "whileFalse:":
-          if (argumentNodes[1] instanceof BlockNode &&
-              argumentNodes[0] instanceof BlockNode) {
-            BlockNode argBlockNode = (BlockNode) argumentNodes[1];
+          if (argumentNodes[1] instanceof BlockNodeWithContext &&
+              argumentNodes[0] instanceof BlockNodeWithContext) {
+            BlockNodeWithContext argBlockNode = (BlockNodeWithContext) argumentNodes[1];
             SBlock    argBlock     = (SBlock)    arguments[1];
             return replace(new WhileFalseStaticBlocksNode(
-                (BlockNode) argumentNodes[0], argBlockNode,
+                (BlockNodeWithContext) argumentNodes[0], argBlockNode,
                 (SBlock) arguments[0], argBlock, getSourceSection()));
           }
           break; // use normal send
         case "and:":
         case "&&":
           if (arguments[0] instanceof Boolean) {
-            if (argumentNodes[1] instanceof BlockNode) {
+            if (argumentNodes[1] instanceof BlockNodeWithContext) {
               return replace(AndMessageNodeFactory.create((SBlock) arguments[1],
                   getSourceSection(), argumentNodes[0], argumentNodes[1]));
             } else if (arguments[1] instanceof Boolean) {
@@ -283,7 +283,7 @@ public final class MessageSendNode {
         case "or:":
         case "||":
           if (arguments[0] instanceof Boolean) {
-            if (argumentNodes[1] instanceof BlockNode) {
+            if (argumentNodes[1] instanceof BlockNodeWithContext) {
               return replace(OrMessageNodeFactory.create((SBlock) arguments[1],
                   getSourceSection(),
                   argumentNodes[0], argumentNodes[1]));

@@ -1,6 +1,6 @@
 package som.interpreter.nodes.specialized.whileloops;
 
-import som.interpreter.nodes.literals.BlockNode;
+import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
 
@@ -9,11 +9,11 @@ import com.oracle.truffle.api.source.SourceSection;
 
 
 public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
-  @Child protected BlockNode receiver;
-  @Child protected BlockNode argument;
+  @Child protected BlockNodeWithContext receiver;
+  @Child protected BlockNodeWithContext argument;
 
-  private WhileWithStaticBlocksNode(final BlockNode receiver,
-      final BlockNode argument, final SBlock rcvr, final SBlock arg,
+  private WhileWithStaticBlocksNode(final BlockNodeWithContext receiver,
+      final BlockNodeWithContext argument, final SBlock rcvr, final SBlock arg,
       final boolean predicateBool, final SourceSection source) {
     super(rcvr, arg, predicateBool, source);
     this.receiver = receiver;
@@ -35,16 +35,16 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
   }
 
   public static final class WhileTrueStaticBlocksNode extends WhileWithStaticBlocksNode {
-    public WhileTrueStaticBlocksNode(final BlockNode receiver,
-        final BlockNode argument, final SBlock rcvr, final SBlock arg,
+    public WhileTrueStaticBlocksNode(final BlockNodeWithContext receiver,
+        final BlockNodeWithContext argument, final SBlock rcvr, final SBlock arg,
         final SourceSection source) {
       super(receiver, argument, rcvr, arg, true, source);
     }
   }
 
   public static final class WhileFalseStaticBlocksNode extends WhileWithStaticBlocksNode {
-    public WhileFalseStaticBlocksNode(final BlockNode receiver,
-        final BlockNode argument, final SBlock rcvr, final SBlock arg,
+    public WhileFalseStaticBlocksNode(final BlockNodeWithContext receiver,
+        final BlockNodeWithContext argument, final SBlock rcvr, final SBlock arg,
         final SourceSection source) {
       super(receiver, argument, rcvr, arg, false, source);
     }
