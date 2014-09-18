@@ -26,7 +26,6 @@
 package som.compiler;
 
 import static som.interpreter.SNodeFactory.createArgumentInitialization;
-import static som.interpreter.SNodeFactory.createCatchNonLocalReturn;
 import static som.interpreter.SNodeFactory.createFieldRead;
 import static som.interpreter.SNodeFactory.createFieldWrite;
 import static som.interpreter.SNodeFactory.createGlobalRead;
@@ -67,16 +66,15 @@ public final class MethodGenerationContext {
 
   private SSymbol signature;
   private boolean primitive;
-  private boolean needsToCatchNonLocalReturn;
-  private boolean throwsNonLocalReturn;
 
+  private boolean throwsNonLocalReturn;
   private boolean accessesVariablesOfOuterContext;
 
   private final LinkedHashMap<String, Argument> arguments = new LinkedHashMap<String, Argument>();
   private final LinkedHashMap<String, Local>    locals    = new LinkedHashMap<String, Local>();
 
   private final FrameDescriptor frameDescriptor;
-  private       FrameSlot       frameOnStackSlot;
+  private final FrameSlot       frameOnStackSlot;
   private       LexicalContext  lexicalContext;
 
   private final List<SMethod>   embeddedBlockMethods;
@@ -98,9 +96,9 @@ public final class MethodGenerationContext {
     this.blockMethod     = isBlockMethod;
 
     frameDescriptor = new FrameDescriptor();
+    frameOnStackSlot = frameDescriptor.addFrameSlot(frameOnStackSlotName);
     accessesVariablesOfOuterContext = false;
     throwsNonLocalReturn            = false;
-    needsToCatchNonLocalReturn      = false;
     embeddedBlockMethods = new ArrayList<SMethod>();
   }
 
@@ -124,40 +122,15 @@ public final class MethodGenerationContext {
   // starting with ! to make it a name that's not possible in Smalltalk
   private static final String frameOnStackSlotName = "!frameOnStack";
 
-  public FrameSlot getFrameOnStackMarkerSlot() {
+  public FrameSlot getOuterFrameOnStackMarkerSlot() {
     if (outerGenc != null) {
-      return outerGenc.getFrameOnStackMarkerSlot();
-    }
-
-    if (frameOnStackSlot == null) {
-      frameOnStackSlot = frameDescriptor.addFrameSlot(frameOnStackSlotName);
+      return outerGenc.getOuterFrameOnStackMarkerSlot();
     }
     return frameOnStackSlot;
   }
 
-  public void makeCatchNonLocalReturn() {
-    throwsNonLocalReturn = true;
-
-    MethodGenerationContext ctx = getOuterContext();
-    assert ctx != null;
-    ctx.needsToCatchNonLocalReturn = true;
-  }
-
   public boolean requiresContext() {
     return throwsNonLocalReturn || accessesVariablesOfOuterContext;
-  }
-
-  private MethodGenerationContext getOuterContext() {
-    MethodGenerationContext ctx = outerGenc;
-    while (ctx.outerGenc != null) {
-      ctx = ctx.outerGenc;
-    }
-    return ctx;
-  }
-
-  public boolean needsToCatchNonLocalReturn() {
-    // only the most outer method needs to catch
-    return needsToCatchNonLocalReturn && outerGenc == null;
   }
 
   private void separateVariables(final Collection<? extends Variable> variables,
@@ -182,15 +155,11 @@ public final class MethodGenerationContext {
     separateVariables(arguments.values(), onlyLocalAccess, nonLocalAccess);
     separateVariables(locals.values(),    onlyLocalAccess, nonLocalAccess);
 
-    if (needsToCatchNonLocalReturn()) {
-      body = createCatchNonLocalReturn(body, getFrameOnStackMarkerSlot());
-    }
-
     body = createArgumentInitialization(body, arguments);
 
     Method truffleMethod =
         new Method(getSourceSectionForMethod(sourceSection),
-            frameDescriptor, body, getLexicalContext());
+            frameDescriptor, frameOnStackSlot, body, getLexicalContext());
 
     setOuterMethodInLexicalScopes(truffleMethod);
 
@@ -355,8 +324,8 @@ public final class MethodGenerationContext {
 
   public ReturnNonLocalNode getNonLocalReturn(final ExpressionNode expr,
       final SourceSection source) {
-    makeCatchNonLocalReturn();
-    return createNonLocalReturn(expr, getFrameOnStackMarkerSlot(),
+    throwsNonLocalReturn = true;
+    return createNonLocalReturn(expr, getOuterFrameOnStackMarkerSlot(),
         getOuterSelfSlot(),
         getOuterSelfContextLevel(), getLocalSelfSlot(), source);
   }

@@ -22,7 +22,6 @@ import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode;
-import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
@@ -48,11 +47,6 @@ public final class SNodeFactory {
           arg.slot, null, new ArgumentReadNode(arg.index));
     }
     return new ArgumentInitializationNode(writes, methodBody);
-  }
-
-  public static CatchNonLocalReturnNode createCatchNonLocalReturn(
-      final ExpressionNode methodBody, final FrameSlot frameOnStackMarker) {
-    return new CatchNonLocalReturnNode(methodBody, frameOnStackMarker);
   }
 
   public static FieldReadNode createFieldRead(final ExpressionNode self,
