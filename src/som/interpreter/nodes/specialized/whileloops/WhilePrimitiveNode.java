@@ -32,8 +32,4 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
   public abstract static class WhileTruePrimitiveNode extends WhilePrimitiveNode {
     public WhileTruePrimitiveNode() { super(true); }
   }
-
-  public abstract static class WhileFalsePrimitiveNode extends WhilePrimitiveNode {
-    public WhileFalsePrimitiveNode() { super(false); }
-  }
 }
