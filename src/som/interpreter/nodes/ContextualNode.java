@@ -25,7 +25,7 @@ import som.interpreter.Inliner;
 import som.interpreter.SArguments;
 import som.vmobjects.SBlock;
 
-import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.source.SourceSection;
@@ -48,8 +48,12 @@ public abstract class ContextualNode extends ExpressionNode {
   }
 
   @ExplodeLoop
-  protected final MaterializedFrame determineContext(final VirtualFrame frame) {
-    SBlock self = CompilerDirectives.unsafeCast(getLocalSelf(frame), SBlock.class, true, true);
+  protected final Frame determineContext(final VirtualFrame frame) {
+    if (contextLevel == 0) {
+      return frame;
+    }
+
+    SBlock self = (SBlock) getLocalSelf(frame);
     int i = contextLevel - 1;
 
     while (i > 0) {

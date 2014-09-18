@@ -13,12 +13,10 @@ import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeFactory;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalSuperReadNodeFactory;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
+import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
@@ -80,11 +78,6 @@ public final class SNodeFactory {
     return new UninitializedVariableWriteNode(variable, contextLevel, exp, source);
   }
 
-  public static LocalVariableWriteNode createLocalVariableWrite(
-      final FrameSlot varSlot, final ExpressionNode exp, final SourceSection source) {
-    return LocalVariableWriteNodeFactory.create(varSlot, source, exp);
-  }
-
   public static SequenceNode createSequence(final List<ExpressionNode> exps,
       final SourceSection source) {
     return new SequenceNode(exps.toArray(new ExpressionNode[0]), source);
@@ -92,8 +85,8 @@ public final class SNodeFactory {
 
   public static BlockNodeWithContext createBlockNode(final SMethod blockMethod,
       final SourceSection source) {
-    return new BlockNodeWithContext(blockMethod, source);
-  }
+      return new BlockNodeWithContext(blockMethod, source);
+    }
 
   public static AbstractMessageSendNode createMessageSend(final SSymbol msg,
       final ExpressionNode[] exprs, final SourceSection source) {

@@ -45,23 +45,6 @@ public abstract class ArgumentReadNode {
     }
   }
 
-  public static final class LocalSuperReadNode extends LocalArgumentReadNode
-      implements ISuperReadNode {
-
-    private final SClass superClass;
-
-    public LocalSuperReadNode(final SClass superClass,
-        final SourceSection source) {
-      super(SArguments.RCVR_IDX, source);
-      this.superClass = superClass;
-    }
-
-    @Override
-    public SClass getSuperClass() {
-      return superClass;
-    }
-  }
-
   public static final class NonLocalSuperReadNode extends
       NonLocalArgumentReadNode implements ISuperReadNode {
 
