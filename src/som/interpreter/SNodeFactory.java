@@ -15,12 +15,11 @@ import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeFactory;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalSuperReadNodeFactory;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SequenceNode;
@@ -40,12 +39,13 @@ import com.oracle.truffle.api.source.SourceSection;
 public final class SNodeFactory {
 
   public static ArgumentInitializationNode createArgumentInitialization(
+      final FrameSlot localSelf,
       final ExpressionNode methodBody, final LinkedHashMap<String, Argument> arguments) {
-    LocalVariableWriteNode[] writes = new LocalVariableWriteNode[arguments.size()];
+    NonLocalVariableWriteNode[] writes = new NonLocalVariableWriteNode[arguments.size()];
 
     for (Argument arg : arguments.values()) {
-      writes[arg.index] = LocalVariableWriteNodeFactory.create(
-          arg.slot, null, new ArgumentReadNode(arg.index));
+      writes[arg.index] = NonLocalVariableWriteNodeFactory.create(0,
+          arg.slot, localSelf, null, new ArgumentReadNode(arg.index));
     }
     return new ArgumentInitializationNode(writes, methodBody);
   }
@@ -82,22 +82,20 @@ public final class SNodeFactory {
   public static ExpressionNode createSuperRead(final Variable variable,
         final int contextLevel, final FrameSlot localSelf,
         final SSymbol holderClass, final boolean classSide, final SourceSection source) {
-    if (contextLevel == 0) {
-      return LocalSuperReadNodeFactory.create(variable, holderClass, classSide, source);
-    } else {
-      return NonLocalSuperReadNodeFactory.create(contextLevel, variable.slot, localSelf, holderClass, classSide, source);
-    }
+    return NonLocalSuperReadNodeFactory.create(contextLevel, variable.slot, localSelf, holderClass, classSide, source);
   }
+
+  public static ExpressionNode createSuperRead(final int contextLevel,
+      final FrameSlot slot, final FrameSlot localSelf,
+      final SSymbol holderClass, final boolean classSide,
+      final SourceSection source) {
+  return NonLocalSuperReadNodeFactory.create(contextLevel, slot, localSelf, holderClass, classSide, source);
+}
 
   public static ContextualNode createVariableWrite(final Local variable,
         final int contextLevel, final FrameSlot localSelf,
         final ExpressionNode exp, final SourceSection source) {
     return new UninitializedVariableWriteNode(variable, contextLevel, localSelf, exp, source);
-  }
-
-  public static LocalVariableWriteNode createLocalVariableWrite(
-      final FrameSlot varSlot, final ExpressionNode exp, final SourceSection source) {
-    return LocalVariableWriteNodeFactory.create(varSlot, source, exp);
   }
 
   public static SequenceNode createSequence(final List<ExpressionNode> exps,

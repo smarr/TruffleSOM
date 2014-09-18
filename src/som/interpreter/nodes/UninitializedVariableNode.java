@@ -5,10 +5,7 @@ import som.compiler.Variable;
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.Inliner;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeFactory;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
@@ -45,17 +42,11 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     public Object executeGeneric(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedVariableReadNode");
 
-      if (contextLevel > 0) {
-        assert frame.getFrameDescriptor().findFrameSlot(localSelf.getIdentifier()) == localSelf;
+      assert frame.getFrameDescriptor().findFrameSlot(localSelf.getIdentifier()) == localSelf;
 
-        NonLocalVariableReadNode node = NonLocalVariableReadNodeFactory.create(
+      NonLocalVariableReadNode node = NonLocalVariableReadNodeFactory.create(
             contextLevel, variable.slot, localSelf, getSourceSection());
-        return replace(node).executeGeneric(frame);
-      } else {
-        assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) == variable.slot;
-        LocalVariableReadNode node = LocalVariableReadNodeFactory.create(variable, getSourceSection());
-        return replace(node).executeGeneric(frame);
-      }
+      return replace(node).executeGeneric(frame);
     }
 
     @Override
@@ -113,17 +104,10 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     public Object executeGeneric(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedVariableWriteNode");
 
-      if (accessesOuterContext()) {
-        assert frame.getFrameDescriptor().findFrameSlot(localSelf.getIdentifier()) == localSelf;
-        NonLocalVariableWriteNode node = NonLocalVariableWriteNodeFactory.create(
+      assert frame.getFrameDescriptor().findFrameSlot(localSelf.getIdentifier()) == localSelf;
+      NonLocalVariableWriteNode node = NonLocalVariableWriteNodeFactory.create(
             contextLevel, variable.slot, localSelf, getSourceSection(), exp);
-        return replace(node).executeGeneric(frame);
-      } else {
-        assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) == variable.slot;
-        LocalVariableWriteNode node = LocalVariableWriteNodeFactory.create(
-            (Local) variable, getSourceSection(), exp);
-        return replace(node).executeGeneric(frame);
-      }
+      return replace(node).executeGeneric(frame);
     }
 
     @Override

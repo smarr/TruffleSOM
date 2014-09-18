@@ -186,7 +186,7 @@ public final class MethodGenerationContext {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarkerSlot());
     }
 
-    body = createArgumentInitialization(body, arguments);
+    body = createArgumentInitialization(getLocalSelfSlot(), body, arguments);
 
     Method truffleMethod =
         new Method(getSourceSectionForMethod(sourceSection),

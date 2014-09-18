@@ -2,7 +2,7 @@ package som.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.interpreter.Inliner;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
+import som.interpreter.SNodeFactory;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -111,7 +111,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       assert varSlot != null;
       FrameSlot selfSlot = inliner.getFrameSlot(this, slot.getIdentifier());
       assert selfSlot != null;
-      replace(NonLocalSuperReadNodeFactory.create(this.contextLevel, varSlot, selfSlot, holderClass, isClassSide, getSourceSection()));
+      replace(SNodeFactory.createSuperRead(this.contextLevel, varSlot, selfSlot, holderClass, isClassSide, getSourceSection()));
     }
   }
 

@@ -1,6 +1,6 @@
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
+import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -9,11 +9,11 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
  * Initializes the frame slots for self as well as the arguments.
  */
 public final class ArgumentInitializationNode extends ExpressionNode {
-  @Children private final LocalVariableWriteNode[] argumentInits;
+  @Children private final NonLocalVariableWriteNode[] argumentInits;
   @Child    private       ExpressionNode           methodBody;
 
   public ArgumentInitializationNode(
-      final LocalVariableWriteNode[] argumentInits,
+      final NonLocalVariableWriteNode[] argumentInits,
       final ExpressionNode methodBody) {
     super(null);
     this.argumentInits = argumentInits;
