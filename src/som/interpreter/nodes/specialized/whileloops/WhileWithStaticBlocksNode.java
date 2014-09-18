@@ -41,12 +41,4 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
       super(receiver, argument, rcvr, arg, true, source);
     }
   }
-
-  public static final class WhileFalseStaticBlocksNode extends WhileWithStaticBlocksNode {
-    public WhileFalseStaticBlocksNode(final BlockNode receiver,
-        final BlockNode argument, final SBlock rcvr, final SBlock arg,
-        final SourceSection source) {
-      super(receiver, argument, rcvr, arg, false, source);
-    }
-  }
 }

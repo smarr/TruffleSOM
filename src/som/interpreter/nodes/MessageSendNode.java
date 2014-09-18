@@ -1,7 +1,6 @@
 package som.interpreter.nodes;
 
 import som.interpreter.TruffleCompiler;
-import som.interpreter.TypesGen;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
@@ -13,18 +12,14 @@ import som.interpreter.nodes.nary.EagerTernaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory.AndBoolMessageNodeFactory;
-import som.interpreter.nodes.specialized.IfFalseMessageNodeFactory;
-import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
-import som.interpreter.nodes.specialized.IfTrueMessageNodeFactory;
-import som.interpreter.nodes.specialized.IntDownToDoMessageNodeFactory;
-import som.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
-import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.NotMessageNodeFactory;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
 import som.interpreter.nodes.specialized.whileloops.WhileWithDynamicBlocksNode;
-import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileFalseStaticBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileTrueStaticBlocksNode;
+import som.primitives.ArrayPrimsFactory.AtPrimFactory;
+import som.primitives.ArrayPrimsFactory.AtPutPrimFactory;
+import som.primitives.ArrayPrimsFactory.NewPrimFactory;
 import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
 import som.primitives.EqualsEqualsPrimFactory;
@@ -52,10 +47,7 @@ import som.primitives.arithmetic.RemainderPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
 import som.primitives.arrays.AtPrimFactory;
 import som.primitives.arrays.AtPutPrimFactory;
-import som.primitives.arrays.DoIndexesPrimFactory;
-import som.primitives.arrays.DoPrimFactory;
 import som.primitives.arrays.NewPrimFactory;
-import som.primitives.arrays.PutAllNodeFactory;
 import som.primitives.arrays.ToArgumentsArrayNodeFactory;
 import som.vm.NotYetImplementedException;
 import som.vm.constants.Classes;
@@ -228,24 +220,6 @@ public final class MessageSendNode {
           return replace(new EagerBinaryPrimitiveNode(selector,
               argumentNodes[0], argumentNodes[1],
               InstVarAtPrimFactory.create(null, null)));
-        case "doIndexes:":
-          if (arguments[0] instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-                argumentNodes[1],
-                DoIndexesPrimFactory.create(null, null)));
-          }
-          break;
-        case "do:":
-          if (arguments[0] instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-                argumentNodes[1],
-                DoPrimFactory.create(null, null)));
-          }
-          break;
-        case "putAll:":
-          return replace(new EagerBinaryPrimitiveNode(selector,
-                argumentNodes[0], argumentNodes[1],
-                PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
         case "whileTrue:": {
           if (argumentNodes[1] instanceof BlockNode &&
               argumentNodes[0] instanceof BlockNode) {
@@ -258,16 +232,6 @@ public final class MessageSendNode {
           }
           break; // use normal send
         }
-        case "whileFalse:":
-          if (argumentNodes[1] instanceof BlockNode &&
-              argumentNodes[0] instanceof BlockNode) {
-            BlockNode argBlockNode = (BlockNode) argumentNodes[1];
-            SBlock    argBlock     = (SBlock)    arguments[1];
-            return replace(new WhileFalseStaticBlocksNode(
-                (BlockNode) argumentNodes[0], argBlockNode,
-                (SBlock) arguments[0], argBlock, getSourceSection()));
-          }
-          break; // use normal send
         case "and:":
         case "&&":
           if (arguments[0] instanceof Boolean) {
@@ -302,23 +266,6 @@ public final class MessageSendNode {
                 ValueOnePrimFactory.create(null, null)));
           }
           break;
-
-        case "ifTrue:":
-          return replace(IfTrueMessageNodeFactory.create(arguments[0],
-              arguments[1], getSourceSection(),
-              argumentNodes[0], argumentNodes[1]));
-        case "ifFalse:":
-          return replace(IfFalseMessageNodeFactory.create(arguments[0],
-              arguments[1], getSourceSection(),
-              argumentNodes[0], argumentNodes[1]));
-        case "to:":
-          if (arguments[0] instanceof Long) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-                argumentNodes[1],
-                ToPrimFactory.create(null, null)));
-          }
-          break;
-
         // TODO: find a better way for primitives, use annotation or something
         case "<":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
@@ -364,6 +311,14 @@ public final class MessageSendNode {
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
               BitXorPrimFactory.create(null, null)));
+        case "to:":
+          if (arguments[0] instanceof Long) {
+            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+                argumentNodes[1],
+                DoPrimFactory.create(null, null)));
+          }
+          break;
+
         case "//":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
@@ -415,31 +370,6 @@ public final class MessageSendNode {
                 AtPutPrimFactory.create(null, null, null)));
           }
           break;
-        case "ifTrue:ifFalse:":
-          return replace(IfTrueIfFalseMessageNodeFactory.create(arguments[0],
-              arguments[1], arguments[2], argumentNodes[0],
-              argumentNodes[1], argumentNodes[2]));
-        case "to:do:":
-          if (TypesGen.TYPES.isLong(arguments[0]) &&
-              (TypesGen.TYPES.isLong(arguments[1]) ||
-                  TypesGen.TYPES.isDouble(arguments[1])) &&
-              TypesGen.TYPES.isSBlock(arguments[2])) {
-            return replace(IntToDoMessageNodeFactory.create(this,
-                (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
-                argumentNodes[2]));
-          }
-          break;
-        case "downTo:do:":
-          if (TypesGen.TYPES.isLong(arguments[0]) &&
-              (TypesGen.TYPES.isLong(arguments[1]) ||
-                  TypesGen.TYPES.isDouble(arguments[1])) &&
-              TypesGen.TYPES.isSBlock(arguments[2])) {
-            return replace(IntDownToDoMessageNodeFactory.create(this,
-                (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
-                argumentNodes[2]));
-          }
-          break;
-
         case "invokeOn:with:":
           return replace(InvokeOnPrimFactory.create(
               argumentNodes[0], argumentNodes[1], argumentNodes[2],
@@ -454,10 +384,6 @@ public final class MessageSendNode {
     protected PreevaluatedExpression specializeQuaternary(
         final Object[] arguments) {
       switch (selector.getString()) {
-        case "to:by:do:":
-          return replace(IntToByDoMessageNodeFactory.create(this,
-              (SBlock) arguments[3], argumentNodes[0], argumentNodes[1],
-              argumentNodes[2], argumentNodes[3]));
       }
       return makeGenericSend();
     }
@@ -511,13 +437,6 @@ public final class MessageSendNode {
           }
           break;
         }
-        case "whileFalse:":
-          if (arguments[1] instanceof SBlock && arguments[0] instanceof SBlock) {
-            SBlock    argBlock     = (SBlock)    arguments[1];
-            return replace(new WhileWithDynamicBlocksNode(
-                (SBlock) arguments[0], argBlock, false, getSourceSection()));
-          }
-          break; // use normal send
       }
 
       return super.specializeBinary(arguments);
