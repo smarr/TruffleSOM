@@ -359,8 +359,8 @@ public final class Universe {
     blockClasses[0] = loadClass(symbolFor("Block"));
 
     // Setup the true and false objects
-    trueObject  = newInstance(trueClass);
-    falseObject = newInstance(falseClass);
+    //trueObject  = newInstance(trueClass);
+    //falseObject = newInstance(falseClass);
 
     // Load the system class and create an instance of it
     systemClass  = loadClass(symbolFor("System"));
@@ -368,8 +368,8 @@ public final class Universe {
 
     // Put special objects into the dictionary of globals
     setGlobal("nil",    nilObject);
-    setGlobal("true",   trueObject);
-    setGlobal("false",  falseObject);
+    setGlobal("true",   true);
+    setGlobal("false",  false);
     setGlobal("system", systemObject);
 
     // Load the remaining block classes
