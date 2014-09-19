@@ -1,7 +1,7 @@
 package som.primitives;
 
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
+import som.interpreter.nodes.dispatch.GenericBlockDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
@@ -40,7 +40,7 @@ public abstract class BlockPrims {
 
     public ValueNonePrim() {
       super(null);
-      dispatchNode = new UninitializedValuePrimDispatchNode();
+      dispatchNode = new GenericBlockDispatchNode();
     }
 
     @Specialization
@@ -79,7 +79,7 @@ public abstract class BlockPrims {
 
     public ValueOnePrim() {
       super(null);
-      dispatchNode = new UninitializedValuePrimDispatchNode();
+      dispatchNode = new GenericBlockDispatchNode();
     }
 
     @Specialization
@@ -114,7 +114,7 @@ public abstract class BlockPrims {
 
     public ValueTwoPrim() {
       super(null);
-      dispatchNode = new UninitializedValuePrimDispatchNode();
+      dispatchNode = new GenericBlockDispatchNode();
     }
 
     @Specialization
