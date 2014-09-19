@@ -1,8 +1,6 @@
 package som.interpreter.nodes;
 
-import static som.interpreter.SNodeFactory.createLocalVariableWrite;
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
-import som.compiler.Variable;
 import som.compiler.Variable.Local;
 import som.interpreter.Inliner;
 import som.interpreter.nodes.LocalVariableNodeFactory.LocalSuperReadNodeFactory;
@@ -34,9 +32,9 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
   public abstract static class LocalVariableReadNode extends LocalVariableNode {
 
-    public LocalVariableReadNode(final Variable variable,
+    public LocalVariableReadNode(final Local variable,
         final SourceSection source) {
-      this(variable.slot, source);
+      this(variable.getSlot(), source);
     }
 
     public LocalVariableReadNode(final LocalVariableReadNode node) {
@@ -91,7 +89,7 @@ public abstract class LocalVariableNode extends ExpressionNode {
     @Override
     public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
       throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
-    }
+  }
   }
 
   public abstract static class LocalSuperReadNode
@@ -133,7 +131,7 @@ public abstract class LocalVariableNode extends ExpressionNode {
   public abstract static class LocalVariableWriteNode extends LocalVariableNode {
 
     public LocalVariableWriteNode(final Local variable, final SourceSection source) {
-      super(variable.slot, source);
+      super(variable.getSlot(), source);
     }
 
     public LocalVariableWriteNode(final LocalVariableWriteNode node) {
@@ -217,14 +215,7 @@ public abstract class LocalVariableNode extends ExpressionNode {
     @Override
     public final void replaceWithIndependentCopyForInlining(final Inliner inliner) {
       CompilerAsserts.neverPartOfCompilation("replaceWithIndependentCopyForInlining");
-
-      if (getParent() instanceof ArgumentInitializationNode) {
-        FrameSlot varSlot = inliner.getLocalFrameSlot(getSlotIdentifier());
-        assert varSlot != null;
-        replace(createLocalVariableWrite(varSlot, getExp(), getSourceSection()));
-      } else {
-        throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
-      }
+      throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
     }
   }
 }

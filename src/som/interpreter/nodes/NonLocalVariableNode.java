@@ -21,20 +21,20 @@ public abstract class NonLocalVariableNode extends ContextualNode {
   protected final FrameSlot slot;
 
   private NonLocalVariableNode(final int contextLevel, final FrameSlot slot,
-      final FrameSlot localSelf, final SourceSection source) {
-    super(contextLevel, localSelf, source);
+      final SourceSection source) {
+    super(contextLevel, source);
     this.slot = slot;
   }
 
   public abstract static class NonLocalVariableReadNode extends NonLocalVariableNode {
 
     public NonLocalVariableReadNode(final int contextLevel,
-        final FrameSlot slot, final FrameSlot localSelf, final SourceSection source) {
-      super(contextLevel, slot, localSelf, source);
+        final FrameSlot slot, final SourceSection source) {
+      super(contextLevel, slot, source);
     }
 
     public NonLocalVariableReadNode(final NonLocalVariableReadNode node) {
-      this(node.contextLevel, node.slot, node.localSelf, node.getSourceSection());
+      this(node.contextLevel, node.slot, node.getSourceSection());
     }
 
     @Specialization(guards = "isUninitialized")
@@ -79,7 +79,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     @Override
     public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
       throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
-    }
+  }
   }
 
   public abstract static class NonLocalSuperReadNode
@@ -119,12 +119,12 @@ public abstract class NonLocalVariableNode extends ContextualNode {
   public abstract static class NonLocalVariableWriteNode extends NonLocalVariableNode {
 
     public NonLocalVariableWriteNode(final int contextLevel,
-        final FrameSlot slot, final FrameSlot localSelf, final SourceSection source) {
-      super(contextLevel, slot, localSelf, source);
+        final FrameSlot slot, final SourceSection source) {
+      super(contextLevel, slot, source);
     }
 
     public NonLocalVariableWriteNode(final NonLocalVariableWriteNode node) {
-      this(node.contextLevel, node.slot, node.localSelf, node.getSourceSection());
+      this(node.contextLevel, node.slot, node.getSourceSection());
     }
 
     @Specialization(guards = "isBoolKind")

@@ -22,10 +22,9 @@
 package som.interpreter.nodes;
 
 import som.interpreter.Inliner;
+import som.interpreter.SArguments;
 import som.vmobjects.SBlock;
 
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -34,17 +33,10 @@ import com.oracle.truffle.api.source.SourceSection;
 public abstract class ContextualNode extends ExpressionNode {
 
   protected final int contextLevel;
-  protected final FrameSlot      localSelf;
 
-  public ContextualNode(final int contextLevel, final FrameSlot localSelf,
-      final SourceSection source) {
+  public ContextualNode(final int contextLevel, final SourceSection source) {
     super(source);
     this.contextLevel = contextLevel;
-    this.localSelf    = localSelf;
-  }
-
-  protected final Object getLocalSelfSlotIdentifier() {
-    return localSelf.getIdentifier();
   }
 
   public final int getContextLevel() {
@@ -57,7 +49,7 @@ public abstract class ContextualNode extends ExpressionNode {
 
   @ExplodeLoop
   protected final MaterializedFrame determineContext(final VirtualFrame frame) {
-    SBlock self = getLocalSelf(frame);
+    SBlock self = CompilerDirectives.unsafeCast(getLocalSelf(frame), SBlock.class, true, true);
     int i = contextLevel - 1;
 
     while (i > 0) {
@@ -67,9 +59,9 @@ public abstract class ContextualNode extends ExpressionNode {
     return self.getContext();
   }
 
-  private SBlock getLocalSelf(final VirtualFrame frame) {
-    return (SBlock) FrameUtil.getObjectSafe(frame, localSelf);
-}
+  private Object getLocalSelf(final VirtualFrame frame) {
+    return SArguments.rcvr(frame);
+  }
 
   @ExplodeLoop
   protected final Object determineOuterSelf(final VirtualFrame frame) {
@@ -87,5 +79,4 @@ public abstract class ContextualNode extends ExpressionNode {
   public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
     throw new RuntimeException("Needs to be specialized in concrete subclasses to make sure that localSelf slot is specialized.");
   }
-
 }
