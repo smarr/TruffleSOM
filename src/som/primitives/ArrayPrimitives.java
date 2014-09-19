@@ -27,7 +27,6 @@ package som.primitives;
 
 import som.primitives.arrays.AtPrimFactory;
 import som.primitives.arrays.AtPutPrimFactory;
-import som.primitives.arrays.CopyPrimFactory;
 import som.primitives.arrays.NewPrimFactory;
 
 public final class ArrayPrimitives extends Primitives {
@@ -38,7 +37,6 @@ public final class ArrayPrimitives extends Primitives {
     installInstancePrimitive("at:",     AtPrimFactory.getInstance());
     installInstancePrimitive("at:put:", AtPutPrimFactory.getInstance());
     installInstancePrimitive("length",  LengthPrimFactory.getInstance());
-    installInstancePrimitive("copy",    CopyPrimFactory.getInstance());
 
     installClassPrimitive("new:", NewPrimFactory.getInstance());
   }
