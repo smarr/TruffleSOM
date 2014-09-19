@@ -11,20 +11,17 @@ import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerTernaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
-import som.interpreter.nodes.specialized.AndMessageNodeFactory;
-import som.interpreter.nodes.specialized.AndMessageNodeFactory.AndBoolMessageNodeFactory;
 import som.interpreter.nodes.specialized.IfFalseMessageNodeFactory;
 import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
 import som.interpreter.nodes.specialized.IfTrueMessageNodeFactory;
-import som.interpreter.nodes.specialized.IntDownToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
-import som.interpreter.nodes.specialized.NotMessageNodeFactory;
-import som.interpreter.nodes.specialized.OrMessageNodeFactory;
-import som.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
 import som.interpreter.nodes.specialized.whileloops.WhileWithDynamicBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileFalseStaticBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileTrueStaticBlocksNode;
+import som.primitives.ArrayPrimsFactory.AtPrimFactory;
+import som.primitives.ArrayPrimsFactory.AtPutPrimFactory;
+import som.primitives.ArrayPrimsFactory.NewPrimFactory;
 import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
 import som.primitives.EqualsEqualsPrimFactory;
@@ -37,13 +34,10 @@ import som.primitives.LengthPrimFactory;
 import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPutPrimFactory;
-import som.primitives.UnequalsPrimFactory;
 import som.primitives.arithmetic.AdditionPrimFactory;
 import som.primitives.arithmetic.BitXorPrimFactory;
 import som.primitives.arithmetic.DividePrimFactory;
 import som.primitives.arithmetic.DoubleDivPrimFactory;
-import som.primitives.arithmetic.GreaterThanPrimFactory;
-import som.primitives.arithmetic.LessThanOrEqualPrimFactory;
 import som.primitives.arithmetic.LessThanPrimFactory;
 import som.primitives.arithmetic.LogicAndPrimFactory;
 import som.primitives.arithmetic.ModuloPrimFactory;
@@ -193,17 +187,6 @@ public final class MessageSendNode {
                 argumentNodes[0], ValueNonePrimFactory.create(null)));
           }
           break;
-        case "not":
-          if (receiver instanceof Boolean) {
-            return replace(new EagerUnaryPrimitiveNode(selector,
-                argumentNodes[0], NotMessageNodeFactory.create(getSourceSection(), null)));
-          }
-          break;
-        case "abs":
-          if (receiver instanceof Long) {
-            return replace(new EagerUnaryPrimitiveNode(selector,
-                argumentNodes[0], AbsPrimFactory.create(null)));
-          }
       }
       return makeGenericSend();
     }
@@ -228,24 +211,6 @@ public final class MessageSendNode {
           return replace(new EagerBinaryPrimitiveNode(selector,
               argumentNodes[0], argumentNodes[1],
               InstVarAtPrimFactory.create(null, null)));
-        case "doIndexes:":
-          if (arguments[0] instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-                argumentNodes[1],
-                DoIndexesPrimFactory.create(null, null)));
-          }
-          break;
-        case "do:":
-          if (arguments[0] instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-                argumentNodes[1],
-                DoPrimFactory.create(null, null)));
-          }
-          break;
-        case "putAll:":
-          return replace(new EagerBinaryPrimitiveNode(selector,
-                argumentNodes[0], argumentNodes[1],
-                PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
         case "whileTrue:": {
           if (argumentNodes[1] instanceof BlockNode &&
               argumentNodes[0] instanceof BlockNode) {
@@ -268,32 +233,6 @@ public final class MessageSendNode {
                 (SBlock) arguments[0], argBlock, getSourceSection()));
           }
           break; // use normal send
-        case "and:":
-        case "&&":
-          if (arguments[0] instanceof Boolean) {
-            if (argumentNodes[1] instanceof BlockNode) {
-              return replace(AndMessageNodeFactory.create((SBlock) arguments[1],
-                  getSourceSection(), argumentNodes[0], argumentNodes[1]));
-            } else if (arguments[1] instanceof Boolean) {
-              return replace(AndBoolMessageNodeFactory.create(getSourceSection(),
-                  argumentNodes[0], argumentNodes[1]));
-            }
-          }
-          break;
-        case "or:":
-        case "||":
-          if (arguments[0] instanceof Boolean) {
-            if (argumentNodes[1] instanceof BlockNode) {
-              return replace(OrMessageNodeFactory.create((SBlock) arguments[1],
-                  getSourceSection(),
-                  argumentNodes[0], argumentNodes[1]));
-            } else if (arguments[1] instanceof Boolean) {
-              return replace(OrBoolMessageNodeFactory.create(
-                  getSourceSection(),
-                  argumentNodes[0], argumentNodes[1]));
-            }
-          }
-          break;
 
         case "value:":
           if (arguments[0] instanceof SBlock) {
@@ -311,27 +250,12 @@ public final class MessageSendNode {
           return replace(IfFalseMessageNodeFactory.create(arguments[0],
               arguments[1], getSourceSection(),
               argumentNodes[0], argumentNodes[1]));
-        case "to:":
-          if (arguments[0] instanceof Long) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-                argumentNodes[1],
-                ToPrimFactory.create(null, null)));
-          }
-          break;
 
         // TODO: find a better way for primitives, use annotation or something
         case "<":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
               LessThanPrimFactory.create(null, null)));
-        case "<=":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-              argumentNodes[1],
-              LessThanOrEqualPrimFactory.create(null, null)));
-        case ">":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-              argumentNodes[1],
-              GreaterThanPrimFactory.create(null, null)));
         case "+":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
@@ -348,14 +272,6 @@ public final class MessageSendNode {
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
               EqualsPrimFactory.create(null, null)));
-        case "<>":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-              argumentNodes[1],
-              UnequalsPrimFactory.create(null, null)));
-        case "~=":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
-              argumentNodes[1],
-              UnequalsPrimFactory.create(null, null)));
         case "==":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
@@ -429,17 +345,6 @@ public final class MessageSendNode {
                 argumentNodes[2]));
           }
           break;
-        case "downTo:do:":
-          if (TypesGen.TYPES.isLong(arguments[0]) &&
-              (TypesGen.TYPES.isLong(arguments[1]) ||
-                  TypesGen.TYPES.isDouble(arguments[1])) &&
-              TypesGen.TYPES.isSBlock(arguments[2])) {
-            return replace(IntDownToDoMessageNodeFactory.create(this,
-                (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
-                argumentNodes[2]));
-          }
-          break;
-
         case "invokeOn:with:":
           return replace(InvokeOnPrimFactory.create(
               argumentNodes[0], argumentNodes[1], argumentNodes[2],
