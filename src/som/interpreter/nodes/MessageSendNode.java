@@ -6,7 +6,6 @@ import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerTernaryPrimitiveNode;
@@ -84,7 +83,7 @@ public final class MessageSendNode {
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
       final ExpressionNode[] argumentNodes, final SourceSection source) {
     return new GenericMessageSendNode(selector, argumentNodes,
-      new UninitializedDispatchNode(selector), source);
+      new GenericDispatchNode(selector), source);
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
@@ -172,7 +171,7 @@ public final class MessageSendNode {
     private GenericMessageSendNode makeGenericSend() {
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
           argumentNodes,
-          new UninitializedDispatchNode(selector),
+          new GenericDispatchNode(selector),
           getSourceSection());
       return replace(send);
     }
