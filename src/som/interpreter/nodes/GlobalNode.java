@@ -28,7 +28,6 @@ import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -75,8 +74,6 @@ public abstract class GlobalNode extends ExpressionNode {
 
     @Override
     protected Object executeUnknownGlobal(final VirtualFrame frame) {
-      CompilerAsserts.neverPartOfCompilation();
-
       // if it is not defined, we will send a error message to the current
       // receiver object
       Object self = SArguments.rcvr(frame);
