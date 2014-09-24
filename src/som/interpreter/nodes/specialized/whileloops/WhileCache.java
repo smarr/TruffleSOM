@@ -7,7 +7,6 @@ import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
@@ -104,10 +103,8 @@ public final class WhileCache {
       if (o instanceof Boolean) {
         return (boolean) o;
       } else if (o == Globals.trueObject) {
-        CompilerAsserts.neverPartOfCompilation("obj2Bool1");
         return true;
       } else {
-        CompilerAsserts.neverPartOfCompilation("obj2Bool2");
         assert o == Globals.falseObject;
         return false;
       }
@@ -116,11 +113,8 @@ public final class WhileCache {
     @Override
     public SObject executeDispatch(final VirtualFrame frame, final SBlock loopCondition,
         final SBlock loopBody) {
-      CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch"); // no caching, direct invokes, no loop count reporting...
-
       Object conditionResult = loopCondition.getMethod().invoke(loopCondition);
       boolean loopConditionResult = obj2bool(conditionResult);
-
 
       // TODO: this is a simplification, we don't cover the case receiver isn't a boolean
       while (loopConditionResult == predicateBool) {
