@@ -17,8 +17,10 @@ import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
@@ -72,6 +74,12 @@ public final class SNodeFactory {
   public static FieldWriteNode createFieldWrite(final ExpressionNode self,
       final ExpressionNode exp, final int fieldIndex, final SourceSection source) {
     return FieldWriteNodeFactory.create(fieldIndex, source, self, exp);
+  }
+
+  public static NonLocalVariableReadNode createNonLocalVariableReadNode(
+      final int contextLevel, final FrameSlot varSlot, final FrameSlot localSelf, final SourceSection sourceSection) {
+  return NonLocalVariableReadNodeFactory.create(contextLevel, varSlot,
+      localSelf, sourceSection);
   }
 
   public static ContextualNode createVariableRead(final Variable variable,

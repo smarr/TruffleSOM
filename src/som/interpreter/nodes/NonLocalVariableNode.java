@@ -4,6 +4,7 @@ import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.interpreter.Inliner;
 import som.interpreter.SArguments;
 import som.interpreter.SNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -79,7 +80,11 @@ public abstract class NonLocalVariableNode extends ContextualNode {
 
     @Override
     public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+      FrameSlot varSlot   = inliner.getLocalFrameSlot(this.slot.getIdentifier());
+      FrameSlot localSelf = inliner.getLocalFrameSlot(this.localSelf.getIdentifier());
+
+      replace(SNodeFactory.createNonLocalVariableReadNode(contextLevel,
+          varSlot, localSelf, getSourceSection()));
     }
   }
 
@@ -133,6 +138,8 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     public NonLocalVariableWriteNode(final NonLocalVariableWriteNode node) {
       this(node.contextLevel, node.slot, node.localSelf, node.getSourceSection());
     }
+
+    protected abstract ExpressionNode getExp();
 
     @Specialization(guards = "isBoolKind")
     public final boolean writeBoolean(final VirtualFrame frame, final boolean expValue) {
@@ -200,6 +207,14 @@ public abstract class NonLocalVariableNode extends ContextualNode {
         transferToInterpreter("LocalVar.writeObjectToUninit");
         slot.setKind(FrameSlotKind.Object);
       }
+    }
+
+    @Override
+    public final void replaceWithIndependentCopyForInlining(final Inliner inliner) {
+      FrameSlot varSlot   = inliner.getLocalFrameSlot(this.slot.getIdentifier());
+      FrameSlot localSelf = inliner.getLocalFrameSlot(this.localSelf.getIdentifier());
+      replace(NonLocalVariableWriteNodeFactory.create(contextLevel, varSlot,
+          localSelf, getSourceSection(), getExp()));
     }
   }
 }
