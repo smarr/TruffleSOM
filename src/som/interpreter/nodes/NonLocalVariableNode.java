@@ -2,7 +2,8 @@ package som.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.interpreter.Inliner;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -78,8 +79,10 @@ public abstract class NonLocalVariableNode extends ContextualNode {
 
     @Override
     public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
-  }
+      FrameSlot varSlot = inliner.getLocalFrameSlot(this.slot.getIdentifier());
+      replace(NonLocalVariableReadNodeFactory.create(contextLevel, varSlot,
+         getSourceSection()));
+    }
   }
 
   public abstract static class NonLocalSuperReadNode
@@ -126,6 +129,8 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     public NonLocalVariableWriteNode(final NonLocalVariableWriteNode node) {
       this(node.contextLevel, node.slot, node.getSourceSection());
     }
+
+    protected abstract ExpressionNode getExp();
 
     @Specialization(guards = "isBoolKind")
     public final boolean writeBoolean(final VirtualFrame frame, final boolean expValue) {
@@ -193,6 +198,13 @@ public abstract class NonLocalVariableNode extends ContextualNode {
         transferToInterpreter("LocalVar.writeObjectToUninit");
         slot.setKind(FrameSlotKind.Object);
       }
+    }
+
+    @Override
+    public final void replaceWithIndependentCopyForInlining(final Inliner inliner) {
+      FrameSlot varSlot   = inliner.getLocalFrameSlot(this.slot.getIdentifier());
+      replace(NonLocalVariableWriteNodeFactory.create(contextLevel, varSlot,
+         getSourceSection(), getExp()));
     }
   }
 }
