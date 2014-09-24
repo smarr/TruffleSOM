@@ -2,6 +2,7 @@ package som.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.interpreter.Inliner;
+import som.interpreter.SArguments;
 import som.interpreter.SNodeFactory;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
@@ -38,7 +39,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     }
 
     @Specialization(guards = "isUninitialized")
-    public final SObject doNil() {
+    public SObject doNil(final VirtualFrame frame) {
       return Nil.nilObject;
     }
 
@@ -98,6 +99,12 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     public NonLocalSuperReadNode(final NonLocalSuperReadNode node) {
       this(node.contextLevel, node.slot, node.localSelf, node.holderClass,
           node.isClassSide, node.getSourceSection());
+    }
+
+    @Override
+    @Specialization(guards = "isUninitialized", insertBefore = "doBoolean")
+    public final SObject doNil(final VirtualFrame frame) {
+      return (SObject) SArguments.rcvr(determineContext(frame));
     }
 
     @Override
