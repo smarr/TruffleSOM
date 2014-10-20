@@ -24,73 +24,35 @@ package som.interpreter.nodes;
 import som.interpreter.SArguments;
 import som.vm.Universe;
 import som.vm.Universe.Association;
-import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-
-public abstract class GlobalNode extends ExpressionNode {
-
+public final class GlobalNode extends ExpressionNode {
+  private   final Universe universe;
   protected final SSymbol  globalName;
 
   public GlobalNode(final SSymbol globalName, final SourceSection source) {
     super(source);
     this.globalName = globalName;
+    this.universe   = Universe.current();
   }
 
-  public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
-    private final Universe universe;
-
-    public AbstractUninitializedGlobalReadNode(final SSymbol globalName,
-        final Universe universe, final SourceSection source) {
-      super(globalName, source);
-      this.universe = universe;
-    }
-
-    protected abstract Object executeUnknownGlobal(VirtualFrame frame);
-
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      // Get the global from the universe
-      Association assoc = universe.getGlobalsAssociation(globalName);
-      if (assoc != null) {
-        return assoc.getValue();
-      } else {
-        return executeUnknownGlobal(frame);
-      }
+  @Override
+  public Object executeGeneric(final VirtualFrame frame) {
+    // Get the global from the universe
+    Association assoc = universe.getGlobalsAssociation(globalName);
+    if (assoc != null) {
+      return assoc.getValue();
+    } else {
+      return executeUnknownGlobal(frame);
     }
   }
 
-  public static final class UninitializedGlobalReadNode extends AbstractUninitializedGlobalReadNode {
-
-    public UninitializedGlobalReadNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, Universe.current(), source);
-    }
-
-    @Override
-    protected Object executeUnknownGlobal(final VirtualFrame frame) {
-//      CompilerAsserts.neverPartOfCompilation();
-
-      // if it is not defined, we will send a error message to the current
-      // receiver object
-      Object self = SArguments.rcvr(frame);
-      return SAbstractObject.sendUnknownGlobal(self, globalName);
-    }
-  }
-
-  public static final class UninitializedGlobalReadWithoutErrorNode extends AbstractUninitializedGlobalReadNode {
-    public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, Universe.current(), source);
-    }
-
-    @Override
-    protected Object executeUnknownGlobal(final VirtualFrame frame) {
-      return Nil.nilObject;
-    }
+  protected Object executeUnknownGlobal(final VirtualFrame frame) {
+    Object self = SArguments.rcvr(frame);
+    return SAbstractObject.sendUnknownGlobal(self, globalName);
   }
 }

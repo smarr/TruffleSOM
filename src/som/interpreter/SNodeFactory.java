@@ -12,11 +12,8 @@ import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.FieldNodeFactory.FieldReadNodeFactory;
 import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeFactory;
 import som.interpreter.nodes.GlobalNode;
-import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
-import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
@@ -44,7 +41,7 @@ public final class SNodeFactory {
   }
   public static GlobalNode createGlobalRead(final SSymbol name,
       final Universe universe, final SourceSection source) {
-    return new UninitializedGlobalReadNode(name, source);
+    return new GlobalNode(name, source);
   }
 
   public static FieldWriteNode createFieldWrite(final ExpressionNode self,
