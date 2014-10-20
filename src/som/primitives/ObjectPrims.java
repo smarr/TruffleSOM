@@ -4,7 +4,6 @@ import som.interpreter.Types;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
@@ -19,17 +18,14 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 public final class ObjectPrims {
   public abstract static class InstVarAtPrim extends BinaryExpressionNode {
 
-    @Child private IndexDispatch dispatch;
-
     public InstVarAtPrim() {
       super();
-      dispatch = IndexDispatch.create();
     }
     public InstVarAtPrim(final InstVarAtPrim node) { this(); }
 
     @Specialization
     public final Object doSObject(final SObject receiver, final long idx) {
-      return dispatch.executeDispatch(receiver, (int) idx - 1);
+      return receiver.getField((int) idx - 1);
     }
 
     @Override
@@ -45,17 +41,9 @@ public final class ObjectPrims {
   }
 
   public abstract static class InstVarAtPutPrim extends TernaryExpressionNode {
-    @Child private IndexDispatch dispatch;
-
-    public InstVarAtPutPrim() {
-      super();
-      dispatch = IndexDispatch.create();
-    }
-    public InstVarAtPutPrim(final InstVarAtPutPrim node) { this(); }
-
     @Specialization
     public final Object doSObject(final SObject receiver, final long idx, final Object val) {
-      dispatch.executeDispatch(receiver, (int) idx - 1, val);
+      receiver.setField((int) idx - 1, val);
       return val;
     }
 

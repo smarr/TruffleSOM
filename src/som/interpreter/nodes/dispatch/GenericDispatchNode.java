@@ -41,9 +41,4 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
     }
     return call.call(frame, target, args);
   }
-
-  @Override
-  public int lengthOfDispatchChain() {
-    return 1000;
-  }
 }

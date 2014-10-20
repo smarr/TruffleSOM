@@ -3,7 +3,6 @@ package som.interpreter.nodes;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
@@ -15,7 +14,6 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -253,11 +251,6 @@ public final class MessageSendNode {
     @Override
     public String toString() {
       return "GMsgSend(" + selector.getString() + ")";
-    }
-
-    @Override
-    public NodeCost getCost() {
-      return Cost.getCost(dispatchNode);
     }
   }
 }
