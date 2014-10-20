@@ -72,7 +72,8 @@ import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.interpreter.nodes.MessageSendNode;
+import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.literals.DoubleLiteralNode;
@@ -568,9 +569,9 @@ public final class Parser {
     return identifier();
   }
 
-  private AbstractMessageSendNode messages(final MethodGenerationContext mgenc,
+  private MessageSendNode messages(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ParseError {
-    AbstractMessageSendNode msg;
+    MessageSendNode msg;
     if (isIdentifier(sym)) {
       msg = unaryMessage(receiver);
 
@@ -601,14 +602,14 @@ public final class Parser {
     return msg;
   }
 
-  private AbstractMessageSendNode unaryMessage(final ExpressionNode receiver) throws ParseError {
+  private MessageSendNode unaryMessage(final ExpressionNode receiver) throws ParseError {
     SourceCoordinate coord = getCoordinate();
     SSymbol selector = unarySelector();
     return createMessageSend(selector, new ExpressionNode[] {receiver},
         getSource(coord));
   }
 
-  private AbstractMessageSendNode binaryMessage(final MethodGenerationContext mgenc,
+  private MessageSendNode binaryMessage(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ParseError {
     SourceCoordinate coord = getCoordinate();
     SSymbol msg = binarySelector();
@@ -630,7 +631,7 @@ public final class Parser {
     return operand;
   }
 
-  private AbstractMessageSendNode keywordMessage(final MethodGenerationContext mgenc,
+  private MessageSendNode keywordMessage(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ParseError {
     SourceCoordinate coord = getCoordinate();
     List<ExpressionNode> arguments = new ArrayList<ExpressionNode>();

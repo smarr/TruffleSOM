@@ -1,7 +1,7 @@
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
-import som.vmobjects.SClass;
+import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
@@ -26,16 +26,23 @@ public abstract class ArgumentReadNode {
   public static final class NonLocalSuperReadNode extends
       NonLocalArgumentReadNode {
 
-    private final SClass superClass;
+    private final SSymbol holderClass;
+    private final boolean classSide;
 
     public NonLocalSuperReadNode(final int contextLevel,
-        final SClass superClass, final SourceSection source) {
+        final SSymbol holderClass, final boolean classSide,
+        final SourceSection source) {
       super(SArguments.RCVR_IDX, contextLevel, source);
-      this.superClass = superClass;
+      this.holderClass = holderClass;
+      this.classSide   = classSide;
     }
 
-    public final SClass getSuperClass() {
-      return superClass;
+    public boolean isClassSide() {
+      return classSide;
+    }
+
+    public SSymbol getHolderClass() {
+      return holderClass;
     }
   }
 }

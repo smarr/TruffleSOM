@@ -5,6 +5,7 @@ import java.util.List;
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
@@ -13,7 +14,6 @@ import som.interpreter.nodes.FieldNodeFactory.FieldReadNodeFactory;
 import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeFactory;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.MessageSendNode;
-import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
@@ -61,7 +61,7 @@ public final class SNodeFactory {
 
   public static ExpressionNode createSuperRead(final int contextLevel,
         final SSymbol holderClass, final boolean classSide, final SourceSection source) {
-    return new UninitializedSuperReadNode(contextLevel, holderClass, classSide, source);
+    return new NonLocalSuperReadNode(contextLevel, holderClass, classSide, source);
   }
   }
 
@@ -78,17 +78,21 @@ public final class SNodeFactory {
 
   public static BlockNodeWithContext createBlockNode(final SMethod blockMethod,
       final SourceSection source) {
-      return new BlockNodeWithContext(blockMethod, source);
-    }
+    return new BlockNodeWithContext(blockMethod, source);
+  }
 
-  public static AbstractMessageSendNode createMessageSend(final SSymbol msg,
+  public static MessageSendNode createMessageSend(final SSymbol msg,
       final ExpressionNode[] exprs, final SourceSection source) {
-    return MessageSendNode.create(msg, exprs, source);
+    if (exprs[0] instanceof NonLocalSuperReadNode) {
+      return MessageSendNode.createSuper(msg, exprs, source);
+    } else {
+      return MessageSendNode.createGeneric(msg, exprs, source);
+    }
   }
 
   public static ExpressionNode createMessageSend(final SSymbol msg,
       final List<ExpressionNode> exprs, final SourceSection source) {
-    return MessageSendNode.create(msg, exprs.toArray(new ExpressionNode[0]), source);
+    return createMessageSend(msg, exprs.toArray(new ExpressionNode[0]), source);
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,
