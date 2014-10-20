@@ -12,7 +12,6 @@ import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public final class ObjectPrims {
@@ -27,17 +26,6 @@ public final class ObjectPrims {
     public final Object doSObject(final SObject receiver, final long idx) {
       return receiver.getField((int) idx - 1);
     }
-
-    @Override
-    public final Object executeEvaluated(final VirtualFrame frame,
-      final Object receiver, final Object firstArg) {
-      assert receiver instanceof SObject;
-      assert firstArg instanceof Long;
-
-      SObject rcvr = (SObject) receiver;
-      long idx     = (long) firstArg;
-      return doSObject(rcvr, idx);
-    }
   }
 
   public abstract static class InstVarAtPutPrim extends TernaryExpressionNode {
@@ -45,18 +33,6 @@ public final class ObjectPrims {
     public final Object doSObject(final SObject receiver, final long idx, final Object val) {
       receiver.setField((int) idx - 1, val);
       return val;
-    }
-
-    @Override
-    public final Object executeEvaluated(final VirtualFrame frame,
-      final Object receiver, final Object firstArg, final Object secondArg) {
-      assert receiver instanceof SObject;
-      assert firstArg instanceof Long;
-      assert secondArg != null;
-
-      SObject rcvr = (SObject) receiver;
-      long idx     = (long) firstArg;
-      return doSObject(rcvr, idx, secondArg);
     }
   }
 

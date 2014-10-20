@@ -30,7 +30,6 @@ import java.util.Arrays;
 
 import som.vm.constants.Nil;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
 public class SObject extends SAbstractObject {
