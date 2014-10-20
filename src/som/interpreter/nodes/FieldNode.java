@@ -30,7 +30,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-@NodeChild(value = "self", type = ExpressionNode.class)
 public abstract class FieldNode extends ExpressionNode {
 
   protected final int fieldIndex;
@@ -42,6 +41,7 @@ public abstract class FieldNode extends ExpressionNode {
 
   protected abstract ExpressionNode getSelf();
 
+  @NodeChild(value = "self", type = ExpressionNode.class)
   public static abstract class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
 
