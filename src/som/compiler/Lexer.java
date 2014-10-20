@@ -434,5 +434,4 @@ public final class Lexer {
     }
     return !isIdentifierChar(bufchar(state.bufp + text.length()));
   }
-
 }

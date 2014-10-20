@@ -72,7 +72,6 @@ public abstract class Variable {
       return new Local(name, inlinedSlot);
     }
 
-
     @Override
     public final ExpressionNode getReadNode(final int contextLevel,
         final SourceSection source) {

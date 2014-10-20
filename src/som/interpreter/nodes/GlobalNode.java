@@ -36,7 +36,6 @@ public abstract class GlobalNode extends ExpressionNode {
 
   protected final SSymbol  globalName;
 
-
   public GlobalNode(final SSymbol globalName, final SourceSection source) {
     super(source);
     this.globalName = globalName;

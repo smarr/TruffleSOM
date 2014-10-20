@@ -123,8 +123,6 @@ public final class Parser {
     return "Parser(" + source.getName() + ", " + this.getCoordinate().toString() + ")";
   }
 
-
-
   public static class ParseError extends Exception {
     private static final long serialVersionUID = 425390202979033628L;
     private final String message;

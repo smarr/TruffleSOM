@@ -53,8 +53,6 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
-
-
 public final class MethodGenerationContext {
 
   private final ClassGenerationContext  holderGenc;
@@ -72,7 +70,6 @@ public final class MethodGenerationContext {
   private       LexicalContext  lexicalContext;
 
   private final List<SMethod>   embeddedBlockMethods;
-
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc) {
     this(holderGenc, null, false);

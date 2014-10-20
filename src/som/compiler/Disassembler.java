@@ -53,6 +53,4 @@ public final class Disassembler {
     Universe.errorPrintln(m.getInvokable().toString());
     Universe.errorPrintln(indent + ")");
   }
-
 }
-
