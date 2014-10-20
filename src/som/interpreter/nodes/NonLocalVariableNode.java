@@ -42,7 +42,6 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       return Nil.nilObject;
     }
 
-
     @Specialization(guards = "isInitialized")
     public final Object doObject(final VirtualFrame frame) {
       return determineContext(frame).getValue(slot);
@@ -61,8 +60,8 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       FrameSlot varSlot = inliner.getLocalFrameSlot(this.slot.getIdentifier());
       replace(NonLocalVariableReadNodeFactory.create(contextLevel, varSlot,
          getSourceSection()));
-  }
     }
+  }
 
   public abstract static class NonLocalSuperReadNode
                        extends NonLocalVariableReadNode implements ISuperReadNode {
@@ -130,6 +129,6 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       FrameSlot varSlot   = inliner.getLocalFrameSlot(this.slot.getIdentifier());
       replace(NonLocalVariableWriteNodeFactory.create(contextLevel, varSlot,
          getSourceSection(), getExp()));
+    }
   }
-}
 }
