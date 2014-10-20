@@ -23,11 +23,9 @@ package som.interpreter.nodes;
 
 import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class FieldNode extends ExpressionNode {
@@ -42,8 +40,7 @@ public abstract class FieldNode extends ExpressionNode {
   protected abstract ExpressionNode getSelf();
 
   @NodeChild(value = "self", type = ExpressionNode.class)
-  public static abstract class FieldReadNode extends FieldNode
-      implements PreevaluatedExpression {
+  public static abstract class FieldReadNode extends FieldNode {
 
     public FieldReadNode(final int fieldIndex, final SourceSection source) {
       super(fieldIndex, source);
@@ -57,19 +54,12 @@ public abstract class FieldNode extends ExpressionNode {
     public Object doObject(final SObject self) {
       return self.getField(fieldIndex);
     }
-
-    @Override
-    public Object doPreEvaluated(final VirtualFrame frame,
-        final Object[] arguments) {
-      return doObject((SObject) arguments[0]);
-    }
   }
 
   @NodeChildren({
     @NodeChild(value = "self", type = ExpressionNode.class),
     @NodeChild(value = "value", type = ExpressionNode.class)})
-  public abstract static class FieldWriteNode extends FieldNode
-      implements PreevaluatedExpression {
+  public abstract static class FieldWriteNode extends FieldNode {
 
     public FieldWriteNode(final int fieldIndex, final SourceSection source) {
       super(fieldIndex, source);
@@ -77,12 +67,6 @@ public abstract class FieldNode extends ExpressionNode {
 
     public FieldWriteNode(final FieldWriteNode node) {
       this(node.fieldIndex, node.getSourceSection());
-    }
-
-    @Override
-    public final Object doPreEvaluated(final VirtualFrame frame,
-        final Object[] arguments) {
-      return doObject((SObject) arguments[0], arguments[1]);
     }
 
     @Specialization
