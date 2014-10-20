@@ -14,16 +14,16 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
 
-public final class AbstractSymbolDispatch extends Node {
+public final class SymbolDispatch extends Node {
 
-  public static AbstractSymbolDispatch create() {
-    return new AbstractSymbolDispatch();
+  public static SymbolDispatch create() {
+    return new SymbolDispatch();
   }
 
   @Child private IndirectCallNode call;
     @Child private ToArgumentsArrayNode toArgArray;
 
-  private AbstractSymbolDispatch() {
+  private SymbolDispatch() {
     call = Truffle.getRuntime().createIndirectCallNode();
       toArgArray = ToArgumentsArrayNodeFactory.create(null, null);
   }

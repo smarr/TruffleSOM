@@ -9,10 +9,10 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 public abstract class PerformWithArgumentsPrim extends TernaryExpressionNode {
 
-  @Child protected AbstractSymbolDispatch dispatch;
+  @Child protected SymbolDispatch dispatch;
 
   public PerformWithArgumentsPrim() {
-    dispatch = AbstractSymbolDispatch.create();
+    dispatch = SymbolDispatch.create();
   }
 
   @Specialization
