@@ -43,10 +43,6 @@ public abstract class ContextualNode extends ExpressionNode {
     return contextLevel;
   }
 
-  public final boolean accessesOuterContext() {
-    return contextLevel > 0;
-  }
-
   @ExplodeLoop
   protected final Frame determineContext(final VirtualFrame frame) {
     if (contextLevel == 0) {
@@ -65,18 +61,6 @@ public abstract class ContextualNode extends ExpressionNode {
 
   private Object getLocalSelf(final VirtualFrame frame) {
     return SArguments.rcvr(frame);
-  }
-
-  @ExplodeLoop
-  protected final Object determineOuterSelf(final VirtualFrame frame) {
-    Object self = getLocalSelf(frame);
-    int i = contextLevel;
-    while (i > 0) {
-      SBlock block = (SBlock) self;
-      self = block.getOuterSelf();
-      i--;
-    }
-    return self;
   }
 
   @Override
