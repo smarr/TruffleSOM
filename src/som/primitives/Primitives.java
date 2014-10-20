@@ -27,7 +27,7 @@ package som.primitives;
 
 import som.compiler.MethodGenerationContext;
 import som.interpreter.Primitive;
-import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
 import som.primitives.arrays.PutAllNodeFactory;
@@ -70,7 +70,7 @@ public abstract class Primitives {
     MethodGenerationContext mgen = new MethodGenerationContext(null);
     ExpressionNode[] args = new ExpressionNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
-      args[i] = new LocalArgumentReadNode(i, null);
+      args[i] = new NonLocalArgumentReadNode(i, 0, null);
     }
 
     ExpressionNode primNode;
@@ -113,7 +113,7 @@ public abstract class Primitives {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(null);
 
-    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));
+    ExpressionNode primNode = EmptyPrim.create(new NonLocalArgumentReadNode(0, 0, null));
     Primitive primMethodNode = new Primitive(primNode, mgen.getFrameDescriptor(),
         mgen.getOuterFrameOnStackMarkerSlot());
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);

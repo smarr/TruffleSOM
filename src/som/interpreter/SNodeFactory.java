@@ -4,7 +4,6 @@ import java.util.List;
 
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
-import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
@@ -60,11 +59,7 @@ public final class SNodeFactory {
 
   public static ExpressionNode createArgumentRead(final Argument variable,
       final int contextLevel, final SourceSection source) {
-    if (contextLevel == 0) {
-      return new LocalArgumentReadNode(variable.index, source);
-    } else {
-      return new NonLocalArgumentReadNode(variable.index, contextLevel, source);
-    }
+    return new NonLocalArgumentReadNode(variable.index, contextLevel, source);
   }
 
   public static ExpressionNode createSuperRead(final int contextLevel,

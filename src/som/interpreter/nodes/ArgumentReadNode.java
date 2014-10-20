@@ -8,28 +8,6 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ArgumentReadNode {
 
-  public static class LocalArgumentReadNode extends ExpressionNode
-      implements PreevaluatedExpression {
-    protected final int argumentIndex;
-
-    public LocalArgumentReadNode(final int argumentIndex, final SourceSection source) {
-      super(source);
-      assert argumentIndex >= 0;
-      this.argumentIndex = argumentIndex;
-    }
-
-    @Override
-    public final Object executeGeneric(final VirtualFrame frame) {
-      return SArguments.arg(frame, argumentIndex);
-    }
-
-    @Override
-    public final Object doPreEvaluated(final VirtualFrame frame,
-        final Object[] arguments) {
-      return arguments[argumentIndex];
-    }
-  }
-
   public static class NonLocalArgumentReadNode extends ContextualNode {
     protected final int argumentIndex;
 
