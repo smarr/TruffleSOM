@@ -26,12 +26,6 @@ public abstract class Variable {
   public abstract ExpressionNode getReadNode(final int contextLevel,
       final SourceSection source);
 
-  public final ExpressionNode getSuperReadNode(final int contextLevel,
-      final SSymbol holderClass, final boolean classSide,
-      final SourceSection source) {
-    return createSuperRead(contextLevel, holderClass, classSide, source);
-  }
-
   public static final class Argument extends Variable {
     public final int index;
 
@@ -49,6 +43,12 @@ public abstract class Variable {
         final SourceSection source) {
       transferToInterpreterAndInvalidate("Variable.getReadNode");
       return createArgumentRead(this, contextLevel, source);
+    }
+
+    public final ExpressionNode getSuperReadNode(final int contextLevel,
+        final SSymbol holderClass, final boolean classSide,
+        final SourceSection source) {
+      return createSuperRead(contextLevel, holderClass, classSide, source);
     }
   }
 

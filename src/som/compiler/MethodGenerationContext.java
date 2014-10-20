@@ -237,7 +237,7 @@ public final class MethodGenerationContext {
   }
 
   public ExpressionNode getSuperReadNode(final SourceSection source) {
-    Variable self = getVariable("self");
+    Argument self = (Argument) getVariable("self");
     return self.getSuperReadNode(getOuterSelfContextLevel(),
         holderGenc.getName(), holderGenc.isClassSide(), source);
   }
