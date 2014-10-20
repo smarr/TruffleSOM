@@ -3,7 +3,6 @@ package som.interpreter.nodes;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.compiler.Variable.Local;
 import som.interpreter.Inliner;
-import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
@@ -49,36 +48,6 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       FrameSlot varSlot       = inliner.getFrameSlot(this, variable.getSlotIdentifier());
       assert varSlot       != null;
       replace(new UninitializedVariableReadNode(this, varSlot));
-    }
-  }
-
-  public static final class UninitializedSuperReadNode extends ContextualNode {
-    private final SSymbol holderClass;
-    private final boolean classSide;
-
-    public UninitializedSuperReadNode(final int contextLevel,
-        final SSymbol holderClass, final boolean classSide,
-        final SourceSection source) {
-      super(contextLevel, source);
-      this.holderClass = holderClass;
-      this.classSide   = classSide;
-    }
-
-    private SClass getLexicalSuperClass() {
-      SClass clazz = (SClass) Universe.current().getGlobal(holderClass);
-      if (classSide) {
-        clazz = clazz.getSOMClass();
-      }
-      return (SClass) clazz.getSuperClass();
-    }
-
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      transferToInterpreterAndInvalidate("UninitializedSuperReadNode");
-
-      NonLocalSuperReadNode node = new NonLocalSuperReadNode(
-          contextLevel, getLexicalSuperClass(), getSourceSection());
-      return replace(node).executeGeneric(frame);
     }
   }
 
