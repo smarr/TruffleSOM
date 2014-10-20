@@ -1,7 +1,6 @@
 package som.interpreter.nodes.dispatch;
 
-import som.interpreter.nodes.ISuperReadNode;
-import som.vm.Universe;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
@@ -18,7 +17,7 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 public abstract class SuperDispatchNode extends AbstractDispatchNode {
 
   public static SuperDispatchNode create(final SSymbol selector,
-      final ISuperReadNode superNode) {
+      final NonLocalSuperReadNode superNode) {
     CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create1");
     return new UninitializedDispatchNode(selector, superNode.getHolderClass(),
         superNode.isClassSide());
@@ -45,16 +44,16 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     }
 
     private CachedDispatchNode specialize() {
-      CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
+    CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
       SInvokable method = getLexicalSuperClass().lookupInvokable(selector);
 
-      if (method == null) {
-        throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
-      }
-      DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
-          method.getCallTarget());
-      return replace(new CachedDispatchNode(superMethodNode));
+    if (method == null) {
+      throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
     }
+    DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
+        method.getCallTarget());
+      return replace(new CachedDispatchNode(superMethodNode));
+  }
 
     @Override
     public Object executeDispatch(
@@ -65,17 +64,17 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
   }
 
   private static final class CachedDispatchNode extends SuperDispatchNode {
-    @Child private DirectCallNode cachedSuperMethod;
+  @Child private DirectCallNode cachedSuperMethod;
 
     private CachedDispatchNode(final DirectCallNode superMethod) {
-      this.cachedSuperMethod = superMethod;
-    }
+    this.cachedSuperMethod = superMethod;
+  }
 
-    @Override
-    public Object executeDispatch(
-        final VirtualFrame frame, final Object[] arguments) {
-      return cachedSuperMethod.call(frame, arguments);
-    }
+  @Override
+  public Object executeDispatch(
+      final VirtualFrame frame, final Object[] arguments) {
+    return cachedSuperMethod.call(frame, arguments);
+  }
   }
 
   @Override

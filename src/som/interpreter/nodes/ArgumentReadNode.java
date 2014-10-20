@@ -24,7 +24,7 @@ public abstract class ArgumentReadNode {
   }
 
   public static final class NonLocalSuperReadNode extends
-      NonLocalArgumentReadNode implements ISuperReadNode {
+      NonLocalArgumentReadNode {
 
     private final SClass superClass;
 
@@ -34,7 +34,6 @@ public abstract class ArgumentReadNode {
       this.superClass = superClass;
     }
 
-    @Override
     public final SClass getSuperClass() {
       return superClass;
     }

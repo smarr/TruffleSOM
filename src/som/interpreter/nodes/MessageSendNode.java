@@ -1,6 +1,7 @@
 package som.interpreter.nodes;
 
 import som.interpreter.TruffleCompiler;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
@@ -47,7 +48,7 @@ public final class MessageSendNode {
     }
 
     public boolean isSuperSend() {
-      return argumentNodes[0] instanceof ISuperReadNode;
+      return argumentNodes[0] instanceof NonLocalSuperReadNode;
     }
 
     @Override
@@ -177,7 +178,7 @@ public final class MessageSendNode {
     protected PreevaluatedExpression makeSuperSend() {
       GenericMessageSendNode node = new GenericMessageSendNode(selector,
         argumentNodes, SuperDispatchNode.create(selector,
-              (ISuperReadNode) argumentNodes[0]), getSourceSection());
+              (NonLocalSuperReadNode) argumentNodes[0]), getSourceSection());
       return replace(node);
     }
   }
