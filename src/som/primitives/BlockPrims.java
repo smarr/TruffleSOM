@@ -1,7 +1,5 @@
 package som.primitives;
 
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.GenericBlockDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
@@ -10,16 +8,13 @@ import som.vmobjects.SAbstractObject;
 import som.vmobjects.SBlock;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 
 
 public abstract class BlockPrims {
-
-  public interface ValuePrimitiveNode {
-    void adoptNewDispatchListHead(final AbstractDispatchNode node);
-  }
 
   public abstract static class RestartPrim extends UnaryExpressionNode {
     public RestartPrim() { super(null); }
@@ -34,112 +29,55 @@ public abstract class BlockPrims {
     }
   }
 
-  public abstract static class ValueNonePrim extends UnaryExpressionNode
-      implements ValuePrimitiveNode {
-    @Child private AbstractDispatchNode dispatchNode;
+  public abstract static class ValueNonePrim extends UnaryExpressionNode {
+    @Child private IndirectCallNode call;
 
     public ValueNonePrim() {
       super(null);
-      dispatchNode = new GenericBlockDispatchNode();
+      call = Truffle.getRuntime().createIndirectCallNode();
     }
 
     @Specialization
     public final Object doSBlock(final VirtualFrame frame, final SBlock receiver) {
-      return dispatchNode.executeDispatch(frame, new Object[] {receiver});
+      return call.call(frame, receiver.getMethod().getCallTarget(),
+          new Object[] {receiver});
     }
 
     @Specialization
     public final boolean doBoolean(final boolean receiver) {
       return receiver;
     }
-
-    @Override
-    public final void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-      dispatchNode = insert(node);
-    }
-
-    @Override
-    public NodeCost getCost() {
-      int dispatchChain = dispatchNode.lengthOfDispatchChain();
-      if (dispatchChain == 0) {
-        return NodeCost.UNINITIALIZED;
-      } else if (dispatchChain == 1) {
-        return NodeCost.MONOMORPHIC;
-      } else if (dispatchChain <= AbstractDispatchNode.INLINE_CACHE_SIZE) {
-        return NodeCost.POLYMORPHIC;
-      } else {
-        return NodeCost.MEGAMORPHIC;
-      }
-    }
   }
 
-  public abstract static class ValueOnePrim extends BinaryExpressionNode
-      implements ValuePrimitiveNode  {
-    @Child private AbstractDispatchNode dispatchNode;
+  public abstract static class ValueOnePrim extends BinaryExpressionNode {
+    @Child private IndirectCallNode call;
 
     public ValueOnePrim() {
       super(null);
-      dispatchNode = new GenericBlockDispatchNode();
+      call = Truffle.getRuntime().createIndirectCallNode();
     }
 
     @Specialization
     public final Object doSBlock(final VirtualFrame frame, final SBlock receiver,
         final Object arg) {
-      return dispatchNode.executeDispatch(frame, new Object[] {receiver, arg});
-    }
-
-    @Override
-    public final void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-      dispatchNode = insert(node);
-    }
-
-    @Override
-    public NodeCost getCost() {
-      int dispatchChain = dispatchNode.lengthOfDispatchChain();
-      if (dispatchChain == 0) {
-        return NodeCost.UNINITIALIZED;
-      } else if (dispatchChain == 1) {
-        return NodeCost.MONOMORPHIC;
-      } else if (dispatchChain <= AbstractDispatchNode.INLINE_CACHE_SIZE) {
-        return NodeCost.POLYMORPHIC;
-      } else {
-        return NodeCost.MEGAMORPHIC;
-      }
+      return call.call(frame, receiver.getMethod().getCallTarget(),
+          new Object[] {receiver, arg});
     }
   }
 
-  public abstract static class ValueTwoPrim extends TernaryExpressionNode
-      implements ValuePrimitiveNode {
-    @Child private AbstractDispatchNode dispatchNode;
+  public abstract static class ValueTwoPrim extends TernaryExpressionNode {
+    @Child private IndirectCallNode call;
 
     public ValueTwoPrim() {
       super(null);
-      dispatchNode = new GenericBlockDispatchNode();
+      call = Truffle.getRuntime().createIndirectCallNode();
     }
 
     @Specialization
     public final Object doSBlock(final VirtualFrame frame,
         final SBlock receiver, final Object arg1, final Object arg2) {
-      return dispatchNode.executeDispatch(frame, new Object[] {receiver, arg1, arg2});
-    }
-
-    @Override
-    public final void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-      dispatchNode = insert(node);
-    }
-
-    @Override
-    public NodeCost getCost() {
-      int dispatchChain = dispatchNode.lengthOfDispatchChain();
-      if (dispatchChain == 0) {
-        return NodeCost.UNINITIALIZED;
-      } else if (dispatchChain == 1) {
-        return NodeCost.MONOMORPHIC;
-      } else if (dispatchChain <= AbstractDispatchNode.INLINE_CACHE_SIZE) {
-        return NodeCost.POLYMORPHIC;
-      } else {
-        return NodeCost.MEGAMORPHIC;
-      }
+      return call.call(frame, receiver.getMethod().getCallTarget(),
+          new Object[] {receiver, arg1, arg2});
     }
   }
 
