@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized.whileloops;
+package som.primitives;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.vm.constants.Globals;
