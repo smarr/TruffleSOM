@@ -2,17 +2,18 @@ package som.primitives;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
-import som.interpreter.nodes.dispatch.InvokeOnCache;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.arrays.ToArgumentsArrayNode;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 
 
 public final class MethodPrims {
@@ -39,11 +40,10 @@ public final class MethodPrims {
                executeWith = {"somArr", "target"})})
   public abstract static class InvokeOnPrim extends ExpressionNode
     implements PreevaluatedExpression {
-    @Child private InvokeOnCache callNode;
+    @Child private IndirectCallNode callNode;
 
     public InvokeOnPrim() {
-      super(null);
-      callNode = InvokeOnCache.create();
+      callNode = Truffle.getRuntime().createIndirectCallNode();
     }
     public InvokeOnPrim(final InvokeOnPrim node) { this(); }
 
@@ -60,7 +60,7 @@ public final class MethodPrims {
     public final Object doInvoke(final VirtualFrame frame,
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr) {
-      return callNode.executeDispatch(frame, receiver, argArr);
+      return callNode.call(frame, receiver.getCallTarget(), argArr);
     }
   }
 }
