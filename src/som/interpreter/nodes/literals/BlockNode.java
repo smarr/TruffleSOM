@@ -30,7 +30,7 @@ public abstract class BlockNode   {
     }
 
     @Override
-    public final Object executeGeneric(final VirtualFrame frame) {
+    public Object executeGeneric(final VirtualFrame frame) {
       return executeSBlock(frame);
     }
 

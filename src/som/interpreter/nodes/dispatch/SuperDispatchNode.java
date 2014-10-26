@@ -24,7 +24,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
         superNode.isClassSide());
   }
 
-  private final static class UninitializedDispatchNode extends SuperDispatchNode {
+  private static final class UninitializedDispatchNode extends SuperDispatchNode {
     private final SSymbol selector;
     private final SSymbol holderClass;
     private final boolean classSide;
@@ -63,7 +63,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     }
   }
 
-  private final static class CachedDispatchNode extends SuperDispatchNode {
+  private static final class CachedDispatchNode extends SuperDispatchNode {
     @Child private DirectCallNode cachedSuperMethod;
 
     private CachedDispatchNode(final DirectCallNode superMethod) {

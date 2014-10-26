@@ -40,7 +40,7 @@ public abstract class FieldNode extends ExpressionNode {
   protected abstract ExpressionNode getSelf();
 
   @NodeChild(value = "self", type = ExpressionNode.class)
-  public static abstract class FieldReadNode extends FieldNode {
+  public abstract static class FieldReadNode extends FieldNode {
 
     public FieldReadNode(final int fieldIndex, final SourceSection source) {
       super(fieldIndex, source);

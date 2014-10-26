@@ -42,7 +42,7 @@ public final class MessageSendNode extends ExpressionNode {
   }
 
   @Override
-  public final Object executeGeneric(final VirtualFrame frame) {
+  public Object executeGeneric(final VirtualFrame frame) {
     Object[] arguments = evaluateArguments(frame);
     return dispatchNode.executeDispatch(frame, arguments);
   }
