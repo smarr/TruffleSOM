@@ -3,7 +3,6 @@ package som.interpreter.nodes;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
@@ -62,10 +61,8 @@ import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -169,9 +166,7 @@ public final class MessageSendNode {
     protected abstract PreevaluatedExpression makeSuperSend();
 
     private GenericMessageSendNode makeGenericSend() {
-      GenericMessageSendNode send = new GenericMessageSendNode(selector,
-          argumentNodes,
-          new GenericDispatchNode(selector),
+      GenericMessageSendNode send = createGeneric(selector, argumentNodes,
           getSourceSection());
       return replace(send);
     }
@@ -546,29 +541,9 @@ public final class MessageSendNode {
       return dispatchNode.executeDispatch(frame, arguments);
     }
 
-    public AbstractDispatchNode getDispatchListHead() {
-      return dispatchNode;
-    }
-
-    public void adoptNewDispatchListHead(final AbstractDispatchNode newHead) {
-      CompilerAsserts.neverPartOfCompilation();
-      dispatchNode = insert(newHead);
-    }
-
-    public void replaceDispatchListHead(
-        final GenericDispatchNode replacement) {
-      CompilerAsserts.neverPartOfCompilation();
-      dispatchNode.replace(replacement);
-    }
-
     @Override
     public String toString() {
       return "GMsgSend(" + selector.getString() + ")";
-    }
-
-    @Override
-    public NodeCost getCost() {
-      return Cost.getCost(dispatchNode);
     }
   }
 }

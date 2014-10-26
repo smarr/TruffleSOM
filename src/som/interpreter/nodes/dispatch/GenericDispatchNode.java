@@ -12,11 +12,12 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
-public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
+public final class GenericDispatchNode extends AbstractDispatchNode {
   @Child private IndirectCallNode call;
+  protected final SSymbol selector;
 
   public GenericDispatchNode(final SSymbol selector) {
-    super(selector);
+    this.selector = selector;
     call = Truffle.getRuntime().createIndirectCallNode();
   }
 
@@ -40,10 +41,5 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
       target = AbstractCachedDnuNode.getDnuCallTarget(rcvrClass);
     }
     return call.call(frame, target, args);
-  }
-
-  @Override
-  public int lengthOfDispatchChain() {
-    return 1000;
   }
 }

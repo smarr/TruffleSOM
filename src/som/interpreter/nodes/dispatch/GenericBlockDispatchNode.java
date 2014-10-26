@@ -17,9 +17,4 @@ public final class GenericBlockDispatchNode extends AbstractDispatchNode {
     SBlock rcvr = CompilerDirectives.unsafeCast(arguments[0], SBlock.class, true, true);
     return call.call(frame, rcvr.getMethod().getCallTarget(), arguments);
   }
-
-  @Override
-  public int lengthOfDispatchChain() {
-    return 1000;
-  }
 }

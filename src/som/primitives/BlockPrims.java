@@ -12,14 +12,9 @@ import som.vmobjects.SBlock;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.NodeCost;
 
 
 public abstract class BlockPrims {
-
-  public interface ValuePrimitiveNode {
-    void adoptNewDispatchListHead(final AbstractDispatchNode node);
-  }
 
   public abstract static class RestartPrim extends UnaryExpressionNode {
     public RestartPrim() { super(null); }
@@ -34,8 +29,7 @@ public abstract class BlockPrims {
     }
   }
 
-  public abstract static class ValueNonePrim extends UnaryExpressionNode
-      implements ValuePrimitiveNode {
+  public abstract static class ValueNonePrim extends UnaryExpressionNode {
     @Child private AbstractDispatchNode dispatchNode;
 
     public ValueNonePrim() {
@@ -52,29 +46,9 @@ public abstract class BlockPrims {
     public final boolean doBoolean(final boolean receiver) {
       return receiver;
     }
-
-    @Override
-    public final void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-      dispatchNode = insert(node);
-    }
-
-    @Override
-    public NodeCost getCost() {
-      int dispatchChain = dispatchNode.lengthOfDispatchChain();
-      if (dispatchChain == 0) {
-        return NodeCost.UNINITIALIZED;
-      } else if (dispatchChain == 1) {
-        return NodeCost.MONOMORPHIC;
-      } else if (dispatchChain <= AbstractDispatchNode.INLINE_CACHE_SIZE) {
-        return NodeCost.POLYMORPHIC;
-      } else {
-        return NodeCost.MEGAMORPHIC;
-      }
-    }
   }
 
-  public abstract static class ValueOnePrim extends BinaryExpressionNode
-      implements ValuePrimitiveNode  {
+  public abstract static class ValueOnePrim extends BinaryExpressionNode {
     @Child private AbstractDispatchNode dispatchNode;
 
     public ValueOnePrim() {
@@ -87,29 +61,9 @@ public abstract class BlockPrims {
         final Object arg) {
       return dispatchNode.executeDispatch(frame, new Object[] {receiver, arg});
     }
-
-    @Override
-    public final void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-      dispatchNode = insert(node);
-    }
-
-    @Override
-    public NodeCost getCost() {
-      int dispatchChain = dispatchNode.lengthOfDispatchChain();
-      if (dispatchChain == 0) {
-        return NodeCost.UNINITIALIZED;
-      } else if (dispatchChain == 1) {
-        return NodeCost.MONOMORPHIC;
-      } else if (dispatchChain <= AbstractDispatchNode.INLINE_CACHE_SIZE) {
-        return NodeCost.POLYMORPHIC;
-      } else {
-        return NodeCost.MEGAMORPHIC;
-      }
-    }
   }
 
-  public abstract static class ValueTwoPrim extends TernaryExpressionNode
-      implements ValuePrimitiveNode {
+  public abstract static class ValueTwoPrim extends TernaryExpressionNode {
     @Child private AbstractDispatchNode dispatchNode;
 
     public ValueTwoPrim() {
@@ -121,25 +75,6 @@ public abstract class BlockPrims {
     public final Object doSBlock(final VirtualFrame frame,
         final SBlock receiver, final Object arg1, final Object arg2) {
       return dispatchNode.executeDispatch(frame, new Object[] {receiver, arg1, arg2});
-    }
-
-    @Override
-    public final void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-      dispatchNode = insert(node);
-    }
-
-    @Override
-    public NodeCost getCost() {
-      int dispatchChain = dispatchNode.lengthOfDispatchChain();
-      if (dispatchChain == 0) {
-        return NodeCost.UNINITIALIZED;
-      } else if (dispatchChain == 1) {
-        return NodeCost.MONOMORPHIC;
-      } else if (dispatchChain <= AbstractDispatchNode.INLINE_CACHE_SIZE) {
-        return NodeCost.POLYMORPHIC;
-      } else {
-        return NodeCost.MEGAMORPHIC;
-      }
     }
   }
 
