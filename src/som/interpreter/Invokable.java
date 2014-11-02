@@ -10,12 +10,8 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.utilities.BranchProfile;
 
 public abstract class Invokable extends RootNode {
-  private final BranchProfile nonLocalReturnHandler;
-  private final BranchProfile doCatch;
-  private final BranchProfile doPropagate;
   protected final FrameSlot frameOnStackMarker;
 
   @Child protected ExpressionNode  expressionOrSequence;
@@ -26,12 +22,7 @@ public abstract class Invokable extends RootNode {
       final ExpressionNode expressionOrSequence) {
     super(sourceSection, frameDescriptor);
     this.expressionOrSequence = expressionOrSequence;
-
-    this.nonLocalReturnHandler = BranchProfile.create();
-    this.frameOnStackMarker    = frameOnStackMarker;
-
-    this.doCatch     = BranchProfile.create();
-    this.doPropagate = BranchProfile.create();
+    this.frameOnStackMarker   = frameOnStackMarker;
   }
 
   @Override
@@ -44,13 +35,10 @@ public abstract class Invokable extends RootNode {
       try {
         result = expressionOrSequence.executeGeneric(frame);
       } catch (ReturnException e) {
-        nonLocalReturnHandler.enter();
         if (!e.reachedTarget(marker)) {
-          doPropagate.enter();
           marker.frameNoLongerOnStack();
           throw e;
         } else {
-          doCatch.enter();
           result = e.result();
         }
       }

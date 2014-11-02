@@ -32,12 +32,10 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.utilities.BranchProfile;
 
 public final class ReturnNonLocalNode extends ContextualNode {
 
   @Child private ExpressionNode expression;
-  private final BranchProfile blockEscaped;
   private final FrameSlot frameOnStackMarker;
 
   public ReturnNonLocalNode(final ExpressionNode expression,
@@ -46,7 +44,6 @@ public final class ReturnNonLocalNode extends ContextualNode {
       final SourceSection source) {
     super(outerSelfContextLevel, source);
     this.expression = expression;
-    this.blockEscaped = BranchProfile.create();
     this.frameOnStackMarker = frameOnStackMarker;
   }
 
@@ -70,7 +67,6 @@ public final class ReturnNonLocalNode extends ContextualNode {
     if (marker.isOnStack()) {
       throw new ReturnException(result, marker);
     } else {
-      blockEscaped.enter();
       SBlock block = (SBlock) SArguments.rcvr(frame);
       Object self = SArguments.rcvr(ctx);
       return SAbstractObject.sendEscapedBlock(self, block);
