@@ -43,11 +43,4 @@ public final class Method extends Invokable {
     final String id = ss.getIdentifier();
     return "Method " + id + "\t@" + Integer.toHexString(hashCode());
   }
-
-  @Override
-  public void propagateLoopCountThroughoutLexicalScope(final long count) {
-    assert count >= 0;
-
-    reportLoopCount((count > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) count);
-  }
 }

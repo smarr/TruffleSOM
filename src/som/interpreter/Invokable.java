@@ -67,6 +67,4 @@ public abstract class Invokable extends RootNode {
   public final RootCallTarget createCallTarget() {
     return Truffle.getRuntime().createCallTarget(this);
   }
-
-  public abstract void propagateLoopCountThroughoutLexicalScope(final long count);
 }
