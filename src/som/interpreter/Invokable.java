@@ -8,7 +8,6 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.utilities.BranchProfile;
@@ -21,14 +20,11 @@ public abstract class Invokable extends RootNode {
 
   @Child protected ExpressionNode  expressionOrSequence;
 
-  private final ExpressionNode  uninitializedBody;
-
   public Invokable(final SourceSection sourceSection,
       final FrameDescriptor frameDescriptor,
       final FrameSlot frameOnStackMarker,
       final ExpressionNode expressionOrSequence) {
     super(sourceSection, frameDescriptor);
-    this.uninitializedBody    = NodeUtil.cloneNode(expressionOrSequence);
     this.expressionOrSequence = expressionOrSequence;
 
     this.nonLocalReturnHandler = BranchProfile.create();
@@ -36,10 +32,6 @@ public abstract class Invokable extends RootNode {
 
     this.doCatch     = BranchProfile.create();
     this.doPropagate = BranchProfile.create();
-  }
-
-  public ExpressionNode getUninitializedBody() {
-    return uninitializedBody;
   }
 
   @Override
@@ -67,11 +59,9 @@ public abstract class Invokable extends RootNode {
       return result;
   }
 
-  public abstract Invokable cloneWithNewLexicalContext(final LexicalContext outerContext);
-
   @Override
   public final boolean isCloningAllowed() {
-    return true;
+    return false;
   }
 
   public final RootCallTarget createCallTarget() {
@@ -79,6 +69,4 @@ public abstract class Invokable extends RootNode {
   }
 
   public abstract void propagateLoopCountThroughoutLexicalScope(final long count);
-
-  public abstract boolean isBlock();
 }

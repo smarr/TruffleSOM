@@ -2,7 +2,6 @@ package som.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.compiler.Variable.Local;
-import som.interpreter.Inliner;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
@@ -42,13 +41,6 @@ public abstract class UninitializedVariableNode extends ContextualNode {
             contextLevel, variable.getSlot(), getSourceSection());
       return replace(node).executeGeneric(frame);
     }
-
-    @Override
-    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      FrameSlot varSlot       = inliner.getFrameSlot(this, variable.getSlotIdentifier());
-      assert varSlot       != null;
-      replace(new UninitializedVariableReadNode(this, varSlot));
-    }
   }
 
   public static final class UninitializedVariableWriteNode extends UninitializedVariableNode {
@@ -74,13 +66,6 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       NonLocalVariableWriteNode node = NonLocalVariableWriteNodeFactory.create(
             contextLevel, variable.getSlot(), getSourceSection(), exp);
       return replace(node).executeGeneric(frame);
-    }
-
-    @Override
-    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      FrameSlot varSlot       = inliner.getFrameSlot(this, variable.getSlotIdentifier());
-      assert varSlot       != null;
-      replace(new UninitializedVariableWriteNode(this, varSlot));
     }
   }
 }

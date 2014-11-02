@@ -21,7 +21,6 @@
  */
 package som.interpreter.nodes;
 
-import som.interpreter.Inliner;
 import som.interpreter.Types;
 
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -34,13 +33,6 @@ public abstract class SOMNode extends Node {
 
   public SOMNode(final SourceSection sourceSection) {
     super(sourceSection);
-  }
-
-  public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-    // do nothing!
-    // only a small subset of nodes needs to implement this method.
-    // Most notably, nodes using FrameSlots, and block nodes with method
-    // nodes.
   }
 
   /**

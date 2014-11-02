@@ -1,9 +1,6 @@
 package som.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
-import som.interpreter.Inliner;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -55,12 +52,6 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       return slot.getKind() == FrameSlotKind.Illegal;
     }
 
-    @Override
-    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      FrameSlot varSlot = inliner.getLocalFrameSlot(this.slot.getIdentifier());
-      replace(NonLocalVariableReadNodeFactory.create(contextLevel, varSlot,
-         getSourceSection()));
-    }
   }
 
   public abstract static class NonLocalSuperReadNode
@@ -122,13 +113,6 @@ public abstract class NonLocalVariableNode extends ContextualNode {
         transferToInterpreter("LocalVar.writeObjectToUninit");
         slot.setKind(FrameSlotKind.Object);
       }
-    }
-
-    @Override
-    public final void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      FrameSlot varSlot   = inliner.getLocalFrameSlot(this.slot.getIdentifier());
-      replace(NonLocalVariableWriteNodeFactory.create(contextLevel, varSlot,
-         getSourceSection(), getExp()));
     }
   }
 }

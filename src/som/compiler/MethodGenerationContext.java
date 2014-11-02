@@ -36,7 +36,6 @@ import java.util.List;
 
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
-import som.interpreter.LexicalContext;
 import som.interpreter.Method;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
@@ -67,7 +66,6 @@ public final class MethodGenerationContext {
 
   private final FrameDescriptor frameDescriptor;
   private final FrameSlot       frameOnStackSlot;
-  private       LexicalContext  lexicalContext;
 
   private final List<SMethod>   embeddedBlockMethods;
 
@@ -95,18 +93,6 @@ public final class MethodGenerationContext {
     embeddedBlockMethods.add(blockMethod);
   }
 
-  public LexicalContext getLexicalContext() {
-    if (outerGenc == null) {
-      return null;
-    }
-
-    if (lexicalContext == null) {
-      lexicalContext = new LexicalContext(outerGenc.frameDescriptor,
-          outerGenc.getLexicalContext());
-    }
-    return lexicalContext;
-  }
-
   // Name for the frameOnStack slot,
   // starting with ! to make it a name that's not possible in Smalltalk
   private static final String frameOnStackSlotName = "!frameOnStack";
@@ -125,22 +111,13 @@ public final class MethodGenerationContext {
 
     Method truffleMethod =
         new Method(getSourceSectionForMethod(sourceSection),
-            frameDescriptor, frameOnStackSlot, body, getLexicalContext());
-
-    setOuterMethodInLexicalScopes(truffleMethod);
+            frameDescriptor, frameOnStackSlot, body);
 
     SInvokable meth = Universe.newMethod(signature, truffleMethod, false,
         embeddedBlockMethods.toArray(new SMethod[0]));
 
     // return the method - the holder field is to be set later on!
     return meth;
-  }
-
-  private void setOuterMethodInLexicalScopes(final Method method) {
-    for (SMethod m : embeddedBlockMethods) {
-      Method blockMethod = (Method) m.getInvokable();
-      blockMethod.setOuterContextMethod(method);
-    }
   }
 
   private SourceSection getSourceSectionForMethod(final SourceSection ssBody) {

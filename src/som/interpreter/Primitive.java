@@ -9,8 +9,6 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
 
 
 public final class Primitive extends Invokable {
@@ -19,31 +17,6 @@ public final class Primitive extends Invokable {
       final FrameDescriptor frameDescriptor,
       final FrameSlot frameOnStackMarker) {
     super(null, frameDescriptor, frameOnStackMarker, primitive);
-  }
-
-  @Override
-  public Invokable cloneWithNewLexicalContext(final LexicalContext outerContext) {
-    FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
-    LexicalContext  inlinedContext = new LexicalContext(inlinedFrameDescriptor,
-        outerContext);
-    ExpressionNode  inlinedBody = Inliner.doInline(getUninitializedBody(),
-        inlinedContext);
-    return new Primitive(inlinedBody, inlinedFrameDescriptor, frameOnStackMarker);
-  }
-
-  @Override
-  public Node copy() {
-    return cloneWithNewLexicalContext(null);
-  }
-
-  @Override
-  public RootNode cloneRootNode() {
-    return cloneWithNewLexicalContext(null);
-  }
-
-  @Override
-  public boolean isBlock() {
-    return false;
   }
 
   @Override

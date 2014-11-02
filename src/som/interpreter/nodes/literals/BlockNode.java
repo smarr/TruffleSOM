@@ -1,10 +1,7 @@
 package som.interpreter.nodes.literals;
 
-import som.interpreter.Inliner;
-import som.interpreter.Invokable;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -32,20 +29,6 @@ public abstract class BlockNode   {
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       return executeSBlock(frame);
-    }
-
-    protected SInvokable cloneMethod(final Inliner inliner) {
-      Invokable clonedInvokable = blockMethod.getInvokable().
-          cloneWithNewLexicalContext(inliner.getLexicalContext());
-      SInvokable forInlining = Universe.newMethod(blockMethod.getSignature(),
-          clonedInvokable, false, new SMethod[0]);
-      return forInlining;
-    }
-
-    @Override
-    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      SMethod forInlining = (SMethod) cloneMethod(inliner);
-      replace(new BlockNodeWithContext(forInlining, getSourceSection()));
     }
   }
 }

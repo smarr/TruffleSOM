@@ -21,7 +21,6 @@
  */
 package som.interpreter.nodes;
 
-import som.interpreter.Inliner;
 import som.interpreter.SArguments;
 import som.vmobjects.SBlock;
 
@@ -61,10 +60,5 @@ public abstract class ContextualNode extends ExpressionNode {
 
   private Object getLocalSelf(final VirtualFrame frame) {
     return SArguments.rcvr(frame);
-  }
-
-  @Override
-  public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-    throw new RuntimeException("Needs to be specialized in concrete subclasses to make sure that localSelf slot is specialized.");
   }
 }

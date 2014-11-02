@@ -25,22 +25,16 @@ import som.interpreter.nodes.ExpressionNode;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
 
 public final class Method extends Invokable {
 
-  private final LexicalContext outerContext;
-
   public Method(final SourceSection sourceSection,
                 final FrameDescriptor frameDescriptor,
                 final FrameSlot frameOnStackMarker,
-                final ExpressionNode expressions,
-                final LexicalContext outerContext) {
+                final ExpressionNode expressions) {
     super(sourceSection, frameDescriptor, frameOnStackMarker, expressions);
-    this.outerContext = outerContext;
   }
 
   @Override
@@ -51,45 +45,9 @@ public final class Method extends Invokable {
   }
 
   @Override
-  public Invokable cloneWithNewLexicalContext(final LexicalContext outerContext) {
-    FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
-    LexicalContext  inlinedContext = new LexicalContext(inlinedFrameDescriptor,
-        outerContext);
-    ExpressionNode  inlinedBody = Inliner.doInline(getUninitializedBody(),
-        inlinedContext);
-    Method clone = new Method(getSourceSection(), inlinedFrameDescriptor,
-        frameOnStackMarker,
-        inlinedBody, outerContext);
-    inlinedContext.setOuterMethod(clone);
-    return clone;
-  }
-
-  @Override
-  public boolean isBlock() {
-    return outerContext != null;
-  }
-
-  public void setOuterContextMethod(final Method method) {
-    outerContext.setOuterMethod(method);
-  }
-
-  @Override
   public void propagateLoopCountThroughoutLexicalScope(final long count) {
     assert count >= 0;
 
-    if (outerContext != null) {
-      outerContext.getOuterMethod().propagateLoopCountThroughoutLexicalScope(count);
-    }
     reportLoopCount((count > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) count);
-  }
-
-  @Override
-  public Node copy() {
-    return cloneWithNewLexicalContext(outerContext);
-  }
-
-  @Override
-  public RootNode cloneRootNode() {
-    return cloneWithNewLexicalContext(outerContext);
   }
 }

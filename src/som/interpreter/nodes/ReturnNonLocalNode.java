@@ -22,7 +22,6 @@
 package som.interpreter.nodes;
 
 import som.interpreter.FrameOnStackMarker;
-import som.interpreter.Inliner;
 import som.interpreter.ReturnException;
 import som.interpreter.SArguments;
 import som.vmobjects.SAbstractObject;
@@ -76,12 +75,5 @@ public final class ReturnNonLocalNode extends ContextualNode {
       Object self = SArguments.rcvr(ctx);
       return SAbstractObject.sendEscapedBlock(self, block);
     }
-  }
-
-  @Override
-  public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-    FrameSlot inlinedFrameOnStack  = inliner.getFrameSlot(this, frameOnStackMarker.getIdentifier());
-    assert inlinedFrameOnStack  != null;
-    replace(new ReturnNonLocalNode(this, inlinedFrameOnStack));
   }
 }
