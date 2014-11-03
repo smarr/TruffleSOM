@@ -69,7 +69,7 @@ public class SObject extends SAbstractObject {
     return clazz;
   }
 
-  public final long getFieldIndex(final SSymbol fieldName) {
+  public final int getFieldIndex(final SSymbol fieldName) {
     return clazz.lookupFieldIndex(fieldName);
   }
 
@@ -81,11 +81,11 @@ public class SObject extends SAbstractObject {
     return new SObject(numFields);
   }
 
-  public final Object getField(final long index) {
-    return objectFields[(int) index];
+  public final Object getField(final int index) {
+    return objectFields[index];
   }
 
-  public final void setField(final long index, final Object value) {
-    objectFields[(int) index] = value;
+  public final void setField(final int index, final Object value) {
+    objectFields[index] = value;
   }
 }
