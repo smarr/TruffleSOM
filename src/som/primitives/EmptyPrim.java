@@ -14,8 +14,6 @@ public final class EmptyPrim extends UnaryExpressionNode {
     this.receiver = receiver;
   }
 
-  public EmptyPrim(final EmptyPrim node) { this(node.receiver); }
-
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
     return executeEvaluated(frame, null);

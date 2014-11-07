@@ -13,14 +13,12 @@ import som.vm.constants.Nil;
  * @author smarr
  */
 public final class SArray extends SAbstractObject {
-  public static final int FIRST_IDX = 0;
+  public  static final int FIRST_IDX = 0;
 
-  public static SArray create(final Object[] values) {
-    return new SArray(values);
-  }
-
-  public static SArray create(final long[] values) {
-    return new SArray(values);
+  public static Object[] newSArray(final long length, final SObject nilObject) {
+    Object[] result = new Object[(int) length];
+    Arrays.fill(result, nilObject);
+    return result;
   }
 
   public static SArray create(final double[] values) {
@@ -254,12 +252,12 @@ public final class SArray extends SAbstractObject {
     }
 
     public int getLength() {
-      return arr.length;
-    }
+    return arr.length;
+  }
 
     public Object get(final long idx) {
       return arr[(int) idx];
-    }
+}
 
     public void set(final long idx, final Object val) {
       arr[(int) idx] = val;

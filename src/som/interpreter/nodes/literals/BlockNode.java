@@ -17,10 +17,6 @@ public abstract class BlockNode   {
       this.blockMethod  = blockMethod;
     }
 
-    public BlockNodeWithContext(final BlockNodeWithContext node) {
-      this(node.blockMethod, node.getSourceSection());
-    }
-
     @Override
     public SBlock executeSBlock(final VirtualFrame frame) {
       return Universe.newBlock(blockMethod, frame.materialize());

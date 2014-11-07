@@ -138,10 +138,4 @@ public abstract class Primitives {
     // the holder class
     holder.getSOMClass().addInstancePrimitive(prim, displayWarning);
   }
-
-  public static SInvokable getEmptyPrimitive(final String selector,
-      final Universe universe) {
-    SSymbol signature = universe.symbolFor(selector);
-    return constructEmptyPrimitive(signature);
-  }
 }

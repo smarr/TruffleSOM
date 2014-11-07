@@ -47,12 +47,6 @@ public final class ReturnNonLocalNode extends ContextualNode {
     this.frameOnStackMarker = frameOnStackMarker;
   }
 
-  public ReturnNonLocalNode(final ReturnNonLocalNode node,
-      final FrameSlot inlinedFrameOnStack) {
-    this(node.expression, inlinedFrameOnStack,
-        node.contextLevel, node.getSourceSection());
-  }
-
   private FrameOnStackMarker getMarkerFromContext(final Frame ctx) {
     return (FrameOnStackMarker) FrameUtil.getObjectSafe(ctx, frameOnStackMarker);
   }

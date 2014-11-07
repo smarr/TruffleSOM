@@ -7,7 +7,6 @@ import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -25,12 +24,6 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     public UninitializedVariableReadNode(final Local variable,
         final int contextLevel, final SourceSection source) {
       super(variable, contextLevel, source);
-    }
-
-    public UninitializedVariableReadNode(final UninitializedVariableReadNode node,
-        final FrameSlot inlinedVarSlot) {
-      this(node.variable.cloneForInlining(inlinedVarSlot), node.contextLevel,
-          node.getSourceSection());
     }
 
     @Override
@@ -51,12 +44,6 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         final SourceSection source) {
       super(variable, contextLevel, source);
       this.exp = exp;
-    }
-
-    public UninitializedVariableWriteNode(final UninitializedVariableWriteNode node,
-        final FrameSlot inlinedVarSlot) {
-      this(node.variable.cloneForInlining(inlinedVarSlot),
-          node.contextLevel, node.exp, node.getSourceSection());
     }
 
     @Override

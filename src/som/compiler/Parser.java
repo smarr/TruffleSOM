@@ -58,6 +58,7 @@ import static som.compiler.Symbol.Primitive;
 import static som.compiler.Symbol.STString;
 import static som.compiler.Symbol.Separator;
 import static som.compiler.Symbol.Star;
+import static som.interpreter.SNodeFactory.createBlockNode;
 import static som.interpreter.SNodeFactory.createGlobalRead;
 import static som.interpreter.SNodeFactory.createMessageSend;
 import static som.interpreter.SNodeFactory.createSequence;
@@ -73,9 +74,7 @@ import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.MessageSendNode;
-import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
-import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.literals.DoubleLiteralNode;
 import som.interpreter.nodes.literals.IntegerLiteralNode;
 import som.interpreter.nodes.literals.LiteralNode;
@@ -557,7 +556,7 @@ public final class Parser {
         SMethod blockMethod = (SMethod) bgenc.assemble(blockBody, lastMethodsSourceSection);
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
-        return new BlockNodeWithContext(blockMethod, getSource(coord));
+        return createBlockNode(blockMethod, getSource(coord));
       }
       default: {
         return literal();

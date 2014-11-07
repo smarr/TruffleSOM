@@ -95,10 +95,6 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       super(contextLevel, slot, source);
     }
 
-    public NonLocalVariableWriteNode(final NonLocalVariableWriteNode node) {
-      this(node.contextLevel, node.slot, node.getSourceSection());
-    }
-
     protected abstract ExpressionNode getExp();
 
     @Specialization
