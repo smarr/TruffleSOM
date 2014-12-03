@@ -22,6 +22,7 @@ import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.NotMessageNodeFactory;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
+import som.interpreter.nodes.specialized.whileloops.RepeatUntilNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithDynamicBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileFalseStaticBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileTrueStaticBlocksNode;
@@ -38,6 +39,7 @@ import som.primitives.EqualsPrimFactory;
 import som.primitives.IntegerPrimsFactory.LeftShiftPrimFactory;
 import som.primitives.LengthPrimFactory;
 import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
+import som.primitives.NotEqualsEqualsPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPutPrimFactory;
 import som.primitives.UnequalsPrimFactory;
@@ -260,6 +262,19 @@ public final class MessageSendNode {
                 (SBlock) arguments[0], argBlock, getSourceSection()));
           }
           break; // use normal send
+        case "repeatUntil:": {
+          System.out.println("specialized repeat until");
+          if (argumentNodes[1] instanceof BlockNode &&
+              argumentNodes[0] instanceof BlockNode) {
+            BlockNode argBlockNode = (BlockNode) argumentNodes[1];
+            SBlock    argBlock     = (SBlock)    arguments[1];
+            return replace(new RepeatUntilNode(
+                (BlockNode) argumentNodes[0], argBlockNode,
+                (SBlock) arguments[0],
+                argBlock, getSourceSection()));
+          }
+          break; // use normal send
+        }
         case "and:":
         case "&&":
           if (arguments[0] instanceof Boolean) {
@@ -341,6 +356,14 @@ public final class MessageSendNode {
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
               EqualsEqualsPrimFactory.create(null, null)));
+
+        case "~=":
+          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+              argumentNodes[1],
+              NotEqualsEqualsPrimFactory.create(null, null)));
+
+
+
         case "bitXor:":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],

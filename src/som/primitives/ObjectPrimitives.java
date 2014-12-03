@@ -40,6 +40,7 @@ public final class ObjectPrimitives extends Primitives {
   public void installPrimitives() {
 
     installInstancePrimitive("==",                     EqualsEqualsPrimFactory.getInstance());
+    installInstancePrimitive("~=", NotEqualsEqualsPrimFactory.getInstance());
     installInstancePrimitive("hashcode",               HashPrimFactory.getInstance());
     installInstancePrimitive("objectSize",             ObjectSizePrimFactory.getInstance());
     installInstancePrimitive("perform:",               PerformPrimFactory.getInstance());
