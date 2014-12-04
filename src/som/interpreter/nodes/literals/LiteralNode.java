@@ -23,6 +23,8 @@ package som.interpreter.nodes.literals;
 
 import som.interpreter.nodes.ExpressionNode;
 
+import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.source.SourceSection;
 
 @NodeInfo(cost = NodeCost.NONE)

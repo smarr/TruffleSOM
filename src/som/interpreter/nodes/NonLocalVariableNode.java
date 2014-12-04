@@ -3,7 +3,6 @@ package som.interpreter.nodes;
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -50,40 +49,6 @@ public abstract class NonLocalVariableNode extends ContextualNode {
 
     protected final boolean isUninitialized() {
       return slot.getKind() == FrameSlotKind.Illegal;
-    }
-
-  }
-
-  public abstract static class NonLocalSuperReadNode
-                       extends NonLocalVariableReadNode implements ISuperReadNode {
-    private final SSymbol holderClass;
-    private final boolean isClassSide;
-
-    public NonLocalSuperReadNode(final int contextLevel, final FrameSlot slot,
-        final FrameSlot localSelf, final SSymbol holderClass,
-        final boolean isClassSide, final SourceSection source) {
-      super(contextLevel, slot, localSelf, source);
-      this.holderClass = holderClass;
-      this.isClassSide = isClassSide;
-    }
-
-    public NonLocalSuperReadNode(final NonLocalSuperReadNode node) {
-      this(node.contextLevel, node.slot, node.localSelf, node.holderClass,
-          node.isClassSide, node.getSourceSection());
-    }
-
-    @Override
-    public final SSymbol getHolderClass() { return holderClass; }
-    @Override
-    public final boolean isClassSide()    { return isClassSide; }
-
-    @Override
-    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      FrameSlot varSlot = inliner.getFrameSlot(this, slot.getIdentifier());
-      assert varSlot != null;
-      FrameSlot selfSlot = inliner.getFrameSlot(this, slot.getIdentifier());
-      assert selfSlot != null;
-      replace(NonLocalSuperReadNodeFactory.create(this.contextLevel, varSlot, selfSlot, holderClass, isClassSide, getSourceSection()));
     }
   }
 

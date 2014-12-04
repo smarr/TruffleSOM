@@ -63,7 +63,6 @@ public final class SNodeFactory {
         final SSymbol holderClass, final boolean classSide, final SourceSection source) {
     return new NonLocalSuperReadNode(contextLevel, holderClass, classSide, source);
   }
-  }
 
   public static ContextualNode createVariableWrite(final Local variable,
         final int contextLevel,
