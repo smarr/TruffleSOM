@@ -45,16 +45,16 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     }
 
     private CachedDispatchNode specialize() {
-    CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
-      SInvokable method = getLexicalSuperClass().lookupInvokable(selector);
+      CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
+        SInvokable method = getLexicalSuperClass().lookupInvokable(selector);
 
-    if (method == null) {
-      throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
-    }
-    DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
-        method.getCallTarget());
+      if (method == null) {
+        throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
+      }
+      DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
+          method.getCallTarget());
       return replace(new CachedDispatchNode(superMethodNode));
-  }
+    }
 
     @Override
     public Object executeDispatch(
@@ -68,12 +68,13 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
   @Child private DirectCallNode cachedSuperMethod;
 
     private CachedDispatchNode(final DirectCallNode superMethod) {
-    this.cachedSuperMethod = superMethod;
-  }
+      this.cachedSuperMethod = superMethod;
+    }
 
-  @Override
-  public Object executeDispatch(
-      final VirtualFrame frame, final Object[] arguments) {
-    return cachedSuperMethod.call(frame, arguments);
+    @Override
+    public Object executeDispatch(
+        final VirtualFrame frame, final Object[] arguments) {
+      return cachedSuperMethod.call(frame, arguments);
+    }
   }
 }
