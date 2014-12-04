@@ -25,6 +25,7 @@
 
 package som.compiler;
 
+import static som.interpreter.SNodeFactory.createArgumentInitialization;
 import static som.interpreter.SNodeFactory.createCatchNonLocalReturn;
 import static som.interpreter.SNodeFactory.createFieldRead;
 import static som.interpreter.SNodeFactory.createFieldWrite;
@@ -40,6 +41,7 @@ import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.LexicalContext;
 import som.interpreter.Method;
+import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
@@ -184,6 +186,8 @@ public final class MethodGenerationContext {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarkerSlot());
     }
 
+    body = createArgumentInitialization(body, arguments);
+
     Method truffleMethod =
         new Method(getSourceSectionForMethod(sourceSection),
             frameDescriptor, body, getLexicalContext());
@@ -226,7 +230,8 @@ public final class MethodGenerationContext {
       throw new IllegalStateException("The self argument always has to be the first argument of a method");
     }
 
-    Argument argument = new Argument(arg, arguments.size());
+    Argument argument = new Argument(arg, frameDescriptor.addFrameSlot(arg),
+        arguments.size());
     arguments.put(arg, argument);
   }
 
@@ -269,6 +274,18 @@ public final class MethodGenerationContext {
     return level;
   }
 
+  private FrameSlot getOuterSelfSlot() {
+    if (outerGenc == null) {
+      return getLocalSelfSlot();
+    } else {
+      return outerGenc.getOuterSelfSlot();
+    }
+  }
+
+  public FrameSlot getLocalSelfSlot() {
+    return arguments.values().iterator().next().slot;
+  }
+
   private int getContextLevel(final String varName) {
     if (locals.containsKey(varName) || arguments.containsKey(varName)) {
       return 0;
@@ -303,19 +320,22 @@ public final class MethodGenerationContext {
   public ExpressionNode getSuperReadNode(final SourceSection source) {
     Variable self = getVariable("self");
     return self.getSuperReadNode(getOuterSelfContextLevel(),
-        holderGenc.getName(), holderGenc.isClassSide(), source);
+        holderGenc.getName(), holderGenc.isClassSide(),
+        getLocalSelfSlot(), source);
   }
 
-  public ExpressionNode getLocalReadNode(final String variableName,
+  public ContextualNode getLocalReadNode(final String variableName,
       final SourceSection source) {
     Variable variable = getVariable(variableName);
-    return variable.getReadNode(getContextLevel(variableName), source);
+    return variable.getReadNode(getContextLevel(variableName),
+        getLocalSelfSlot(), source);
   }
 
   public ExpressionNode getLocalWriteNode(final String variableName,
       final ExpressionNode valExpr, final SourceSection source) {
     Local variable = getLocal(variableName);
-    return variable.getWriteNode(getContextLevel(variableName), valExpr, source);
+    return variable.getWriteNode(getContextLevel(variableName),
+        getLocalSelfSlot(), valExpr, source);
   }
 
   protected Local getLocal(final String varName) {
@@ -337,11 +357,13 @@ public final class MethodGenerationContext {
       final SourceSection source) {
     makeCatchNonLocalReturn();
     return createNonLocalReturn(expr, getFrameOnStackMarkerSlot(),
-        getOuterSelfContextLevel(), source);
+        getOuterSelfSlot(),
+        getOuterSelfContextLevel(), getLocalSelfSlot(), source);
   }
 
-  private ExpressionNode getSelfRead(final SourceSection source) {
-    return getVariable("self").getReadNode(getContextLevel("self"), source);
+  private ContextualNode getSelfRead(final SourceSection source) {
+    return getVariable("self").getReadNode(getContextLevel("self"),
+        getLocalSelfSlot(), source);
   }
 
   public FieldReadNode getObjectFieldRead(final SSymbol fieldName,

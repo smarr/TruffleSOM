@@ -1,10 +1,14 @@
 package som.interpreter.nodes;
 
+import static som.interpreter.SNodeFactory.createLocalVariableWrite;
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
+import som.compiler.Variable;
 import som.compiler.Variable.Local;
 import som.interpreter.Inliner;
+import som.interpreter.nodes.LocalVariableNodeFactory.LocalSuperReadNodeFactory;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
+import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -31,9 +35,9 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
   public abstract static class LocalVariableReadNode extends LocalVariableNode {
 
-    public LocalVariableReadNode(final Local variable,
+    public LocalVariableReadNode(final Variable variable,
         final SourceSection source) {
-      this(variable.getSlot(), source);
+      this(variable.slot, source);
     }
 
     public LocalVariableReadNode(final LocalVariableReadNode node) {
@@ -85,13 +89,53 @@ public abstract class LocalVariableNode extends ExpressionNode {
     protected final boolean isUninitialized() {
       return slot.getKind() == FrameSlotKind.Illegal;
     }
+
+    @Override
+    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
+      throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+    }
+  }
+
+  public abstract static class LocalSuperReadNode
+                       extends LocalVariableReadNode implements ISuperReadNode {
+    private final SSymbol holderClass;
+    private final boolean isClassSide;
+
+    public LocalSuperReadNode(final Variable variable, final SSymbol holderClass,
+        final boolean isClassSide, final SourceSection source) {
+      this(variable.slot, holderClass, isClassSide, source);
+    }
+
+    public LocalSuperReadNode(final FrameSlot slot, final SSymbol holderClass,
+        final boolean isClassSide, final SourceSection source) {
+      super(slot, source);
+      this.holderClass = holderClass;
+      this.isClassSide = isClassSide;
+    }
+
+    public LocalSuperReadNode(final LocalSuperReadNode node) {
+      this(node.slot, node.holderClass, node.isClassSide,
+          node.getSourceSection());
+    }
+
+    @Override
+    public final SSymbol getHolderClass() { return holderClass; }
+    @Override
+    public final boolean isClassSide()    { return isClassSide; }
+
+    @Override
+    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
+      FrameSlot slot = inliner.getLocalFrameSlot(this.slot.getIdentifier());
+      assert slot != null;
+      replace(LocalSuperReadNodeFactory.create(slot, holderClass, isClassSide, getSourceSection()));
+    }
   }
 
   @NodeChild(value = "exp", type = ExpressionNode.class)
   public abstract static class LocalVariableWriteNode extends LocalVariableNode {
 
     public LocalVariableWriteNode(final Local variable, final SourceSection source) {
-      super(variable.getSlot(), source);
+      super(variable.slot, source);
     }
 
     public LocalVariableWriteNode(final LocalVariableWriteNode node) {
@@ -175,7 +219,14 @@ public abstract class LocalVariableNode extends ExpressionNode {
     @Override
     public final void replaceWithIndependentCopyForInlining(final Inliner inliner) {
       CompilerAsserts.neverPartOfCompilation("replaceWithIndependentCopyForInlining");
-      throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+
+      if (getParent() instanceof ArgumentInitializationNode) {
+        FrameSlot varSlot = inliner.getLocalFrameSlot(getSlotIdentifier());
+        assert varSlot != null;
+        replace(createLocalVariableWrite(varSlot, getExp(), getSourceSection()));
+      } else {
+        throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+      }
     }
   }
 }

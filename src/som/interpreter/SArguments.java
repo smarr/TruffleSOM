@@ -5,7 +5,7 @@ import com.oracle.truffle.api.frame.Frame;
 
 public final class SArguments {
 
-  public static final int RCVR_IDX = 0;
+  private static final int RCVR_IDX = 0;
 
   private static Object[] args(final Frame frame) {
     return CompilerDirectives.unsafeCast(frame.getArguments(), Object[].class, true, true);
