@@ -23,7 +23,6 @@ public abstract class SAbstractObject {
   public static final Object send(
       final String selectorString,
       final Object[] arguments) {
-    CompilerAsserts.neverPartOfCompilation("SAbstractObject.send()");
     SSymbol selector = Universe.current().symbolFor(selectorString);
 
     // Lookup the invokable
