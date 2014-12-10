@@ -24,7 +24,6 @@ package som.interpreter.nodes;
 import som.interpreter.Inliner;
 import som.vmobjects.SBlock;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
@@ -34,7 +33,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ContextualNode extends ExpressionNode {
 
-  protected final int            contextLevel;
+  protected final int contextLevel;
   protected final FrameSlot      localSelf;
 
   public ContextualNode(final int contextLevel, final FrameSlot localSelf,
@@ -62,22 +61,22 @@ public abstract class ContextualNode extends ExpressionNode {
     int i = contextLevel - 1;
 
     while (i > 0) {
-      self = CompilerDirectives.unsafeCast(self.getOuterSelf(), SBlock.class, true, true);
+      self = (SBlock) self.getOuterSelf();
       i--;
     }
     return self.getContext();
   }
 
   private SBlock getLocalSelf(final VirtualFrame frame) {
-    return CompilerDirectives.unsafeCast(FrameUtil.getObjectSafe(frame, localSelf), SBlock.class, true, true);
-  }
+    return (SBlock) FrameUtil.getObjectSafe(frame, localSelf);
+}
 
   @ExplodeLoop
   protected final Object determineOuterSelf(final VirtualFrame frame) {
     Object self = getLocalSelf(frame);
     int i = contextLevel;
     while (i > 0) {
-      SBlock block = CompilerDirectives.unsafeCast(self, SBlock.class, true, true);
+      SBlock block = (SBlock) self;
       self = block.getOuterSelf();
       i--;
     }
