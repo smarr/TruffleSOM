@@ -17,9 +17,6 @@ import som.interpreter.nodes.specialized.OrMessageNodeFactory;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
 import som.interpreter.nodes.specialized.whileloops.WhileWithDynamicBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileTrueStaticBlocksNode;
-import som.primitives.ArrayPrimsFactory.AtPrimFactory;
-import som.primitives.ArrayPrimsFactory.AtPutPrimFactory;
-import som.primitives.ArrayPrimsFactory.NewPrimFactory;
 import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
 import som.primitives.EqualsEqualsPrimFactory;
@@ -315,7 +312,7 @@ public final class MessageSendNode {
           if (arguments[0] instanceof Long) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                DoPrimFactory.create(null, null)));
+                ToPrimFactory.create(null, null)));
           }
           break;
 

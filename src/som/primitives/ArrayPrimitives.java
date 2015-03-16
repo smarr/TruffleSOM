@@ -25,10 +25,10 @@
 
 package som.primitives;
 
-import som.primitives.ArrayPrimsFactory.AtPrimFactory;
-import som.primitives.ArrayPrimsFactory.AtPutPrimFactory;
-import som.primitives.ArrayPrimsFactory.CopyPrimFactory;
-import som.primitives.ArrayPrimsFactory.NewPrimFactory;
+import som.primitives.arrays.AtPrimFactory;
+import som.primitives.arrays.AtPutPrimFactory;
+import som.primitives.arrays.CopyPrimFactory;
+import som.primitives.arrays.NewPrimFactory;
 
 public final class ArrayPrimitives extends Primitives {
   public ArrayPrimitives(final boolean displayWarning) { super(displayWarning); }
