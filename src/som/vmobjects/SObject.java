@@ -133,13 +133,11 @@ public class SObject extends SAbstractObject {
   }
 
   @ExplodeLoop
-  private Object[] readAllFields() {
+  private Object[] getAllFields() {
     Object[] fieldValues = new Object[numberOfFields];
     for (int i = 0; i < numberOfFields; i++) {
       if (isFieldSet(i)) {
         fieldValues[i] = getField(i);
-      } else {
-        fieldValues[i] = null;
       }
     }
     return fieldValues;
@@ -176,7 +174,7 @@ public class SObject extends SAbstractObject {
   private void setLayoutAndTransferFields(final ObjectLayout layout) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
 
-    Object[] fieldValues = readAllFields();
+    Object[] fieldValues = getAllFields();
 
     objectLayout        = layout;
 
@@ -256,17 +254,20 @@ public class SObject extends SAbstractObject {
     return location;
   }
 
-  public final boolean isFieldSet(final long index) {
+  private boolean isFieldSet(final long index) {
+    CompilerAsserts.neverPartOfCompilation("isFieldSet");
     StorageLocation location = getLocation(index);
     return location.isSet(this, true);
   }
 
   public final Object getField(final long index) {
+    CompilerAsserts.neverPartOfCompilation("getField");
     StorageLocation location = getLocation(index);
     return location.read(this, true);
   }
 
   public final void setField(final long index, final Object value) {
+    CompilerAsserts.neverPartOfCompilation("setField");
     StorageLocation location = getLocation(index);
 
     try {

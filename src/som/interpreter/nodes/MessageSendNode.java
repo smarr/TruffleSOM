@@ -25,17 +25,13 @@ import som.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeF
 import som.interpreter.nodes.specialized.whileloops.WhileWithDynamicBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileFalseStaticBlocksNode;
 import som.interpreter.nodes.specialized.whileloops.WhileWithStaticBlocksNode.WhileTrueStaticBlocksNode;
-import som.primitives.ArrayPrimsFactory.AtPrimFactory;
-import som.primitives.ArrayPrimsFactory.AtPutPrimFactory;
-import som.primitives.ArrayPrimsFactory.DoIndexesPrimFactory;
-import som.primitives.ArrayPrimsFactory.DoPrimFactory;
-import som.primitives.ArrayPrimsFactory.NewPrimFactory;
-import som.primitives.ArrayPrimsFactory.PutAllEagerOptFactory;
 import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
 import som.primitives.EqualsEqualsPrimFactory;
 import som.primitives.EqualsPrimFactory;
+import som.primitives.IntegerPrimsFactory.AbsPrimFactory;
 import som.primitives.IntegerPrimsFactory.LeftShiftPrimFactory;
+import som.primitives.IntegerPrimsFactory.UnsignedRightShiftPrimFactory;
 import som.primitives.LengthPrimFactory;
 import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPrimFactory;
@@ -51,7 +47,15 @@ import som.primitives.arithmetic.LessThanPrimFactory;
 import som.primitives.arithmetic.LogicAndPrimFactory;
 import som.primitives.arithmetic.ModuloPrimFactory;
 import som.primitives.arithmetic.MultiplicationPrimFactory;
+import som.primitives.arithmetic.RemainderPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
+import som.primitives.arrays.AtPrimFactory;
+import som.primitives.arrays.AtPutPrimFactory;
+import som.primitives.arrays.DoIndexesPrimFactory;
+import som.primitives.arrays.DoPrimFactory;
+import som.primitives.arrays.NewPrimFactory;
+import som.primitives.arrays.PutAllNodeFactory;
+import som.primitives.arrays.ToArgumentsArrayNodeFactory;
 import som.vm.NotYetImplementedException;
 import som.vm.constants.Classes;
 import som.vmobjects.SBlock;
@@ -193,6 +197,11 @@ public final class MessageSendNode {
                 argumentNodes[0], NotMessageNodeFactory.create(getSourceSection(), null)));
           }
           break;
+        case "abs":
+          if (receiver instanceof Long) {
+            return replace(new EagerUnaryPrimitiveNode(selector,
+                argumentNodes[0], AbsPrimFactory.create(null)));
+          }
       }
       return makeGenericSend();
     }
@@ -232,12 +241,9 @@ public final class MessageSendNode {
           }
           break;
         case "putAll:":
-          if (!(arguments[1] instanceof SBlock)) {
-            return replace(new EagerBinaryPrimitiveNode(selector,
+          return replace(new EagerBinaryPrimitiveNode(selector,
                 argumentNodes[0], argumentNodes[1],
-                PutAllEagerOptFactory.create(null, null)));
-          }
-          break;
+                PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
         case "whileTrue:": {
           if (argumentNodes[1] instanceof BlockNode &&
               argumentNodes[0] instanceof BlockNode) {
@@ -353,6 +359,10 @@ public final class MessageSendNode {
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
               ModuloPrimFactory.create(null, null)));
+        case "rem:":
+          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+              argumentNodes[1],
+              RemainderPrimFactory.create(null, null)));
         case "/":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
@@ -370,6 +380,14 @@ public final class MessageSendNode {
                 LeftShiftPrimFactory.create(null, null)));
           }
           break;
+        case ">>>":
+          if (arguments[0] instanceof Long) {
+            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+                argumentNodes[1],
+                UnsignedRightShiftPrimFactory.create(null, null)));
+          }
+          break;
+
       }
 
       return makeGenericSend();
@@ -411,7 +429,8 @@ public final class MessageSendNode {
 
         case "invokeOn:with:":
           return replace(InvokeOnPrimFactory.create(
-              argumentNodes[0], argumentNodes[1], argumentNodes[2]));
+              argumentNodes[0], argumentNodes[1], argumentNodes[2],
+              ToArgumentsArrayNodeFactory.create(null, null)));
         case "instVarAt:put:":
           return replace(InstVarAtPutPrimFactory.create(
             argumentNodes[0], argumentNodes[1], argumentNodes[2]));

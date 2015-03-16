@@ -2,10 +2,13 @@ package som.primitives;
 
 import java.math.BigInteger;
 
+import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.arithmetic.ArithmeticPrim;
 import som.vm.constants.Classes;
+import som.vmobjects.SArray;
 import som.vmobjects.SClass;
+import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.utilities.BranchProfile;
@@ -19,6 +22,20 @@ public abstract class IntegerPrims {
     }
   }
 
+  public abstract static class As32BitSignedValue extends UnaryExpressionNode {
+    @Specialization
+    public final long doLong(final long receiver) {
+      return (int) receiver;
+    }
+  }
+
+  public abstract static class As32BitUnsignedValue extends UnaryExpressionNode {
+    @Specialization
+    public final long doLong(final long receiver) {
+      return Integer.toUnsignedLong((int) receiver);
+    }
+  }
+
   public abstract static class FromStringPrim extends ArithmeticPrim {
     protected final boolean receiverIsIntegerClass(final SClass receiver) {
       return receiver == Classes.integerClass;
@@ -27,6 +44,11 @@ public abstract class IntegerPrims {
     @Specialization(guards = "receiverIsIntegerClass")
     public final Object doSClass(final SClass receiver, final String argument) {
       return Long.parseLong(argument);
+    }
+
+    @Specialization(guards = "receiverIsIntegerClass")
+    public final Object doSClass(final SClass receiver, final SSymbol argument) {
+      return Long.parseLong(argument.getString());
     }
   }
 
@@ -50,6 +72,39 @@ public abstract class IntegerPrims {
       assert right <= Integer.MAX_VALUE;
 
       return BigInteger.valueOf(receiver).shiftLeft((int) right);
+    }
+  }
+
+  public abstract static class UnsignedRightShiftPrim extends ArithmeticPrim {
+    @Specialization
+    public final long doLong(final long receiver, final long right) {
+      return receiver >>> right;
+    }
+  }
+
+  public abstract static class MaxIntPrim extends ArithmeticPrim {
+    @Specialization
+    public final long doLong(final long receiver, final long right) {
+      return Math.max(receiver, right);
+    }
+  }
+
+  public abstract static class ToPrim extends BinaryExpressionNode {
+    @Specialization
+    public final SArray doLong(final long receiver, final long right) {
+      int cnt = (int) right - (int) receiver + 1;
+      long[] arr = new long[cnt];
+      for (int i = 0; i < cnt; i++) {
+        arr[i] = i + receiver;
+      }
+      return SArray.create(arr);
+    }
+  }
+
+  public abstract static class AbsPrim extends UnaryExpressionNode {
+    @Specialization
+    public final long doLong(final long receiver) {
+      return Math.abs(receiver);
     }
   }
 }

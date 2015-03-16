@@ -24,7 +24,7 @@ public abstract class FieldAccessorNode extends Node {
     return new UninitializedWriteFieldNode(fieldIndex);
   }
 
-  public FieldAccessorNode(final int fieldIndex) {
+  private FieldAccessorNode(final int fieldIndex) {
     this.fieldIndex = fieldIndex;
   }
 
@@ -35,10 +35,6 @@ public abstract class FieldAccessorNode extends Node {
   public abstract static class AbstractReadFieldNode extends FieldAccessorNode {
     public AbstractReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
-    }
-
-    public boolean isSet(final SObject obj) {
-      return true;
     }
 
     public abstract Object read(SObject obj);
@@ -109,15 +105,6 @@ public abstract class FieldAccessorNode extends Node {
     public ReadUnwrittenFieldNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
-    }
-
-    @Override
-    public boolean isSet(final SObject obj) {
-      if (hasExpectedLayout(obj)) {
-        return false;
-      } else {
-        return true;
-      }
     }
 
     @Override
@@ -284,7 +271,7 @@ public abstract class FieldAccessorNode extends Node {
         storage.writeLong(obj, value);
       } else {
         if (layout.layoutForSameClass(obj.getObjectLayout())) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+          writeAndRespecialize(obj, value, "update outdated write node", nextInCache);
         } else {
           nextInCache.write(obj, value);
         }

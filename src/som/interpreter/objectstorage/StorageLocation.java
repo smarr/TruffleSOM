@@ -61,7 +61,7 @@ public abstract class StorageLocation {
     }
   }
 
-  private ObjectLayout layout;
+  private final ObjectLayout layout; // for debugging only
 
   protected StorageLocation(final ObjectLayout layout) {
     this.layout = layout;
@@ -70,15 +70,10 @@ public abstract class StorageLocation {
   public abstract boolean isSet(SObject obj, boolean assumptionValid);
   public abstract Object  read(SObject obj,  boolean assumptionValid);
   public abstract void    write(SObject obj, Object value) throws GeneralizeStorageLocationException, UninitalizedStorageLocationException;
-  public abstract Class<?> getStoredClass();
 
   public abstract AbstractReadFieldNode  getReadNode(int fieldIndex, ObjectLayout layout, AbstractReadFieldNode next);
   public abstract AbstractWriteFieldNode getWriteNode(int fieldIndex, ObjectLayout layout, AbstractWriteFieldNode next);
 
-
-  public final ObjectLayout getObjectLayout() {
-    return layout;
-  }
 
   public final class GeneralizeStorageLocationException extends Exception {
     private static final long serialVersionUID = 4610497040788136337L;
@@ -111,11 +106,6 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public Class<?> getStoredClass() {
-      return null;
-    }
-
-    @Override
     public AbstractReadFieldNode getReadNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractReadFieldNode next) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
@@ -143,11 +133,6 @@ public abstract class StorageLocation {
     public abstract void write(final SObject obj, final Object value);
 
     @Override
-    public final Class<?> getStoredClass() {
-      return Object.class;
-    }
-
-    @Override
     public final AbstractReadFieldNode getReadNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractReadFieldNode next) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
@@ -171,7 +156,8 @@ public abstract class StorageLocation {
 
     @Override
     public boolean isSet(final SObject obj, final boolean assumptionValid) {
-      return read(obj, assumptionValid) != null;
+      assert read(obj, assumptionValid) != null;
+      return true;
     }
 
     @Override
@@ -203,7 +189,8 @@ public abstract class StorageLocation {
 
     @Override
     public boolean isSet(final SObject obj, final boolean assumptionValid) {
-      return read(obj, assumptionValid) != null;
+      assert read(obj, assumptionValid) != null;
+      return true;
     }
 
     @Override
@@ -249,11 +236,6 @@ public abstract class StorageLocation {
     }
   }
 
-  // TODO: implement PrimitiveArrayStoreLocation
-//  public abstract static class PrimitiveArrayStoreLocation extends PrimitiveStorageLocation {
-//
-//  }
-
   public abstract static class PrimitiveDirectStoreLocation extends PrimitiveStorageLocation {
     protected final long offset;
     public PrimitiveDirectStoreLocation(final ObjectLayout layout, final int primField) {
@@ -298,6 +280,7 @@ public abstract class StorageLocation {
       if (value instanceof Double) {
         writeDouble(obj, (double) value);
       } else {
+        assert value != Nil.nilObject;
         CompilerAsserts.neverPartOfCompilation("StorageLocation");
         TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
         throw new GeneralizeStorageLocationException();
@@ -308,11 +291,6 @@ public abstract class StorageLocation {
     public void writeDouble(final SObject obj, final double value) {
       CompilerDirectives.unsafePutDouble(obj, offset, value, null);
       markAsSet(obj);
-    }
-
-    @Override
-    public Class<?> getStoredClass() {
-      return Double.class;
     }
 
     @Override
@@ -379,11 +357,6 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public Class<?> getStoredClass() {
-      return Long.class;
-    }
-
-    @Override
     public AbstractReadFieldNode getReadNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractReadFieldNode next) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
@@ -442,6 +415,7 @@ public abstract class StorageLocation {
       if (value instanceof Long) {
         writeLong(obj, (long) value);
       } else {
+        assert value != Nil.nilObject;
         CompilerAsserts.neverPartOfCompilation("StorageLocation");
         TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized write node");
         throw new GeneralizeStorageLocationException();
@@ -452,11 +426,6 @@ public abstract class StorageLocation {
     public void writeLong(final SObject obj, final long value) {
       obj.getExtendedPrimFields()[extensionIndex] = value;
       markAsSet(obj);
-    }
-
-    @Override
-    public Class<?> getStoredClass() {
-      return Long.class;
     }
 
     @Override
@@ -513,6 +482,7 @@ public abstract class StorageLocation {
       if (value instanceof Double) {
         writeDouble(obj, (double) value);
       } else {
+        assert value != Nil.nilObject;
         CompilerAsserts.neverPartOfCompilation("StorageLocation");
         TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized write node");
         throw new GeneralizeStorageLocationException();
@@ -530,11 +500,6 @@ public abstract class StorageLocation {
           value, null);
 
       markAsSet(obj);
-    }
-
-    @Override
-    public Class<?> getStoredClass() {
-      return Double.class;
     }
 
     @Override

@@ -4,8 +4,8 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.Specialization;
 
-public abstract class ModuloPrim extends ArithmeticPrim {
 
+public abstract class RemainderPrim extends ArithmeticPrim {
   @Specialization
   public final double doDouble(final double left, final double right) {
     return left % right;
@@ -18,7 +18,7 @@ public abstract class ModuloPrim extends ArithmeticPrim {
 
   @Specialization
   public final Object doBigInteger(final BigInteger left, final BigInteger right) {
-    return reduceToLongIfPossible(left.mod(right));
+    return reduceToLongIfPossible(left.remainder(right));
   }
 
   @Specialization
@@ -36,9 +36,9 @@ public abstract class ModuloPrim extends ArithmeticPrim {
     return doDouble(left, right);
   }
 
-  @Specialization
+  @Specialization(rewriteOn = ArithmeticException.class)
   public final long doLong(final long left, final long right) {
-    return Math.floorMod(left, right);
+    return left % right;
   }
 
   public final Object doLongPromotion(final long left, final long right) {

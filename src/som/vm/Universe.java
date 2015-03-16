@@ -49,6 +49,7 @@ import som.interpreter.TruffleCompiler;
 import som.vm.constants.Blocks;
 import som.vm.constants.Globals;
 import som.vm.constants.Nil;
+import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
@@ -300,7 +301,8 @@ public final class Universe {
     SInvokable initialize = systemClass.
         lookupInvokable(symbolFor("initialize:"));
 
-    return initialize.invoke(new Object[] {systemObject, arguments});
+    return initialize.invoke(new Object[] {systemObject,
+        SArray.create(arguments)});
   }
 
   protected void initializeObjectSystem() {
@@ -324,10 +326,10 @@ public final class Universe {
     initializeSystemClass(nilClass,        objectClass, "Nil");
     initializeSystemClass(arrayClass,      objectClass, "Array");
     initializeSystemClass(methodClass,     objectClass, "Method");
-    initializeSystemClass(symbolClass,     objectClass, "Symbol");
+    initializeSystemClass(stringClass,     objectClass, "String");
+    initializeSystemClass(symbolClass,     stringClass, "Symbol");
     initializeSystemClass(integerClass,    objectClass, "Integer");
     initializeSystemClass(primitiveClass,  objectClass, "Primitive");
-    initializeSystemClass(stringClass,     objectClass, "String");
     initializeSystemClass(doubleClass,     objectClass, "Double");
     initializeSystemClass(booleanClass,    objectClass, "Boolean");
 
@@ -460,12 +462,12 @@ public final class Universe {
     }
 
     // Initialize the array of instance fields
-    systemClass.setInstanceFields(new SSymbol[0]);
-    systemClass.getSOMClass().setInstanceFields(new SSymbol[0]);
+    systemClass.setInstanceFields(SArray.create(new Object[0]));
+    systemClass.getSOMClass().setInstanceFields(SArray.create(new Object[0]));
 
     // Initialize the array of instance invokables
-    systemClass.setInstanceInvokables(new SInvokable[0]);
-    systemClass.getSOMClass().setInstanceInvokables(new SInvokable[0]);
+    systemClass.setInstanceInvokables(SArray.create(new Object[0]));
+    systemClass.getSOMClass().setInstanceInvokables(SArray.create(new Object[0]));
 
     // Initialize the name of the system class
     systemClass.setName(symbolFor(name));
@@ -527,7 +529,7 @@ public final class Universe {
 
     // Add the appropriate value primitive to the block class
     result.addInstancePrimitive(SBlock.getEvaluationPrimitive(
-        numberOfArguments, this, result));
+        numberOfArguments, this, result), true);
 
     // Insert the block class into the dictionary of globals
     setGlobal(name, result);

@@ -29,6 +29,8 @@ import som.compiler.MethodGenerationContext;
 import som.interpreter.Primitive;
 import som.interpreter.nodes.ArgumentReadNode;
 import som.interpreter.nodes.ExpressionNode;
+import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
+import som.primitives.arrays.PutAllNodeFactory;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
@@ -42,9 +44,11 @@ public abstract class Primitives {
 
   protected final Universe universe;
   protected SClass holder;
+  protected final boolean displayWarning;
 
-  public Primitives() {
+  public Primitives(final boolean displayWarning) {
     this.universe = Universe.current();
+    this.displayWarning = displayWarning;
   }
 
   public final void installPrimitivesIn(final SClass value) {
@@ -74,10 +78,20 @@ public abstract class Primitives {
         primNode = nodeFactory.createNode(args[0]);
         break;
       case 2:
-        primNode = nodeFactory.createNode(args[0], args[1]);
+        // HACK for node class where we use `executeWith`
+        if (nodeFactory == PutAllNodeFactory.getInstance()) {
+          primNode = nodeFactory.createNode(args[0], args[1], null);
+        } else {
+          primNode = nodeFactory.createNode(args[0], args[1]);
+        }
         break;
       case 3:
-        primNode = nodeFactory.createNode(args[0], args[1], args[2]);
+        // HACK for node class where we use `executeWith`
+        if (nodeFactory == InvokeOnPrimFactory.getInstance()) {
+          primNode = nodeFactory.createNode(args[0], args[1], args[2], null);
+        } else {
+          primNode = nodeFactory.createNode(args[0], args[1], args[2]);
+        }
         break;
       case 4:
         primNode = nodeFactory.createNode(args[0], args[1], args[2], args[3]);
@@ -107,7 +121,7 @@ public abstract class Primitives {
     SInvokable prim = constructPrimitive(signature, nodeFactory, universe, holder);
 
     // Install the given primitive as an instance primitive in the holder class
-    holder.addInstancePrimitive(prim);
+    holder.addInstancePrimitive(prim, displayWarning);
   }
 
   protected final void installClassPrimitive(final String selector,
@@ -117,7 +131,7 @@ public abstract class Primitives {
 
     // Install the given primitive as an instance primitive in the class of
     // the holder class
-    holder.getSOMClass().addInstancePrimitive(prim);
+    holder.getSOMClass().addInstancePrimitive(prim, displayWarning);
   }
 
   public static SInvokable getEmptyPrimitive(final String selector,
