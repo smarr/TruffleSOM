@@ -1,7 +1,5 @@
 package som.interpreter;
 
-import som.vmobjects.SArray;
-
 import com.oracle.truffle.api.frame.Frame;
 
 public final class SArguments {
@@ -20,20 +18,31 @@ public final class SArguments {
     return arg(frame, RCVR_IDX);
   }
 
+  public static Object[] somArrayToSArgumentArray(final Object rcvr,
+      final Object[] somArr) {
+    if (somArr == null) {
+      return new Object[] { rcvr };
+    }
+    Object[] argsArray = new Object[somArr.length + 1];
+    argsArray[SArguments.RCVR_IDX] = rcvr;
+    System.arraycopy(somArr, 0, argsArray, 1, somArr.length);
+    return argsArray;
+  }
+
   /**
    * Create a new array from an SArguments array that contains only the true
    * arguments and excludes the receiver. This is used for instance for
    * #doesNotUnderstand (#dnu)
    */
-  public static SArray getArgumentsWithoutReceiver(final Object[] arguments) {
+  public static Object[] getArgumentsWithoutReceiver(final Object[] arguments) {
     // the code and magic numbers below are based on the following assumption
     assert RCVR_IDX == 0;
     assert arguments.length >= 1;  // <- that's the receiver
     Object[] argsArr = new Object[arguments.length - 1];
     if (argsArr.length == 0) {
-      return SArray.create(0);
+      return argsArr;
     }
     System.arraycopy(arguments, 1, argsArr, 0, argsArr.length);
-    return SArray.create(argsArr);
+    return argsArr;
   }
 }

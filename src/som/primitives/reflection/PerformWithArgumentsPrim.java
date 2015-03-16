@@ -2,7 +2,6 @@ package som.primitives.reflection;
 
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.vmobjects.SArray;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.Specialization;
@@ -19,7 +18,7 @@ public abstract class PerformWithArgumentsPrim extends TernaryExpressionNode {
 
   @Specialization
   public final Object doObject(final VirtualFrame frame,
-      final Object receiver, final SSymbol selector, final SArray  argsArr) {
+      final Object receiver, final SSymbol selector, final Object[]  argsArr) {
     return dispatch.executeDispatch(frame, receiver, selector, argsArr);
   }
 

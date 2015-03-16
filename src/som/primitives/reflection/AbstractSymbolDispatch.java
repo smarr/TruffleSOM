@@ -1,14 +1,12 @@
 package som.primitives.reflection;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import som.interpreter.SArguments;
 import som.interpreter.Types;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.interpreter.nodes.dispatch.DispatchChain;
-import som.primitives.arrays.ToArgumentsArrayNode;
-import som.primitives.arrays.ToArgumentsArrayNodeFactory;
-import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
@@ -32,7 +30,7 @@ public abstract class AbstractSymbolDispatch extends Node implements DispatchCha
   }
 
   public abstract Object executeDispatch(VirtualFrame frame, Object receiver,
-      SSymbol selector, SArray argsArr);
+      SSymbol selector, Object[] argsArr);
 
   private static final class UninitializedDispatchNode extends AbstractSymbolDispatch {
 
@@ -56,7 +54,7 @@ public abstract class AbstractSymbolDispatch extends Node implements DispatchCha
 
     @Override
     public Object executeDispatch(final VirtualFrame frame,
-        final Object receiver, final SSymbol selector, final SArray argsArr) {
+        final Object receiver, final SSymbol selector, final Object[] argsArr) {
       return specialize(selector).
           executeDispatch(frame, receiver, selector, argsArr);
     }
@@ -79,7 +77,6 @@ public abstract class AbstractSymbolDispatch extends Node implements DispatchCha
     private final SSymbol selector;
     @Child private ExpressionNode cachedSend;
     @Child private AbstractSymbolDispatch nextInCache;
-    @Child private ToArgumentsArrayNode toArgArray;
 
     public CachedDispatchNode(final SSymbol selector,
         final AbstractSymbolDispatch nextInCache,
@@ -88,14 +85,13 @@ public abstract class AbstractSymbolDispatch extends Node implements DispatchCha
       this.selector = selector;
       this.nextInCache = nextInCache;
       cachedSend = MessageSendNode.createForPerformNodes(selector);
-      toArgArray = ToArgumentsArrayNodeFactory.create(null, null);
     }
 
     @Override
     public Object executeDispatch(final VirtualFrame frame,
-        final Object receiver, final SSymbol selector, final SArray argsArr) {
+        final Object receiver, final SSymbol selector, final Object[] argsArr) {
       if (this.selector == selector) {
-        Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
+        Object[] arguments = SArguments.somArrayToSArgumentArray(receiver, argsArr);
 
         PreevaluatedExpression realCachedSend = (PreevaluatedExpression) cachedSend;
         return realCachedSend.doPreEvaluated(frame, arguments);
@@ -113,21 +109,17 @@ public abstract class AbstractSymbolDispatch extends Node implements DispatchCha
   private static final class GenericDispatchNode extends AbstractSymbolDispatch {
 
     @Child private IndirectCallNode call;
-    @Child private ToArgumentsArrayNode toArgArray;
 
     public GenericDispatchNode() {
       super(0);
       call = Truffle.getRuntime().createIndirectCallNode();
-      toArgArray = ToArgumentsArrayNodeFactory.create(null, null);
     }
 
     @Override
     public Object executeDispatch(final VirtualFrame frame,
-        final Object receiver, final SSymbol selector, final SArray argsArr) {
+        final Object receiver, final SSymbol selector, final Object[] argsArr) {
       SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
-
-      Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
-
+      Object[] arguments = SArguments.somArrayToSArgumentArray(receiver, argsArr);
       return call.call(frame, invokable.getCallTarget(), arguments);
     }
 

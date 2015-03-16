@@ -6,7 +6,6 @@ import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.arithmetic.ArithmeticPrim;
 import som.vm.constants.Classes;
-import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
@@ -91,13 +90,13 @@ public abstract class IntegerPrims {
 
   public abstract static class ToPrim extends BinaryExpressionNode {
     @Specialization
-    public final SArray doLong(final long receiver, final long right) {
+    public final Object[] doLong(final long receiver, final long right) {
       int cnt = (int) right - (int) receiver + 1;
-      long[] arr = new long[cnt];
+      Object[] arr = new Object[cnt];
       for (int i = 0; i < cnt; i++) {
         arr[i] = i + receiver;
       }
-      return SArray.create(arr);
+      return arr;
     }
   }
 

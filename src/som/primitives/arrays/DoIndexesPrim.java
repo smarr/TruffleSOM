@@ -29,10 +29,9 @@ public abstract class DoIndexesPrim extends BinaryExpressionNode
   }
 
   @Specialization
-  public final SArray doEmptyArray(final VirtualFrame frame,
-      final SArray receiver, final SBlock block) {
-    int length = (int) this.length.executeEvaluated(receiver);
-    loop(frame, block, length);
+  public final Object[] doArray(final VirtualFrame frame,
+      final Object[] receiver, final SBlock block) {
+    loop(frame, block, receiver.length);
     return receiver;
   }
 

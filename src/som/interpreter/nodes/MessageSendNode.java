@@ -56,7 +56,6 @@ import som.primitives.arrays.DoIndexesPrimFactory;
 import som.primitives.arrays.DoPrimFactory;
 import som.primitives.arrays.NewPrimFactory;
 import som.primitives.arrays.PutAllNodeFactory;
-import som.primitives.arrays.ToArgumentsArrayNodeFactory;
 import som.vm.NotYetImplementedException;
 import som.vm.constants.Classes;
 import som.vmobjects.SArray;
@@ -245,7 +244,7 @@ public final class MessageSendNode {
         case "putAll:":
           return replace(new EagerBinaryPrimitiveNode(selector,
                 argumentNodes[0], argumentNodes[1],
-                PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
+                PutAllNodeFactory.create(null, null)));
         case "whileTrue:": {
           if (argumentNodes[1] instanceof BlockNode &&
               argumentNodes[0] instanceof BlockNode) {
@@ -442,8 +441,7 @@ public final class MessageSendNode {
 
         case "invokeOn:with:":
           return replace(InvokeOnPrimFactory.create(
-              argumentNodes[0], argumentNodes[1], argumentNodes[2],
-              ToArgumentsArrayNodeFactory.create(null, null)));
+              argumentNodes[0], argumentNodes[1], argumentNodes[2]));
         case "instVarAt:put:":
           return replace(InstVarAtPutPrimFactory.create(
             argumentNodes[0], argumentNodes[1], argumentNodes[2]));

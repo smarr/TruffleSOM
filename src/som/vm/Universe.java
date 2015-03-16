@@ -49,7 +49,6 @@ import som.interpreter.TruffleCompiler;
 import som.vm.constants.Blocks;
 import som.vm.constants.Globals;
 import som.vm.constants.Nil;
-import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
@@ -301,8 +300,7 @@ public final class Universe {
     SInvokable initialize = systemClass.
         lookupInvokable(symbolFor("initialize:"));
 
-    return initialize.invoke(new Object[] {systemObject,
-        SArray.create(arguments)});
+    return initialize.invoke(new Object[] {systemObject, arguments});
   }
 
   protected void initializeObjectSystem() {
@@ -462,12 +460,12 @@ public final class Universe {
     }
 
     // Initialize the array of instance fields
-    systemClass.setInstanceFields(SArray.create(new Object[0]));
-    systemClass.getSOMClass().setInstanceFields(SArray.create(new Object[0]));
+    systemClass.setInstanceFields(new SSymbol[0]);
+    systemClass.getSOMClass().setInstanceFields(new SSymbol[0]);
 
     // Initialize the array of instance invokables
-    systemClass.setInstanceInvokables(SArray.create(new Object[0]));
-    systemClass.getSOMClass().setInstanceInvokables(SArray.create(new Object[0]));
+    systemClass.setInstanceInvokables(new SInvokable[0]);
+    systemClass.getSOMClass().setInstanceInvokables(new SInvokable[0]);
 
     // Initialize the name of the system class
     systemClass.setName(symbolFor(name));
