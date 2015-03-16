@@ -1,10 +1,7 @@
 package som.primitives.arrays;
 
 import som.interpreter.Invokable;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.BlockPrims.ValuePrimitiveNode;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
@@ -13,18 +10,19 @@ import som.vmobjects.SBlock;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
-public abstract class DoPrim extends BinaryExpressionNode
-  implements ValuePrimitiveNode {
-  @Child private AbstractDispatchNode block;
+public abstract class DoPrim extends BinaryExpressionNode {
+  @Child private IndirectCallNode callNode;
 
   public DoPrim() {
     super(null);
-    block = new UninitializedValuePrimDispatchNode();
+    callNode = Truffle.getRuntime().createIndirectCallNode();
   }
 
   public final static boolean isEmptyType(final SArray receiver) {
@@ -51,13 +49,9 @@ public abstract class DoPrim extends BinaryExpressionNode
     return receiver.getType() == ArrayType.BOOLEAN;
   }
 
-  @Override
-  public void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-    block = insert(node);
-  }
-
   private void execBlock(final VirtualFrame frame, final SBlock block, final Object arg) {
-    this.block.executeDispatch(frame, new Object[] {block, arg});
+    callNode.call(frame, block.getMethod().getCallTarget(),
+        new Object[] {block, arg});
   }
 
   @Specialization(guards = "isEmptyType")

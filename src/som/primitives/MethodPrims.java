@@ -43,6 +43,7 @@ public final class MethodPrims {
     @Child private IndirectCallNode callNode;
 
     public InvokeOnPrim() {
+      super(null);
       callNode = Truffle.getRuntime().createIndirectCallNode();
     }
     public InvokeOnPrim(final InvokeOnPrim node) { this(); }

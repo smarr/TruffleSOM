@@ -1,10 +1,7 @@
 package som.primitives.arrays;
 
 import som.interpreter.Invokable;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.BlockPrims.ValuePrimitiveNode;
 import som.primitives.LengthPrim;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
@@ -14,25 +11,21 @@ import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
-public abstract class PutAllNode extends BinaryExpressionNode
-  implements ValuePrimitiveNode  {
-  @Child private AbstractDispatchNode block;
+public abstract class PutAllNode extends BinaryExpressionNode {
+  @Child private IndirectCallNode callNode;
 
   public PutAllNode() {
     super(null);
-    block = new UninitializedValuePrimDispatchNode();
-  }
-
-  @Override
-  public void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-    block = insert(node);
+    callNode = Truffle.getRuntime().createIndirectCallNode();
   }
 
   protected final static boolean valueIsNil(final SArray rcvr, final SObject value) {
@@ -76,28 +69,32 @@ public abstract class PutAllNode extends BinaryExpressionNode
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final Object[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = callNode.call(
+          frame, block.getMethod().getCallTarget(), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final long[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (long) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (long) callNode.call(
+          frame, block.getMethod().getCallTarget(), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final double[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (double) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (double) callNode.call(
+          frame, block.getMethod().getCallTarget(), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final boolean[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (boolean) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (boolean) callNode.call(
+          frame, block.getMethod().getCallTarget(), new Object[] {block});
     }
   }
 
@@ -109,7 +106,8 @@ public abstract class PutAllNode extends BinaryExpressionNode
     }
 // TODO: this version does not handle the case that a subsequent value is not of the expected type...
     try {
-      Object result = this.block.executeDispatch(frame, new Object[] {block});
+      Object result = callNode.call(
+          frame, block.getMethod().getCallTarget(), new Object[] {block});
       if (result instanceof Long) {
         long[] newStorage = new long[(int) length];
         newStorage[0] = (long) result;
