@@ -2,7 +2,6 @@ package som.interpreter.nodes.dispatch;
 
 import som.interpreter.SArguments;
 import som.interpreter.Types;
-import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
@@ -35,7 +34,7 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
       args = arguments;
     } else {
       // Won't use DNU caching here, because it is already a megamorphic node
-      SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
+      Object[] argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
       args = new Object[] {arguments[0], selector, argumentsArray};
       target = AbstractCachedDnuNode.getDnuCallTarget(rcvrClass);
     }

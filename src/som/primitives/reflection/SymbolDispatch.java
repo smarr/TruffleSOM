@@ -2,9 +2,6 @@ package som.primitives.reflection;
 
 import som.interpreter.SArguments;
 import som.interpreter.Types;
-import som.primitives.arrays.ToArgumentsArrayNode;
-import som.primitives.arrays.ToArgumentsArrayNodeFactory;
-import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
@@ -21,19 +18,15 @@ public final class SymbolDispatch extends Node {
   }
 
   @Child private IndirectCallNode call;
-    @Child private ToArgumentsArrayNode toArgArray;
 
   private SymbolDispatch() {
     call = Truffle.getRuntime().createIndirectCallNode();
-      toArgArray = ToArgumentsArrayNodeFactory.create(null, null);
   }
 
   public Object executeDispatch(final VirtualFrame frame,
-        final Object receiver, final SSymbol selector, final SArray argsArr) {
+      final Object receiver, final SSymbol selector, final Object[] argsArr) {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
-
-      Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
-
-      return call.call(frame, invokable.getCallTarget(), arguments);
+    Object[] arguments = SArguments.somArrayToSArgumentArray(receiver, argsArr);
+    return call.call(frame, invokable.getCallTarget(), arguments);
   }
 }

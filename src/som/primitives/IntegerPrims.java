@@ -2,11 +2,9 @@ package som.primitives;
 
 import java.math.BigInteger;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.arithmetic.ArithmeticPrim;
 import som.vm.constants.Classes;
-import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
@@ -63,11 +61,16 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
-    public final BigInteger doLongWithOverflow(final long receiver, final long right) {
+    public final Object doLongWithOverflow(final long receiver, final long right) {
       assert right >= 0;  // currently not defined for negative values of right
       assert right <= Integer.MAX_VALUE;
 
-      return BigInteger.valueOf(receiver).shiftLeft((int) right);
+      BigInteger result = BigInteger.valueOf(receiver).shiftLeft((int) right);
+      try {
+        return result.longValueExact();
+      } catch (ArithmeticException e) {
+        return result;
+      }
     }
   }
 
@@ -75,32 +78,6 @@ public abstract class IntegerPrims {
     @Specialization
     public final long doLong(final long receiver, final long right) {
       return receiver >>> right;
-    }
-  }
-
-  public abstract static class MaxIntPrim extends ArithmeticPrim {
-    @Specialization
-    public final long doLong(final long receiver, final long right) {
-      return Math.max(receiver, right);
-    }
-  }
-
-  public abstract static class ToPrim extends BinaryExpressionNode {
-    @Specialization
-    public final SArray doLong(final long receiver, final long right) {
-      int cnt = (int) right - (int) receiver + 1;
-      long[] arr = new long[cnt];
-      for (int i = 0; i < cnt; i++) {
-        arr[i] = i + receiver;
-      }
-      return SArray.create(arr);
-    }
-  }
-
-  public abstract static class AbsPrim extends UnaryExpressionNode {
-    @Specialization
-    public final long doLong(final long receiver) {
-      return Math.abs(receiver);
     }
   }
 }

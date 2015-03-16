@@ -27,6 +27,7 @@ package som.vmobjects;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import som.primitives.Primitives;
@@ -76,36 +77,36 @@ public final class SClass extends SObject {
     name = value;
   }
 
-  public SArray getInstanceFields() {
+  public SSymbol[] getInstanceFields() {
     return instanceFields;
   }
 
-  public void setInstanceFields(final SArray fields) {
+  public void setInstanceFields(final SSymbol[] fields) {
     transferToInterpreterAndInvalidate("SClass.setInstanceFields");
     instanceFields = fields;
   }
 
-  public SArray getInstanceInvokables() {
+  public SInvokable[] getInstanceInvokables() {
     return instanceInvokables;
   }
 
-  public void setInstanceInvokables(final SArray value) {
+  public void setInstanceInvokables(final SInvokable[] value) {
     transferToInterpreterAndInvalidate("SClass.setInstanceInvokables");
     instanceInvokables = value;
 
     // Make sure this class is the holder of all invokables in the array
     for (int i = 0; i < getNumberOfInstanceInvokables(); i++) {
-      ((SInvokable) instanceInvokables.getObjectStorage()[i]).setHolder(this);
+      instanceInvokables[i].setHolder(this);
     }
   }
 
   public int getNumberOfInstanceInvokables() {
     // Return the number of instance invokables in this class
-    return instanceInvokables.getObjectStorage().length;
+    return instanceInvokables.length;
   }
 
   public SInvokable getInstanceInvokable(final int index) {
-    return (SInvokable) instanceInvokables.getObjectStorage()[index];
+    return instanceInvokables[index];
   }
 
   public void setInstanceInvokable(final int index, final SInvokable value) {
@@ -113,7 +114,7 @@ public final class SClass extends SObject {
     // Set this class as the holder of the given invokable
     value.setHolder(this);
 
-    instanceInvokables.getObjectStorage()[index] = value;
+    instanceInvokables[index] = value;
 
     if (invokablesTable.containsKey(value.getSignature())) {
       invokablesTable.put(value.getSignature(), value);
@@ -182,7 +183,9 @@ public final class SClass extends SObject {
     }
 
     // Append the given method to the array of instance methods
-    instanceInvokables = instanceInvokables.copyAndExtendWith(value);
+    instanceInvokables = Arrays.copyOf(
+        instanceInvokables, instanceInvokables.length + 1);
+    instanceInvokables[instanceInvokables.length - 1] = value;
     return true;
   }
 
@@ -195,11 +198,11 @@ public final class SClass extends SObject {
   }
 
   public SSymbol getInstanceFieldName(final int index) {
-    return (SSymbol) instanceFields.getObjectStorage()[index];
+    return instanceFields[index];
   }
 
   public int getNumberOfInstanceFields() {
-    return instanceFields.getObjectStorage().length;
+    return instanceFields.length;
   }
 
   private static boolean includesPrimitives(final SClass clazz) {
@@ -252,6 +255,6 @@ public final class SClass extends SObject {
 
   @CompilationFinal private SObject superclass;
   @CompilationFinal private SSymbol name;
-  @CompilationFinal private SArray  instanceInvokables;
-  @CompilationFinal private SArray  instanceFields;
+  @CompilationFinal private SInvokable[] instanceInvokables;
+  @CompilationFinal private SSymbol[]    instanceFields;
 }

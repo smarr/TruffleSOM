@@ -2,7 +2,6 @@ package som.primitives;
 
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vmobjects.SAbstractObject;
-import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 
 import com.oracle.truffle.api.dsl.Specialization;
@@ -26,14 +25,14 @@ public class ClassPrims {
 
   public abstract static class InstanceInvokablesPrim extends UnaryExpressionNode {
     @Specialization
-    public final SArray doSClass(final SClass receiver) {
+    public final Object[] doSClass(final SClass receiver) {
       return receiver.getInstanceInvokables();
     }
   }
 
   public abstract static class InstanceFieldsPrim extends UnaryExpressionNode {
     @Specialization
-    public final SArray doSClass(final SClass receiver) {
+    public final Object[] doSClass(final SClass receiver) {
       return receiver.getInstanceFields();
     }
   }
