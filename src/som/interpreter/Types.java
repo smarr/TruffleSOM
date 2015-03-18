@@ -33,7 +33,6 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
 @TypeSystem({   boolean.class,
@@ -52,7 +51,6 @@ import com.oracle.truffle.api.dsl.TypeSystem;
 public class Types {
 
   public static SClass getClassOf(final Object obj) {
-    CompilerAsserts.neverPartOfCompilation();
     assert obj != null;
 
     if (obj instanceof SAbstractObject) {
