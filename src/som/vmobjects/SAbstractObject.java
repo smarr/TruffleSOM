@@ -4,6 +4,7 @@ import som.interpreter.Types;
 import som.vm.Universe;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
 
 public abstract class SAbstractObject {
@@ -32,6 +33,7 @@ public abstract class SAbstractObject {
     return invokable.invoke(arguments);
   }
 
+  @TruffleBoundary
   public static final Object sendUnknownGlobal(final Object receiver,
       final SSymbol globalName) {
     Object[] arguments = {receiver, globalName};
