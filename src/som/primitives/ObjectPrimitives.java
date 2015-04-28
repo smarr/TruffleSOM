@@ -30,10 +30,13 @@ import som.primitives.ObjectPrimsFactory.HaltPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPutPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarNamedPrimFactory;
+import som.primitives.ObjectPrimsFactory.installEnvironmentPrimFactory;
 import som.primitives.reflection.PerformInSuperclassPrimFactory;
 import som.primitives.reflection.PerformPrimFactory;
 import som.primitives.reflection.PerformWithArgumentsInSuperclassPrimFactory;
 import som.primitives.reflection.PerformWithArgumentsPrimFactory;
+import som.vm.MateUniverse;
+import som.vm.Universe;
 
 public final class ObjectPrimitives extends Primitives {
   public ObjectPrimitives(final boolean displayWarning) { super(displayWarning); }
@@ -53,5 +56,7 @@ public final class ObjectPrimitives extends Primitives {
     installInstancePrimitive("instVarNamed:",          InstVarNamedPrimFactory.getInstance());
     installInstancePrimitive("halt",                   HaltPrimFactory.getInstance());
     installInstancePrimitive("class",                  ClassPrimFactory.getInstance());
+    if (Universe.current() instanceof MateUniverse)
+      installInstancePrimitive("installEnvironment:", installEnvironmentPrimFactory.getInstance());
   }
 }

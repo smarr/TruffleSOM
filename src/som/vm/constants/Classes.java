@@ -4,7 +4,7 @@ import som.vm.Universe;
 import som.vmobjects.SClass;
 
 
-public final class Classes {
+public class Classes {
   public static final SClass  objectClass;
   public static final SClass  classClass;
   public static final SClass  metaclassClass;

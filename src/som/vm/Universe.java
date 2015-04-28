@@ -65,7 +65,7 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 
-public final class Universe {
+public class Universe {
 
   /**
    * Associations are handles for globals with a fixed
@@ -113,7 +113,7 @@ public final class Universe {
     return execute(arguments);
   }
 
-  private Universe() {
+  protected Universe() {
     this.truffleRuntime = Truffle.getRuntime();
     this.globals      = new HashMap<SSymbol, Association>();
     this.symbolTable  = new HashMap<>();
@@ -451,7 +451,7 @@ public final class Universe {
     return systemClass;
   }
 
-  private void initializeSystemClass(final SClass systemClass, final SClass superClass,
+  protected void initializeSystemClass(final SClass systemClass, final SClass superClass,
       final String name) {
     // Initialize the superclass hierarchy
     if (superClass != null) {
@@ -562,7 +562,7 @@ public final class Universe {
   }
 
   @TruffleBoundary
-  private void loadSystemClass(final SClass systemClass) {
+  protected void loadSystemClass(final SClass systemClass) {
     // Load the system class
     SClass result = loadClass(systemClass.getName(), systemClass);
 
@@ -690,8 +690,8 @@ public final class Universe {
 
   // Latest instance
   // WARNING: this is problematic with multiple interpreters in the same VM...
-  @CompilationFinal private static Universe current;
-  @CompilationFinal private boolean alreadyInitialized;
+  @CompilationFinal protected static Universe current;
+  @CompilationFinal protected boolean alreadyInitialized;
 
   @CompilationFinal private boolean objectSystemInitialized = false;
 

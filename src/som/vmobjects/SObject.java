@@ -63,8 +63,8 @@ public class SObject extends SAbstractObject {
   @SuppressWarnings("unused")  private Object field4;
   @SuppressWarnings("unused")  private Object field5;
 
-  @SuppressWarnings("unused") @CompilationFinal private long[]   extensionPrimFields;
-  @SuppressWarnings("unused") @CompilationFinal private Object[] extensionObjFields;
+  @CompilationFinal private long[]   extensionPrimFields;
+  @CompilationFinal private Object[] extensionObjFields;
 
   // we manage the layout entirely in the class, but need to keep a copy here
   // to know in case the layout changed that we can update the instances lazily
@@ -212,7 +212,7 @@ public class SObject extends SAbstractObject {
     return clazz.lookupFieldIndex(fieldName);
   }
 
-  public static final SObject create(final SClass instanceClass) {
+  public static SObject create(final SClass instanceClass) {
     return new SObject(instanceClass);
   }
 

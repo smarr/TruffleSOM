@@ -9,6 +9,7 @@ import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
+import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -105,6 +106,16 @@ public final class ObjectPrims {
     @Specialization
     public final SClass doObject(final Object receiver) {
       return Types.getClassOf(receiver);
+    }
+  }
+  
+  @GenerateNodeFactory
+  public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
+    @Specialization
+    public final Object doSObject(final SObject receiver, final SObject environment) {
+      CompilerAsserts.neverPartOfCompilation();
+      ((SReflectiveObject)receiver).setEnvironment(environment);
+      return receiver;
     }
   }
 }
