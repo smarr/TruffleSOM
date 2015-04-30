@@ -89,9 +89,9 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-public final class Parser {
+public class Parser {
 
-  private final Universe            universe;
+  protected final Universe            universe;
   private final Lexer               lexer;
   private final Source              source;
 

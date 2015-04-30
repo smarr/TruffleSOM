@@ -22,7 +22,6 @@
 package som.interpreter.nodes;
 
 import java.math.BigInteger;
-
 import som.interpreter.TypesGen;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;

@@ -43,4 +43,5 @@ public abstract class Invokable extends RootNode {
   public abstract void propagateLoopCountThroughoutLexicalScope(final long count);
 
   public abstract boolean isBlock();
+
 }

@@ -4,8 +4,12 @@ import static som.vm.constants.MateClasses.environmentMO;
 import static som.vm.constants.MateClasses.operationalSemanticsMO;
 import static som.vm.constants.MateClasses.messageMO;
 import static som.vm.constants.Classes.objectClass;
+import som.interpreter.Invokable;
+import som.interpreter.MateifyVisitor;
 import som.vmobjects.SClass;
+import som.vmobjects.SInvokable;
 import som.vmobjects.SReflectiveObject;
+import som.vmobjects.SSymbol;
 
 public class MateUniverse extends Universe {
   
@@ -29,6 +33,23 @@ public class MateUniverse extends Universe {
   
   public static SReflectiveObject newInstance(final SClass instanceClass) {
     return SReflectiveObject.create(instanceClass);
+  }
+  
+  public SClass loadClass(final SSymbol name) {
+    SClass result = super.loadClass(name);
+    mateify(name);
+    return result;
+  }
+  
+  public void mateify(final SSymbol name) {
+    SClass clazz = (SClass) getGlobal(name);
+    Object[] invokables = clazz.getInstanceInvokables().getObjectStorage();
+    MateifyVisitor visitor = new MateifyVisitor();
+    for (int i = 0; i < invokables.length; i++){
+      SInvokable method = (SInvokable) invokables[i];
+      Invokable node = method.getInvokable();
+      node.accept(visitor);
+    }
   }
   
   public static Universe current() {

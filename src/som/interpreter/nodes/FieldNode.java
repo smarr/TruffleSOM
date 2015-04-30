@@ -42,12 +42,14 @@ public abstract class FieldNode extends ExpressionNode {
   }
 
   protected abstract ExpressionNode getSelf();
-
+  
   public static final class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
     @Child private ExpressionNode self;
     @Child private AbstractReadFieldNode read;
 
+    
+    
     public FieldReadNode(final ExpressionNode self, final int fieldIndex,
         final SourceSection source) {
       super(source);
@@ -97,6 +99,7 @@ public abstract class FieldNode extends ExpressionNode {
       }
       return executeEvaluated(obj);
     }
+    
   }
 
   @NodeChildren({
