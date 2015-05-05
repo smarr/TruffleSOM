@@ -2,6 +2,7 @@ package som.primitives;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.GlobalNode;
+import som.interpreter.nodes.MateNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadWithoutErrorNode;
 import som.interpreter.nodes.SOMNode;
 import som.primitives.SystemPrims.BinarySystemNode;
@@ -32,6 +33,11 @@ public abstract class GlobalPrim extends BinarySystemNode {
 
     public abstract Object getGlobal(VirtualFrame frame, SSymbol argument);
 
+    @Override
+    public ExpressionNode createMateWrapper(MateNode node){
+      return new MateNode(this);
+    };
+    
     @Override
     public ExpressionNode getFirstMethodBodyNode() {
       throw new NotYetImplementedException();

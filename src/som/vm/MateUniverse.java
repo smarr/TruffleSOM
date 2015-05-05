@@ -4,6 +4,9 @@ import static som.vm.constants.MateClasses.environmentMO;
 import static som.vm.constants.MateClasses.operationalSemanticsMO;
 import static som.vm.constants.MateClasses.messageMO;
 import static som.vm.constants.Classes.objectClass;
+
+import com.oracle.truffle.api.RootCallTarget;
+
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.vmobjects.SClass;
@@ -47,8 +50,8 @@ public class MateUniverse extends Universe {
     MateifyVisitor visitor = new MateifyVisitor();
     for (int i = 0; i < invokables.length; i++){
       SInvokable method = (SInvokable) invokables[i];
-      Invokable node = method.getInvokable();
-      node.accept(visitor);
+      RootCallTarget node = method.getCallTarget();
+      node.getRootNode().accept(visitor);
     }
   }
   

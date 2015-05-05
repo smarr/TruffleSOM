@@ -22,6 +22,7 @@
 package som.interpreter.nodes;
 
 import java.math.BigInteger;
+
 import som.interpreter.TypesGen;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
@@ -37,6 +38,10 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ExpressionNode extends SOMNode {
 
+  public ExpressionNode createMateWrapper(MateNode node){
+    return new MateNode(this);
+  };
+  
   public ExpressionNode(final SourceSection sourceSection) {
     super(sourceSection);
   }

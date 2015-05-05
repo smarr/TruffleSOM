@@ -48,4 +48,11 @@ public abstract class SOMNode extends Node {
    */
   public abstract ExpressionNode getFirstMethodBodyNode();
   
+  public abstract ExpressionNode createMateWrapper(MateNode node);
+  
+  public MateNode wrapIntoMateNode(){
+    return new MateNode(this);
+    return createMateWrapper(MateNodeGen.create(this));
+  }
+  
 }
