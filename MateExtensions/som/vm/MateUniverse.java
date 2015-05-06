@@ -50,8 +50,8 @@ public class MateUniverse extends Universe {
     MateifyVisitor visitor = new MateifyVisitor();
     for (int i = 0; i < invokables.length; i++){
       SInvokable method = (SInvokable) invokables[i];
-      RootCallTarget node = method.getCallTarget();
-      node.getRootNode().accept(visitor);
+      Invokable node = method.getInvokable();
+      node.accept(visitor);
     }
   }
   

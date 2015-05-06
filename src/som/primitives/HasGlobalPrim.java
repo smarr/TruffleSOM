@@ -1,7 +1,6 @@
 package som.primitives;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.MateNode;
 import som.interpreter.nodes.SOMNode;
 import som.primitives.SystemPrims.BinarySystemNode;
 import som.vm.NotYetImplementedException;
@@ -33,11 +32,6 @@ public abstract class HasGlobalPrim extends BinarySystemNode {
     private HasGlobalNode() { super(null); }
     public abstract boolean hasGlobal(SSymbol argument);
 
-    @Override
-    public ExpressionNode createMateWrapper(MateNode node){
-      return new MateNode(this);
-    };
-    
     @Override
     public ExpressionNode getFirstMethodBodyNode() {
       throw new NotYetImplementedException();

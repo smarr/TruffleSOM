@@ -2,7 +2,6 @@ package som.interpreter;
 
 import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.MateNode;
 import som.interpreter.nodes.SOMNode;
 
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -17,11 +16,6 @@ public final class Inliner implements NodeVisitor {
     public DummyParent() { super(null); }
     @Child  private ExpressionNode child;
 
-    @Override
-    public ExpressionNode createMateWrapper(MateNode node){
-      return new MateNode(this);
-    };
-    
     @Override
     public ExpressionNode getFirstMethodBodyNode() { return null; }
     public void adopt(final ExpressionNode child) {

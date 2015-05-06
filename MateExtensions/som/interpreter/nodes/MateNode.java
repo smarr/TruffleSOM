@@ -6,8 +6,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class MateNode extends ExpressionNode {
-  @CompilationFinal private final SOMNode baseLevel;  
-  public MateNode(final SOMNode node) {
+  @CompilationFinal private final ExpressionNode baseLevel;  
+  public MateNode(final ExpressionNode node) {
     super(node.getSourceSection());
     baseLevel = node;
   }
