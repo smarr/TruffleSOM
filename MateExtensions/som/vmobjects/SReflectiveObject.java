@@ -27,6 +27,7 @@ package som.vmobjects;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.nodes.Node;
 
 
 public class SReflectiveObject extends SObject {
@@ -48,8 +49,6 @@ public class SReflectiveObject extends SObject {
   public static SReflectiveObject create(final int numFields) {
     return new SReflectiveObject(numFields);
   }
-
-
   
   public final SObject getEnvironment() {
     return environment;
@@ -59,5 +58,12 @@ public class SReflectiveObject extends SObject {
     transferToInterpreterAndInvalidate("SReflectiveObject.setEnvironment");
     assert value != null;
     environment = value;
+  }
+  
+  public final boolean hasReflectiveBehaviorForNode(Node node){
+    SObject environment = this.getEnvironment(); 
+    if (environment == null) return false;
+    //environment.reimplementsOperation(node);
+    return false;
   }
 }

@@ -67,6 +67,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -112,13 +113,18 @@ public final class MessageSendNode {
     }
 
     @ExplodeLoop
-    private Object[] evaluateArguments(final VirtualFrame frame) {
+    public Object[] evaluateArguments(final VirtualFrame frame) {
       Object[] arguments = new Object[argumentNodes.length];
       for (int i = 0; i < argumentNodes.length; i++) {
         arguments[i] = argumentNodes[i].executeGeneric(frame);
         assert arguments[i] != null;
       }
       return arguments;
+    }
+    
+    public Node wrapIntoMateNode(){
+      //return new MateNode((ExpressionNode)this);
+      return MateNode.createForPreevaluatedExpression(this);
     }
   }
 

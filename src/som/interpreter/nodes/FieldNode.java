@@ -32,6 +32,8 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -88,17 +90,27 @@ public abstract class FieldNode extends ExpressionNode {
       return read.readDouble(obj);
     }
 
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      SObject obj;
+    public Object[] evaluateArguments(final VirtualFrame frame) {
+      Object[] arguments = new Object[1];
       try {
-        obj = self.executeSObject(frame);
+        Object object = self.executeSObject(frame);
+        arguments[0] = object;
       } catch (UnexpectedResultException e) {
         CompilerDirectives.transferToInterpreter();
         throw new RuntimeException("This should never happen by construction");
       }
-      return executeEvaluated(obj);
+      return arguments;
     }
+    
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      return executeEvaluated((SObject)this.evaluateArguments(frame)[0]);
+    }
+    
+    /*public Node wrapIntoMateNode(){
+      //return new MateNode((ExpressionNode)this);
+      return new MatePreEvaluatedNode(this);
+    }*/
     
   }
 
@@ -145,6 +157,13 @@ public abstract class FieldNode extends ExpressionNode {
     public Object doObject(final VirtualFrame frame, final SObject self,
         final Object value) {
       return executeEvaluated(frame, self, value);
+    }
+    
+    public Object[] evaluateArguments(final VirtualFrame frame) {
+      Object[] arguments = new Object[1];
+      Object object = null;
+      arguments[0] = object;
+      return arguments;
     }
   }
 }

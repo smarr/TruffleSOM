@@ -1,43 +1,38 @@
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Specialization;
+import som.interpreter.nodes.MateDispatch.MatePreEvaluatedDispatch;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class MateNode extends ExpressionNode {
-  @CompilationFinal private final ExpressionNode baseLevel;  
-  public MateNode(final ExpressionNode node) {
+  @Child protected MateDispatch reflectiveDispatch;
+  
+  protected Object[] arguments;
+  
+  public MateNode(final MateDispatch node) {
     super(node.getSourceSection());
-    baseLevel = node;
+    reflectiveDispatch = node;
+    
   }
   
-  public Object execute(VirtualFrame frame){return null;};
+  public static MateNode createForGenericExpression(ExpressionNode node){
+    return new MateNode(MateDispatch.create(node));
+  }
   
-  public static final boolean hasReflectiveBehavior(VirtualFrame frame){
+  public static MateNode createForPreevaluatedExpression(PreevaluatedExpression node){
+    return new MateNode(MatePreEvaluatedDispatch.create(node));
+  }
+  
+  
+  
+  public final boolean hasReflectiveBehavior(VirtualFrame frame){
+    //this.evaluateArguments(frame);
     return false;
+    //return this.arguments[0].hasReflectiveBehavior();
+    //receiver.hasReflectiveBehavior();
   }
   
-  public final MateNode createMetadelegation() {
-    return this;
-  }
-  
-  @Specialization(guards = "hasReflectiveBehavior(frame)")
-  public Object doBaseLevel(final VirtualFrame frame, 
-      @Cached("hasReflectiveBehavior(frame)") final boolean cachedReflectiveBehavior) {
-    return ((ExpressionNode) baseLevel).executeGeneric(frame);
-  }
-  
-  @Specialization(contains = "doBaseLevel", guards = "!hasReflectiveBehavior(frame)")
-  public Object doMeta(final VirtualFrame frame, 
-      @Cached("hasReflectiveBehavior(frame)") final boolean cachedReflectiveBehavior, 
-      @Cached("createMetadelegation()") final MateNode cachedMetaDelegation) {
-    Object[] arguments = null;
-    return cachedMetaDelegation.execute(frame);
-  }
-
-  @Override
-  public Object executeGeneric(VirtualFrame frame) {
-    return null;
+  public Object executeGeneric(VirtualFrame frame){
+    boolean reimplementedInMOP = this.hasReflectiveBehavior(frame);
+    return reflectiveDispatch.executeDispatch(frame, reimplementedInMOP, this.reflectiveDispatch.evaluateArguments(frame));
   }
 }

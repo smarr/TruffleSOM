@@ -1,11 +1,14 @@
 package som.interpreter.nodes.nary;
 
+import java.util.Iterator;
+
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -29,5 +32,15 @@ public abstract class BinaryExpressionNode extends ExpressionNode
   public final Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0], arguments[1]);
+    
+  }
+  
+  @Override
+  public Object[] evaluateArguments(VirtualFrame frame) {
+    Object[] arguments = new Object[2];
+    Iterator<Node> it = this.getChildren().iterator();
+    arguments[0] = ((ExpressionNode)it.next()).executeGeneric(frame);
+    arguments[1] = ((ExpressionNode)it.next()).executeGeneric(frame);
+    return arguments;
   }
 }

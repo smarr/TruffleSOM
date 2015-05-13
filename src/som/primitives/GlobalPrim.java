@@ -14,6 +14,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 
 
 @ImportStatic(SystemPrims.class)
@@ -35,6 +36,10 @@ public abstract class GlobalPrim extends BinarySystemNode {
     @Override
     public ExpressionNode getFirstMethodBodyNode() {
       throw new NotYetImplementedException();
+    }
+    
+    public Node wrapIntoMateNode(){
+      return this;
     }
   }
 

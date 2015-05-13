@@ -22,7 +22,6 @@
 package som.interpreter.nodes;
 
 import som.interpreter.Inliner;
-import som.interpreter.SOMNodeVisitor;
 import som.interpreter.Types;
 
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -48,9 +47,9 @@ public abstract class SOMNode extends Node {
    */
   public abstract ExpressionNode getFirstMethodBodyNode();
   
-  public MateNode wrapIntoMateNode(){
+  public Node wrapIntoMateNode(){
     //return new MateNode((ExpressionNode)this);
-    return MateNodeGen.create((ExpressionNode)this);
+    return MateNode.createForGenericExpression((ExpressionNode)this);
   }
   
 }

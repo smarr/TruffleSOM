@@ -36,6 +36,11 @@ public abstract class LiteralNode extends ExpressionNode
   public LiteralNode(final SourceSection source) {
     super(source);
   }
+  
+  public Object[] evaluateArguments(final VirtualFrame frame){
+    System.out.print("Error in evaluateArguments of literalNODE!!!!!!!!!!!!!!!!!!!!");
+    return null;
+  }
 
   @Override
   public final Object doPreEvaluated(final VirtualFrame frame,
