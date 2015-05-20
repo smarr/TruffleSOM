@@ -11,6 +11,7 @@ import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SSymbol;
 
@@ -36,6 +37,10 @@ public class MateUniverse extends Universe {
   
   public static SReflectiveObject newInstance(final SClass instanceClass) {
     return SReflectiveObject.create(instanceClass);
+  }
+  
+  public static SMateEnvironment newEnvironment(final SClass instanceClass) {
+    return SMateEnvironment.create(instanceClass);
   }
   
   public SClass loadClass(final SSymbol name) {

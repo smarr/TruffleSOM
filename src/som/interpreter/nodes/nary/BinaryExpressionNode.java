@@ -3,7 +3,9 @@ package som.interpreter.nodes.nary;
 import java.util.Iterator;
 
 import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.MateNode;
 import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.constants.ReflectiveOp;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
@@ -42,5 +44,14 @@ public abstract class BinaryExpressionNode extends ExpressionNode
     arguments[0] = ((ExpressionNode)it.next()).executeGeneric(frame);
     arguments[1] = ((ExpressionNode)it.next()).executeGeneric(frame);
     return arguments;
+  }
+  
+  public Node wrapIntoMateNode(){
+    //return new MateNode((ExpressionNode)this);
+    return MateNode.createForPreevaluatedExpression(this);
+  }
+  
+  public ReflectiveOp reflectiveOperation(){
+    return ReflectiveOp.Lookup;
   }
 }

@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.constants.ReflectiveOp;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
@@ -42,5 +43,9 @@ public abstract class TernaryExpressionNode extends ExpressionNode
     arguments[1] = ((ExpressionNode)it.next()).executeGeneric(frame);
     arguments[2] = ((ExpressionNode)it.next()).executeGeneric(frame);
     return arguments;
+  }
+  
+  public ReflectiveOp reflectiveOperation(){
+    return ReflectiveOp.Lookup;
   }
 }

@@ -6,8 +6,10 @@ import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
+import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SSymbol;
@@ -113,8 +115,9 @@ public final class ObjectPrims {
   public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
     @Specialization
     public final Object doSObject(final SObject receiver, final SObject environment) {
-      CompilerAsserts.neverPartOfCompilation();
-      ((SReflectiveObject)receiver).setEnvironment(environment);
+      //CompilerAsserts.neverPartOfCompilation();
+      if (environment == Nil.nilObject) ((SReflectiveObject)receiver).setEnvironment(null);
+      else ((SReflectiveObject)receiver).setEnvironment((SMateEnvironment)environment);
       return receiver;
     }
   }

@@ -1,6 +1,7 @@
 package som.interpreter.nodes.nary;
 
 import som.interpreter.nodes.ExpressionNode;
+import som.vm.constants.ReflectiveOp;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
@@ -22,4 +23,8 @@ public abstract class QuaternaryExpressionNode extends ExpressionNode {
   public abstract Object executeEvaluated(final VirtualFrame frame,
       final Object receiver, final Object firstArg, final Object secondArg,
       final Object thirdArg);
+  
+  public ReflectiveOp reflectiveOperation(){
+    return ReflectiveOp.Lookup;
+  }
 }

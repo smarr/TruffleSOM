@@ -29,6 +29,7 @@ import som.primitives.ClassPrimsFactory.InstanceFieldsPrimFactory;
 import som.primitives.ClassPrimsFactory.InstanceInvokablesPrimFactory;
 import som.primitives.ClassPrimsFactory.NamePrimFactory;
 import som.primitives.ClassPrimsFactory.SuperClassPrimFactory;
+import som.primitives.MatePrimsFactory.MateNewObjectPrimFactory;
 import som.vm.MateUniverse;
 import som.vm.Universe;
 

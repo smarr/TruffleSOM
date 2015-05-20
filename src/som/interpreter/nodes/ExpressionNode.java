@@ -22,9 +22,9 @@
 package som.interpreter.nodes;
 
 import java.math.BigInteger;
-import java.util.Iterator;
 
 import som.interpreter.TypesGen;
+import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -34,7 +34,6 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -99,6 +98,10 @@ public abstract class ExpressionNode extends SOMNode {
 
   public Object[] executeArgumentArray(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectObjectArray(executeGeneric(frame));
+  }
+  
+  public ReflectiveOp reflectiveOperation(){
+    return ReflectiveOp.None;
   }
   
 }

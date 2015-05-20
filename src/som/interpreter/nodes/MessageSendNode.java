@@ -60,6 +60,7 @@ import som.primitives.arrays.PutAllNodeFactory;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.vm.NotYetImplementedException;
 import som.vm.constants.Classes;
+import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 import som.vmobjects.SSymbol;
@@ -90,7 +91,7 @@ public final class MessageSendNode {
     return new GenericMessageSendNode(selector, argumentNodes,
       new UninitializedDispatchNode(selector), source);
   }
-
+  
   public abstract static class AbstractMessageSendNode extends ExpressionNode
       implements PreevaluatedExpression {
 
@@ -125,6 +126,10 @@ public final class MessageSendNode {
     public Node wrapIntoMateNode(){
       //return new MateNode((ExpressionNode)this);
       return MateNode.createForPreevaluatedExpression(this);
+    }
+    
+    public ReflectiveOp reflectiveOperation(){
+      return ReflectiveOp.Lookup;
     }
   }
 
@@ -473,7 +478,7 @@ public final class MessageSendNode {
   }
 
   private static final class UninitializedMessageSendNode
-      extends AbstractUninitializedMessageSendNode {
+      extends AbstractUninitializedMessageSendNode implements PreevaluatedExpression{
 
     protected UninitializedMessageSendNode(final SSymbol selector,
         final ExpressionNode[] arguments, final SourceSection source) {

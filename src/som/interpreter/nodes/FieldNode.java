@@ -25,6 +25,7 @@ import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.UninitializedReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.UninitializedWriteFieldNode;
+import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerDirectives;
@@ -32,7 +33,6 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
@@ -107,10 +107,9 @@ public abstract class FieldNode extends ExpressionNode {
       return executeEvaluated((SObject)this.evaluateArguments(frame)[0]);
     }
     
-    /*public Node wrapIntoMateNode(){
-      //return new MateNode((ExpressionNode)this);
-      return new MatePreEvaluatedNode(this);
-    }*/
+    public ReflectiveOp reflectiveOperation(){
+      return ReflectiveOp.ReadField;
+    }
     
   }
 
@@ -164,6 +163,10 @@ public abstract class FieldNode extends ExpressionNode {
       Object object = null;
       arguments[0] = object;
       return arguments;
+    }
+    
+    public ReflectiveOp reflectiveOperation(){
+      return ReflectiveOp.WriteField;
     }
   }
 }

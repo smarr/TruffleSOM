@@ -13,6 +13,7 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -26,6 +27,10 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
   public final Object getSlotIdentifier() {
     return slot.getIdentifier();
+  }
+  
+  public Node wrapIntoMateNode(){
+    return MateNode.createForGenericExpression(this);
   }
 
   public abstract static class LocalVariableReadNode extends LocalVariableNode {

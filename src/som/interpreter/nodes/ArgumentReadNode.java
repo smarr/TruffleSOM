@@ -4,6 +4,7 @@ import som.interpreter.SArguments;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ArgumentReadNode {
@@ -20,6 +21,10 @@ public abstract class ArgumentReadNode {
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
       return SArguments.arg(frame, argumentIndex);
+    }
+    
+    public Node wrapIntoMateNode(){
+      return MateNode.createForGenericExpression(this);
     }
   }
 

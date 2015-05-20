@@ -8,6 +8,7 @@ import som.interpreter.nodes.MateNode;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SOMNode;
 import som.interpreter.nodes.SequenceNode;
+import som.interpreter.nodes.literals.LiteralNode;
 import som.interpreter.nodes.specialized.whileloops.WhileCache;
 import som.primitives.GlobalPrim;
 import som.primitives.HasGlobalPrim;
@@ -23,7 +24,8 @@ public class MateifyVisitor implements NodeVisitor {
         !(node instanceof SequenceNode) &&
         !(node instanceof WhileCache) &&
         !(node instanceof HasGlobalPrim) &&
-        !(node instanceof GlobalPrim)) {
+        !(node instanceof GlobalPrim) &&
+        !(node instanceof LiteralNode)){
       Node matenode = ((SOMNode) node).wrapIntoMateNode();
       node.replace(matenode);
     }

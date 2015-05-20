@@ -31,6 +31,7 @@ import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -42,6 +43,10 @@ public abstract class GlobalNode extends ExpressionNode {
   public GlobalNode(final SSymbol globalName, final SourceSection source) {
     super(source);
     this.globalName = globalName;
+  }
+  
+  public Node wrapIntoMateNode(){
+    return MateNode.createForGenericExpression(this);
   }
 
   public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {

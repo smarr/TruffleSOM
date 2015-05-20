@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.constants.ReflectiveOp;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -35,5 +36,9 @@ public abstract class UnaryExpressionNode extends ExpressionNode
     Iterator<Node> it = this.getChildren().iterator();
     arguments[0] = ((ExpressionNode)it.next()).executeGeneric(frame);
     return arguments;
+  }
+  
+  public ReflectiveOp reflectiveOperation(){
+    return ReflectiveOp.Lookup;
   }
 }
