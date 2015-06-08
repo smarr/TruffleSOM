@@ -39,8 +39,11 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.utilities.ValueProfile;
 
 public final class SClass extends SObject {
+
+  private static final ValueProfile storageType = ValueProfile.createClassProfile();
 
   public SClass(final int numberOfFields) {
     // Initialize this class by calling the super constructor with the given
@@ -88,9 +91,9 @@ public final class SClass extends SObject {
     transferToInterpreterAndInvalidate("SClass.setInstanceFields");
     instanceFields = fields;
     if (layoutForInstances == null ||
-        instanceFields.getObjectStorage().length != layoutForInstances.getNumberOfFields()) {
+        instanceFields.getObjectStorage(storageType).length != layoutForInstances.getNumberOfFields()) {
       layoutForInstances = new ObjectLayout(
-          fields.getObjectStorage().length, this);
+          fields.getObjectStorage(storageType).length, this);
     }
   }
 
@@ -104,17 +107,17 @@ public final class SClass extends SObject {
 
     // Make sure this class is the holder of all invokables in the array
     for (int i = 0; i < getNumberOfInstanceInvokables(); i++) {
-      ((SInvokable) instanceInvokables.getObjectStorage()[i]).setHolder(this);
+      ((SInvokable) instanceInvokables.getObjectStorage(storageType)[i]).setHolder(this);
     }
   }
 
   public int getNumberOfInstanceInvokables() {
     // Return the number of instance invokables in this class
-    return instanceInvokables.getObjectStorage().length;
+    return instanceInvokables.getObjectStorage(storageType).length;
   }
 
   public SInvokable getInstanceInvokable(final int index) {
-    return (SInvokable) instanceInvokables.getObjectStorage()[index];
+    return (SInvokable) instanceInvokables.getObjectStorage(storageType)[index];
   }
 
   public void setInstanceInvokable(final int index, final SInvokable value) {
@@ -122,7 +125,7 @@ public final class SClass extends SObject {
     // Set this class as the holder of the given invokable
     value.setHolder(this);
 
-    instanceInvokables.getObjectStorage()[index] = value;
+    instanceInvokables.getObjectStorage(storageType)[index] = value;
 
     if (invokablesTable.containsKey(value.getSignature())) {
       invokablesTable.put(value.getSignature(), value);
@@ -202,11 +205,11 @@ public final class SClass extends SObject {
   }
 
   public SSymbol getInstanceFieldName(final int index) {
-    return (SSymbol) instanceFields.getObjectStorage()[index];
+    return (SSymbol) instanceFields.getObjectStorage(storageType)[index];
   }
 
   public int getNumberOfInstanceFields() {
-    return instanceFields.getObjectStorage().length;
+    return instanceFields.getObjectStorage(storageType).length;
   }
 
   private static boolean includesPrimitives(final SClass clazz) {

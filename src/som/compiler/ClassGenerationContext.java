@@ -35,9 +35,10 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.utilities.ValueProfile;
 
 public final class ClassGenerationContext {
-
+  private static final ValueProfile storageType = ValueProfile.createClassProfile();
   private final Universe universe;
 
   public ClassGenerationContext(final Universe universe) {
@@ -65,14 +66,14 @@ public final class ClassGenerationContext {
   }
 
   public void setInstanceFieldsOfSuper(final SArray fieldNames) {
-    for (int i = 0; i < fieldNames.getObjectStorage().length; i++) {
-      instanceFields.add((SSymbol) fieldNames.getObjectStorage()[i]);
+    for (int i = 0; i < fieldNames.getObjectStorage(storageType).length; i++) {
+      instanceFields.add((SSymbol) fieldNames.getObjectStorage(storageType)[i]);
     }
   }
 
   public void setClassFieldsOfSuper(final SArray fieldNames) {
-    for (int i = 0; i < fieldNames.getObjectStorage().length; i++) {
-      classFields.add((SSymbol) fieldNames.getObjectStorage()[i]);
+    for (int i = 0; i < fieldNames.getObjectStorage(storageType).length; i++) {
+      classFields.add((SSymbol) fieldNames.getObjectStorage(storageType)[i]);
     }
   }
 
