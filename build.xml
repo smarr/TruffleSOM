@@ -81,6 +81,8 @@
 
     <target name="test" depends="compile" description="Execute tests">
         <junit haltonerror="false" haltonfailure="false">
+            <jvmarg value="-ea" />
+            <jvmarg value="-esa" />
             <classpath refid="project.classpath" />
             <batchtest fork="yes"><!--  todir="${reports.tests}" -->
               <fileset dir="tests">
@@ -91,7 +93,9 @@
       
         <java classname="som.vm.Universe" fork="true" failonerror="true">
             <classpath refid="project.classpath" />
-                <arg line="-cp Smalltalk TestSuite/TestHarness.som --ignore-inefficacies" />
+            <jvmarg value="-ea" />
+            <jvmarg value="-esa" />
+            <arg line="-cp Smalltalk TestSuite/TestHarness.som --ignore-inefficacies" />
         </java>
     </target>
     <target name="tests" depends="test" />
