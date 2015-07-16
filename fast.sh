@@ -42,5 +42,5 @@ fi
 GRAAL="$GRAAL_HOME/jdk1.8.0_45/product/bin/java -server -d64 "
 
 exec $GRAAL $GRAAL_DEBUG_SWITCH $GRAAL_FLAGS $GF -Xss160M $ASSERT \
-   -Xbootclasspath/a:build/classes:/Users/smarr/Projects/SOM/SOMns/libs/truffle/build/truffle-api.jar \
+   -Xbootclasspath/a:build/classes:libs/truffle/build/truffle-api.jar \
    som.vm.Universe "$@"
