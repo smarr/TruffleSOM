@@ -21,6 +21,8 @@
  */
 package som.interpreter.nodes;
 
+import som.interpreter.Inliner;
+import som.interpreter.SOMNodeVisitor;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
