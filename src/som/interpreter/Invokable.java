@@ -1,5 +1,7 @@
 package som.interpreter;
 
+import som.compiler.MethodGenerationContext;
+import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
 
 import com.oracle.truffle.api.RootCallTarget;
@@ -13,7 +15,7 @@ public abstract class Invokable extends RootNode {
 
   @Child protected ExpressionNode  expressionOrSequence;
 
-  protected final ExpressionNode  uninitializedBody;
+  protected final ExpressionNode uninitializedBody;
 
   public Invokable(final SourceSection sourceSection,
       final FrameDescriptor frameDescriptor,
@@ -29,7 +31,13 @@ public abstract class Invokable extends RootNode {
     return expressionOrSequence.executeGeneric(frame);
   }
 
-  public abstract Invokable cloneWithNewLexicalContext(final LexicalContext outerContext);
+  public abstract Invokable cloneWithNewLexicalContext(final LexicalScope outerContext);
+
+  public ExpressionNode inline(final MethodGenerationContext mgenc,
+      final Local[] locals) {
+    return InlinerForLexicallyEmbeddedMethods.doInline(uninitializedBody, mgenc,
+        locals, getSourceSection().getCharIndex());
+  }
 
   @Override
   public final boolean isCloningAllowed() {
@@ -43,5 +51,4 @@ public abstract class Invokable extends RootNode {
   public abstract void propagateLoopCountThroughoutLexicalScope(final long count);
 
   public abstract boolean isBlock();
-
 }

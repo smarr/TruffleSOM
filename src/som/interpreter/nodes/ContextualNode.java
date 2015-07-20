@@ -21,6 +21,8 @@
  */
 package som.interpreter.nodes;
 
+import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.SArguments;
 import som.vmobjects.SBlock;
 
@@ -68,4 +70,12 @@ public abstract class ContextualNode extends ExpressionNode {
   public Node wrapIntoMateNode(){
     return MateNode.createForGenericExpression(this);
   }
+
+  @Override
+  public abstract void replaceWithLexicallyEmbeddedNode(
+      final InlinerForLexicallyEmbeddedMethods inlinerForLexicallyEmbeddedMethods);
+
+  @Override
+  public abstract void replaceWithCopyAdaptedToEmbeddedOuterContext(
+      final InlinerAdaptToEmbeddedOuterContext inlinerAdaptToEmbeddedOuterContext);
 }

@@ -9,11 +9,14 @@ import som.vmobjects.SArray.PartiallyEmptyArray;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.utilities.ValueProfile;
 
 
 @GenerateNodeFactory
 @ImportStatic(ArrayType.class)
 public abstract class AtPutPrim extends TernaryExpressionNode {
+
+  private final ValueProfile storageType = ValueProfile.createClassProfile();
 
   protected final static boolean valueIsNil(final Object value) {
     return value == Nil.nilObject;
@@ -47,7 +50,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final long value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage();
+    assert idx < receiver.getEmptyStorage(storageType);
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
     return value;
@@ -58,7 +61,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final double value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage();
+    assert idx < receiver.getEmptyStorage(storageType);
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
     return value;
@@ -69,7 +72,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final boolean value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage();
+    assert idx < receiver.getEmptyStorage(storageType);
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
     return value;
@@ -80,7 +83,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final Object value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage();
+    assert idx < receiver.getEmptyStorage(storageType);
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
     return value;
@@ -91,7 +94,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final Object value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage();
+    assert idx < receiver.getEmptyStorage(storageType);
     return value;
   }
 
@@ -110,7 +113,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final long doPartiallyEmptySArray(final SArray receiver,
       final long index, final long value) {
     long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage();
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
     setValue(idx, value, storage);
     if (storage.getType() != ArrayType.LONG) {
       storage.setType(ArrayType.OBJECT);
@@ -124,7 +127,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final double doPartiallyEmptySArray(final SArray receiver,
       final long index, final double value) {
     long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage();
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
     setValue(idx, value, storage);
     if (storage.getType() != ArrayType.DOUBLE) {
       storage.setType(ArrayType.OBJECT);
@@ -137,7 +140,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final boolean doPartiallyEmptySArray(final SArray receiver,
       final long index, final boolean value) {
     long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage();
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
     setValue(idx, value, storage);
     if (storage.getType() != ArrayType.BOOLEAN) {
       storage.setType(ArrayType.OBJECT);
@@ -150,7 +153,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final Object doPartiallyEmptySArrayWithNil(final SArray receiver,
       final long index, final Object value) {
     long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage();
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
     assert idx >= 0;
     assert idx < storage.getLength();
 
@@ -165,7 +168,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final Object value) {
     long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage();
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
     setValue(idx, value, storage);
     storage.setType(ArrayType.OBJECT);
     receiver.ifFullTransitionPartiallyEmpty();
@@ -176,7 +179,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final Object doObjectSArray(final SArray receiver, final long index,
       final Object value) {
     long idx = index - 1;
-    receiver.getObjectStorage()[(int) idx] = value;
+    receiver.getObjectStorage(storageType)[(int) idx] = value;
     return value;
   }
 
@@ -184,7 +187,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final Object doObjectSArray(final SArray receiver, final long index,
       final long value) {
     long idx = index - 1;
-    receiver.getLongStorage()[(int) idx] = value;
+    receiver.getLongStorage(storageType)[(int) idx] = value;
     return value;
   }
 
@@ -193,7 +196,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final Object value) {
     long idx = index - 1;
 
-    long[] storage = receiver.getLongStorage();
+    long[] storage = receiver.getLongStorage(storageType);
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
@@ -208,7 +211,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final Object doDoubleSArray(final SArray receiver, final long index,
       final double value) {
     long idx = index - 1;
-    receiver.getDoubleStorage()[(int) idx] = value;
+    receiver.getDoubleStorage(storageType)[(int) idx] = value;
     return value;
   }
 
@@ -217,7 +220,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final Object value) {
     long idx = index - 1;
 
-    double[] storage = receiver.getDoubleStorage();
+    double[] storage = receiver.getDoubleStorage(storageType);
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
@@ -232,7 +235,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   public final Object doBooleanSArray(final SArray receiver, final long index,
       final boolean value) {
     long idx = index - 1;
-    receiver.getBooleanStorage()[(int) idx] = value;
+    receiver.getBooleanStorage(storageType)[(int) idx] = value;
     return value;
   }
 
@@ -241,7 +244,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final Object value) {
     long idx = index - 1;
 
-    boolean[] storage = receiver.getBooleanStorage();
+    boolean[] storage = receiver.getBooleanStorage(storageType);
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
