@@ -25,20 +25,22 @@ import som.interpreter.nodes.ExpressionNode;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.source.SourceSection;
 
 
 public final class Method extends Invokable {
 
-  private final LexicalContext outerContext;
+  private final LexicalScope currentLexicalScope;
 
   public Method(final SourceSection sourceSection,
-                final FrameDescriptor frameDescriptor,
                 final ExpressionNode expressions,
-                final LexicalContext outerContext,
+                final LexicalScope currentLexicalScope,
                 final ExpressionNode uninitialized) {
-    super(sourceSection, frameDescriptor, expressions, uninitialized);
-    this.outerContext = outerContext;
+    super(sourceSection, currentLexicalScope.getFrameDescriptor(),
+        expressions, uninitialized);
+    this.currentLexicalScope = currentLexicalScope;
+    currentLexicalScope.setMethod(this);
   }
 
   @Override
@@ -49,40 +51,52 @@ public final class Method extends Invokable {
   }
 
   @Override
-  public Invokable cloneWithNewLexicalContext(final LexicalContext outerContext) {
+  public Invokable cloneWithNewLexicalContext(final LexicalScope outerScope) {
     FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
-    LexicalContext  inlinedContext = new LexicalContext(inlinedFrameDescriptor,
-        outerContext);
-    ExpressionNode  inlinedBody = Inliner.doInline(uninitializedBody,
-        inlinedContext);
-    Method clone = new Method(getSourceSection(), inlinedFrameDescriptor,
-        inlinedBody, outerContext, uninitializedBody);
-    inlinedContext.setOuterMethod(clone);
+    LexicalScope    inlinedCurrentScope = new LexicalScope(
+        inlinedFrameDescriptor, outerScope);
+    ExpressionNode  inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(
+        uninitializedBody, inlinedCurrentScope);
+    Method clone = new Method(getSourceSection(), inlinedBody,
+        inlinedCurrentScope, uninitializedBody);
     return clone;
   }
 
-  @Override
-  public boolean isBlock() {
-    return outerContext != null;
+  public Invokable cloneAndAdaptToEmbeddedOuterContext(
+      final InlinerForLexicallyEmbeddedMethods inliner) {
+    LexicalScope currentAdaptedScope = new LexicalScope(
+        getFrameDescriptor().copy(), inliner.getCurrentLexicalScope());
+    ExpressionNode adaptedBody = InlinerAdaptToEmbeddedOuterContext.doInline(
+        uninitializedBody, inliner, currentAdaptedScope);
+    ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
+
+    Method clone = new Method(getSourceSection(), adaptedBody,
+        currentAdaptedScope, uninitAdaptedBody);
+    return clone;
   }
 
-  public void setOuterContextMethod(final Method method) {
-    outerContext.setOuterMethod(method);
+  public Invokable cloneAndAdaptToSomeOuterContextBeingEmbedded(
+      final InlinerAdaptToEmbeddedOuterContext inliner) {
+    LexicalScope currentAdaptedScope = new LexicalScope(
+        getFrameDescriptor().copy(), inliner.getCurrentLexicalScope());
+    ExpressionNode adaptedBody = InlinerAdaptToEmbeddedOuterContext.doInline(
+        uninitializedBody, inliner, currentAdaptedScope);
+    ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
+
+    Method clone = new Method(getSourceSection(),
+        adaptedBody, currentAdaptedScope, uninitAdaptedBody);
+    return clone;
   }
 
   @Override
   public void propagateLoopCountThroughoutLexicalScope(final long count) {
     assert count >= 0;
-
-    if (outerContext != null) {
-      outerContext.getOuterMethod().propagateLoopCountThroughoutLexicalScope(count);
-    }
+    currentLexicalScope.propagateLoopCountThroughoutLexicalScope(count);
     reportLoopCount((count > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) count);
   }
 
-
   @Override
   public Node deepCopy() {
-    return cloneWithNewLexicalContext(outerContext);
+    return cloneWithNewLexicalContext(currentLexicalScope.getOuterScopeOrNull());
   }
 }

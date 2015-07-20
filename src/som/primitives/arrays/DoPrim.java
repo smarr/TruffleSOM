@@ -19,6 +19,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.utilities.ValueProfile;
 
 
 @GenerateNodeFactory
@@ -26,6 +27,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 public abstract class DoPrim extends BinaryExpressionNode
   implements ValuePrimitiveNode {
   @Child private AbstractDispatchNode block;
+  private final ValueProfile storageType = ValueProfile.createClassProfile();
 
   public DoPrim() {
     super(null);
@@ -44,7 +46,7 @@ public abstract class DoPrim extends BinaryExpressionNode
   @Specialization(guards = "isEmptyType(arr)")
   public final SArray doEmptyArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    int length = arr.getEmptyStorage();
+    int length = arr.getEmptyStorage(storageType);
     try {
       if (SArray.FIRST_IDX < length) {
         execBlock(frame, block, Nil.nilObject);
@@ -63,7 +65,7 @@ public abstract class DoPrim extends BinaryExpressionNode
   @Specialization(guards = "isPartiallyEmptyType(arr)")
   public final SArray doPartiallyEmptyArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    PartiallyEmptyArray storage = arr.getPartiallyEmptyStorage();
+    PartiallyEmptyArray storage = arr.getPartiallyEmptyStorage(storageType);
     int length = storage.getLength();
     try {
       if (SArray.FIRST_IDX < length) {
@@ -83,7 +85,7 @@ public abstract class DoPrim extends BinaryExpressionNode
   @Specialization(guards = "isObjectType(arr)")
   public final SArray doObjectArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    Object[] storage = arr.getObjectStorage();
+    Object[] storage = arr.getObjectStorage(storageType);
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
@@ -103,7 +105,7 @@ public abstract class DoPrim extends BinaryExpressionNode
   @Specialization(guards = "isLongType(arr)")
   public final SArray doLongArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    long[] storage = arr.getLongStorage();
+    long[] storage = arr.getLongStorage(storageType);
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
@@ -123,7 +125,7 @@ public abstract class DoPrim extends BinaryExpressionNode
   @Specialization(guards = "isDoubleType(arr)")
   public final SArray doDoubleArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    double[] storage = arr.getDoubleStorage();
+    double[] storage = arr.getDoubleStorage(storageType);
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
@@ -143,7 +145,7 @@ public abstract class DoPrim extends BinaryExpressionNode
   @Specialization(guards = "isBooleanType(arr)")
   public final SArray doBooleanArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    boolean[] storage = arr.getBooleanStorage();
+    boolean[] storage = arr.getBooleanStorage(storageType);
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
