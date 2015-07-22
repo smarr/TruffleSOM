@@ -1,44 +1,54 @@
 package som.interpreter.nodes;
 
+import som.interpreter.SArguments;
 import som.interpreter.nodes.MateDispatch.MatePreEvaluatedDispatch;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SObject;
+import som.vm.constants.ReflectiveOp;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
 public class MateNode extends ExpressionNode {
-  @Child protected MateDispatch reflectiveDispatch;
+  protected MateDispatch reflectiveDispatch;
   
-  protected Object[] arguments;
+  protected Object receiver;
+  protected SMateEnvironment environment;
   
-  private MateNode(final MateDispatch node) {
+  public MateNode(final MateDispatch node, ExpressionNode wrappedNode) {
     super(node.getSourceSection());
     reflectiveDispatch = node;
   }
   
   public static MateNode createForGenericExpression(ExpressionNode node){
-    return new MateNode(MateDispatch.create(node));
+    return new MateNode(MateDispatch.create(node), node);
   }
   
   public static MateNode createForPreevaluatedExpression(PreevaluatedExpression node){
-    return new MateNode(MatePreEvaluatedDispatch.create(node));
+    return new MateNode(MatePreEvaluatedDispatch.create(node),(ExpressionNode)node);
   }
   
-  public final boolean hasReflectiveBehavior(VirtualFrame frame){
-    arguments = this.reflectiveDispatch.evaluateArguments(frame);
-    Object receiver = arguments[0];
+  @Specialization(guards="hasReflectiveBehavior(frame)")
+  public Object doMeta(VirtualFrame frame){
+    return reflectiveDispatch.executeDispatch(frame, environment);
+  }
+  
+  @Override
+  public Object executeGeneric(VirtualFrame frame) {
+    return this.reflectiveDispatch.doBaselevel(frame);
+  }
+    
+  boolean hasReflectiveBehavior(VirtualFrame frame){
+    receiver = SArguments.rcvr(frame);
     //Need this check because of the possibility to receive primitive types 
-    if (receiver instanceof SReflectiveObject)
-      return ((SReflectiveObject)receiver).hasReflectiveBehaviorFor(this.reflectiveDispatch.reflectiveOperation());
-    else
+    if (receiver instanceof SReflectiveObject){
+      environment = ((SReflectiveObject)receiver).getEnvironment();
+      return true; 
+    } else {
       return false;
-  }
-  
-  public Object executeGeneric(VirtualFrame frame){
-    boolean reimplementedInMOP = this.hasReflectiveBehavior(frame);
-    return reflectiveDispatch.executeDispatch(frame, reimplementedInMOP, arguments);
+    }
   }
   
   public Node wrapIntoMateNode(){

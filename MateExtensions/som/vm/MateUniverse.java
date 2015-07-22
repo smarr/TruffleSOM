@@ -51,10 +51,10 @@ public class MateUniverse extends Universe {
   
   public void mateify(final SSymbol name) {
     SClass clazz = (SClass) getGlobal(name);
-    Object[] invokables = clazz.getInstanceInvokables().getObjectStorage();
+    int countOfInvokables = clazz.getNumberOfInstanceInvokables();
     MateifyVisitor visitor = new MateifyVisitor();
-    for (int i = 0; i < invokables.length; i++){
-      SInvokable method = (SInvokable) invokables[i];
+    for (int i = 0; i < countOfInvokables; i++){
+      SInvokable method = clazz.getInstanceInvokable(i);
       Invokable node = method.getInvokable();
       node.accept(visitor);
     }

@@ -1,12 +1,8 @@
 package som.interpreter.nodes;
 
-import som.interpreter.SArguments;
 import som.interpreter.nodes.MateDispatchNodeGen.MatePreEvaluatedDispatchNodeGen;
-import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.vm.constants.ReflectiveOp;
-import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
-import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
 
@@ -28,27 +24,25 @@ public abstract class MateDispatch extends Node {
     return MateDispatchNodeGen.create(node);
   }
   
-  public abstract Object executeDispatch(final VirtualFrame frame, boolean reimplementedInMOP, Object[] arguments);
+  public abstract Object executeDispatch(final VirtualFrame frame, Object rcvr);
   
-  @Specialization(guards = "reimplementedInMOP")
+  public Object doBaselevel(final VirtualFrame frame){
+    return baseLevel.executeGeneric(frame);
+  };
+  
+  @Specialization(guards = "metaDelegation!=null")
   public Object doMetaLevel(final VirtualFrame frame,  
-      final boolean reimplementedInMOP,
-      Object[] arguments,
-      @Cached("getMetaobjectFrom(arguments)") final SObject metaobject,
-      @Cached("createDispatch(metaobject, baseLevel.reflectiveOperation())") final SMethod metaDelegation) 
+      SMateEnvironment environment,
+      @Cached("createDispatch(environment, baseLevel.reflectiveOperation())") final SMethod metaDelegation) 
   { 
     return metaDelegation.invoke(frame);
   }
   
-  @Specialization(guards = "!reimplementedInMOP")
-  public Object doBaseLevel(final VirtualFrame frame, 
-      final boolean reimplementedInMOP,
-      Object[] arguments) {
-    return ((ExpressionNode) baseLevel).executeGeneric(frame);
-    //return ((ExpressionNode) baseLevel).doPreEvaluated(frame,arguments);
+  public Object executeGeneric(final VirtualFrame frame, SMateEnvironment environment){
+    return this.doBaselevel(frame);
   }
   
-  public Object[] evaluateArguments(VirtualFrame frame){
+  /*public Object[] evaluateArguments(VirtualFrame frame){
     Object[] receiver = new Object[1];
     receiver[0] = SArguments.rcvr(frame);
     return receiver;
@@ -56,14 +50,10 @@ public abstract class MateDispatch extends Node {
   
   public static SObject getMetaobjectFrom(Object[] arguments){
     return ((SReflectiveObject)arguments[0]).getEnvironment();
-  }
+  }*/
   
   public static SMethod createDispatch(SObject metaobject, ReflectiveOp operation){
     return (SMethod)((SMateEnvironment)metaobject).methodImplementing(operation);
-  }
-  
-  public ReflectiveOp reflectiveOperation(){
-    return this.baseLevel.reflectiveOperation();
   }
   
   public static abstract class MatePreEvaluatedDispatch extends MateDispatch {
@@ -80,11 +70,8 @@ public abstract class MateDispatch extends Node {
       return ((PreevaluatedExpression)this.baseLevel).evaluateArguments(frame);
     }
     
-    @Specialization(guards = "!reimplementedInMOP")
-    public Object doBaseLevel(final VirtualFrame frame, 
-        final boolean reimplementedInMOP,
-        Object[] arguments) {
-      return ((PreevaluatedExpression) baseLevel).doPreEvaluated(frame,arguments);
+    public Object executeGeneric(final VirtualFrame frame, SMateEnvironment environment){
+      return ((PreevaluatedExpression) baseLevel).doPreEvaluated(frame,this.evaluateArguments(frame));
     }
   }
 }
