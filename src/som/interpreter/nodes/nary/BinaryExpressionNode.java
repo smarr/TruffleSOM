@@ -46,10 +46,11 @@ public abstract class BinaryExpressionNode extends ExpressionNode
     return arguments;
   }
   
-  public Node wrapIntoMateNode(){
+  /*public Node wrapIntoMateNode(){
     //return new MateNode((ExpressionNode)this);
-    return MateNode.createForPreevaluatedExpression(this);
-  }
+    //return MateNode.createForPreevaluatedExpression(this);
+    return MateNode.createForGenericExpression(this);
+  }*/
   
   public ReflectiveOp reflectiveOperation(){
     return ReflectiveOp.Lookup;

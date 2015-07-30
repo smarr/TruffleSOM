@@ -125,7 +125,8 @@ public final class MessageSendNode {
     
     public Node wrapIntoMateNode(){
       //return new MateNode((ExpressionNode)this);
-      return MateNode.createForPreevaluatedExpression(this);
+      //return MateNode.createForPreevaluatedExpression(this);
+      return MateNode.createForGenericExpression(this);
     }
     
     public ReflectiveOp reflectiveOperation(){

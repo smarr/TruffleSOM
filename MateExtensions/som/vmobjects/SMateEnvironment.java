@@ -42,7 +42,7 @@ public class SMateEnvironment extends SObject {
     SSymbol methodName = null;
     switch (operation){
       case Lookup:
-        methodName = Universe.current().symbolFor("find:since");
+        methodName = Universe.current().symbolFor("find:since:");
         break;
       case ReadField: 
         methodName = Universe.current().symbolFor("read");

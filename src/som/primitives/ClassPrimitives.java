@@ -39,9 +39,9 @@ public final class ClassPrimitives extends Primitives {
   @Override
   public void installPrimitives() {
     if (Universe.current() instanceof MateUniverse)
-      installInstancePrimitive("new",        MateNewObjectPrimFactory.getInstance());
+      installInstancePrimitive("basicNew",        MateNewObjectPrimFactory.getInstance());
     else
-      installInstancePrimitive("new",        NewObjectPrimFactory.getInstance());
+      installInstancePrimitive("basicNew",        NewObjectPrimFactory.getInstance());
     installInstancePrimitive("name",       NamePrimFactory.getInstance());
     installInstancePrimitive("superclass", SuperClassPrimFactory.getInstance());
     installInstancePrimitive("methods",    InstanceInvokablesPrimFactory.getInstance());

@@ -1,6 +1,5 @@
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateDispatchNodeGen.MatePreEvaluatedDispatchNodeGen;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SInvokable.SMethod;
@@ -24,22 +23,27 @@ public abstract class MateDispatch extends Node {
     return MateDispatchNodeGen.create(node);
   }
   
-  public abstract Object executeDispatch(final VirtualFrame frame, Object rcvr);
+  public abstract Object executeDispatch(final VirtualFrame frame, SMateEnvironment environment);
   
   public Object doBaselevel(final VirtualFrame frame){
     return baseLevel.executeGeneric(frame);
   };
   
-  @Specialization(guards = "metaDelegation!=null")
+  @Specialization(guards = "cachedEnvironment==environment")
   public Object doMetaLevel(final VirtualFrame frame,  
       SMateEnvironment environment,
-      @Cached("createDispatch(environment, baseLevel.reflectiveOperation())") final SMethod metaDelegation) 
+      @Cached("environment") SMateEnvironment cachedEnvironment) 
   { 
-    return metaDelegation.invoke(frame);
+    SMethod metaDelegation = this.createDispatch(environment, baseLevel.reflectiveOperation());
+    if (metaDelegation == null)
+      return doBaselevel(frame);
+    else
+      return metaDelegation.invoke(frame);
   }
   
-  public Object executeGeneric(final VirtualFrame frame, SMateEnvironment environment){
-    return this.doBaselevel(frame);
+  @Specialization
+  public Object doBaseLevel(final VirtualFrame frame, SMateEnvironment environment){
+    return baseLevel.executeGeneric(frame);
   }
   
   /*public Object[] evaluateArguments(VirtualFrame frame){
@@ -52,11 +56,11 @@ public abstract class MateDispatch extends Node {
     return ((SReflectiveObject)arguments[0]).getEnvironment();
   }*/
   
-  public static SMethod createDispatch(SObject metaobject, ReflectiveOp operation){
+  public SMethod createDispatch(SObject metaobject, ReflectiveOp operation){
     return (SMethod)((SMateEnvironment)metaobject).methodImplementing(operation);
   }
   
-  public static abstract class MatePreEvaluatedDispatch extends MateDispatch {
+ /* public static abstract class MatePreEvaluatedDispatch extends MateDispatch {
         
     public MatePreEvaluatedDispatch(final PreevaluatedExpression node) {
       super((ExpressionNode)node);
@@ -73,5 +77,5 @@ public abstract class MateDispatch extends Node {
     public Object executeGeneric(final VirtualFrame frame, SMateEnvironment environment){
       return ((PreevaluatedExpression) baseLevel).doPreEvaluated(frame,this.evaluateArguments(frame));
     }
-  }
+  }*/
 }
