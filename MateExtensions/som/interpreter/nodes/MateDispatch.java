@@ -1,10 +1,17 @@
 package som.interpreter.nodes;
 
+import som.interpreter.SArguments;
+import som.interpreter.Types;
+import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchMessageSendNodeGen;
 import som.vm.constants.ReflectiveOp;
+import som.vmobjects.SClass;
+import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
+import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -38,7 +45,11 @@ public abstract class MateDispatch extends Node {
     if (metaDelegation == null)
       return doBaselevel(frame);
     else
-      return metaDelegation.invoke(frame);
+      return this.doMeta(frame, metaDelegation);
+  }
+  
+  public Object doMeta(final VirtualFrame frame, SMethod metaDelegation){
+    return metaDelegation.invoke(frame);
   }
   
   @Specialization
@@ -78,4 +89,35 @@ public abstract class MateDispatch extends Node {
       return ((PreevaluatedExpression) baseLevel).doPreEvaluated(frame,this.evaluateArguments(frame));
     }
   }*/
+  
+  public abstract static class MateDispatchMessageSend extends MateDispatch {
+  
+    public MateDispatchMessageSend(ExpressionNode node) {
+      super(node);
+      // TODO Auto-generated constructor stub
+    }
+    
+    public static MateDispatchMessageSend create(final ExpressionNode node) {
+      return MateDispatchMessageSendNodeGen.create(node);
+    }
+  
+    public Object doMeta(final VirtualFrame frame, SMethod metaDelegation) {
+      //The MOP receives the class where the lookup must start (find: aSelector since: aClass)
+      SInvokable method = (SInvokable)metaDelegation.invoke(
+                               SArguments.rcvr(frame), 
+                               (SSymbol)SArguments.arg(frame, 1),
+                               ((SObject)SArguments.rcvr(frame)).getSOMClass();                           
+                             );
+      //SClass rcvrClass = Types.getClassOf(SArguments.rcvr(frame));
+      //SInvokable method = rcvrClass.lookupInvokable((SSymbol)SArguments.arg(frame, 1));
+      CallTarget callTarget;
+      if (method != null) {
+        callTarget = method.getCallTarget();
+      } else {
+        callTarget = null;
+      }
+      return true;
+    }
+  }
+  
 }

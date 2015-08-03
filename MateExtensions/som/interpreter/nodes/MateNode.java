@@ -1,6 +1,7 @@
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
+import som.interpreter.nodes.MateDispatch.MateDispatchMessageSend;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
@@ -19,7 +20,16 @@ public abstract class MateNode extends ExpressionNode {
   }
   
   public static MateNode createForGenericExpression(ExpressionNode node){
-    return MateNodeGen.create(MateDispatch.create(node), node);
+    MateDispatch dispatch; 
+    switch (node.reflectiveOperation()){
+      case Lookup:
+          dispatch = MateDispatchMessageSend.create(node);
+        break;
+      default:
+          dispatch = MateDispatch.create(node);
+        break;
+    }
+    return MateNodeGen.create(dispatch, node);
   }
   
   /*public static MateNode createForPreevaluatedExpression(PreevaluatedExpression node){
