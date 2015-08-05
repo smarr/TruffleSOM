@@ -3,6 +3,9 @@ package som.interpreter.nodes;
 import som.interpreter.SArguments;
 import som.interpreter.Types;
 import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchMessageSendNodeGen;
+import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.vm.MateUniverse;
+import som.vm.Universe;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
@@ -30,30 +33,41 @@ public abstract class MateDispatch extends Node {
     return MateDispatchNodeGen.create(node);
   }
   
-  public abstract Object executeDispatch(final VirtualFrame frame, SMateEnvironment environment);
-  
-  public Object doBaselevel(final VirtualFrame frame){
-    return baseLevel.executeGeneric(frame);
-  };
+  public Object[] evaluateArguments(final VirtualFrame frame) {
+    Object[] receiver = new Object[1];
+    receiver[0] = SArguments.rcvr(frame);
+    return receiver;
+  }
+   
+  public abstract Object executeDispatch(final VirtualFrame frame, Object[] arguments, SMateEnvironment environment);
   
   @Specialization(guards = "cachedEnvironment==environment")
   public Object doMetaLevel(final VirtualFrame frame,  
+      Object[] arguments,
       SMateEnvironment environment,
       @Cached("environment") SMateEnvironment cachedEnvironment) 
   { 
     SMethod metaDelegation = this.createDispatch(environment, baseLevel.reflectiveOperation());
     if (metaDelegation == null)
-      return doBaselevel(frame);
-    else
-      return this.doMeta(frame, metaDelegation);
-  }
-  
-  public Object doMeta(final VirtualFrame frame, SMethod metaDelegation){
-    return metaDelegation.invoke(frame);
+      return doBaselevel(frame, arguments);
+    else {
+      MateUniverse.current().enterMetaExecutionLevel();
+      Object value = this.doMeta(frame, arguments, metaDelegation);
+      MateUniverse.current().leaveMetaExecutionLevel();
+      return value;
+    }
   }
   
   @Specialization
-  public Object doBaseLevel(final VirtualFrame frame, SMateEnvironment environment){
+  public Object doBaseLevel(final VirtualFrame frame, Object[] arguments, SMateEnvironment environment){
+    return baseLevel.executeGeneric(frame);
+  }
+  
+  public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod metaDelegation){
+    return metaDelegation.invoke(frame);
+  }
+  
+  public Object doBaselevel(final VirtualFrame frame, Object[] arguments){
     return baseLevel.executeGeneric(frame);
   }
   
@@ -101,12 +115,12 @@ public abstract class MateDispatch extends Node {
       return MateDispatchMessageSendNodeGen.create(node);
     }
   
-    public Object doMeta(final VirtualFrame frame, SMethod metaDelegation) {
+    public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod metaDelegation) {
       //The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       SInvokable method = (SInvokable)metaDelegation.invoke(
-                               SArguments.rcvr(frame), 
-                               (SSymbol)SArguments.arg(frame, 1),
-                               ((SObject)SArguments.rcvr(frame)).getSOMClass();                           
+                               arguments[0], 
+                               ((AbstractMessageSendNode)this.baseLevel).getSelector(),
+                               ((SObject)arguments[0]).getSOMClass()                           
                              );
       //SClass rcvrClass = Types.getClassOf(SArguments.rcvr(frame));
       //SInvokable method = rcvrClass.lookupInvokable((SSymbol)SArguments.arg(frame, 1));
@@ -118,6 +132,10 @@ public abstract class MateDispatch extends Node {
       }
       return true;
     }
+    
+    @Override
+    public Object[] evaluateArguments(final VirtualFrame frame) {
+      return ((PreevaluatedExpression)this.baseLevel).evaluateArguments(frame);
+   }
   }
-  
 }

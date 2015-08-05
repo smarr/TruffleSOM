@@ -6,6 +6,7 @@ import static som.vm.constants.MateClasses.messageMO;
 import static som.vm.constants.Classes.objectClass;
 
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
@@ -16,6 +17,8 @@ import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SSymbol;
 
 public class MateUniverse extends Universe {
+  
+  protected boolean executingMeta;
   
   protected void initializeObjectSystem() {
     if (alreadyInitialized) {
@@ -32,6 +35,8 @@ public class MateUniverse extends Universe {
       loadSystemClass(environmentMO);
       loadSystemClass(operationalSemanticsMO);
       loadSystemClass(messageMO);
+      
+      this.executingMeta = false;
     }
   }
   
@@ -60,10 +65,22 @@ public class MateUniverse extends Universe {
     }
   }
   
-  public static Universe current() {
+  public static MateUniverse current() {
     if (current == null) {
       current = new MateUniverse();
     }
-    return current;
+    return (MateUniverse) current;
+  }
+  
+  public boolean executingMeta() {
+    return executingMeta;
+  }
+  
+  public void enterMetaExecutionLevel() {
+    this.executingMeta = true;
+  }
+  
+  public void leaveMetaExecutionLevel() {
+    this.executingMeta = false;
   }
 }

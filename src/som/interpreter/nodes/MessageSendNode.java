@@ -129,6 +129,8 @@ public final class MessageSendNode {
       return MateNode.createForGenericExpression(this);
     }
     
+    public abstract SSymbol getSelector();
+    
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.Lookup;
     }
@@ -476,6 +478,10 @@ public final class MessageSendNode {
       }
       return makeGenericSend();
     }
+    
+    public SSymbol getSelector(){
+      return this.selector;
+    }
   }
 
   private static final class UninitializedMessageSendNode
@@ -585,6 +591,10 @@ public final class MessageSendNode {
     @Override
     public NodeCost getCost() {
       return Cost.getCost(dispatchNode);
+    }
+    
+    public SSymbol getSelector(){
+      return this.selector;
     }
   }
 }
