@@ -19,10 +19,10 @@ public class SMateEnvironment extends SObject {
   }
 
   protected boolean reimplementsOperation(ReflectiveOp operation){
-    return methodImplementing(operation) != null;
+    return methodsImplementing(operation).length > 0;
   }
   
-  public SMethod methodImplementing(ReflectiveOp operation){
+  public SMethod[] methodsImplementing(ReflectiveOp operation){
     Object metaobject = null;
     switch (operation){
       case None: 
@@ -37,21 +37,27 @@ public class SMateEnvironment extends SObject {
     return this.methodForOperation((SObject)metaobject, operation);
   }
   
-  @SuppressWarnings("incomplete-switch")
-  private SMethod methodForOperation(SObject metaobject, ReflectiveOp operation){
-    SSymbol methodName = null;
+  /*Optimize this method. It can have the definition of the symbols in a static ahead of time  way*/
+  private SMethod[] methodForOperation(SObject metaobject, ReflectiveOp operation){
+    SMethod[] methods;
     switch (operation){
       case Lookup:
-        methodName = Universe.current().symbolFor("find:since:");
+        methods = new SMethod[2];
+        methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("find:since:"));
+        methods[1] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("activate:withArguments:"));
         break;
       case ReadField: 
-        methodName = Universe.current().symbolFor("read");
+        methods = new SMethod[1];
+        methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
         break;
       case WriteField: 
-        methodName = Universe.current().symbolFor("write:");
+        methods = new SMethod[1];
+        methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:"));
+        break;
+      default:
+        methods = new SMethod[0];
         break;
     }
-    SInvokable method = metaobject.getSOMClass().lookupInvokable(methodName);
-    return (SMethod)method;
+    return methods;
   }
 }

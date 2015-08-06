@@ -47,7 +47,7 @@ public abstract class MateDispatch extends Node {
       SMateEnvironment environment,
       @Cached("environment") SMateEnvironment cachedEnvironment) 
   { 
-    SMethod metaDelegation = this.createDispatch(environment, baseLevel.reflectiveOperation());
+    SMethod[] metaDelegation = this.createDispatch(environment, baseLevel.reflectiveOperation());
     if (metaDelegation == null)
       return doBaselevel(frame, arguments);
     else {
@@ -63,8 +63,8 @@ public abstract class MateDispatch extends Node {
     return baseLevel.executeGeneric(frame);
   }
   
-  public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod metaDelegation){
-    return metaDelegation.invoke(frame);
+  public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation){
+    return metaDelegation[0].invoke(frame);
   }
   
   public Object doBaselevel(final VirtualFrame frame, Object[] arguments){
@@ -81,8 +81,8 @@ public abstract class MateDispatch extends Node {
     return ((SReflectiveObject)arguments[0]).getEnvironment();
   }*/
   
-  public SMethod createDispatch(SObject metaobject, ReflectiveOp operation){
-    return (SMethod)((SMateEnvironment)metaobject).methodImplementing(operation);
+  public SMethod[] createDispatch(SObject metaobject, ReflectiveOp operation){
+    return ((SMateEnvironment)metaobject).methodsImplementing(operation);
   }
   
  /* public static abstract class MatePreEvaluatedDispatch extends MateDispatch {
@@ -115,9 +115,10 @@ public abstract class MateDispatch extends Node {
       return MateDispatchMessageSendNodeGen.create(node);
     }
   
-    public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod metaDelegation) {
+    @Override
+    public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation) {
       //The MOP receives the class where the lookup must start (find: aSelector since: aClass)
-      SInvokable method = (SInvokable)metaDelegation.invoke(
+      SInvokable method = (SInvokable)metaDelegation[0].invoke(
                                arguments[0], 
                                ((AbstractMessageSendNode)this.baseLevel).getSelector(),
                                ((SObject)arguments[0]).getSOMClass()                           
@@ -130,7 +131,10 @@ public abstract class MateDispatch extends Node {
       } else {
         callTarget = null;
       }
-      return true;
+      if (metaDelegation[1] != null)
+        return metaDelegation[1].invoke(arguments[0], method, SArguments.getArgumentsWithoutReceiver(arguments));
+      else
+        return callTarget.call(frame,arguments);
     }
     
     @Override

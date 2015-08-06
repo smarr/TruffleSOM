@@ -10,7 +10,7 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/guido/Documents/Projects/TruffleSOM/libs/truffle/build/truffle-api.jar" sourcepath="/home/guido/Documents/Projects/TruffleSOM/libs/truffle/build/truffle-api.src.zip"/>
-	<classpathentry kind="lib" path="/home/guido/Documents/Projects/TruffleSOM/libs/truffle/build/truffle-dsl-processor.jar"/>
+	<classpathentry kind="lib" path="/Users/guidochari/Documents/Projects/TruffleMATE/libs/truffle/build/truffle-api.jar" sourcepath="libs/truffle/build/truffle-api.src.zip"/>
+	<classpathentry kind="lib" path="/Users/guidochari/Documents/Projects/TruffleMATE/libs/truffle/build/truffle-dsl-processor.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

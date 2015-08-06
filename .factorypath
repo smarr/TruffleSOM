@@ -4,6 +4,8 @@
     <factorypathentry kind="WKSPJAR" id="/com.oracle.truffle.dsl.processor/com.oracle.truffle.dsl.processor.jar" enabled="false" runInBatchMode="false"/>
     <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/truffle-dsl-processor.jar" enabled="false" runInBatchMode="false"/>
     <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/truffle.jar" enabled="false" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="/home/guido/Documents/Projects/TruffleSOM/libs/truffle/build/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="/home/guido/Documents/Projects/TruffleSOM/libs/truffle/build/truffle-api.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="/home/guido/Documents/Projects/TruffleSOM/libs/truffle/build/truffle-dsl-processor.jar" enabled="false" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="/home/guido/Documents/Projects/TruffleSOM/libs/truffle/build/truffle-api.jar" enabled="false" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/truffle/build/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/TruffleMate/libs/truffle/build/truffle-api.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

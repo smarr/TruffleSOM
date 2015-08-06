@@ -1,12 +1,9 @@
 package som.interpreter.nodes;
 
-import som.interpreter.SArguments;
 import som.interpreter.nodes.MateDispatch.MateDispatchMessageSend;
 import som.vm.MateUniverse;
-import som.vm.Universe;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
-
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
