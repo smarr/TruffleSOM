@@ -123,18 +123,15 @@ public abstract class MateDispatch extends Node {
                                ((AbstractMessageSendNode)this.baseLevel).getSelector(),
                                ((SObject)arguments[0]).getSOMClass()                           
                              );
-      //SClass rcvrClass = Types.getClassOf(SArguments.rcvr(frame));
-      //SInvokable method = rcvrClass.lookupInvokable((SSymbol)SArguments.arg(frame, 1));
-      CallTarget callTarget;
-      if (method != null) {
-        callTarget = method.getCallTarget();
+      CallTarget callTarget = method.getCallTarget();
+      if (metaDelegation[1] != null) {
+        //The MOP receives the standard ST message Send stack (rcvr, selector, arguments) and return its own
+        Object context = metaDelegation[1].invoke(arguments[0], method.getSignature(), SArguments.getArgumentsWithoutReceiver(arguments));
+        MateUniverse.current().leaveMetaExecutionLevel();
+        return callTarget.call(frame, context);
       } else {
-        callTarget = null;
+        return callTarget.call(frame, arguments);
       }
-      if (metaDelegation[1] != null)
-        return metaDelegation[1].invoke(arguments[0], method, SArguments.getArgumentsWithoutReceiver(arguments));
-      else
-        return callTarget.call(frame,arguments);
     }
     
     @Override

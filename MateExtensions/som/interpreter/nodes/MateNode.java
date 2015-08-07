@@ -4,14 +4,14 @@ import som.interpreter.nodes.MateDispatch.MateDispatchMessageSend;
 import som.vm.MateUniverse;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
+
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
 public abstract class MateNode extends ExpressionNode {
   @Child protected MateDispatch reflectiveDispatch;
-  private Object[] arguments; 
-  
+  private Object[] arguments;
   protected SMateEnvironment environment;
   
   public MateNode(final MateDispatch node, ExpressionNode wrappedNode) {
@@ -38,11 +38,19 @@ public abstract class MateNode extends ExpressionNode {
   
   @Specialization(guards="hasReflectiveBehavior(frame)")
   public Object doMetaLevel(VirtualFrame frame){
+    return this.metaExecution(frame);
+  }
+  
+  public Object metaExecution(VirtualFrame frame){
     return reflectiveDispatch.executeDispatch(frame, arguments, environment);
   }
   
   @Specialization(guards="!hasReflectiveBehavior(frame)")
   public Object doBaseLevel(VirtualFrame frame) {
+    return baseExecution(frame);
+  }
+  
+  public Object baseExecution(VirtualFrame frame){
     return this.reflectiveDispatch.doBaselevel(frame, arguments);
   }
   
