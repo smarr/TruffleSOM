@@ -80,7 +80,8 @@
     </target>
 
     <target name="test" depends="compile" description="Execute tests">
-        <junit haltonerror="false" haltonfailure="false">
+        <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed"
+            outputtoformatters="true">
             <jvmarg value="-ea" />
             <jvmarg value="-esa" />
             <classpath refid="project.classpath" />
@@ -89,6 +90,7 @@
                   <include name="**/*Test*.java"/>
               </fileset>
             </batchtest>
+            <formatter type="brief" usefile="false"/>
         </junit>
       
         <java classname="som.vm.Universe" fork="true" failonerror="true">
@@ -97,6 +99,7 @@
             <jvmarg value="-esa" />
             <arg line="-cp Smalltalk TestSuite/TestHarness.som --ignore-inefficacies" />
         </java>
+        <fail message="Basic tests failed." if="test.failed" />
     </target>
     <target name="tests" depends="test" />
 
