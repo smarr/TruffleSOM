@@ -29,16 +29,15 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
-import som.interpreter.objectstorage.ObjectLayout;
 import som.primitives.Primitives;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SInvokable.SPrimitive;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.utilities.ValueProfile;
 
 public final class SClass extends SObject {
@@ -51,8 +50,7 @@ public final class SClass extends SObject {
     super(numberOfFields);
     invokablesTable = new HashMap<SSymbol, SInvokable>();
     this.superclass = Nil.nilObject;
-
-    layoutForInstances = new ObjectLayout(numberOfFields, this);
+    layoutForInstances = LAYOUT.createShape(new MateObjectType());
   }
 
   public SClass(final SClass clazz) {
@@ -90,11 +88,11 @@ public final class SClass extends SObject {
   public void setInstanceFields(final SArray fields) {
     transferToInterpreterAndInvalidate("SClass.setInstanceFields");
     instanceFields = fields;
-    if (layoutForInstances == null ||
+    /*if (layoutForInstances == null ||
         instanceFields.getObjectStorage(storageType).length != layoutForInstances.getNumberOfFields()) {
       layoutForInstances = new ObjectLayout(
           fields.getObjectStorage(storageType).length, this);
-    }
+    }*/
   }
 
   public SArray getInstanceInvokables() {
@@ -252,11 +250,11 @@ public final class SClass extends SObject {
     }
   }
 
-  public ObjectLayout getLayoutForInstances() {
+  public Shape getLayoutForInstances() {
     return layoutForInstances;
   }
 
-  public ObjectLayout updateInstanceLayoutWithInitializedField(final long index, final Class<?> type) {
+  /*public ObjectLayout updateInstanceLayoutWithInitializedField(final long index, final Class<?> type) {
     ObjectLayout updated = layoutForInstances.withInitializedField(index, type);
 
     if (updated != layoutForInstances) {
@@ -274,7 +272,7 @@ public final class SClass extends SObject {
       layoutForInstances = updated;
     }
     return layoutForInstances;
-  }
+  }*/
 
 
   @Override
@@ -289,6 +287,5 @@ public final class SClass extends SObject {
   @CompilationFinal private SSymbol name;
   @CompilationFinal private SArray  instanceInvokables;
   @CompilationFinal private SArray  instanceFields;
-
-  @CompilationFinal private ObjectLayout layoutForInstances;
+  @CompilationFinal private Shape layoutForInstances;
 }

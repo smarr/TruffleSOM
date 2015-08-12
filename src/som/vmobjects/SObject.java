@@ -27,166 +27,118 @@ package som.vmobjects;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.util.List;
 
-import som.interpreter.objectstorage.ObjectLayout;
-import som.interpreter.objectstorage.StorageLocation;
-import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
-import som.interpreter.objectstorage.StorageLocation.GeneralizeStorageLocationException;
-import som.interpreter.objectstorage.StorageLocation.UninitalizedStorageLocationException;
-import som.vm.Universe;
 import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeFieldAccessor;
 import com.oracle.truffle.api.nodes.NodeUtil.FieldOffsetProvider;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Layout;
+import com.oracle.truffle.api.object.Location;
+import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public class SObject extends SAbstractObject {
 
   @CompilationFinal protected SClass clazz;
-
+  @CompilationFinal private DynamicObject dynamicObject;
+  
+  public static final Layout LAYOUT = Layout.createLayout(Layout.INT_TO_LONG);
+  
   public static final int NUM_PRIMITIVE_FIELDS = 5;
   public static final int NUM_OBJECT_FIELDS    = 5;
-
-  @SuppressWarnings("unused")  private long   primField1;
-  @SuppressWarnings("unused")  private long   primField2;
-  @SuppressWarnings("unused")  private long   primField3;
-  @SuppressWarnings("unused")  private long   primField4;
-  @SuppressWarnings("unused")  private long   primField5;
-
-  @SuppressWarnings("unused")  private Object field1;
-  @SuppressWarnings("unused")  private Object field2;
-  @SuppressWarnings("unused")  private Object field3;
-  @SuppressWarnings("unused")  private Object field4;
-  @SuppressWarnings("unused")  private Object field5;
-
-  @CompilationFinal private long[]   extensionPrimFields;
-  @CompilationFinal private Object[] extensionObjFields;
-
-  // we manage the layout entirely in the class, but need to keep a copy here
-  // to know in case the layout changed that we can update the instances lazily
-  @CompilationFinal private ObjectLayout objectLayout;
-
-  private int    primitiveUsedMap;
-
-  private final int numberOfFields;
+  
+  private int primitiveUsedMap;
 
   protected SObject(final SClass instanceClass) {
-    numberOfFields = instanceClass.getNumberOfInstanceFields();
     clazz          = instanceClass;
-    setLayoutInitially(instanceClass.getLayoutForInstances());
+    dynamicObject  = new DynamicObjectBasic(instanceClass.getLayoutForInstances());
   }
 
   protected SObject(final int numFields) {
-    numberOfFields = numFields;
-    setLayoutInitially(new ObjectLayout(numFields, null));
-  }
-
-  private void setLayoutInitially(final ObjectLayout layout) {
-    field1 = field2 = field3 = field4 = field5 = Nil.nilObject;
-
-    objectLayout   = layout;
-    assert objectLayout.getNumberOfFields() == numberOfFields || !Universe.current().isObjectSystemInitialized();
-
-    extensionPrimFields = getExtendedPrimStorage();
-    extensionObjFields  = getExtendedObjectStorage();
+    dynamicObject = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType()));
   }
 
   public final int getNumberOfFields() {
-    return numberOfFields;
+    return dynamicObject.size();
+  }
+  
+  public DynamicObject getDynamicObject() {
+    return this.dynamicObject;
   }
 
-  public final ObjectLayout getObjectLayout() {
+  public final Shape getObjectLayout() {
     // TODO: should I really remove it, or should I update the layout?
     // assert clazz.getLayoutForInstances() == objectLayout;
-    return objectLayout;
-  }
-
-  public final long[] getExtendedPrimFields() {
-    return extensionPrimFields;
-  }
-
-  public final Object[] getExtensionObjFields() {
-    return extensionObjFields;
+    return this.dynamicObject.getShape();
   }
 
   public final void setClass(final SClass value) {
     transferToInterpreterAndInvalidate("SObject.setClass");
     assert value != null;
-
     // Set the class of this object by writing to the field with class index
     clazz = value;
-    setLayoutInitially(value.getLayoutForInstances());
+    //setLayoutInitially(value.getLayoutForInstances());
   }
 
-  private long[] getExtendedPrimStorage() {
-    return new long[objectLayout.getNumberOfUsedExtendedPrimStorageLocations()];
+  /*private long[] getExtendedPrimitiveStorage() {
+    return ((SOMDynamicObject) this.dynamicObject).getExtensionPrimitiveFields();
+    //return new long[objectLayout.getNumberOfUsedExtendedPrimStorageLocations()];
   }
 
   private Object[] getExtendedObjectStorage() {
-    Object[] storage = new Object[objectLayout.getNumberOfUsedExtendedObjectStorageLocations()];
+    return this.dynamicObject.getExtensionObjectFields();
+    /*Object[] storage = new Object[objectLayout.getNumberOfUsedExtendedObjectStorageLocations()];
     Arrays.fill(storage, Nil.nilObject);
     return storage;
-  }
+  }*/
+
+  /*private List<Object> getAllFields() {
+   return this.getDynamicObject().getValues();
+  }*/
 
   @ExplodeLoop
-  private Object[] getAllFields() {
-    Object[] fieldValues = new Object[numberOfFields];
-    for (int i = 0; i < numberOfFields; i++) {
-      if (isFieldSet(i)) {
-        fieldValues[i] = getField(i);
-      }
-    }
-    return fieldValues;
-  }
-
-  @ExplodeLoop
-  private void setAllFields(final Object[] fieldValues) {
-    field1 = field2 = field3 = field4 = field5 = null;
-    primField1 = primField2 = primField3 = primField4 = primField5 = Long.MIN_VALUE;
-
-    assert fieldValues.length == numberOfFields;
-
-    for (int i = 0; i < numberOfFields; i++) {
-      if (fieldValues[i] != null) {
-        setField(i, fieldValues[i]);
-      } else if (getLocation(i) instanceof AbstractObjectStorageLocation) {
-        setField(i, Nil.nilObject);
+  private void setAllFields(final List<Object> fieldValues) {
+    //field1 = field2 = field3 = field4 = field5 = null;
+    //primField1 = primField2 = primField3 = primField4 = primField5 = Long.MIN_VALUE;
+    assert fieldValues.size() == this.getNumberOfFields();
+    for (int i = 0; i < this.getNumberOfFields(); i++) {
+      if (fieldValues.get(i) != null) {
+        this.getDynamicObject().set(i, fieldValues.get(i));
+      } else {
+        this.getDynamicObject().set(i, Nil.nilObject);
       }
     }
   }
 
   public final boolean updateLayoutToMatchClass() {
-    ObjectLayout layoutAtClass = clazz.getLayoutForInstances();
-    assert layoutAtClass.getNumberOfFields() == numberOfFields;
+    Shape layoutAtClass = clazz.getLayoutForInstances();
+    assert layoutAtClass.getPropertyCount() == this.dynamicObject.size();
 
-    if (objectLayout != layoutAtClass) {
-      setLayoutAndTransferFields(layoutAtClass);
+    if (this.dynamicObject.getShape() != layoutAtClass) {
+      //setLayoutAndTransferFields(layoutAtClass);
       return true;
     } else {
       return false;
     }
   }
 
-  private void setLayoutAndTransferFields(final ObjectLayout layout) {
+  /*private void setLayoutAndTransferFields(final Shape layout) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-
-    Object[] fieldValues = getAllFields();
-
-    objectLayout        = layout;
-
     primitiveUsedMap    = 0;
-    extensionPrimFields = getExtendedPrimStorage();
+    this.dynamicObject.setShapeAndResize(layout);
+    /*extensionPrimFields = getExtendedPrimStorage();
     extensionObjFields  = getExtendedObjectStorage();
-
-    setAllFields(fieldValues);
+    List<Object> fieldValues = this.getAllFields();
+    this.setAllFields(fieldValues);
   }
 
   protected final void updateLayoutWithInitializedField(final long index, final Class<?> type) {
-    ObjectLayout layout = clazz.updateInstanceLayoutWithInitializedField(index, type);
+    /*ObjectLayout layout = clazz.updateInstanceLayoutWithInitializedField(index, type);
 
     assert objectLayout != layout;
     assert layout.getNumberOfFields() == numberOfFields;
@@ -195,13 +147,13 @@ public class SObject extends SAbstractObject {
   }
 
   protected final void updateLayoutWithGeneralizedField(final long index) {
-    ObjectLayout layout = clazz.updateInstanceLayoutWithGeneralizedField(index);
+    /*ObjectLayout layout = clazz.updateInstanceLayoutWithGeneralizedField(index);
 
     assert objectLayout != layout;
     assert layout.getNumberOfFields() == numberOfFields;
 
     setLayoutAndTransferFields(layout);
-  }
+  }*/
 
   @Override
   public final SClass getSOMClass() {
@@ -220,18 +172,18 @@ public class SObject extends SAbstractObject {
     return new SObject(numFields);
   }
 
-  private static final long FIRST_OBJECT_FIELD_OFFSET = getFirstObjectFieldOffset();
-  private static final long FIRST_PRIM_FIELD_OFFSET   = getFirstPrimFieldOffset();
-  private static final long OBJECT_FIELD_LENGTH = getObjectFieldLength();
-  private static final long PRIM_FIELD_LENGTH   = getPrimFieldLength();
+  private static final long FIRST_OBJECT_FIELD_OFFSET = 0; //getFirstObjectFieldOffset();
+  private static final long FIRST_PRIM_FIELD_OFFSET   = 0; //getFirstPrimFieldOffset();
+  private static final long OBJECT_FIELD_LENGTH = 0; //getObjectFieldLength();
+  private static final long PRIM_FIELD_LENGTH   = 0; //getPrimFieldLength();
 
   public static long getObjectFieldOffset(final int fieldIndex) {
-    assert 0 <= fieldIndex && fieldIndex < NUM_OBJECT_FIELDS;
+    //assert 0 <= fieldIndex && fieldIndex < NUM_OBJECT_FIELDS;
     return FIRST_OBJECT_FIELD_OFFSET + fieldIndex * OBJECT_FIELD_LENGTH;
   }
 
   public static long getPrimitiveFieldOffset(final int fieldIndex) {
-    assert 0 <= fieldIndex && fieldIndex < NUM_PRIMITIVE_FIELDS;
+    //assert 0 <= fieldIndex && fieldIndex < NUM_PRIMITIVE_FIELDS;
     return FIRST_PRIM_FIELD_OFFSET + fieldIndex * PRIM_FIELD_LENGTH;
   }
 
@@ -248,28 +200,29 @@ public class SObject extends SAbstractObject {
     primitiveUsedMap |= mask;
   }
 
-  private StorageLocation getLocation(final long index) {
-    StorageLocation location = objectLayout.getStorageLocation(index);
+  private Location getLocation(final long index) {
+    Location location = this.dynamicObject.getShape().getProperty(index).getLocation();
     assert location != null;
     return location;
   }
 
   private boolean isFieldSet(final long index) {
     CompilerAsserts.neverPartOfCompilation("isFieldSet");
-    StorageLocation location = getLocation(index);
-    return location.isSet(this, true);
+    Location location = this.getLocation(index);
+    //return location.isSet(this, true);
+    return true;
   }
 
   public final Object getField(final long index) {
-    CompilerAsserts.neverPartOfCompilation("getField");
-    StorageLocation location = getLocation(index);
-    return location.read(this, true);
+    return this.dynamicObject.get(index, Nil.nilObject);
+    //return location.read(this, true);
   }
 
   public final void setField(final long index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("setField");
+    this.dynamicObject.set(index, Nil.nilObject);
+    /*
     StorageLocation location = getLocation(index);
-
     try {
       location.write(this, value);
     } catch (UninitalizedStorageLocationException e) {
@@ -278,27 +231,28 @@ public class SObject extends SAbstractObject {
     } catch (GeneralizeStorageLocationException e) {
       updateLayoutWithGeneralizedField(index);
       setFieldAfterLayoutChange(index, value);
-    }
+    }*/
   }
 
   private void setFieldAfterLayoutChange(final long index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("SObject.setFieldAfterLayoutChange(..)");
-
-    StorageLocation location = getLocation(index);
+    
+    this.setField(index, value);
+    
+    /*StorageLocation location = getLocation(index);
     try {
       location.write(this, value);
     } catch (GeneralizeStorageLocationException
         | UninitalizedStorageLocationException e) {
       throw new RuntimeException("This should not happen, we just prepared this field for the new value.");
-    }
+    }*/
   }
 
   private static long getFirstObjectFieldOffset() {
     CompilerAsserts.neverPartOfCompilation("SObject.getFirstObjectFieldOffset()");
     try {
       final FieldOffsetProvider fieldOffsetProvider = getFieldOffsetProvider();
-
-      final Field firstField = SObject.class.getDeclaredField("field1");
+      final Field firstField = SObject.class.getDeclaredField("field1");      
       return fieldOffsetProvider.objectFieldOffset(firstField);
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
@@ -309,10 +263,8 @@ public class SObject extends SAbstractObject {
     CompilerAsserts.neverPartOfCompilation("SObject.getFirstPrimFieldOffset()");
     try {
       final FieldOffsetProvider fieldOffsetProvider = getFieldOffsetProvider();
-
       final Field firstField = SObject.class.getDeclaredField("primField1");
-      return fieldOffsetProvider.objectFieldOffset(firstField);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
+      return fieldOffsetProvider.objectFieldOffset(firstField);    } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
@@ -350,9 +302,15 @@ public class SObject extends SAbstractObject {
   private static long getFieldDistance(final String field1, final String field2) throws NoSuchFieldException,
       IllegalAccessException {
     final FieldOffsetProvider fieldOffsetProvider = getFieldOffsetProvider();
-
     final Field firstField  = SObject.class.getDeclaredField(field1);
-    final Field secondField = SObject.class.getDeclaredField(field2);
-    return fieldOffsetProvider.objectFieldOffset(secondField) - fieldOffsetProvider.objectFieldOffset(firstField);
+    final Field secondField = SObject.class.getDeclaredField(field2);    return fieldOffsetProvider.objectFieldOffset(secondField) - fieldOffsetProvider.objectFieldOffset(firstField);
   }
-}
+
+  /*
+    Todo: Implement interop
+   * 
+  @Override
+  public ForeignAccess getForeignAccess() {
+    return new ForeignAccess(getContext());
+  }*/
+ }
