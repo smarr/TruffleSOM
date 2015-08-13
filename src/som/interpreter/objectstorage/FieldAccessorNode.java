@@ -196,12 +196,12 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   public static final class ReadObjectFieldNode extends ReadSpecializedFieldNode {
-    private final ObjectLocation storage;
+    private final Location storage;
 
     public ReadObjectFieldNode(final int fieldIndex, final Shape layout,
         final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (ObjectLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (Location) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override

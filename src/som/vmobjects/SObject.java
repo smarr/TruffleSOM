@@ -27,6 +27,7 @@ package som.vmobjects;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 import som.vm.constants.Nil;
@@ -57,12 +58,14 @@ public class SObject extends SAbstractObject {
   protected SObject(final SClass instanceClass) {
     clazz          = instanceClass;
     dynamicObject  = new DynamicObjectBasic(instanceClass.getLayoutForInstances());
+    this.initializeFields();
   }
 
   protected SObject(final int numFields) {
     dynamicObject = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType()));
+    this.initializeFields();
   }
-
+  
   public final int getNumberOfFields() {
     return dynamicObject.size();
   }
@@ -101,6 +104,13 @@ public class SObject extends SAbstractObject {
    return this.getDynamicObject().getValues();
   }*/
 
+  @ExplodeLoop
+  private void initializeFields() {
+    for (int i = 0; i < this.getNumberOfFields(); i++) {
+        this.getDynamicObject().set(i, Nil.nilObject);
+    }
+  }
+  
   @ExplodeLoop
   private void setAllFields(final List<Object> fieldValues) {
     //field1 = field2 = field3 = field4 = field5 = null;
@@ -218,9 +228,9 @@ public class SObject extends SAbstractObject {
     //return location.read(this, true);
   }
 
-  public final void setField(final long index, final Object value) {
+  public final void setField(final int index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("setField");
-    this.dynamicObject.set(index, Nil.nilObject);
+    this.dynamicObject.set(index, value);
     /*
     StorageLocation location = getLocation(index);
     try {
@@ -234,7 +244,7 @@ public class SObject extends SAbstractObject {
     }*/
   }
 
-  private void setFieldAfterLayoutChange(final long index, final Object value) {
+  private void setFieldAfterLayoutChange(final int index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("SObject.setFieldAfterLayoutChange(..)");
     
     this.setField(index, value);
