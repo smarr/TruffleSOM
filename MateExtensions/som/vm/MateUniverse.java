@@ -5,9 +5,6 @@ import static som.vm.constants.MateClasses.operationalSemanticsMO;
 import static som.vm.constants.MateClasses.messageMO;
 import static som.vm.constants.Classes.objectClass;
 
-import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.vmobjects.SClass;
