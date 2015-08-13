@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package som.vmobjects;
+/*package som.vmobjects;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
@@ -46,14 +46,17 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeFieldAccessor;
 import com.oracle.truffle.api.nodes.NodeUtil.FieldOffsetProvider;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Location;
+import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.impl.*;
 import com.oracle.truffle.api.object.Layout;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
 
   @CompilationFinal protected SClass clazz;
-  @CompilationFinal private SOMDynamicObject dynamicObject;
+  @CompilationFinal private DynamicObject dynamicObject;
   
   public static final Layout LAYOUT = Layout.createLayout(Layout.INT_TO_LONG);
   
@@ -62,10 +65,13 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
   
   private int primitiveUsedMap;
 
-  //private final int numberOfFields;
-
   protected SObjectOSM(final SClass instanceClass) {
-    clazz = instanceClass;
+    clazz          = instanceClass;
+    dynamicObject = new DynamicObjectBasic(instanceClass.getLayoutForInstances());
+  }
+
+  protected SObjectOSM(final int numFields) {
+    dynamicObject = new SOMDynamicObject(LAYOUT.createShape(new MateObjectType(), numFields));
   }
 
   protected SObjectOSM() {}
@@ -74,7 +80,7 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     return dynamicObject.size();
   }
   
-  private SOMDynamicObject getDynamicObject() {
+  private DynamicObject getDynamicObject() {
     return this.dynamicObject;
   }
 
@@ -82,9 +88,9 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     // TODO: should I really remove it, or should I update the layout?
     // assert clazz.getLayoutForInstances() == objectLayout;
     return objectLayout;
-  }*/
+  }
 
-  public final void setClass(final SClass value) {
+  public final void setClass(final SClassOSM value) {
     transferToInterpreterAndInvalidate("SObject.setClass");
     assert value != null;
     // Set the class of this object by writing to the field with class index
@@ -92,17 +98,19 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     //setLayoutInitially(value.getLayoutForInstances());
   }
 
-  private long[] getExtendedPrimitiveStorage() {
-    return new long[objectLayout.getNumberOfUsedExtendedPrimStorageLocations()];
+  /*private long[] getExtendedPrimitiveStorage() {
+    return ((SOMDynamicObject) this.dynamicObject).getExtensionPrimitiveFields();
+    //return new long[objectLayout.getNumberOfUsedExtendedPrimStorageLocations()];
   }
 
   private Object[] getExtendedObjectStorage() {
-    Object[] storage = new Object[objectLayout.getNumberOfUsedExtendedObjectStorageLocations()];
+    return this.dynamicObject.getExtensionObjectFields();
+    /*Object[] storage = new Object[objectLayout.getNumberOfUsedExtendedObjectStorageLocations()];
     Arrays.fill(storage, Nil.nilObject);
     return storage;
   }
 
-  private List<Object> getAllFields() {
+  /*private List<Object> getAllFields() {
    return this.getDynamicObject().getValues();
   }
 
@@ -121,10 +129,10 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
   }
 
   public final boolean updateLayoutToMatchClass() {
-    ObjectLayout layoutAtClass = clazz.getLayoutForInstances();
-    assert layoutAtClass.getNumberOfFields() == numberOfFields;
+    Shape layoutAtClass = clazz.getLayoutForInstances();
+    assert layoutAtClass.getPropertyCount() == this.dynamicObject.size();
 
-    if (objectLayout != layoutAtClass) {
+    if (this.dynamicObject.getShape() != layoutAtClass) {
       setLayoutAndTransferFields(layoutAtClass);
       return true;
     } else {
@@ -132,19 +140,18 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     }
   }
 
-  private void setLayoutAndTransferFields(final ObjectLayout layout) {
+  /*private void setLayoutAndTransferFields(final Shape layout) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-
-    List<Object> fieldValues = this.getAllFields();
-    objectLayout        = layout;
     primitiveUsedMap    = 0;
-    //extensionPrimFields = getExtendedPrimStorage();
-    //extensionObjFields  = getExtendedObjectStorage();
+    this.dynamicObject.setShapeAndResize(layout);
+    /*extensionPrimFields = getExtendedPrimStorage();
+    extensionObjFields  = getExtendedObjectStorage();
+    List<Object> fieldValues = this.getAllFields();
     this.setAllFields(fieldValues);
   }
 
   protected final void updateLayoutWithInitializedField(final long index, final Class<?> type) {
-    ObjectLayout layout = clazz.updateInstanceLayoutWithInitializedField(index, type);
+    /*ObjectLayout layout = clazz.updateInstanceLayoutWithInitializedField(index, type);
 
     assert objectLayout != layout;
     assert layout.getNumberOfFields() == numberOfFields;
@@ -153,7 +160,7 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
   }
 
   protected final void updateLayoutWithGeneralizedField(final long index) {
-    ObjectLayout layout = clazz.updateInstanceLayoutWithGeneralizedField(index);
+    /*ObjectLayout layout = clazz.updateInstanceLayoutWithGeneralizedField(index);
 
     assert objectLayout != layout;
     assert layout.getNumberOfFields() == numberOfFields;
@@ -162,7 +169,7 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
   }
 
   @Override
-  public final SClass getSOMClass() {
+  public final SClassOSM getSOMClass() {
     return clazz;
   }
 
@@ -170,7 +177,7 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     return clazz.lookupFieldIndex(fieldName);
   }
 
-  public static SObjectOSM create(final SClass instanceClass) {
+  public static SObjectOSM create(final SClassOSM instanceClass) {
     return new SObjectOSM(instanceClass);
   }
 
@@ -206,31 +213,30 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     primitiveUsedMap |= mask;
   }
 
-  private StorageLocation getLocation(final long index) {
-    StorageLocation location = objectLayout.getStorageLocation(index);
+  private Location getLocation(final long index) {
+    Location location = this.dynamicObject.getShape().getProperty(index).getLocation();
     assert location != null;
     return location;
   }
 
   private boolean isFieldSet(final long index) {
     CompilerAsserts.neverPartOfCompilation("isFieldSet");
-    StorageLocation location = getLocation(index);
+    Location location = this.getLocation(index);
     //return location.isSet(this, true);
     return true;
   }
 
   public final Object getField(final long index) {
-    CompilerAsserts.neverPartOfCompilation("getField");
-    StorageLocation location = getLocation(index);
+    return this.dynamicObject.get(index, Nil.nilObject);
     //return location.read(this, true);
-    return true;
   }
 
   public final void setField(final long index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("setField");
+    this.dynamicObject.set(index, Nil.nilObject);
+    /*
     StorageLocation location = getLocation(index);
-
-    /*try {
+    try {
       location.write(this, value);
     } catch (UninitalizedStorageLocationException e) {
       updateLayoutWithInitializedField(index, value.getClass());
@@ -238,19 +244,21 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     } catch (GeneralizeStorageLocationException e) {
       updateLayoutWithGeneralizedField(index);
       setFieldAfterLayoutChange(index, value);
-    }*/
+    }
   }
 
   private void setFieldAfterLayoutChange(final long index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("SObject.setFieldAfterLayoutChange(..)");
-
-    StorageLocation location = getLocation(index);
-    /*try {
+    
+    this.setField(index, value);
+    
+    /*StorageLocation location = getLocation(index);
+    try {
       location.write(this, value);
     } catch (GeneralizeStorageLocationException
         | UninitalizedStorageLocationException e) {
       throw new RuntimeException("This should not happen, we just prepared this field for the new value.");
-    }*/
+    }
   }
 
   private static long getFirstObjectFieldOffset() {
@@ -315,6 +323,12 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
     final Field secondField = SObjectOSM.class.getDeclaredField(field2);
     return fieldOffsetProvider.objectFieldOffset(secondField) - fieldOffsetProvider.objectFieldOffset(firstField);
   }
+
+  @Override
+  public void setClass(SClass value) {
+    // TODO Auto-generated method stub
+    
+  }
   
   
   /*
@@ -323,5 +337,6 @@ public class SObjectOSM extends SAbstractObject { //implements TruffleObject {
   @Override
   public ForeignAccess getForeignAccess() {
     return new ForeignAccess(getContext());
-  }*/
+  }
  }
+*/

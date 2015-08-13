@@ -28,7 +28,6 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 import som.vm.constants.ReflectiveOp;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.nodes.Node;
 
 
 public class SReflectiveObject extends SObject {

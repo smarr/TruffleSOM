@@ -1,4 +1,4 @@
-package som.vmobjects;
+/*package som.vmobjects;
 
 import java.lang.invoke.MethodHandles;
 import java.util.EnumSet;
@@ -84,7 +84,7 @@ public class SOMLayout extends LayoutImpl {
   /*@Override
   public Shape createShape(ObjectType operations, Object sharedData, int id) {
       return new ShapeBasic(this, sharedData, operations, id);
-  }*/
+  }
 
   @Override
   protected boolean hasObjectExtensionArray() {
@@ -136,3 +136,4 @@ public class SOMLayout extends LayoutImpl {
     return new ShapeBasic(this, sharedData, operations, id);
   }
 }
+*/

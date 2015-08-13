@@ -1,6 +1,6 @@
 package som.vmobjects;
 
-import com.oracle.truffle.api.object.Layout;
+/*import com.oracle.truffle.api.object.Layout;
 import com.oracle.truffle.api.object.LayoutBuilder;
 import com.oracle.truffle.api.object.LayoutFactory;
 import com.oracle.truffle.api.object.Location;
@@ -29,3 +29,4 @@ public class SOMLayoutFactory implements LayoutFactory {
     return 0;
   }
 }
+*/

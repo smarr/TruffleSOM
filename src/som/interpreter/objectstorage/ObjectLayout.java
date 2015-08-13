@@ -1,4 +1,4 @@
-package som.interpreter.objectstorage;
+/*package som.interpreter.objectstorage;
 
 import som.interpreter.objectstorage.StorageLocation.UnwrittenStorageLocation;
 import som.vmobjects.SClass;
@@ -119,3 +119,4 @@ public final class ObjectLayout {
     return requiredExtensionFields;
   }
 }
+*/

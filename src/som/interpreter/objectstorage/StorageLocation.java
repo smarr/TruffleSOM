@@ -1,4 +1,4 @@
-package som.interpreter.objectstorage;
+/*package som.interpreter.objectstorage;
 
 import java.lang.reflect.Field;
 
@@ -521,3 +521,4 @@ public abstract class StorageLocation {
     }
   }
 }
+*/
