@@ -11,7 +11,7 @@ import com.oracle.truffle.api.nodes.Node;
 
 public abstract class MateNode extends ExpressionNode {
   @Child protected MateDispatch reflectiveDispatch;
-  private Object[] arguments;
+  protected Object[] arguments;
   protected SMateEnvironment environment;
   
   public MateNode(final MateDispatch node, ExpressionNode wrappedNode) {
@@ -43,14 +43,16 @@ public abstract class MateNode extends ExpressionNode {
   }
   
   public Object metaExecution(VirtualFrame frame){
-    Object value = reflectiveDispatch.executeDispatch(frame, arguments, environment);
+    Object[] args = arguments.clone();
     arguments = null;
+    Object value = reflectiveDispatch.executeDispatch(frame, args, environment);
     return value;
   }
   
   public Object baseExecution(VirtualFrame frame){
-    Object value = this.reflectiveDispatch.doBase(frame, arguments);
+    Object[] args = arguments.clone();
     arguments = null;
+    Object value = this.reflectiveDispatch.doBase(frame, args);
     return value;
   }
   

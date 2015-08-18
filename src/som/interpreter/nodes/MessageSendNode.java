@@ -191,7 +191,7 @@ public final class MessageSendNode {
     protected abstract PreevaluatedExpression makeSuperSend();
 
     private GenericMessageSendNode makeGenericSend() {
-      ExpressionNode[] arguments = new ExpressionNode[argumentNodes.length]; 
+      /*ExpressionNode[] arguments = new ExpressionNode[argumentNodes.length]; 
       int i = 0;
       for (ExpressionNode node: argumentNodes){
         if (node instanceof MateNode){
@@ -200,10 +200,10 @@ public final class MessageSendNode {
           arguments[i] = node;
         }
         i = i+1;
-      }
+      }*/
       
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
-          arguments,
+          argumentNodes,
           new UninitializedDispatchNode(selector),
           getSourceSection());
       return replace(send);
