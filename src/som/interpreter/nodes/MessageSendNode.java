@@ -104,7 +104,11 @@ public final class MessageSendNode {
     }
 
     public boolean isSuperSend() {
-      return argumentNodes[0] instanceof ISuperReadNode;
+      if (argumentNodes[0] instanceof MateNode){
+        return ((MateNode)argumentNodes[0]).getOriginalNode() instanceof ISuperReadNode;
+      } else {
+        return argumentNodes[0] instanceof ISuperReadNode;
+      }
     }
 
     @Override
@@ -187,8 +191,19 @@ public final class MessageSendNode {
     protected abstract PreevaluatedExpression makeSuperSend();
 
     private GenericMessageSendNode makeGenericSend() {
+      ExpressionNode[] arguments = new ExpressionNode[argumentNodes.length]; 
+      int i = 0;
+      for (ExpressionNode node: argumentNodes){
+        if (node instanceof MateNode){
+          arguments[i] = ((MateNode)node).getOriginalNode();
+        } else {
+          arguments[i] = node;
+        }
+        i = i+1;
+      }
+      
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
-          argumentNodes,
+          arguments,
           new UninitializedDispatchNode(selector),
           getSourceSection());
       return replace(send);
@@ -494,9 +509,15 @@ public final class MessageSendNode {
 
     @Override
     protected PreevaluatedExpression makeSuperSend() {
+      ISuperReadNode argumentNode;
+      if (argumentNodes[0] instanceof MateNode){
+        argumentNode = (ISuperReadNode)((MateNode)argumentNodes[0]).getOriginalNode();
+      } else {
+        argumentNode = (ISuperReadNode)(argumentNodes[0]);
+      }
       GenericMessageSendNode node = new GenericMessageSendNode(selector,
         argumentNodes, SuperDispatchNode.create(selector,
-              (ISuperReadNode) argumentNodes[0]), getSourceSection());
+            argumentNode), getSourceSection());
       return replace(node);
     }
   }

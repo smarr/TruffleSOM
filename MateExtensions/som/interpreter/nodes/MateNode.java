@@ -32,17 +32,9 @@ public abstract class MateNode extends ExpressionNode {
     return MateNodeGen.create(dispatch, node);
   }
   
-  /*public static MateNode createForPreevaluatedExpression(PreevaluatedExpression node){
-    return MateNodeGen.create(MatePreEvaluatedDispatch.create(node),(ExpressionNode)node);
-  }*/
-  
   @Specialization(guards="hasReflectiveBehavior(frame)")
   public Object doMetaLevel(VirtualFrame frame){
     return this.metaExecution(frame);
-  }
-  
-  public Object metaExecution(VirtualFrame frame){
-    return reflectiveDispatch.executeDispatch(frame, arguments, environment);
   }
   
   @Specialization(guards="!hasReflectiveBehavior(frame)")
@@ -50,27 +42,42 @@ public abstract class MateNode extends ExpressionNode {
     return baseExecution(frame);
   }
   
+  public Object metaExecution(VirtualFrame frame){
+    Object value = reflectiveDispatch.executeDispatch(frame, arguments, environment);
+    arguments = null;
+    return value;
+  }
+  
   public Object baseExecution(VirtualFrame frame){
-    return this.reflectiveDispatch.doBaselevel(frame, arguments);
+    Object value = this.reflectiveDispatch.doBase(frame, arguments);
+    arguments = null;
+    return value;
   }
   
   protected boolean hasReflectiveBehavior(VirtualFrame frame){
-    if (!MateUniverse.current().executingMeta()){
+    if (MateUniverse.current().executingMeta()) return false;
+    if (arguments == null){
       arguments = reflectiveDispatch.evaluateArguments(frame);
-      Object receiver = arguments[0]; 
-      //Need this check because of the possibility to receive primitive types 
-      if (receiver instanceof SReflectiveObject){
-        environment = ((SReflectiveObject)receiver).getEnvironment();
-        if (environment != null){
-          return true;
-        }
-        return  !((environment = ((SReflectiveObject)receiver).getEnvironment()) == null );
-      } else {
-        return false;
+    }
+    Object receiver = arguments[0]; 
+    //Need this check because of the possibility to receive primitive types 
+    if (receiver instanceof SReflectiveObject){
+      environment = ((SReflectiveObject)receiver).getEnvironment();
+      if (environment != null){
+        return true;
       }
+      return  !((environment = ((SReflectiveObject)receiver).getEnvironment()) == null );
     } else {
       return false;
     }
+  }
+  
+  public ExpressionNode getOriginalNode(){
+    return this.getReflectiveDispatch().getBaseLevel();
+  }
+  
+  protected MateDispatch getReflectiveDispatch(){
+    return this.reflectiveDispatch;
   }
   
   public Node wrapIntoMateNode(){
