@@ -26,8 +26,6 @@ package som.vmobjects;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
 import som.vm.constants.Nil;
@@ -35,11 +33,8 @@ import som.vm.constants.Nil;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.NodeFieldAccessor;
-import com.oracle.truffle.api.nodes.NodeUtil.FieldOffsetProvider;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Layout;
-import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.object.basic.DynamicObjectBasic;
 

@@ -12,6 +12,9 @@ import som.interpreter.nodes.literals.LiteralNode;
 import som.interpreter.nodes.specialized.whileloops.WhileCache;
 import som.primitives.GlobalPrim;
 import som.primitives.HasGlobalPrim;
+import som.primitives.reflection.PerformInSuperclassPrim;
+import som.primitives.reflection.PerformWithArgumentsInSuperclassPrim;
+import som.primitives.reflection.PerformWithArgumentsPrim;
 
 
 public class MateifyVisitor implements NodeVisitor {
@@ -23,6 +26,10 @@ public class MateifyVisitor implements NodeVisitor {
         !(node instanceof CatchNonLocalReturnNode) &&
         !(node instanceof SequenceNode) &&
         !(node instanceof WhileCache) &&
+        !(node instanceof Primitive) &&
+        !(node instanceof PerformWithArgumentsPrim) &&
+        !(node instanceof PerformWithArgumentsInSuperclassPrim) &&
+        !(node instanceof PerformInSuperclassPrim) &&
         !(node instanceof HasGlobalPrim) &&
         !(node instanceof GlobalPrim) &&
         !(node instanceof LiteralNode)){

@@ -46,9 +46,13 @@ public class MateUniverse extends Universe {
   }
   
   public SClass loadClass(final SSymbol name) {
-    SClass result = super.loadClass(name);
-    mateify(name);
-    return result;
+    if ((SClass) getGlobal(name) != null){
+      return super.loadClass(name);
+    } else {
+      SClass result = super.loadClass(name);
+      mateify(name);
+      return result;
+    }
   }
   
   public void mateify(final SSymbol name) {
@@ -63,10 +67,10 @@ public class MateUniverse extends Universe {
   }
   
   public static MateUniverse current() {
-    if (current == null) {
-      current = new MateUniverse();
+    if (Universe.getCurrent() == null) {
+      Universe.setCurrent(new MateUniverse());
     }
-    return (MateUniverse) current;
+    return (MateUniverse) Universe.getCurrent();
   }
   
   public boolean executingMeta() {
