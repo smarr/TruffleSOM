@@ -1,5 +1,6 @@
 package som.vm.constants;
 
+import som.vm.MateUniverse;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 
@@ -10,9 +11,9 @@ public class MateClasses extends Classes {
 
   static {
     // Allocate the Metaclass classes
-    environmentMO = Universe.newSystemClass();
-    operationalSemanticsMO = Universe.newSystemClass();
-    messageMO = Universe.newSystemClass();
+    environmentMO = MateUniverse.newSystemClass();
+    operationalSemanticsMO = MateUniverse.newSystemClass();
+    messageMO = MateUniverse.newSystemClass();
     //environment = Universe.newSystemClass();
   }
 

@@ -690,7 +690,7 @@ public class Universe {
 
   // Latest instance
   // WARNING: this is problematic with multiple interpreters in the same VM...
-  @CompilationFinal protected static Universe current;
+  @CompilationFinal private static Universe current;
   @CompilationFinal protected boolean alreadyInitialized;
 
   @CompilationFinal private boolean objectSystemInitialized = false;
@@ -699,6 +699,14 @@ public class Universe {
     return objectSystemInitialized;
   }
 
+  public static Universe getCurrent(){
+    return current;
+  }
+  
+  public static void setCurrent(Universe universe){
+    current = universe;
+  }
+  
   public static Universe current() {
     if (current == null) {
       current = new Universe();

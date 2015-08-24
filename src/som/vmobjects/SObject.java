@@ -116,7 +116,7 @@ public class SObject extends SAbstractObject {
     return clazz;
   }
 
-  public final long getFieldIndex(final SSymbol fieldName) {
+  public final int getFieldIndex(final SSymbol fieldName) {
     return clazz.lookupFieldIndex(fieldName);
   }
 
@@ -128,7 +128,7 @@ public class SObject extends SAbstractObject {
     return new SObject(numFields);
   }
 
-  public final Object getField(final long index) {
+  public final Object getField(final int index) {
     return this.dynamicObject.get(index, Nil.nilObject);
   }
 
