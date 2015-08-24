@@ -6,16 +6,21 @@ import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractUninitializedMessageSendNode;
 import som.vm.MateUniverse;
 import som.vm.constants.ReflectiveOp;
+import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
+
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.utilities.ValueProfile;
 
 
 public abstract class MateDispatch extends Node {
@@ -45,14 +50,14 @@ public abstract class MateDispatch extends Node {
   public Object doMetaLevel(final VirtualFrame frame,  
       Object[] arguments,
       SMateEnvironment environment,
-      @Cached("environment") SMateEnvironment cachedEnvironment) 
+      @Cached("environment") SMateEnvironment cachedEnvironment,
+      @Cached("createDispatch(environment, baseLevel.reflectiveOperation())") SMethod[] reflectiveMethods) 
   { 
-    SMethod[] metaDelegation = this.createDispatch(environment, baseLevel.reflectiveOperation());
-    if (metaDelegation == null)
+    if (reflectiveMethods == null)
       return doBase(frame, arguments);
     else {
       MateUniverse.current().enterMetaExecutionLevel();
-      Object value = this.doMeta(frame, arguments, metaDelegation);
+      Object value = this.doMeta(frame, arguments, reflectiveMethods);
       MateUniverse.current().leaveMetaExecutionLevel();
       return value;
     }
@@ -136,7 +141,13 @@ public abstract class MateDispatch extends Node {
         //The MOP receives the standard ST message Send stack (rcvr, selector, arguments) and return its own
         Object context = metaDelegation[1].invoke(arguments[0], method.getSignature(), SArguments.getArgumentsWithoutReceiver(arguments));
         MateUniverse.current().leaveMetaExecutionLevel();
-        return callTarget.call(frame, context);
+        MaterializedFrame materialized = frame.materialize();
+        int i = 0;
+        for (FrameSlot slot: materialized.getFrameDescriptor().getSlots()){
+          materialized.setObject(slot, ((SArray)context).getObjectStorage(ValueProfile.createClassProfile())[i]);
+          i++;
+        }
+        return callTarget.call(materialized, context);
       } else {
         return callTarget.call(frame, arguments);
       }

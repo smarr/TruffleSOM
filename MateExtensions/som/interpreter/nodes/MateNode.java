@@ -57,18 +57,15 @@ public abstract class MateNode extends ExpressionNode {
   }
   
   protected boolean hasReflectiveBehavior(VirtualFrame frame){
-    if (MateUniverse.current().executingMeta()) return false;
     if (arguments == null){
       arguments = reflectiveDispatch.evaluateArguments(frame);
     }
+    if (MateUniverse.current().executingMeta()) return false;
     Object receiver = arguments[0]; 
     //Need this check because of the possibility to receive primitive types 
     if (receiver instanceof SReflectiveObject){
       environment = ((SReflectiveObject)receiver).getEnvironment();
-      if (environment != null){
-        return true;
-      }
-      return  !((environment = ((SReflectiveObject)receiver).getEnvironment()) == null );
+      return (environment != null);
     } else {
       return false;
     }
