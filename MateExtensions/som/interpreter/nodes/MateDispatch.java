@@ -9,6 +9,7 @@ import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
+import som.vmobjects.SArray.ArrayType;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
 
@@ -16,8 +17,6 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.utilities.ValueProfile;
@@ -76,38 +75,9 @@ public abstract class MateDispatch extends Node {
     return baseLevel.executeGeneric(frame);
   }
   
-  /*public Object[] evaluateArguments(VirtualFrame frame){
-    Object[] receiver = new Object[1];
-    receiver[0] = SArguments.rcvr(frame);
-    return receiver;
-  }
-  
-  public static SObject getMetaobjectFrom(Object[] arguments){
-    return ((SReflectiveObject)arguments[0]).getEnvironment();
-  }*/
-  
   public SMethod[] createDispatch(SObject metaobject, ReflectiveOp operation){
     return ((SMateEnvironment)metaobject).methodsImplementing(operation);
   }
-  
- /* public static abstract class MatePreEvaluatedDispatch extends MateDispatch {
-        
-    public MatePreEvaluatedDispatch(final PreevaluatedExpression node) {
-      super((ExpressionNode)node);
-    }
-    
-    public static MatePreEvaluatedDispatch create(final PreevaluatedExpression node) {
-      return MatePreEvaluatedDispatchNodeGen.create(node);
-    }
-    
-    public Object[] evaluateArguments(VirtualFrame frame){
-      return ((PreevaluatedExpression)this.baseLevel).evaluateArguments(frame);
-    }
-    
-    public Object executeGeneric(final VirtualFrame frame, SMateEnvironment environment){
-      return ((PreevaluatedExpression) baseLevel).doPreEvaluated(frame,this.evaluateArguments(frame));
-    }
-  }*/
   
   public abstract static class MateDispatchMessageSend extends MateDispatch {
   
@@ -139,15 +109,14 @@ public abstract class MateDispatch extends Node {
       CallTarget callTarget = method.getCallTarget();
       if (metaDelegation[1] != null) {
         //The MOP receives the standard ST message Send stack (rcvr, selector, arguments) and return its own
-        Object context = metaDelegation[1].invoke(arguments[0], method.getSignature(), SArguments.getArgumentsWithoutReceiver(arguments));
-        MateUniverse.current().leaveMetaExecutionLevel();
-        MaterializedFrame materialized = frame.materialize();
-        int i = 0;
-        for (FrameSlot slot: materialized.getFrameDescriptor().getSlots()){
-          materialized.setObject(slot, ((SArray)context).getObjectStorage(ValueProfile.createClassProfile())[i]);
-          i++;
+        Object metacontext = metaDelegation[1].invoke(arguments[0], method.getSignature(), SArguments.getArgumentsWithoutReceiver(arguments));
+        Object[] realArguments;
+        if (((SArray)metacontext).getType() == ArrayType.PARTIAL_EMPTY){
+          realArguments = ((SArray)metacontext).getPartiallyEmptyStorage(ValueProfile.createClassProfile()).getStorage();
+        } else {
+          realArguments = ((SArray)metacontext).getObjectStorage(ValueProfile.createClassProfile());
         }
-        return callTarget.call(materialized, context);
+        return callTarget.call(realArguments);
       } else {
         return callTarget.call(frame, arguments);
       }

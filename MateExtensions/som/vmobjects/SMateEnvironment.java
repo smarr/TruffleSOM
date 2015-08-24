@@ -31,7 +31,7 @@ public class SMateEnvironment extends SObject {
         metaobject = this.getField(Message_IDX);
         break;
       case ReadField: case WriteField: 
-        metaobject = this.getField(Semantics_IDX);
+        metaobject = this.getField((int)Semantics_IDX);
     }
     if (metaobject == Nil.nilObject) return null;
     return this.methodForOperation((SObject)metaobject, operation);
@@ -45,6 +45,7 @@ public class SMateEnvironment extends SObject {
         methods = new SMethod[2];
         methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("find:since:"));
         methods[1] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("activate:withArguments:"));
+        if (methods[0] == null && methods[1] == null) return null;
         break;
       case ReadField: 
         methods = new SMethod[1];
@@ -58,6 +59,7 @@ public class SMateEnvironment extends SObject {
         methods = new SMethod[0];
         break;
     }
+    if (methods[0] == null) return null;
     return methods;
   }
 }
