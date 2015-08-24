@@ -67,7 +67,7 @@ public class SomTests {
       });
   }
 
-  private String testName;
+  protected String testName;
 
   public SomTests(final String testName) {
     this.testName = testName;
@@ -83,5 +83,5 @@ public class SomTests {
     assertEquals(0, u.lastExitCode());
   }
 
-  private static final Universe u = Universe.current();
+  protected static Universe u = Universe.current();
 }
