@@ -58,5 +58,6 @@ public final class ObjectPrimitives extends Primitives {
     installInstancePrimitive("class",                  ClassPrimFactory.getInstance());
     if (Universe.current() instanceof MateUniverse)
       installInstancePrimitive("installEnvironment:", installEnvironmentPrimFactory.getInstance());
+      installInstancePrimitive("changeShape:", installEnvironmentPrimFactory.getInstance());
   }
 }

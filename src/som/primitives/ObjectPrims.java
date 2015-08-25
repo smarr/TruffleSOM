@@ -12,6 +12,7 @@ import som.vmobjects.SClass;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
+import som.vmobjects.SShape;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -119,6 +120,16 @@ public final class ObjectPrims {
       if (environment == Nil.nilObject) ((SReflectiveObject)receiver).setEnvironment(null);
       else ((SReflectiveObject)receiver).setEnvironment((SMateEnvironment)environment);
       return receiver;
+    }
+  }
+  
+  @GenerateNodeFactory
+  public abstract static class changeShape extends BinaryExpressionNode {
+    @Specialization
+    public final void doSObject(final SObject receiver, final SShape shape) {
+      //CompilerAsserts.neverPartOfCompilation();
+      //if (environment == Nil.nilObject) ((SReflectiveObject)receiver).setEnvironment(null);
+      receiver.getDynamicObject().setShapeAndResize(receiver.getDynamicObject().getShape(), shape.getShape());
     }
   }
 }

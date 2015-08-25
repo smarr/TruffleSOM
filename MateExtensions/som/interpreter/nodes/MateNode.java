@@ -2,10 +2,13 @@ package som.interpreter.nodes;
 
 import som.interpreter.nodes.MateDispatch.MateDispatchMessageSend;
 import som.vm.MateUniverse;
+import som.vm.constants.Nil;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
@@ -61,6 +64,18 @@ public abstract class MateNode extends ExpressionNode {
       arguments = reflectiveDispatch.evaluateArguments(frame);
     }
     if (MateUniverse.current().executingMeta()) return false;
+    FrameSlot slot = frame.getFrameDescriptor().findFrameSlot("semantics");
+    if (slot != null) {
+      try {
+        if (frame.getObject(slot) != Nil.nilObject){
+          int i = 1;
+          i++;
+        }
+      } catch (FrameSlotTypeException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
     Object receiver = arguments[0]; 
     //Need this check because of the possibility to receive primitive types 
     if (receiver instanceof SReflectiveObject){

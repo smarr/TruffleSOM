@@ -5,6 +5,7 @@ import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchMessageSendNodeGen;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractUninitializedMessageSendNode;
 import som.vm.MateUniverse;
+import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
@@ -17,6 +18,7 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.utilities.ValueProfile;
@@ -116,9 +118,20 @@ public abstract class MateDispatch extends Node {
         } else {
           realArguments = ((SArray)metacontext).getObjectStorage(ValueProfile.createClassProfile());
         }
+        SMateEnvironment semantics = (SMateEnvironment) realArguments[0];
+        if (((SArray)realArguments[1]).getType() == ArrayType.PARTIAL_EMPTY){
+          realArguments = ((SArray)realArguments[1]).getPartiallyEmptyStorage(ValueProfile.createClassProfile()).getStorage();
+        } else {
+          realArguments = ((SArray)realArguments[1]).getObjectStorage(ValueProfile.createClassProfile());
+        }
+        /*if (semantics != Nil.nilObject){
+          materialized = frame.materialize();
+          int i = 1;
+          return callTarget.call(materialized, realArguments);
+        }*/
         return callTarget.call(realArguments);
       } else {
-        return callTarget.call(frame, arguments);
+        return callTarget.call(arguments);
       }
     }
     

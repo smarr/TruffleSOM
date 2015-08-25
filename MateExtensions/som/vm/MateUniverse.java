@@ -3,6 +3,7 @@ package som.vm;
 import static som.vm.constants.MateClasses.environmentMO;
 import static som.vm.constants.MateClasses.operationalSemanticsMO;
 import static som.vm.constants.MateClasses.messageMO;
+import static som.vm.constants.MateClasses.ShapeClass;
 import static som.vm.constants.Classes.objectClass;
 
 import som.interpreter.Invokable;
@@ -27,11 +28,13 @@ public class MateUniverse extends Universe {
       initializeSystemClass(environmentMO, objectClass, "EnvironmentMO");
       initializeSystemClass(operationalSemanticsMO, objectClass, "OperationalSemanticsMO");
       initializeSystemClass(messageMO, objectClass, "MessageMO");
+      initializeSystemClass(ShapeClass, objectClass, "Shape");
       
       // Load methods and fields into the Mate MOP.
       loadSystemClass(environmentMO);
       loadSystemClass(operationalSemanticsMO);
       loadSystemClass(messageMO);
+      loadSystemClass(ShapeClass);
       
       this.executingMeta = false;
     }
