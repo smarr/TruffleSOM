@@ -31,6 +31,7 @@ import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
+import som.vmobjects.SShape;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -47,6 +48,7 @@ import com.oracle.truffle.api.dsl.TypeSystem;
                 SSymbol.class,
              SInvokable.class,
                  SArray.class,
+                 SShape.class,
         SAbstractObject.class,
                Object[].class}) // Object[] is only for argument passing
 public class Types {

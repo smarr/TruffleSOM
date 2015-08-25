@@ -124,12 +124,13 @@ public final class ObjectPrims {
   }
   
   @GenerateNodeFactory
-  public abstract static class changeShape extends BinaryExpressionNode {
+  public abstract static class changeShapePrim extends BinaryExpressionNode {
     @Specialization
-    public final void doSObject(final SObject receiver, final SShape shape) {
+    public final Object doSObject(final SObject receiver, final SShape shape) {
       //CompilerAsserts.neverPartOfCompilation();
       //if (environment == Nil.nilObject) ((SReflectiveObject)receiver).setEnvironment(null);
       receiver.getDynamicObject().setShapeAndResize(receiver.getDynamicObject().getShape(), shape.getShape());
+      return receiver;
     }
   }
 }
