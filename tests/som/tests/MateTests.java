@@ -39,6 +39,7 @@ public class MateTests {
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][] {
         {"Immutability"},
+        {"Layout"},
       });
   }
 

@@ -5,6 +5,7 @@ import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchMessageSendNodeGen;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractUninitializedMessageSendNode;
 import som.vm.MateUniverse;
+import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SArray;
@@ -16,10 +17,19 @@ import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.frame.FrameInstance;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
+import com.oracle.truffle.api.impl.DefaultDirectCallNode;
+import com.oracle.truffle.api.impl.DefaultTruffleRuntime;
+import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.utilities.ValueProfile;
 
@@ -57,10 +67,7 @@ public abstract class MateDispatch extends Node {
     if (reflectiveMethods == null)
       return doBase(frame, arguments);
     else {
-      MateUniverse.current().enterMetaExecutionLevel();
-      Object value = this.doMeta(frame, arguments, reflectiveMethods);
-      MateUniverse.current().leaveMetaExecutionLevel();
-      return value;
+      return this.doMeta(frame, arguments, reflectiveMethods);
     }
   }
   
@@ -70,7 +77,10 @@ public abstract class MateDispatch extends Node {
   }
   
   public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation){
-    return metaDelegation[0].invoke(frame);
+    MateUniverse.current().enterMetaExecutionLevel();
+    Object value = metaDelegation[0].invoke(frame);
+    MateUniverse.current().leaveMetaExecutionLevel();
+    return value;
   }
   
   public Object doBase(final VirtualFrame frame, Object[] arguments){
@@ -103,12 +113,13 @@ public abstract class MateDispatch extends Node {
     @Override
     public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation) {
       //The MOP receives the class where the lookup must start (find: aSelector since: aClass)
+      MateUniverse.current().enterMetaExecutionLevel();
       SInvokable method = (SInvokable)metaDelegation[0].invoke(
                                arguments[0], 
                                ((AbstractMessageSendNode)this.baseLevel).getSelector(),
                                ((SObject)arguments[0]).getSOMClass()                           
                              );
-      CallTarget callTarget = method.getCallTarget();
+      RootCallTarget callTarget = method.getCallTarget();
       if (metaDelegation[1] != null) {
         //The MOP receives the standard ST message Send stack (rcvr, selector, arguments) and return its own
         Object metacontext = metaDelegation[1].invoke(arguments[0], method.getSignature(), SArguments.getArgumentsWithoutReceiver(arguments));
@@ -124,13 +135,40 @@ public abstract class MateDispatch extends Node {
         } else {
           realArguments = ((SArray)realArguments[1]).getObjectStorage(ValueProfile.createClassProfile());
         }
-        /*if (semantics != Nil.nilObject){
-          materialized = frame.materialize();
-          int i = 1;
-          return callTarget.call(materialized, realArguments);
-        }*/
+        if (semantics != Nil.nilObject){
+          DefaultTruffleRuntime runtime = ((DefaultTruffleRuntime) Universe.current().getTruffleRuntime());
+          VirtualFrame customizedFrame = runtime.createVirtualFrame(realArguments, callTarget.getRootNode().getFrameDescriptor());
+          FrameSlot slot = customizedFrame.getFrameDescriptor().addFrameSlot("semantics", FrameSlotKind.Object);
+          customizedFrame.setObject(slot, semantics);
+          FrameInstance frameInstance = new FrameInstance() {
+            public Frame getFrame(FrameAccess access, boolean slowPath) {
+                return frame;
+            }
+
+            public boolean isVirtualFrame() {
+                return false;
+            }
+
+            public Node getCallNode() {
+                return method.getCallTarget().getRootNode();
+            }
+
+            public CallTarget getCallTarget() {
+                return method.getCallTarget();
+            }
+          };
+          runtime.pushFrame(frameInstance);
+          try {
+            MateUniverse.current().leaveMetaExecutionLevel();
+            return method.getCallTarget().getRootNode().execute(customizedFrame);
+          } finally {
+            runtime.popFrame();
+          }
+        }
+        MateUniverse.current().leaveMetaExecutionLevel();
         return callTarget.call(realArguments);
       } else {
+        MateUniverse.current().leaveMetaExecutionLevel();
         return callTarget.call(arguments);
       }
     }

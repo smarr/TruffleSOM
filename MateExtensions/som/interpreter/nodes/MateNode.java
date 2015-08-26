@@ -67,12 +67,11 @@ public abstract class MateNode extends ExpressionNode {
     FrameSlot slot = frame.getFrameDescriptor().findFrameSlot("semantics");
     if (slot != null) {
       try {
-        if (frame.getObject(slot) != Nil.nilObject){
-          int i = 1;
-          i++;
+        if (frame.getObject(slot) instanceof SMateEnvironment){
+          environment = (SMateEnvironment)frame.getObject(slot);
+          return true;
         }
       } catch (FrameSlotTypeException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }

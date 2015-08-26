@@ -25,6 +25,7 @@
 
 package som.primitives;
 
+import som.primitives.MatePrimsFactory.MateChangeShapePrimFactory;
 import som.primitives.ObjectPrimsFactory.ClassPrimFactory;
 import som.primitives.ObjectPrimsFactory.HaltPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPrimFactory;
@@ -58,6 +59,6 @@ public final class ObjectPrimitives extends Primitives {
     installInstancePrimitive("class",                  ClassPrimFactory.getInstance());
     if (Universe.current() instanceof MateUniverse)
       installInstancePrimitive("installEnvironment:", installEnvironmentPrimFactory.getInstance());
-      installInstancePrimitive("changeShape:", installEnvironmentPrimFactory.getInstance());
+      installInstancePrimitive("changeShape:", MateChangeShapePrimFactory.getInstance());
   }
 }
