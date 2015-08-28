@@ -225,7 +225,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
     }
     
     public Node wrapIntoMateNode(){
-      return MateNode.createForGenericExpression(this);
+      return MateExpressionNode.createForGenericExpression(this);
     }
   }
 }

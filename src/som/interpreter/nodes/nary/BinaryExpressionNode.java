@@ -3,7 +3,7 @@ package som.interpreter.nodes.nary;
 import java.util.Iterator;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.MateNode;
+import som.interpreter.nodes.MateExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.vm.constants.ReflectiveOp;
 

@@ -104,8 +104,8 @@ public final class MessageSendNode {
     }
 
     public boolean isSuperSend() {
-      if (argumentNodes[0] instanceof MateNode){
-        return ((MateNode)argumentNodes[0]).getOriginalNode() instanceof ISuperReadNode;
+      if (argumentNodes[0] instanceof MateExpressionNode){
+        return ((MateExpressionNode)argumentNodes[0]).getOriginalNode() instanceof ISuperReadNode;
       } else {
         return argumentNodes[0] instanceof ISuperReadNode;
       }
@@ -128,9 +128,7 @@ public final class MessageSendNode {
     }
     
     public Node wrapIntoMateNode(){
-      //return new MateNode((ExpressionNode)this);
-      //return MateNode.createForPreevaluatedExpression(this);
-      return MateNode.createForGenericExpression(this);
+      return MateExpressionNode.createForMessageSend(this);
     }
     
     public abstract SSymbol getSelector();
@@ -201,7 +199,6 @@ public final class MessageSendNode {
         }
         i = i+1;
       }*/
-      
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
           argumentNodes,
           new UninitializedDispatchNode(selector),
@@ -510,8 +507,8 @@ public final class MessageSendNode {
     @Override
     protected PreevaluatedExpression makeSuperSend() {
       ISuperReadNode argumentNode;
-      if (argumentNodes[0] instanceof MateNode){
-        argumentNode = (ISuperReadNode)((MateNode)argumentNodes[0]).getOriginalNode();
+      if (argumentNodes[0] instanceof MateExpressionNode){
+        argumentNode = (ISuperReadNode)((MateExpressionNode)argumentNodes[0]).getOriginalNode();
       } else {
         argumentNode = (ISuperReadNode)(argumentNodes[0]);
       }

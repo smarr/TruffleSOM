@@ -2,6 +2,8 @@ package som.interpreter.objectstorage;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.MateExpressionNode;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 
@@ -33,6 +35,10 @@ public abstract class FieldAccessorNode extends Node {
 
   public final int getFieldIndex() {
     return fieldIndex;
+  }
+  
+  public Node wrapIntoMateNode(){
+    return MateExpressionNode.createForFieldAccess(this);
   }
 
   public abstract static class AbstractReadFieldNode extends FieldAccessorNode {

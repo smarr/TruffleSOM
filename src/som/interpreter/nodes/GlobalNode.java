@@ -46,7 +46,7 @@ public abstract class GlobalNode extends ExpressionNode {
   }
   
   public Node wrapIntoMateNode(){
-    return MateNode.createForGenericExpression(this);
+    return MateExpressionNode.createForGenericExpression(this);
   }
 
   public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
