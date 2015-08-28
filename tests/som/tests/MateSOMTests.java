@@ -9,15 +9,14 @@ public class MateSOMTests extends SomTests {
     super(testName);
   }
   
-  protected Universe getUniverse(){
-    if (u == null) {
-      u = MateUniverse.current();
-    }
-    return u;
+  @Override
+  protected String[] getArguments(){
+    String[] args = {"-cp", "Smalltalk:Smalltalk/Mate:Smalltalk/Mate/MOP:", "TestSuite/TestHarness.som", testName};
+    return args;
   }
   
-  protected String[] getArguments(){
-    String[] args = {"-cp", "Smalltalk:Smalltalk/Mate/MOP:", "TestSuite/TestHarness.som", testName};
-    return args;
+  static{
+    Universe.setCurrent(new MateUniverse());
+    SomTests.u = Universe.current();
   }
 }

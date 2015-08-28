@@ -76,11 +76,16 @@ public class SomTests {
   @Test
   public void testSomeTest() {
     u.setAvoidExit(true);
-    String[] args = {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName};
+    String[] args = this.getArguments();
 
     u.interpret(args);
 
     assertEquals(0, u.lastExitCode());
+  }
+  
+  protected String[] getArguments(){
+    String[] arg = {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName};
+    return arg;
   }
 
   protected static Universe u = Universe.current();

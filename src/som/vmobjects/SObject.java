@@ -53,7 +53,9 @@ public class SObject extends SAbstractObject {
 
   protected SObject(final int numFields) {
     dynamicObject = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType()));
-    this.initializeFields();
+    for (int i = 0; i < numFields; i++) {
+       this.getDynamicObject().define(i, Nil.nilObject);
+    }
   }
   
   public final int getNumberOfFields() {
@@ -75,10 +77,6 @@ public class SObject extends SAbstractObject {
     // Set the class of this object by writing to the field with class index
     clazz = value;
   }
-
-  /*private List<Object> getAllFields() {
-   return this.getDynamicObject().getValues();
-  }*/
 
   @ExplodeLoop
   private void initializeFields() {

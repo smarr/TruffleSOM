@@ -1,6 +1,7 @@
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
+import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchFieldAccessNodeGen;
 import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchMessageSendNodeGen;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractUninitializedMessageSendNode;
@@ -24,28 +25,24 @@ import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
-import com.oracle.truffle.api.impl.DefaultDirectCallNode;
 import com.oracle.truffle.api.impl.DefaultTruffleRuntime;
-import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.utilities.ValueProfile;
 
 
 public abstract class MateDispatch extends Node {
-  @CompilationFinal protected final ExpressionNode baseLevel;
+  @CompilationFinal protected final Node baseLevel;
   
-  public MateDispatch(final ExpressionNode node){
+  public MateDispatch(final Node node){
     this.baseLevel = node;
   }
   
-  public static MateDispatch create(final ExpressionNode node) {
+  public static MateDispatch create(final Node node) {
     return MateDispatchNodeGen.create(node);
   }
   
-  public ExpressionNode getBaseLevel(){
+  public Node getBaseLevel(){
     return this.baseLevel;
   }
   
@@ -62,7 +59,7 @@ public abstract class MateDispatch extends Node {
       Object[] arguments,
       SMateEnvironment environment,
       @Cached("environment") SMateEnvironment cachedEnvironment,
-      @Cached("createDispatch(environment, baseLevel.reflectiveOperation())") SMethod[] reflectiveMethods) 
+      @Cached("createDispatch(environment, baseLevel)") SMethod[] reflectiveMethods) 
   { 
     if (reflectiveMethods == null)
       return doBase(frame, arguments);
@@ -84,21 +81,39 @@ public abstract class MateDispatch extends Node {
   }
   
   public Object doBase(final VirtualFrame frame, Object[] arguments){
-    return baseLevel.executeGeneric(frame);
+    return ((ExpressionNode) baseLevel).executeGeneric(frame);
   }
   
-  public SMethod[] createDispatch(SObject metaobject, ReflectiveOp operation){
+  public SMethod[] createDispatch(SObject metaobject, Node node){
+    ReflectiveOp operation = ((ExpressionNode) node).reflectiveOperation();
     return ((SMateEnvironment)metaobject).methodsImplementing(operation);
   }
   
-  public abstract static class MateDispatchMessageSend extends MateDispatch {
-  
-    public MateDispatchMessageSend(ExpressionNode node) {
+  public abstract static class MateDispatchFieldAccess extends MateDispatch {
+
+    public MateDispatchFieldAccess(Node node) {
       super(node);
-      // TODO Auto-generated constructor stub
     }
     
-    public static MateDispatchMessageSend create(final ExpressionNode node) {
+    public static MateDispatch create(final Node node) {
+      return MateDispatchFieldAccessNodeGen.create(node);
+    }
+    
+    public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation){
+      MateUniverse.current().enterMetaExecutionLevel();
+      Object value = metaDelegation[0].invoke(frame);
+      MateUniverse.current().leaveMetaExecutionLevel();
+      return value;
+    }
+  }  
+   
+  public abstract static class MateDispatchMessageSend extends MateDispatch {
+  
+    public MateDispatchMessageSend(Node node) {
+      super(node);
+    }
+    
+    public static MateDispatchMessageSend create(final Node node) {
       if (node instanceof AbstractUninitializedMessageSendNode){
         if (((AbstractUninitializedMessageSendNode) node).getSelector().getString() == "value"){
           return MateDispatchMessageSendNodeGen.create(node);

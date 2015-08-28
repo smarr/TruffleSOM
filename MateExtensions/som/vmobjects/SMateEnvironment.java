@@ -8,6 +8,7 @@ import som.vmobjects.SInvokable.SMethod;
 
 public class SMateEnvironment extends SObject {
   public static final int Semantics_IDX = 0;
+  public static final int Layout_IDX = 1;
   public static final int Message_IDX = 2;
   
   public static SMateEnvironment create(final SClass instanceClass) {
@@ -31,7 +32,11 @@ public class SMateEnvironment extends SObject {
         metaobject = this.getField(Message_IDX);
         break;
       case ReadField: case WriteField: 
-        metaobject = this.getField((int)Semantics_IDX);
+        metaobject = this.getField(Semantics_IDX);
+        break;
+      case ReadLayout: case WriteLayout: 
+        metaobject = this.getField(Layout_IDX);  
+        break;
     }
     if (metaobject == Nil.nilObject) return null;
     return this.methodForOperation((SObject)metaobject, operation);
@@ -53,7 +58,7 @@ public class SMateEnvironment extends SObject {
         break;
       case WriteField: 
         methods = new SMethod[1];
-        methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:"));
+        methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
         break;
       default:
         methods = new SMethod[0];

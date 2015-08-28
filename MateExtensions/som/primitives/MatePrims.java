@@ -40,7 +40,7 @@ public final class MatePrims {
   public abstract static class MateChangeShapePrim extends BinaryExpressionNode {
     @Specialization
     public final SAbstractObject doSObject(final SObject receiver, SShape newShape) {
-      //receiver.
+      receiver.getDynamicObject().setShapeAndResize(receiver.getDynamicObject().getShape(), newShape.getShape());
       return receiver;
     }
   }

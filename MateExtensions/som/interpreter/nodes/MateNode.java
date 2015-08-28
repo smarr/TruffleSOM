@@ -1,99 +1,74 @@
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateDispatch.MateDispatchMessageSend;
 import som.vm.MateUniverse;
-import som.vm.constants.Nil;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
-import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
-public abstract class MateNode extends ExpressionNode {
-  @Child protected MateDispatch reflectiveDispatch;
-  protected Object[] arguments;
-  protected SMateEnvironment environment;
+public interface MateNode {
   
-  public MateNode(final MateDispatch node, ExpressionNode wrappedNode) {
-    super(node.getSourceSection());
-    reflectiveDispatch = node;
+  public default Object metaExecution(VirtualFrame frame){
+    Object[] args = this.getArguments().clone();
+    this.setArguments(null);
+    return this.getReflectiveDispatch().executeDispatch(frame, args, this.getEnvironment());
   }
   
-  public static MateNode createForGenericExpression(ExpressionNode node){
-    MateDispatch dispatch; 
-    switch (node.reflectiveOperation()){
-      case Lookup:
-          dispatch = MateDispatchMessageSend.create(node);
-        break;
-      default:
-          dispatch = MateDispatch.create(node);
-        break;
-    }
-    return MateNodeGen.create(dispatch, node);
+  public default Object baseExecution(VirtualFrame frame){
+    Object[] args = this.getArguments().clone();
+    this.setArguments(null);
+    return this.getReflectiveDispatch().doBase(frame, args);
   }
   
-  @Specialization(guards="hasReflectiveBehavior(frame)")
-  public Object doMetaLevel(VirtualFrame frame){
-    return this.metaExecution(frame);
-  }
-  
-  @Specialization(guards="!hasReflectiveBehavior(frame)")
-  public Object doBaseLevel(VirtualFrame frame) {
-    return baseExecution(frame);
-  }
-  
-  public Object metaExecution(VirtualFrame frame){
-    Object[] args = arguments.clone();
-    arguments = null;
-    Object value = reflectiveDispatch.executeDispatch(frame, args, environment);
-    return value;
-  }
-  
-  public Object baseExecution(VirtualFrame frame){
-    Object[] args = arguments.clone();
-    arguments = null;
-    Object value = this.reflectiveDispatch.doBase(frame, args);
-    return value;
-  }
-  
-  protected boolean hasReflectiveBehavior(VirtualFrame frame){
-    if (arguments == null){
-      arguments = reflectiveDispatch.evaluateArguments(frame);
-    }
+  public default boolean hasReflectiveBehavior(VirtualFrame frame){
+    this.refreshArguments(frame);
     if (MateUniverse.current().executingMeta()) return false;
     FrameSlot slot = frame.getFrameDescriptor().findFrameSlot("semantics");
     if (slot != null) {
       try {
         if (frame.getObject(slot) instanceof SMateEnvironment){
-          environment = (SMateEnvironment)frame.getObject(slot);
+          this.setEnvironment((SMateEnvironment)frame.getObject(slot));
           return true;
         }
       } catch (FrameSlotTypeException e) {
         e.printStackTrace();
       }
     }
-    Object receiver = arguments[0]; 
     //Need this check because of the possibility to receive primitive types 
+    Object receiver = this.getArguments()[0];
     if (receiver instanceof SReflectiveObject){
-      environment = ((SReflectiveObject)receiver).getEnvironment();
-      return (environment != null);
+      SMateEnvironment environment = ((SReflectiveObject)receiver).getEnvironment();
+      this.setEnvironment(environment);
+      return environment != null;
     } else {
       return false;
     }
   }
   
-  public ExpressionNode getOriginalNode(){
+  public default void refreshArguments(VirtualFrame frame){
+    if (this.getArguments() == null){
+      this.setArguments(this.evaluateArguments(frame));
+    }
+  }
+  
+  public default Node getOriginalNode(){
     return this.getReflectiveDispatch().getBaseLevel();
   }
   
-  protected MateDispatch getReflectiveDispatch(){
-    return this.reflectiveDispatch;
-  }
+  public Object[] evaluateArguments(final VirtualFrame frame);
+    
+  public MateDispatch getReflectiveDispatch();
   
-  public Node wrapIntoMateNode(){
-    return this;
-  }
+  public void setEnvironment(SMateEnvironment environment);
+  
+  public SMateEnvironment getEnvironment();
+  
+  public Object[] getArguments();
+  
+  public void setArguments(Object[] arguments);
+  
+  
 }
