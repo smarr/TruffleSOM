@@ -4,7 +4,10 @@ import com.oracle.truffle.api.dsl.internal.SpecializationNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 
+import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ContextualNode;
+import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.MateDispatch;
 import som.interpreter.nodes.MateExpressionNode;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
@@ -14,6 +17,8 @@ import som.interpreter.nodes.literals.LiteralNode;
 import som.interpreter.nodes.specialized.whileloops.WhileCache;
 import som.interpreter.nodes.specialized.whileloops.WhileCacheNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode;
+import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.primitives.GlobalPrim;
 import som.primitives.HasGlobalPrim;
 import som.primitives.reflection.PerformInSuperclassPrim;
@@ -27,11 +32,7 @@ public class MateifyVisitor implements NodeVisitor {
     Node matenode = null;
     if (
         (
-            (node instanceof SOMNode) &&
-            !(node instanceof SOMNode) &&
-            !(node instanceof MateDispatch) &&
-            !(node instanceof SpecializationNode) &&
-            !(node instanceof Invokable)
+            (node instanceof FieldAccessorNode)
         )
    || (
             (node instanceof SOMNode) && 
@@ -46,18 +47,23 @@ public class MateifyVisitor implements NodeVisitor {
             !(node instanceof PerformInSuperclassPrim) &&
             !(node instanceof HasGlobalPrim) &&
             !(node instanceof GlobalPrim) &&
-            !(node instanceof LiteralNode)
+            !(node instanceof LiteralNode) &&
+            !(node instanceof LocalArgumentReadNode) &&
+            !(node instanceof NonLocalArgumentReadNode) &&
+            !(node instanceof GlobalNode)
        )
-       //|| 
-       //(node instanceof FieldAccessorNode) 
        ){
       if (node instanceof SOMNode){
         matenode = ((SOMNode) node).wrapIntoMateNode();
       } else {
-        if (node instanceof FieldAccessorNode){
-          matenode = ((FieldAccessorNode) node).wrapIntoMateNode();
+        if (node instanceof AbstractWriteFieldNode){
+          matenode = ((AbstractWriteFieldNode) node).wrapIntoMateNode();
         } else {
-          matenode = ((SOMNode) node).wrapIntoMateNode();
+          if (node instanceof AbstractReadFieldNode){
+            matenode = ((AbstractReadFieldNode) node).wrapIntoMateNode();
+          } else {
+            matenode = ((SOMNode) node).wrapIntoMateNode();
+          }
         }
       }
       node.replace(matenode);

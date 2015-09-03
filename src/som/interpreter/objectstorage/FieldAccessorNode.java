@@ -2,9 +2,8 @@ package som.interpreter.objectstorage;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.MateExpressionNode;
 import som.vm.constants.Nil;
+import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerDirectives;
@@ -15,7 +14,6 @@ import com.oracle.truffle.api.object.FinalLocationException;
 import com.oracle.truffle.api.object.IncompatibleLocationException;
 import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.LongLocation;
-import com.oracle.truffle.api.object.ObjectLocation;
 import com.oracle.truffle.api.object.Shape;
 
 public abstract class FieldAccessorNode extends Node {
@@ -29,7 +27,7 @@ public abstract class FieldAccessorNode extends Node {
     return new UninitializedWriteFieldNode(fieldIndex);
   }
 
-  private FieldAccessorNode(final int fieldIndex) {
+  protected FieldAccessorNode(final int fieldIndex) {
     this.fieldIndex = fieldIndex;
   }
 
@@ -37,10 +35,8 @@ public abstract class FieldAccessorNode extends Node {
     return fieldIndex;
   }
   
-  public Node wrapIntoMateNode(){
-    return MateExpressionNode.createForFieldAccess(this);
-  }
-
+  public abstract ReflectiveOp reflectiveOperation();
+  
   public abstract static class AbstractReadFieldNode extends FieldAccessorNode {
     public AbstractReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
@@ -87,6 +83,14 @@ public abstract class FieldAccessorNode extends Node {
           }
       //}
       return replace(newNode, reason);
+    }
+    
+    public Node wrapIntoMateNode(){
+      return new MateFieldReadNode(this);
+    }
+    
+    public ReflectiveOp reflectiveOperation(){
+      return ReflectiveOp.ReadLayout;
     }
   }
 
@@ -266,6 +270,14 @@ public abstract class FieldAccessorNode extends Node {
           }
       //}
       replace(newNode, reason);
+    }
+    
+    public Node wrapIntoMateNode(){
+      return new MateFieldWriteNode(this);
+    }
+    
+    public ReflectiveOp reflectiveOperation(){
+      return ReflectiveOp.WriteLayout;
     }
   }
 

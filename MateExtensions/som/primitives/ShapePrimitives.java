@@ -26,12 +26,14 @@
 package som.primitives;
 
 import som.primitives.MatePrimsFactory.MateNewShapePrimFactory;
+import som.primitives.MatePrimsFactory.MateShapeFieldsCountPrimFactory;
 
 public final class ShapePrimitives extends Primitives {
   public ShapePrimitives(final boolean displayWarning) { super(displayWarning); }
 
   @Override
   public void installPrimitives() {
+    installInstancePrimitive("fieldsCount", MateShapeFieldsCountPrimFactory.getInstance());
     installClassPrimitive("newWithFieldsCount:", MateNewShapePrimFactory.getInstance());
   }
 }

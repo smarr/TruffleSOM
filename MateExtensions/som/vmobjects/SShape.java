@@ -2,7 +2,7 @@ package som.vmobjects;
 
 import com.oracle.truffle.api.object.Shape;
 
-import som.vm.constants.Classes;
+import som.vm.constants.MateClasses;
 
 public class SShape extends SAbstractObject {
 
@@ -10,7 +10,7 @@ public class SShape extends SAbstractObject {
 
   @Override
   public SClass getSOMClass() {
-    return Classes.arrayClass;
+    return MateClasses.ShapeClass;
   }
   
   public SShape(){

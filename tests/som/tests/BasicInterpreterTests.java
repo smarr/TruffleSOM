@@ -141,11 +141,16 @@ public class BasicInterpreterTests {
     fail("SOM Value handler missing");
   }
 
+  protected String getClasspath(){
+    return "Smalltalk:TestSuite/BasicInterpreterTests";
+  }
+
+  protected static Universe u = Universe.current();
+  
   @Test
   public void testBasicInterpreterBehavior() {
-    Universe u = Universe.current();
     u.setAvoidExit(true);
-    u.setupClassPath("Smalltalk:TestSuite/BasicInterpreterTests");
+    u.setupClassPath(this.getClasspath());
 
     Object actualResult = u.interpret(testClass, testSelector);
 

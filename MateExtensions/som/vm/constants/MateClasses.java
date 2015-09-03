@@ -1,7 +1,6 @@
 package som.vm.constants;
 
 import som.vm.MateUniverse;
-import som.vm.Universe;
 import som.vmobjects.SClass;
 
 public class MateClasses extends Classes {

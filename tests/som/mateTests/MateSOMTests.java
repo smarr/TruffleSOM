@@ -1,5 +1,6 @@
-package som.tests;
+package som.mateTests;
 
+import som.tests.SomTests;
 import som.vm.MateUniverse;
 import som.vm.Universe;
 
@@ -16,7 +17,9 @@ public class MateSOMTests extends SomTests {
   }
   
   static{
-    Universe.setCurrent(new MateUniverse());
+    if (!(Universe.getCurrent() instanceof MateUniverse)){
+      Universe.setCurrent(new MateUniverse());
+    }
     SomTests.u = Universe.current();
   }
 }

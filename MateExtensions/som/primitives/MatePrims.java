@@ -44,5 +44,21 @@ public final class MatePrims {
       return receiver;
     }
   }
+  
+  @GenerateNodeFactory
+  public abstract static class MateShapeFieldsCountPrim extends UnaryExpressionNode {
+    @Specialization
+    public final long doSShape(SShape shape) {
+      return shape.getShape().getPropertyCount();
+    }
+  }
+  
+  @GenerateNodeFactory
+  public abstract static class MateGetShapePrim extends UnaryExpressionNode {
+    @Specialization
+    public final SShape doSObject(SObject receiver) {
+      return new SShape(receiver.getObjectLayout().getPropertyCount());
+    }
+  }
 }
 

@@ -4,6 +4,7 @@ import som.vm.MateUniverse;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
+import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -23,8 +24,24 @@ public interface MateNode {
     return this.getReflectiveDispatch().doBase(frame, args);
   }
   
-  public default boolean hasReflectiveBehavior(VirtualFrame frame){
-    this.refreshArguments(frame);
+  public default boolean hasReflectiveBehavior(Object receiver){
+  //Need this check because of the possibility to receive primitive types
+    if (MateUniverse.current().executingMeta()) return false;
+    return this.hasEnvironment(receiver);
+  }
+  
+  public default boolean hasEnvironment(Object obj){
+    if (obj instanceof SReflectiveObject){
+      SMateEnvironment environment = ((SReflectiveObject)obj).getEnvironment();
+      this.setEnvironment(environment);
+      return environment != null;
+    } else {
+      return false;
+    }
+  }
+  
+  public default boolean hasReflectiveBehavior(Frame frame){
+    this.refreshArguments((VirtualFrame)frame);
     if (MateUniverse.current().executingMeta()) return false;
     FrameSlot slot = frame.getFrameDescriptor().findFrameSlot("semantics");
     if (slot != null) {
@@ -37,15 +54,7 @@ public interface MateNode {
         e.printStackTrace();
       }
     }
-    //Need this check because of the possibility to receive primitive types 
-    Object receiver = this.getArguments()[0];
-    if (receiver instanceof SReflectiveObject){
-      SMateEnvironment environment = ((SReflectiveObject)receiver).getEnvironment();
-      this.setEnvironment(environment);
-      return environment != null;
-    } else {
-      return false;
-    }
+    return this.hasEnvironment(this.getArguments()[0]);
   }
   
   public default void refreshArguments(VirtualFrame frame){

@@ -189,16 +189,6 @@ public final class MessageSendNode {
     protected abstract PreevaluatedExpression makeSuperSend();
 
     private GenericMessageSendNode makeGenericSend() {
-      /*ExpressionNode[] arguments = new ExpressionNode[argumentNodes.length]; 
-      int i = 0;
-      for (ExpressionNode node: argumentNodes){
-        if (node instanceof MateNode){
-          arguments[i] = ((MateNode)node).getOriginalNode();
-        } else {
-          arguments[i] = node;
-        }
-        i = i+1;
-      }*/
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
           argumentNodes,
           new UninitializedDispatchNode(selector),

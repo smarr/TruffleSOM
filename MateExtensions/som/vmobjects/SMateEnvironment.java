@@ -60,9 +60,16 @@ public class SMateEnvironment extends SObject {
         methods = new SMethod[1];
         methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
         break;
-      default:
-        methods = new SMethod[0];
+      case ReadLayout: 
+        methods = new SMethod[1];
+        methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
         break;
+      case WriteLayout: 
+        methods = new SMethod[1];
+        methods[0] = (SMethod)metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
+        break;
+      default:
+        return null;
     }
     if (methods[0] == null) return null;
     return methods;
