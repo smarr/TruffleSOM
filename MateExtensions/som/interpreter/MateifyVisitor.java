@@ -1,6 +1,5 @@
 package som.interpreter;
 
-import com.oracle.truffle.api.dsl.internal.SpecializationNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 
@@ -8,14 +7,12 @@ import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.GlobalNode;
-import som.interpreter.nodes.MateDispatch;
 import som.interpreter.nodes.MateExpressionNode;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SOMNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.literals.LiteralNode;
 import som.interpreter.nodes.specialized.whileloops.WhileCache;
-import som.interpreter.nodes.specialized.whileloops.WhileCacheNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;

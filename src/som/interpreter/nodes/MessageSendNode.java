@@ -1,6 +1,5 @@
 package som.interpreter.nodes;
 
-import som.interpreter.SOMNodeVisitor;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
@@ -75,8 +74,6 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public final class MessageSendNode {
 
-  public void accept(SOMNodeVisitor visitor){};
-  
   public static AbstractMessageSendNode create(final SSymbol selector,
       final ExpressionNode[] arguments, final SourceSection source) {
     return new UninitializedMessageSendNode(selector, arguments, source);

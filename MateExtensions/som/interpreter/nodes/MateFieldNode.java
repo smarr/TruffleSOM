@@ -36,11 +36,6 @@ public abstract class MateFieldNode extends SOMNode implements MateNode {
     return this.reflectiveDispatch.executeDispatch(null, arguments, environment);
   }
   
-  /*@Specialization(guards="!hasReflectiveBehavior(obj)")
-  public Object doBaseLevel(SObject obj, Object arg, int index) {
-    return ((() this.reflectiveDispatch.getBaseLevel()).doBase(obj, arg));
-  }*/
-    
   public void setEnvironment(SMateEnvironment env){
     environment = env;
   }

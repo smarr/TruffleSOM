@@ -13,9 +13,10 @@ if [ -z "$GRAAL_FLAGS" ]; then
   GRAAL_FLAGS='-G:-TraceTruffleInlining -G:-TraceTruffleCompilation -G:+TruffleSplittingNew -G:+TruffleCompilationExceptionsAreFatal'
   if [ "$GRAAL_HOME" = "/Users/guidochari/Documents/Projects/graal-compiler" ]; then
     echo Using Graal Development Flags
-    GRAAL_FLAGS='-ea -XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation
-      -XX:+TraceDeoptimization'
-#      -G:+TraceTruffleExpansionSource -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilationDetails
+    GRAAL_FLAGS='-ea -XX:+UnlockDiagnosticVMOptions 
+      -XX:+TraceDeoptimization
+      -G:+TraceTruffleExpansionSource -G:-TruffleBackgroundCompilation -G:+TraceTruffleCompilationDetails'
+	#-XX:+LogCompilation
   fi
 fi
 
@@ -25,7 +26,7 @@ if [ ! -z "$DBG" ]; then
 fi
 
 # GRAAL="$GRAAL_HOME/mxtool/mx"
-GRAAL="$GRAAL_HOME/jvmci/jdk1.8.0_25/product/bin/java -server -d64 "
+GRAAL="mx -p $GRAAL_HOME/jvmci vm -server -d64 "
 
 #echo $GRAAL $GRAAL_DEBUG_SWITCH $GRAAL_FLAGS \
 #   -Xbootclasspath/a:build/classes:libs/truffle/build/truffle-api.jar \

@@ -5,7 +5,6 @@ import static som.vm.constants.MateClasses.operationalSemanticsMO;
 import static som.vm.constants.MateClasses.messageMO;
 import static som.vm.constants.MateClasses.ShapeClass;
 import static som.vm.constants.Classes.objectClass;
-
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.vmobjects.SClass;
@@ -66,6 +65,17 @@ public class MateUniverse extends Universe {
       SInvokable method = clazz.getInstanceInvokable(i);
       Invokable node = method.getInvokable();
       node.accept(visitor);
+    }
+  }
+  
+  public static void main(final String[] arguments) {
+    MateUniverse u = current();
+
+    try {
+      u.interpret(arguments);
+      u.exit(0);
+    } catch (IllegalStateException e) {
+      errorExit(e.getMessage());
     }
   }
   
