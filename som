@@ -6,10 +6,12 @@ import os
 BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
 GRAAL_HOME  = os.getenv('GRAAL_HOME',  None)
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
+MX_HOME  = os.getenv('MX_HOME',  None)
 
-GRAAL_LOCATIONS = [BASE_DIR + '/../graal-compiler/jvmci',
-                   '/Users/guidochari/Document/Projects/graal-compiler']
-JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45','jdk1.8.0_25']
+GRAAL_LOCATIONS = [BASE_DIR + '../graal/jvmci',
+                   '/home/guido/Documents/Projects/graal/jvmci']
+
+JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_40', 'jdk1.8.0_25']
 
 parser = argparse.ArgumentParser(
     description='Helper script to run TruffleMate with/without Graal')
@@ -50,8 +52,6 @@ parser.add_argument('--mate', help='run som with mate nodes',
 parser.add_argument('-cp', help='...',
                     dest='cp')
 
-
-
 parser.add_argument('-vv', '--verbose', action='store_true', default=False,
                     dest='verbose', help="print command-line before executing")
 
@@ -60,38 +60,48 @@ parser.add_argument('args', nargs=argparse.REMAINDER,
 args = parser.parse_args()
 
 
-print args.cp
 JAVA_BIN  = '/product/bin/java'
 JAVA_ARGS = ['-d64']
 
 if args.interpreter:
     java_bin = "java"
 else:
-    # determine graal binary
-    if GRAAL_HOME:
-        graal_home = GRAAL_HOME
-    else:
-        graal_home = None
-        for d in GRAAL_LOCATIONS:
-            if os.path.isdir(d):
-                graal_home = d
-                break
-        if not graal_home:
-            print "Graal couldn't be found. Please set GRAAL_HOME"
-            sys.exit(1)
+	# determine graal binary
+	if GRAAL_HOME:
+		graal_home = GRAAL_HOME
+	else:
+		graal_home = None
+		for d in GRAAL_LOCATIONS:
+			if os.path.isdir(d):
+				graal_home = d
+				break
+		if not graal_home:
+			print "Graal couldn't be found. Please set GRAAL_HOME"
+			sys.exit(1)
 
-    java_bin = graal_home
-    for v in JDK_VERSIONS:
-        p = graal_home + '/' + v
-        if os.path.isdir(p):
-            java_bin = p + JAVA_BIN
-            break
+	java_bin = graal_home
+	for v in JDK_VERSIONS:
+		p = graal_home + '/' + v
+		if os.path.isdir(p):
+			java_bin = p + JAVA_BIN
+			break
 
-    if java_bin is graal_home or not os.path.isfile(java_bin):
-      print "No compatible JDK build found, is this script outdated?"
-      sys.exit(1)
+	if java_bin is graal_home or not os.path.isfile(java_bin):
+		print "No compatible JDK build found, is this script outdated?"
+		sys.exit(1)
 
-java_bin = "mx -p " + graal_home + " vm -server " 
+	mx_home = None
+	if MX_HOME:
+		mx_home = MX_HOME
+	else:
+		if os.path.isdir(graal_home + '/../../mx'):
+			mx_home = graal_home + '/../../mx/'
+
+	if not mx_home:
+		print "mx couldn't be found. Please set MX_HOME"
+		sys.exit(1)      	
+
+	java_bin = mx_home + "mx -p " + graal_home + " vm -server" 
 
 if args.mate:
   mainClass = "som.vm.MateUniverse"
@@ -163,12 +173,13 @@ if args.threads:
 
 cp = [""]
 if args.cp:
-	cp = ["-cp ", args.cp]		
+	cp = ["-cp", args.cp]		
 
 all_args = JAVA_ARGS + flags + SOM_ARGS + cp + args.args 
 
 if args.verbose:
     print "CMD: " + java_bin + ' ' + ' '.join(all_args)
 
-cmd = java_bin + ' '.join(all_args)
+cmd = java_bin + ' ' + ' '.join(all_args)
+print cmd
 os.system(cmd)
