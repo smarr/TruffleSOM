@@ -8,8 +8,8 @@ GRAAL_HOME  = os.getenv('GRAAL_HOME',  None)
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 MX_HOME  = os.getenv('MX_HOME',  None)
 
-GRAAL_LOCATIONS = [BASE_DIR + '../graal/jvmci',
-                   '/home/guido/Documents/Projects/graal/jvmci']
+GRAAL_LOCATIONS = [BASE_DIR + '../graal-compiler/jvmci',
+                   '/Users/guidochari/Documents/Projects/graal-compiler/jvmci']
 
 JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_40', 'jdk1.8.0_25']
 
@@ -63,21 +63,22 @@ args = parser.parse_args()
 JAVA_BIN  = '/product/bin/java'
 JAVA_ARGS = ['-d64']
 
+if GRAAL_HOME:
+	graal_home = GRAAL_HOME
+else:
+	graal_home = None
+	for d in GRAAL_LOCATIONS:
+		if os.path.isdir(d):
+			graal_home = d
+			break
+
 if args.interpreter:
     java_bin = "java"
 else:
-	# determine graal binary
-	if GRAAL_HOME:
-		graal_home = GRAAL_HOME
-	else:
-		graal_home = None
-		for d in GRAAL_LOCATIONS:
-			if os.path.isdir(d):
-				graal_home = d
-				break
-		if not graal_home:
-			print "Graal couldn't be found. Please set GRAAL_HOME"
-			sys.exit(1)
+	#determine graal binary
+	if not graal_home:
+		print "Graal couldn't be found. Please set GRAAL_HOME"
+		sys.exit(1)
 
 	java_bin = graal_home
 	for v in JDK_VERSIONS:
@@ -108,7 +109,7 @@ if args.mate:
 else:
   mainClass = "som.vm.Universe"
 		
-SOM_ARGS = ['-Xbootclasspath/a:build/classes:libs/truffle/build/truffle-api.jar',
+SOM_ARGS = ['-Xbootclasspath/a:build/classes:' + graal_home + '/../truffle/build/truffle-api.jar',
             mainClass]
 #'--platform', 'core-lib/Platform.som'
 

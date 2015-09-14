@@ -698,13 +698,13 @@ public class Parser {
         return new IfTrueIfFalseInlinedLiteralsNode(arguments.get(0),
             inlinedTrueNode, inlinedFalseNode, arguments.get(1), arguments.get(2),
             source);
-      } else if ("to:do:".equals(msgStr) &&
+      } /*else if ("to:do:".equals(msgStr) &&
           arguments.get(2) instanceof LiteralNode) {
         Local loopIdx = mgenc.addLocal("i:" + source.getCharIndex());
         ExpressionNode inlinedBody = ((LiteralNode) arguments.get(2)).inline(mgenc, loopIdx);
         return IntToDoInlinedLiteralsNodeGen.create(inlinedBody, loopIdx.getSlot(),
             arguments.get(2), source, arguments.get(0), arguments.get(1));
-      }
+      }*/
     }
 
     return createMessageSend(msg, arguments.toArray(new ExpressionNode[0]),

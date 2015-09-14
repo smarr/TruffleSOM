@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.Universe;
 import som.vm.constants.ReflectiveOp;
 
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -20,6 +21,10 @@ import com.oracle.truffle.api.source.SourceSection;
 public abstract class TernaryExpressionNode extends ExpressionNode
     implements PreevaluatedExpression {
 
+  /*public abstract ExpressionNode getReceiver();
+  public abstract ExpressionNode getFirstArgument();
+  public abstract ExpressionNode getSecondArgument();*/
+  
   public TernaryExpressionNode(final SourceSection sourceSection) {
     super(sourceSection);
   }
