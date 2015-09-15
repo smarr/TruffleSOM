@@ -36,7 +36,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.utilities.ValueProfile;
 
 public abstract class MateDispatch extends Node {
-  @CompilationFinal protected final Node baseLevel;
+  @Child protected Node baseLevel;
   
   public MateDispatch(final Node node){
     this.baseLevel = node;
@@ -56,9 +56,9 @@ public abstract class MateDispatch extends Node {
     return receiver;
   }
    
-  public abstract Object executeDispatch(final VirtualFrame frame, Object[] arguments, SMateEnvironment environment);
+  public abstract Object executeDispatch(final VirtualFrame frame, Object[] arguments, Object environment);
   
-  @Specialization(guards = "cachedEnvironment==environment")
+  @Specialization(guards = "(cachedEnvironment==environment)")
   public Object doMetaLevel(final VirtualFrame frame,  
       Object[] arguments,
       SMateEnvironment environment,
@@ -72,8 +72,8 @@ public abstract class MateDispatch extends Node {
     }
   }
   
-  @Specialization
-  public Object doBaseLevel(final VirtualFrame frame, Object[] arguments, SMateEnvironment environment){
+  @Specialization()
+  public Object doBaseLevel(final VirtualFrame frame, Object[] arguments, Object environment){
     return this.doBase(frame, arguments);
   }
   

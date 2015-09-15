@@ -4,6 +4,7 @@ import som.interpreter.nodes.MateDispatch.MateDispatchFieldAccess;
 import som.interpreter.nodes.MateDispatch.MateDispatchMessageSend;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.objectstorage.FieldAccessorNode;
+import som.vm.MateUniverse;
 import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.dsl.Specialization;
@@ -39,6 +40,7 @@ public abstract class MateExpressionNode extends ExpressionNode implements MateN
   
   @Specialization(guards="!hasReflectiveBehavior(frame)")
   public Object doBaseLevel(VirtualFrame frame) {
+    //return ((ExpressionNode)this.getReflectiveDispatch().getBaseLevel()).executeGeneric(frame);
     return baseExecution(frame);
   }
   
