@@ -70,7 +70,7 @@ public class SObject extends SAbstractObject {
   // to know in case the layout changed that we can update the instances lazily
   @CompilationFinal private ObjectLayout objectLayout;
 
-  private int    primitiveUsedMap;
+  private int primitiveUsedMap;
 
   private final int numberOfFields;
 
@@ -263,7 +263,7 @@ public class SObject extends SAbstractObject {
   public final Object getField(final long index) {
     CompilerAsserts.neverPartOfCompilation("getField");
     StorageLocation location = getLocation(index);
-    return location.read(this, true);
+    return location.read(this);
   }
 
   public final void setField(final long index, final Object value) {
@@ -331,7 +331,11 @@ public class SObject extends SAbstractObject {
     CompilerAsserts.neverPartOfCompilation("getObjectFieldLength()");
 
     try {
-      return getFieldDistance("field1", "field2");
+      long dist = getFieldDistance("field1", "field2");
+      // this can go wrong if the VM rearranges fields to fill holes in the
+      // memory layout of the object structure
+      assert dist == 4 || dist == 8 : "We expect these fields to be adjecent and either 32 or 64bit appart.";
+      return dist;
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
@@ -341,7 +345,11 @@ public class SObject extends SAbstractObject {
     CompilerAsserts.neverPartOfCompilation("getPrimFieldLength()");
 
     try {
-      return getFieldDistance("primField1", "primField2");
+      long dist = getFieldDistance("primField1", "primField2");
+      // this can go wrong if the VM rearranges fields to fill holes in the
+      // memory layout of the object structure
+      assert dist == 8 : "We expect these fields to be adjecent and 64bit appart.";
+      return dist;
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
