@@ -31,6 +31,7 @@ import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
+import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SShape;
 import som.vmobjects.SSymbol;
 
@@ -43,6 +44,7 @@ import com.oracle.truffle.api.dsl.TypeSystem;
                  String.class,
                  double.class,
                  SClass.class,
+      SReflectiveObject.class,
                 SObject.class,
                  SBlock.class,
                 SSymbol.class,

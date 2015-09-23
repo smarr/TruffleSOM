@@ -1,5 +1,6 @@
 package som.primitives.arrays;
 
+import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;

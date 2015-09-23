@@ -1,4 +1,4 @@
-package som.interpreter.objectstorage;
+/*package som.interpreter.objectstorage;
 
 import som.interpreter.nodes.MateFieldNode;
 import som.interpreter.nodes.MateFieldNodeGen.MateWriteFieldNodeGen;
@@ -21,3 +21,4 @@ public class MateFieldWriteNode extends AbstractWriteFieldNode {
     return mateNode.execute(obj, value, this.getFieldIndex());
   } 
 }
+*/

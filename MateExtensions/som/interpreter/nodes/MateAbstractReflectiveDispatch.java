@@ -1,12 +1,8 @@
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
-import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchFieldAccessNodeGen;
-import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchFieldReadLayoutNodeGen;
-import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchFieldWriteLayoutNodeGen;
-import som.interpreter.nodes.MateDispatchNodeGen.MateDispatchMessageSendNodeGen;
+import som.interpreter.nodes.MateAbstractNode.MateExpressionNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
-import som.interpreter.nodes.MessageSendNode.AbstractUninitializedMessageSendNode;
 import som.vm.MateUniverse;
 import som.vm.Universe;
 import som.vm.constants.Nil;
@@ -17,12 +13,8 @@ import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SArray.ArrayType;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
-import som.interpreter.objectstorage.FieldAccessorNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-
+import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -35,19 +27,10 @@ import com.oracle.truffle.api.impl.DefaultTruffleRuntime;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.utilities.ValueProfile;
 
-public abstract class MateDispatch extends Node {
-  @Child protected Node baseLevel;
+public abstract class MateAbstractReflectiveDispatch extends Node {
   
-  public MateDispatch(final Node node){
-    this.baseLevel = node;
-  }
-  
-  public static MateDispatch create(final Node node) {
-    return MateDispatchNodeGen.create(node);
-  }
-  
-  public Node getBaseLevel(){
-    return this.baseLevel;
+  public MateAbstractReflectiveDispatch(Node node){
+    super(node.getSourceSection());
   }
   
   public Object[] evaluateArguments(final VirtualFrame frame) {
@@ -56,103 +39,58 @@ public abstract class MateDispatch extends Node {
     return receiver;
   }
    
-  public abstract Object executeDispatch(final VirtualFrame frame, Object[] arguments, Object environment);
+  public abstract Object executeDispatch(final VirtualFrame frame, ReflectiveOp operation, SMateEnvironment environment);
   
+  /*Todo: Optimize: Isn't the operation always fixes*/
   @Specialization(guards = "(cachedEnvironment==environment)")
   public Object doMetaLevel(final VirtualFrame frame,  
-      Object[] arguments,
+      ReflectiveOp operation,
       SMateEnvironment environment,
       @Cached("environment") SMateEnvironment cachedEnvironment,
-      @Cached("createDispatch(environment, baseLevel)") SMethod[] reflectiveMethods) 
+      @Cached("operation") ReflectiveOp cachedOperation,
+      @Cached("createDispatch(environment, operation)") SMethod[] reflectiveMethods) 
   { 
     if (reflectiveMethods == null)
-      return doBase(frame, arguments);
+      return null;
     else {
-      return this.doMeta(frame, arguments, reflectiveMethods);
+      return this.doMeta(frame, reflectiveMethods);
     }
   }
-  
-  @Specialization()
-  public Object doBaseLevel(final VirtualFrame frame, Object[] arguments, Object environment){
-    return this.doBase(frame, arguments);
-  }
-  
-  public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation){
+    
+  public Object doMeta(final VirtualFrame frame, SMethod[] metaDelegation){
     MateUniverse.current().enterMetaExecutionLevel();
     Object value = metaDelegation[0].invoke(frame);
     MateUniverse.current().leaveMetaExecutionLevel();
     return value;
   }
   
-  public Object doBase(final VirtualFrame frame, Object[] arguments){
-    return ((ExpressionNode) baseLevel).executeGeneric(frame);
-  }
-  
-  public SMethod[] createDispatch(SObject metaobject, Node node){
-    ReflectiveOp operation = ((ExpressionNode) node).reflectiveOperation();
+  public SMethod[] createDispatch(SObject metaobject, ReflectiveOp operation){
     return ((SMateEnvironment)metaobject).methodsImplementing(operation);
   }
   
-  public abstract static class MateDispatchFieldLayout extends MateDispatch {
+  public abstract static class MateDispatchFieldLayout extends MateAbstractReflectiveDispatch {
     public MateDispatchFieldLayout(Node node) {
       super(node);
     }
     
-    public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation){
+    @Override
+    public Object doMeta(final VirtualFrame frame, SMethod[] metaDelegation){
+      //Todo: Compute arguments;
+      Object[] arguments = null;
       MateUniverse.current().enterMetaExecutionLevel();
       Object value = metaDelegation[0].invoke(arguments);
       MateUniverse.current().leaveMetaExecutionLevel();
       return value;
     }
-    
-    @Override
-    public SMethod[] createDispatch(SObject metaobject, Node node){
-      ReflectiveOp operation = ((FieldAccessorNode) node).reflectiveOperation();
-      return ((SMateEnvironment)metaobject).methodsImplementing(operation);
-    }
   }
   
-  public abstract static class MateDispatchFieldReadLayout extends MateDispatchFieldLayout {
-    public MateDispatchFieldReadLayout(Node node) {
-      super(node);
-    }
-    
-    public static MateDispatch create(final Node node) {
-      return MateDispatchFieldReadLayoutNodeGen.create(node);
-    }
-    
-    @Override
-    public Object doBase(final VirtualFrame frame, Object[] arguments){
-      return ((AbstractReadFieldNode) baseLevel).read((SObject)arguments[0]);
-    }
-  }
-  
-  public abstract static class MateDispatchFieldWriteLayout extends MateDispatchFieldLayout {
-    public MateDispatchFieldWriteLayout(Node node) {
-      super(node);
-    }
-    
-    public static MateDispatch create(final Node node) {
-      return MateDispatchFieldWriteLayoutNodeGen.create(node);
-    }
-    
-    @Override
-    public Object doBase(final VirtualFrame frame, Object[] arguments){
-      return ((AbstractWriteFieldNode) baseLevel).write((SObject)arguments[0], arguments[1]);
-    }
-  }
-  
-  public abstract static class MateDispatchFieldAccess extends MateDispatch {
+  public abstract static class MateDispatchFieldAccess extends MateAbstractReflectiveDispatch {
 
     public MateDispatchFieldAccess(Node node) {
       super(node);
     }
-    
-    public static MateDispatch create(final Node node) {
-      return MateDispatchFieldAccessNodeGen.create(node);
-    }
-    
-    public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation){
+
+    public Object doMeta(final VirtualFrame frame, SMethod[] metaDelegation){
       MateUniverse.current().enterMetaExecutionLevel();
       Object value = metaDelegation[0].invoke(frame);
       MateUniverse.current().leaveMetaExecutionLevel();
@@ -160,31 +98,27 @@ public abstract class MateDispatch extends Node {
     }
   }  
    
-  public abstract static class MateDispatchMessageSend extends MateDispatch {
-  
-    public MateDispatchMessageSend(Node node) {
+  public abstract static class MateDispatchMessageSend extends MateAbstractReflectiveDispatch {
+    public final MateExpressionNode mateNode;
+    
+    public MateDispatchMessageSend(MateExpressionNode node) {
       super(node);
+      mateNode = node;
     }
     
-    public static MateDispatchMessageSend create(final Node node) {
-      if (node instanceof AbstractUninitializedMessageSendNode){
-        if (((AbstractUninitializedMessageSendNode) node).getSelector().getString() == "value"){
-          return MateDispatchMessageSendNodeGen.create(node);
-        } else {
-          return MateDispatchMessageSendNodeGen.create(node);
-        }
-      } else {
-        return MateDispatchMessageSendNodeGen.create(node);
-      }
+    private SSymbol getSelector(){
+      return ((AbstractMessageSendNode)this.mateNode.wrappedNode).getSelector();
     }
-  
+    
     @Override
-    public Object doMeta(final VirtualFrame frame, Object[] arguments, SMethod[] metaDelegation) {
+    public Object doMeta(final VirtualFrame frame, SMethod[] metaDelegation) {
+      //Todo: Compute arguments;
+      Object[] arguments = null; 
       //The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       MateUniverse.current().enterMetaExecutionLevel();
       SInvokable method = (SInvokable)metaDelegation[0].invoke(
                                arguments[0], 
-                               ((AbstractMessageSendNode)this.baseLevel).getSelector(),
+                               this.getSelector(),
                                ((SObject)arguments[0]).getSOMClass()                           
                              );
       RootCallTarget callTarget = method.getCallTarget();
@@ -241,13 +175,9 @@ public abstract class MateDispatch extends Node {
       }
     }
     
-    @Override
-    public Object[] evaluateArguments(final VirtualFrame frame) {
-      return ((PreevaluatedExpression)this.baseLevel).evaluateArguments(frame);
-    }
-    
-    public Object doBase(final VirtualFrame frame, Object[] arguments){
-      return ((PreevaluatedExpression)baseLevel).doPreEvaluated(frame, arguments);
-    }
+    //@Override
+    //public Object[] evaluateArguments(final VirtualFrame frame) {
+    //  return ((PreevaluatedExpression)this.baseLevel).evaluateArguments(frame);
+    //}
   }
 }

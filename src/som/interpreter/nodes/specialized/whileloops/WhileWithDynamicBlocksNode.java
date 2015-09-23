@@ -1,5 +1,7 @@
 package som.interpreter.nodes.specialized.whileloops;
 
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.literals.IntegerLiteralNode;
 import som.vm.NotYetImplementedException;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
@@ -14,6 +16,12 @@ public final class WhileWithDynamicBlocksNode extends AbstractWhileNode {
   private final SInvokable conditionMethod;
   private final SInvokable bodyMethod;
 
+  @Override
+  /*Analyze what is the best to do for this case*/
+  public ExpressionNode getReceiver(){
+    return new IntegerLiteralNode(1,this.getSourceSection());
+  }
+  
   public final static WhileWithDynamicBlocksNode create(final SBlock rcvr,
       final SBlock arg, final boolean predicateBool) {
     return new WhileWithDynamicBlocksNode(rcvr, arg, predicateBool, null);

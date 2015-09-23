@@ -1,4 +1,4 @@
-package som.interpreter.objectstorage;
+/*package som.interpreter.objectstorage;
 
 import som.interpreter.nodes.MateFieldNode;
 import som.interpreter.nodes.MateFieldNodeGen.MateReadFieldNodeGen;
@@ -21,3 +21,4 @@ public class MateFieldReadNode extends AbstractReadFieldNode {
     return mateNode.execute(obj, null, this.getFieldIndex());
   }
 }
+*/

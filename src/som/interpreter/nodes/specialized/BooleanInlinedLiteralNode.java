@@ -1,6 +1,7 @@
 package som.interpreter.nodes.specialized;
 
 import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.ExpressionWithReceiverNode;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -9,7 +10,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
 
-public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
+public abstract class BooleanInlinedLiteralNode extends ExpressionWithReceiverNode {
 
   @Child protected ExpressionNode receiverNode;
   @Child protected ExpressionNode argumentNode;
@@ -29,7 +30,7 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
     this.argumentAcutalNode = originalArgumentNode;
   }
 
-  protected final boolean evaluateReceiver(final VirtualFrame frame) {
+  public final Object evaluateReceiver(final VirtualFrame frame) {
     try {
       return receiverNode.executeBoolean(frame);
     } catch (UnexpectedResultException e) {
@@ -47,6 +48,10 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
       throw new UnsupportedSpecializationException(this,
           new Node[] {argumentNode}, e.getResult());
     }
+  }
+  
+  public ExpressionNode getReceiver(){
+    return receiverNode;
   }
 
   public static final class AndInlinedLiteralNode extends BooleanInlinedLiteralNode {
@@ -67,7 +72,7 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
 
     @Override
     public boolean executeBoolean(final VirtualFrame frame) {
-      if (evaluateReceiver(frame)) {
+      if ((boolean)evaluateReceiver(frame)) {
         return evaluateArgument(frame);
       } else {
         return false;
@@ -93,12 +98,11 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
 
     @Override
     public boolean executeBoolean(final VirtualFrame frame) {
-      if (evaluateReceiver(frame)) {
+      if ((boolean)evaluateReceiver(frame)) {
         return true;
       } else {
         return evaluateArgument(frame);
       }
     }
   }
-
 }

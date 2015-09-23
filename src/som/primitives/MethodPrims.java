@@ -69,15 +69,5 @@ public final class MethodPrims {
         final Object[] argArr) {
       return callNode.executeDispatch(frame, receiver, argArr);
     }
-    
-    @Override
-    public Object[] evaluateArguments(VirtualFrame frame) {
-      Object[] arguments = new Object[3];
-      Iterator<Node> it = this.getChildren().iterator();
-      arguments[0] = ((ExpressionNode)it.next()).executeGeneric(frame);
-      arguments[1] = ((ExpressionNode)it.next()).executeGeneric(frame);
-      arguments[2] = ((ExpressionNode)it.next()).executeGeneric(frame);
-      return arguments;
-    }
   }
 }

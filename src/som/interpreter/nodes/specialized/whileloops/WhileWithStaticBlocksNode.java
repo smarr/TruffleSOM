@@ -1,5 +1,6 @@
 package som.interpreter.nodes.specialized.whileloops;
 
+import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
@@ -12,6 +13,11 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
   @Child protected BlockNode receiver;
   @Child protected BlockNode argument;
 
+  @Override
+  public ExpressionNode getReceiver(){
+    return receiver;
+  }
+  
   private WhileWithStaticBlocksNode(final BlockNode receiver,
       final BlockNode argument, final SBlock rcvr, final SBlock arg,
       final boolean predicateBool, final SourceSection source) {

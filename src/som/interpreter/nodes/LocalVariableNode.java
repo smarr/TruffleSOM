@@ -30,7 +30,7 @@ public abstract class LocalVariableNode extends ExpressionNode {
   }
   
   public Node wrapIntoMateNode(){
-    return MateExpressionNode.createForGenericExpression(this);
+    return MateAbstractNode.create(this);
   }
 
   public abstract static class LocalVariableReadNode extends LocalVariableNode {

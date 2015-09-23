@@ -1,7 +1,8 @@
+/*package som.interpreter.nodes;
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateDispatch.MateDispatchFieldReadLayout;
-import som.interpreter.nodes.MateDispatch.MateDispatchFieldWriteLayout;
+import som.interpreter.nodes.MateDispatchBack.MateDispatchFieldReadLayout;
+import som.interpreter.nodes.MateDispatchBack.MateDispatchFieldWriteLayout;
 import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -12,7 +13,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public abstract class MateFieldNode extends SOMNode implements MateNode {
-  @Child protected MateDispatch reflectiveDispatch;
+  @Child protected MateDispatchBack reflectiveDispatch;
   protected Object[] arguments;
   protected SMateEnvironment environment;
   
@@ -44,7 +45,7 @@ public abstract class MateFieldNode extends SOMNode implements MateNode {
     return environment;
   }
   
-  public MateDispatch getReflectiveDispatch(){
+  public MateDispatchBack getReflectiveDispatch(){
     return this.reflectiveDispatch;
   }
   
@@ -83,3 +84,4 @@ public abstract class MateFieldNode extends SOMNode implements MateNode {
     }
   }
 }
+*/

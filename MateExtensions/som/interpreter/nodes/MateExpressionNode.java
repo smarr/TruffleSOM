@@ -1,7 +1,7 @@
-package som.interpreter.nodes;
+/*package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateDispatch.MateDispatchFieldAccess;
-import som.interpreter.nodes.MateDispatch.MateDispatchMessageSend;
+import som.interpreter.nodes.MateDispatchBack.MateDispatchFieldAccess;
+import som.interpreter.nodes.MateDispatchBack.MateDispatchMessageSend;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.objectstorage.FieldAccessorNode;
 import som.vm.MateUniverse;
@@ -12,11 +12,12 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
 public abstract class MateExpressionNode extends ExpressionNode implements MateNode {
-  @Child protected MateDispatch reflectiveDispatch;
+  @Child protected MateDispatchBack reflectiveDispatch;
+  @Child protected MateDispatchBack wrappedNode;
   protected Object[] arguments;
   protected SMateEnvironment environment;
   
-  public MateExpressionNode(final MateDispatch node, Node wrappedNode) {
+  public MateExpressionNode(final MateDispatchBack node, Node wrappedNode) {
     super(node.getSourceSection());
     reflectiveDispatch = node;
   }
@@ -30,7 +31,7 @@ public abstract class MateExpressionNode extends ExpressionNode implements MateN
   }
   
   public static MateExpressionNode createForGenericExpression(Node node){
-    return MateExpressionNodeGen.create(MateDispatch.create(node), node);
+    return MateExpressionNodeGen.create(MateDispatchBack.create(node), node);
   }
   
   @Specialization(guards="hasReflectiveBehavior(frame)")
@@ -52,7 +53,7 @@ public abstract class MateExpressionNode extends ExpressionNode implements MateN
     return environment;
   }
   
-  public MateDispatch getReflectiveDispatch(){
+  public MateDispatchBack getReflectiveDispatch(){
     return this.reflectiveDispatch;
   }
   
@@ -69,3 +70,4 @@ public abstract class MateExpressionNode extends ExpressionNode implements MateN
     return arguments;
   }  
 }
+*/

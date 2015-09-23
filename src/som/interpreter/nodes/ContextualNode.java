@@ -68,7 +68,7 @@ public abstract class ContextualNode extends ExpressionNode {
   }
   
   public Node wrapIntoMateNode(){
-    return MateExpressionNode.createForGenericExpression(this);
+    return MateAbstractNode.create(this);
   }
 
   @Override

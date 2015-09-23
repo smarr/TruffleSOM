@@ -17,6 +17,10 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
 
   private final SSymbol selector;
 
+  public ExpressionNode getReceiver(){
+    return receiver;
+  }
+  
   public EagerUnaryPrimitiveNode(final SSymbol selector,
       final ExpressionNode receiver, final UnaryExpressionNode primitive) {
     super(null);

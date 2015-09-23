@@ -8,6 +8,10 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 public final class EmptyPrim extends UnaryExpressionNode {
   @Child private ExpressionNode receiver;
+  
+  public ExpressionNode getReceiver(){
+    return receiver;
+  }
 
   private EmptyPrim(final ExpressionNode receiver) {
     super(null);

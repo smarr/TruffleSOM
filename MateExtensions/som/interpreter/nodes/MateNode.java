@@ -1,4 +1,4 @@
-package som.interpreter.nodes;
+/*package som.interpreter.nodes;
 
 import som.vm.MateUniverse;
 import som.vmobjects.SMateEnvironment;
@@ -69,7 +69,7 @@ public interface MateNode {
   
   public Object[] evaluateArguments(final VirtualFrame frame);
     
-  public MateDispatch getReflectiveDispatch();
+  public MateDispatchBack getReflectiveDispatch();
   
   public void setEnvironment(SMateEnvironment environment);
   
@@ -81,3 +81,4 @@ public interface MateNode {
   
   
 }
+*/

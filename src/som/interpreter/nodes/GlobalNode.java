@@ -38,15 +38,14 @@ import com.oracle.truffle.api.source.SourceSection;
 public abstract class GlobalNode extends ExpressionNode {
 
   protected final SSymbol  globalName;
-
-
+  
   public GlobalNode(final SSymbol globalName, final SourceSection source) {
     super(source);
     this.globalName = globalName;
   }
   
   public Node wrapIntoMateNode(){
-    return MateExpressionNode.createForGenericExpression(this);
+    return MateAbstractNode.create(this);
   }
 
   public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {

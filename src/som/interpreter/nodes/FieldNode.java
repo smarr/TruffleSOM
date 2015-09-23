@@ -33,11 +33,10 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
-public abstract class FieldNode extends ExpressionNode {
+public abstract class FieldNode extends ExpressionWithReceiverNode {
 
   protected FieldNode(final SourceSection source) {
     super(source);
@@ -110,6 +109,11 @@ public abstract class FieldNode extends ExpressionNode {
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ReadField;
     }
+
+    @Override
+    public ExpressionNode getReceiver() {
+      return this.getSelf();
+    }
     
   }
 
@@ -163,6 +167,11 @@ public abstract class FieldNode extends ExpressionNode {
       Object object = null;
       arguments[0] = object;
       return arguments;
+    }
+    
+    @Override
+    public ExpressionNode getReceiver() {
+      return this.getSelf();
     }
     
     public ReflectiveOp reflectiveOperation(){

@@ -140,7 +140,7 @@ if args.debug:
     flags += ['-Xdebug',
               '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000']
 if not args.interpreter and args.igv:
-    flags += ['-G:Dump=Truffle,TruffleTree']
+    flags += ['-G:Dump=Truffle,TruffleTree -G:PrintIdealGraphPort=4444  -G:MethodFilter=MateExpressionNode.doMetaLevel']
 if args.low_level:
     flags += ['-XX:+UnlockDiagnosticVMOptions', '-XX:+LogCompilation',
               '-XX:+TraceDeoptimization']

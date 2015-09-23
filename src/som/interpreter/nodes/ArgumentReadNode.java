@@ -26,7 +26,7 @@ public abstract class ArgumentReadNode {
     }
     
     public Node wrapIntoMateNode(){
-      return MateExpressionNode.createForGenericExpression(this);
+      return MateAbstractNode.create(this);
     }  
 
     @Override

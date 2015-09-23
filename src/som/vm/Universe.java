@@ -590,7 +590,6 @@ public class Universe {
           Disassembler.dump(result);
         }
         return result;
-
       } catch (IOException e) {
         // Continue trying different paths
       }

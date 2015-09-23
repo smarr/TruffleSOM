@@ -86,7 +86,8 @@ public abstract class FieldAccessorNode extends Node {
     }
     
     public Node wrapIntoMateNode(){
-      return new MateFieldReadNode(this);
+      //return new MateFieldReadNode(this);
+      return this;
     }
     
     public ReflectiveOp reflectiveOperation(){
@@ -273,7 +274,8 @@ public abstract class FieldAccessorNode extends Node {
     }
     
     public Node wrapIntoMateNode(){
-      return new MateFieldWriteNode(this);
+      //return new MateFieldWriteNode(this);
+      return this;
     }
     
     public ReflectiveOp reflectiveOperation(){

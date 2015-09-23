@@ -89,7 +89,7 @@ public final class MessageSendNode {
       new UninitializedDispatchNode(selector), source);
   }
   
-  public abstract static class AbstractMessageSendNode extends ExpressionNode
+  public abstract static class AbstractMessageSendNode extends ExpressionWithReceiverNode
       implements PreevaluatedExpression {
 
     @Children protected final ExpressionNode[] argumentNodes;
@@ -101,8 +101,8 @@ public final class MessageSendNode {
     }
 
     public boolean isSuperSend() {
-      if (argumentNodes[0] instanceof MateExpressionNode){
-        return ((MateExpressionNode)argumentNodes[0]).getOriginalNode() instanceof ISuperReadNode;
+      if (argumentNodes[0] instanceof MateAbstractNode){
+        return ((MateAbstractNode)argumentNodes[0]).getSOMWrappedNode() instanceof ISuperReadNode;
       } else {
         return argumentNodes[0] instanceof ISuperReadNode;
       }
@@ -113,7 +113,12 @@ public final class MessageSendNode {
       Object[] arguments = evaluateArguments(frame);
       return doPreEvaluated(frame, arguments);
     }
-
+    
+    @Override
+    public ExpressionNode getReceiver() {
+      return argumentNodes[0];
+    }
+    
     @ExplodeLoop
     public Object[] evaluateArguments(final VirtualFrame frame) {
       Object[] arguments = new Object[argumentNodes.length];
@@ -125,7 +130,7 @@ public final class MessageSendNode {
     }
     
     public Node wrapIntoMateNode(){
-      return MateExpressionNode.createForMessageSend(this);
+      return MateAbstractNode.create(this);
     }
     
     public abstract SSymbol getSelector();
@@ -494,8 +499,8 @@ public final class MessageSendNode {
     @Override
     protected PreevaluatedExpression makeSuperSend() {
       ISuperReadNode argumentNode;
-      if (argumentNodes[0] instanceof MateExpressionNode){
-        argumentNode = (ISuperReadNode)((MateExpressionNode)argumentNodes[0]).getOriginalNode();
+      if (argumentNodes[0] instanceof MateAbstractNode){
+        argumentNode = (ISuperReadNode)((MateAbstractNode)argumentNodes[0]).getSOMWrappedNode();
       } else {
         argumentNode = (ISuperReadNode)(argumentNodes[0]);
       }

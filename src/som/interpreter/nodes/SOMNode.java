@@ -90,7 +90,7 @@ public abstract class SOMNode extends Node {
   public abstract ExpressionNode getFirstMethodBodyNode();
   
   public Node wrapIntoMateNode(){
-    return MateExpressionNode.createForGenericExpression((ExpressionNode)this);
+    return MateAbstractNode.create((ExpressionNode)this);
   }
   
 }

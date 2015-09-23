@@ -23,14 +23,4 @@ public abstract class PerformPrim extends BinaryExpressionNode {
     return dispatch.
         executeDispatch(frame, receiver, selector, null);
   }
-  
-  @Override
-  public Object[] evaluateArguments(VirtualFrame frame) {
-    Object[] arguments = new Object[2];
-    Iterator<Node> it = this.getChildren().iterator();
-    it.next();
-    arguments[0] = ((ExpressionNode)it.next()).executeGeneric(frame);
-    arguments[1] = ((ExpressionNode)it.next()).executeGeneric(frame);
-    return arguments;
-  }
 }

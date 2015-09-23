@@ -127,7 +127,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
    * previous non-local returns.
    * @author Stefan Marr
    */
-  private static final class ReturnLocalNode extends ExpressionNode {
+  public static final class ReturnLocalNode extends ExpressionNode {
     @Child private ExpressionNode expression;
     private final FrameSlot frameOnStackMarker;
 
@@ -225,7 +225,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
     }
     
     public Node wrapIntoMateNode(){
-      return MateExpressionNode.createForGenericExpression(this);
+      return MateAbstractNode.create(this);
     }
   }
 }

@@ -34,6 +34,10 @@ public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
     this.selector = selector;
   }
 
+  public ExpressionNode getReceiver(){return receiver;}
+  public ExpressionNode getFirstArgument(){return argument1;}
+  public ExpressionNode getSecondArgument(){return argument2;}
+  
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
     Object rcvr = receiver.executeGeneric(frame);
