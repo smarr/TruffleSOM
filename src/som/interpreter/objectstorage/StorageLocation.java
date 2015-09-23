@@ -37,6 +37,10 @@ public abstract class StorageLocation {
 
   private static final Unsafe unsafe = loadUnsafe();
 
+  public static long getFieldOffset(final Field field) {
+    return unsafe.objectFieldOffset(field);
+  }
+
   public interface LongStorageLocation {
     long readLong(final SObject obj) throws UnexpectedResultException;
     void writeLong(final SObject obj, final long value);
