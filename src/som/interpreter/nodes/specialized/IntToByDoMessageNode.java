@@ -1,10 +1,7 @@
 package som.interpreter.nodes.specialized;
 
-import java.util.Iterator;
-
 import som.interpreter.Invokable;
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
@@ -18,8 +15,7 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
 
-public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
-    implements PreevaluatedExpression {
+public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
 
   private final SInvokable blockMethod;
   @Child private DirectCallNode valueSend;
@@ -36,13 +32,6 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
     super(node.getSourceSection());
     this.blockMethod = node.blockMethod;
     this.valueSend   = node.valueSend;
-  }
-
-  @Override
-  public final Object doPreEvaluated(final VirtualFrame frame,
-      final Object[] arguments) {
-    return executeEvaluated(frame, arguments[0], arguments[1],  arguments[2],
-        arguments[3]);
   }
 
   protected final boolean isSameBlockLong(final SBlock block) {

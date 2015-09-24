@@ -67,7 +67,6 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -127,10 +126,6 @@ public final class MessageSendNode {
         assert arguments[i] != null;
       }
       return arguments;
-    }
-    
-    public Node wrapIntoMateNode(){
-      return MateAbstractNode.create(this);
     }
     
     public abstract SSymbol getSelector();

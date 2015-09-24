@@ -1,6 +1,8 @@
 package som.interpreter.nodes.specialized.whileloops;
 
 import som.interpreter.Invokable;
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.literals.IntegerLiteralNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.vm.constants.Nil;
 import som.vmobjects.SBlock;
@@ -22,6 +24,18 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
   @Child protected DirectCallNode bodyValueSend;
 
   protected final boolean predicateBool;
+  
+  @Override
+  /*Analyze what is the best to do for this case*/
+  public ExpressionNode getReceiver(){
+    return new IntegerLiteralNode(1,this.getSourceSection());
+  }
+  
+  @Override
+  /*Analyze what is the best to do for this case*/
+  public ExpressionNode getArgument(){
+    return new IntegerLiteralNode(1,this.getSourceSection());
+  }
 
   public AbstractWhileNode(final SBlock rcvr, final SBlock arg,
       final boolean predicateBool, final SourceSection source) {

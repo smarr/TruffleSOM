@@ -113,7 +113,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     @Override
     public Object doMeta(final VirtualFrame frame, SMethod[] metaDelegation) {
       //Todo: Compute arguments;
-      Object[] arguments = null; 
+      Object[] arguments = this.evaluateArguments(frame); 
       //The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       MateUniverse.current().enterMetaExecutionLevel();
       SInvokable method = (SInvokable)metaDelegation[0].invoke(
@@ -175,9 +175,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       }
     }
     
-    //@Override
-    //public Object[] evaluateArguments(final VirtualFrame frame) {
-    //  return ((PreevaluatedExpression)this.baseLevel).evaluateArguments(frame);
-    //}
+    @Override
+    public Object[] evaluateArguments(final VirtualFrame frame) {
+      return ((PreevaluatedExpression)this.mateNode.getSOMWrappedNode()).evaluateArguments(frame);
+    }
   }
 }

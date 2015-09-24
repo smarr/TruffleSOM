@@ -36,6 +36,12 @@ public abstract class UnaryExpressionNode extends ExpressionWithReceiverNode
     return this.getReceiver().executeGeneric(frame);
   }
   
+  public Object[] evaluateArguments(final VirtualFrame frame){
+    Object[] arguments = new Object[1];
+    arguments[0] = this.getReceiver().executeGeneric(frame);
+    return arguments; 
+  }
+  
   public ReflectiveOp reflectiveOperation(){
     return ReflectiveOp.Lookup;
   }

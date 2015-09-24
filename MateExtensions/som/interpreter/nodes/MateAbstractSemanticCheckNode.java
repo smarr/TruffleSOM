@@ -22,7 +22,6 @@ public abstract class MateAbstractSemanticCheckNode extends Node {
     public static MateEnvironmentSemanticCheckNode create(){
       return MateEnvironmentSemanticCheckNodeGen.create();
     }
-
     
     @Specialization(guards="semanticsFromSlot(frame) != null")
     public Object doSemanticsInFrame(

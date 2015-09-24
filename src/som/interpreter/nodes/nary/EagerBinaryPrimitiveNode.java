@@ -59,4 +59,9 @@ public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
         new ExpressionNode[] {receiver, argument}, getSourceSection());
     return replace(node);
   }
+
+  @Override
+  public ExpressionNode getArgument() {
+    return argument;
+  }
 }

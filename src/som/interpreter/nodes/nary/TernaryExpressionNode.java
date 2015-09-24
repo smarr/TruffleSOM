@@ -19,6 +19,8 @@ public abstract class TernaryExpressionNode extends ExpressionWithReceiverNode
     implements PreevaluatedExpression {
 
   public abstract ExpressionNode getReceiver();
+  public abstract ExpressionNode getFirstArg();
+  public abstract ExpressionNode getSecondArg();
   
   public TernaryExpressionNode(final SourceSection sourceSection) {
     super(sourceSection);
@@ -33,6 +35,14 @@ public abstract class TernaryExpressionNode extends ExpressionWithReceiverNode
   public final Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0], arguments[1], arguments[2]);
+  }
+  
+  public Object[] evaluateArguments(final VirtualFrame frame){
+    Object[] arguments = new Object[3];
+    arguments[0] = this.getReceiver().executeGeneric(frame);
+    arguments[1] = this.getFirstArg().executeGeneric(frame);
+    arguments[2] = this.getSecondArg().executeGeneric(frame);
+    return arguments; 
   }
   
   public ReflectiveOp reflectiveOperation(){

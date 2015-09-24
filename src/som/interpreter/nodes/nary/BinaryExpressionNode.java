@@ -18,6 +18,7 @@ public abstract class BinaryExpressionNode extends ExpressionWithReceiverNode
     implements PreevaluatedExpression {
 
   public abstract ExpressionNode getReceiver();
+  public abstract ExpressionNode getArgument();
   
   public BinaryExpressionNode(final SourceSection source) {
     super(source);
@@ -34,6 +35,13 @@ public abstract class BinaryExpressionNode extends ExpressionWithReceiverNode
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0], arguments[1]);
     
+  }
+  
+  public Object[] evaluateArguments(final VirtualFrame frame){
+    Object[] arguments = new Object[2];
+    arguments[0] = this.getReceiver().executeGeneric(frame);
+    arguments[1] = this.getArgument().executeGeneric(frame);
+    return arguments; 
   }
   
   public ReflectiveOp reflectiveOperation(){

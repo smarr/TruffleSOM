@@ -47,6 +47,11 @@ public final class MethodPrims {
   public abstract static class InvokeOnPrim extends ExpressionNode
     implements PreevaluatedExpression {
     @Child private InvokeOnCache callNode;
+    
+    public abstract ExpressionNode getReceiver();
+    public abstract ExpressionNode getTarget();
+    public abstract ExpressionNode getSomArr();
+    public abstract ToArgumentsArrayNode getArgArr();
 
     public InvokeOnPrim() {
       super(null);
@@ -68,6 +73,10 @@ public final class MethodPrims {
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr) {
       return callNode.executeDispatch(frame, receiver, argArr);
+    }
+    
+    public Object[] evaluateArguments(final VirtualFrame frame){
+      return this.getArgArr().executedEvaluated(this.getSomArr().executeGeneric(frame), this.getTarget().executeGeneric(frame));
     }
   }
 }

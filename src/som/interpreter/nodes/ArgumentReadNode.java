@@ -25,9 +25,10 @@ public abstract class ArgumentReadNode {
       return SArguments.arg(frame, argumentIndex);
     }
     
-    public Node wrapIntoMateNode(){
+    /*public Node wrapIntoMateNode(){
+      return null;
       return MateAbstractNode.create(this);
-    }  
+    }*/  
 
     @Override
     public void replaceWithLexicallyEmbeddedNode(
