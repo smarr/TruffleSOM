@@ -35,7 +35,7 @@ public abstract class MateAbstractSemanticCheckNode extends Node {
         }
     }
     
-    @Specialization
+    @Specialization(guards="semanticsFromSlot(frame) == null")
     public Object doNoSemanticsInFrame(VirtualFrame frame){
       return null;
     }

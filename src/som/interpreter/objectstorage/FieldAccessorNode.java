@@ -86,8 +86,7 @@ public abstract class FieldAccessorNode extends Node {
     }
     
     public Node wrapIntoMateNode(){
-      //return new MateFieldReadNode(this);
-      return this;
+      return MateAbstractFieldNode.createForNode(this);
     }
     
     public ReflectiveOp reflectiveOperation(){

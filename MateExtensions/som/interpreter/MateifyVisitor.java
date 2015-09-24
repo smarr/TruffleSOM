@@ -7,8 +7,7 @@ import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.GlobalNode;
-import som.interpreter.nodes.MateAbstractNode;
-import som.interpreter.nodes.ReturnNonLocalNode;
+import som.interpreter.nodes.MateAbstractExpressionNode;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.ReturnNonLocalNode.ReturnLocalNode;
 import som.interpreter.nodes.SOMNode;
@@ -36,7 +35,7 @@ public class MateifyVisitor implements NodeVisitor {
    || (
             (node instanceof SOMNode) && 
             !(node instanceof ContextualNode) && 
-            !(node instanceof MateAbstractNode) &&
+            !(node instanceof MateAbstractExpressionNode) &&
             !(node instanceof CatchNonLocalReturnNode) &&
             !(node instanceof ReturnLocalNode) &&
             !(node instanceof SequenceNode) &&

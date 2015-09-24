@@ -24,7 +24,7 @@ package som.interpreter.nodes;
 import java.math.BigInteger;
 
 import som.interpreter.TypesGen;
-import som.interpreter.nodes.MateAbstractNode.MateExpressionNode;
+import som.interpreter.nodes.MateAbstractExpressionNode.MateExpressionNode;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
@@ -107,7 +107,7 @@ public abstract class ExpressionNode extends SOMNode {
   }
   
   public Node wrapIntoMateNode(){
-    return MateAbstractNode.createForNode(this);
+    return MateAbstractExpressionNode.createForNode(this);
   }
   
 }

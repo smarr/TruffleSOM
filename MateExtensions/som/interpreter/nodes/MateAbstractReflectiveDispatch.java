@@ -1,7 +1,7 @@
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
-import som.interpreter.nodes.MateAbstractNode.MateExpressionNode;
+import som.interpreter.nodes.MateAbstractExpressionNode.MateExpressionNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.vm.MateUniverse;
 import som.vm.Universe;

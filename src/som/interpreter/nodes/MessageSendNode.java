@@ -100,8 +100,8 @@ public final class MessageSendNode {
     }
 
     public boolean isSuperSend() {
-      if (argumentNodes[0] instanceof MateAbstractNode){
-        return ((MateAbstractNode)argumentNodes[0]).getSOMWrappedNode() instanceof ISuperReadNode;
+      if (argumentNodes[0] instanceof MateAbstractExpressionNode){
+        return ((MateAbstractExpressionNode)argumentNodes[0]).getSOMWrappedNode() instanceof ISuperReadNode;
       } else {
         return argumentNodes[0] instanceof ISuperReadNode;
       }
@@ -494,8 +494,8 @@ public final class MessageSendNode {
     @Override
     protected PreevaluatedExpression makeSuperSend() {
       ISuperReadNode argumentNode;
-      if (argumentNodes[0] instanceof MateAbstractNode){
-        argumentNode = (ISuperReadNode)((MateAbstractNode)argumentNodes[0]).getSOMWrappedNode();
+      if (argumentNodes[0] instanceof MateAbstractExpressionNode){
+        argumentNode = (ISuperReadNode)((MateAbstractExpressionNode)argumentNodes[0]).getSOMWrappedNode();
       } else {
         argumentNode = (ISuperReadNode)(argumentNodes[0]);
       }
