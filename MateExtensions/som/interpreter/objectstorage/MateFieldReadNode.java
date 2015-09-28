@@ -1,24 +1,50 @@
-/*package som.interpreter.objectstorage;
+package som.interpreter.objectstorage;
 
-import som.interpreter.nodes.MateFieldNode;
-import som.interpreter.nodes.MateFieldNodeGen.MateReadFieldNodeGen;
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.TruffleRuntime;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.impl.DefaultTruffleRuntime;
+import com.oracle.truffle.api.nodes.Node.Child;
+
+import som.interpreter.nodes.MateAbstractReflectiveDispatch;
+import som.interpreter.nodes.MateAbstractSemanticCheckNode;
+import som.interpreter.nodes.MateAbstractReflectiveDispatch.MateDispatchFieldAccessor;
+import som.interpreter.nodes.MateAbstractSemanticCheckNode.MateEnvironmentSemanticCheckNode;
+import som.interpreter.nodes.MateAbstractSemanticCheckNode.MateObjectSemanticCheckNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 
 
 public class MateFieldReadNode extends AbstractReadFieldNode {
-  //@Child AbstractReadFieldNode baseNode;
-  @Child MateFieldNode mateNode;
+  @Child protected MateEnvironmentSemanticCheckNode environment;
+  @Child protected MateObjectSemanticCheckNode object;
+  @Child protected MateDispatchFieldAccessor mateDispatch;
   
-  public MateFieldReadNode(AbstractReadFieldNode base){
-    super(base.getFieldIndex());
-    //baseNode = base;
-    mateNode = MateReadFieldNodeGen.create(base);
+  public MateFieldReadNode(AbstractReadFieldNode node) {
+    super(node.getFieldIndex());
+    environment = MateEnvironmentSemanticCheckNode.create();
+    object = MateObjectSemanticCheckNode.create();
+    mateDispatch = MateDispatchFieldReadLayoutNodeGen.create(node);
   }
   
-  public Object read(SObject obj){
-    //return baseNode.read(obj);
-    return mateNode.execute(obj, null, this.getFieldIndex());
+  @Override
+  public Object read(SObject receiver) {
+    VirtualFrame frame = (VirtualFrame) Truffle.getRuntime().getCurrentFrame().getFrame(FrameAccess.NONE, false);
+    SMateEnvironment env = (SMateEnvironment)environment.executeGeneric(frame);
+    Object[] args = {receiver, this.getFieldIndex()}; 
+    if (env != null){
+      return mateDispatch.executeDispatch(frame, env, args);
+    } else {
+      env = (SMateEnvironment)object.executeGeneric(frame, receiver);
+      if (env != null){
+        return mateDispatch.executeDispatch(frame, env, args);
+      } else {
+        return mateDispatch.doSomNode(frame, env, args);
+      }
+    }
   }
 }
-*/
