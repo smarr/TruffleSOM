@@ -43,14 +43,24 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
   }
 
   protected abstract ExpressionNode getSelf();
+  public abstract Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver);
+  
+  public Object[] evaluateArguments(final VirtualFrame frame) {
+    SObject object;
+    try {
+      object = this.getSelf().executeSObject(frame);
+    } catch (UnexpectedResultException e) {
+      CompilerDirectives.transferToInterpreter();
+      throw new RuntimeException("This should never happen by construction");
+    }
+    return this.argumentsForReceiver(frame, object);
+  }
   
   public static final class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
     @Child private ExpressionNode self;
     @Child private AbstractReadFieldNode read;
-
-    
-    
+   
     public FieldReadNode(final ExpressionNode self, final int fieldIndex,
         final SourceSection source) {
       super(source);
@@ -89,15 +99,11 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       return read.readDouble(obj);
     }
 
-    public Object[] evaluateArguments(final VirtualFrame frame) {
-      Object[] arguments = new Object[1];
-      try {
-        Object object = self.executeSObject(frame);
-        arguments[0] = object;
-      } catch (UnexpectedResultException e) {
-        CompilerDirectives.transferToInterpreter();
-        throw new RuntimeException("This should never happen by construction");
-      }
+    @Override
+    public Object[] argumentsForReceiver(VirtualFrame frame, SObject receiver) {
+      Object[] arguments = new Object[2];
+      arguments[0] = receiver;
+      arguments[1] = this.read.getFieldIndex();
       return arguments;
     }
     
@@ -114,7 +120,6 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     public ExpressionNode getReceiver() {
       return this.getSelf();
     }
-    
   }
 
   @NodeChildren({
@@ -124,6 +129,8 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       implements PreevaluatedExpression {
     @Child private AbstractWriteFieldNode write;
 
+    protected abstract ExpressionNode getValue();
+    
     public FieldWriteNode(final int fieldIndex, final SourceSection source) {
       super(source);
       write = new UninitializedWriteFieldNode(fieldIndex);
@@ -162,10 +169,11 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       return executeEvaluated(frame, self, value);
     }
     
-    public Object[] evaluateArguments(final VirtualFrame frame) {
-      Object[] arguments = new Object[1];
-      Object object = null;
-      arguments[0] = object;
+    public Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver) {
+      Object[] arguments = new Object[3];
+      arguments[0] = receiver;
+      arguments[1] = this.write.getFieldIndex();
+      arguments[2] = this.getValue().executeGeneric(frame);
       return arguments;
     }
     
@@ -176,6 +184,17 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.WriteField;
+    }
+    
+    public Object[] evaluateArguments(final VirtualFrame frame) {
+      SObject object;
+      try {
+        object = this.getSelf().executeSObject(frame);
+      } catch (UnexpectedResultException e) {
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException("This should never happen by construction");
+      }
+      return this.argumentsForReceiver(frame, object);
     }
   }
 }

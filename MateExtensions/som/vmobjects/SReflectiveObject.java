@@ -25,8 +25,6 @@
 package som.vmobjects;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import som.vm.constants.ReflectiveOp;
-
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
 
@@ -57,11 +55,5 @@ public class SReflectiveObject extends SObject {
   public final void setEnvironment(final SMateEnvironment value) {
     transferToInterpreterAndInvalidate("SReflectiveObject.setEnvironment");
     environment = value;
-  }
-  
-  public final boolean hasReflectiveBehaviorFor(ReflectiveOp operation){
-    SMateEnvironment environment = this.getEnvironment(); 
-    if (environment == null) return false;
-    return environment.reimplementsOperation(operation);
   }
 }

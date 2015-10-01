@@ -25,7 +25,6 @@ import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.Types;
-import som.interpreter.nodes.MateAbstractExpressionNode.MateExpressionNode;
 
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.nodes.Node;
@@ -91,7 +90,6 @@ public abstract class SOMNode extends Node {
   public abstract ExpressionNode getFirstMethodBodyNode();
   
   public Node wrapIntoMateNode(){
-    return MateAbstractExpressionNode.createForNode((ExpressionNode)this);
+    return this;
   }
-  
 }

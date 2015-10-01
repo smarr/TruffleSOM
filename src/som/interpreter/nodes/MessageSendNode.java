@@ -2,6 +2,7 @@ package som.interpreter.nodes;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
+import som.interpreter.nodes.MateAbstractExpressionNode.MateMessageSendNode;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
@@ -100,8 +101,8 @@ public final class MessageSendNode {
     }
 
     public boolean isSuperSend() {
-      if (argumentNodes[0] instanceof MateAbstractExpressionNode){
-        return ((MateAbstractExpressionNode)argumentNodes[0]).getSOMWrappedNode() instanceof ISuperReadNode;
+      if (argumentNodes[0] instanceof MateMessageSendNode){
+        return ((MateMessageSendNode)argumentNodes[0]).getSOMWrappedNode() instanceof ISuperReadNode;
       } else {
         return argumentNodes[0] instanceof ISuperReadNode;
       }
@@ -495,7 +496,7 @@ public final class MessageSendNode {
     protected PreevaluatedExpression makeSuperSend() {
       ISuperReadNode argumentNode;
       if (argumentNodes[0] instanceof MateAbstractExpressionNode){
-        argumentNode = (ISuperReadNode)((MateAbstractExpressionNode)argumentNodes[0]).getSOMWrappedNode();
+        argumentNode = (ISuperReadNode)((MateMessageSendNode)argumentNodes[0]).getSOMWrappedNode();
       } else {
         argumentNode = (ISuperReadNode)(argumentNodes[0]);
       }
