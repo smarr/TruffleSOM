@@ -130,6 +130,11 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     
     public abstract Object executeDispatch(final VirtualFrame frame, Object environment, Object receiver);
     
+    @Specialization(guards= "environment == null")
+    public Object doSomNode(final VirtualFrame frame, Object environment, Object receiver){
+      return this.doWrappedNode(frame);
+    }
+    
     @Specialization(guards = {"cachedEnvironment==environment"})
     public Object doMetaLevel(final VirtualFrame frame,  
         SMateEnvironment environment,
@@ -144,11 +149,6 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
           return value;
         }
         return this.doWrappedNode(frame); 
-    }
-    
-    @Specialization(guards= "environment == null")
-    public Object doSomNode(final VirtualFrame frame, Object environment, SObject receiver){
-      return this.doWrappedNode(frame);
     }
     
     public Object doWrappedNode(final VirtualFrame frame){
@@ -170,10 +170,10 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       activationDispatch = MateDispatchActivationNodeGen.create(node);
     }
     
-    public abstract Object executeDispatch(final VirtualFrame frame, SMateEnvironment environment, Object receiver);
+    public abstract Object executeDispatch(final VirtualFrame frame, Object environment, Object receiver);
     
     @Specialization(guards= "environment == null")
-    public Object doSomNode(final VirtualFrame frame, SMateEnvironment environment, SObject receiver){
+    public Object doSomNode(final VirtualFrame frame, Object environment, Object receiver){
       return this.doWrappedNode(frame);
     }
     

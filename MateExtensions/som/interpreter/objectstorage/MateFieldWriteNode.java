@@ -28,12 +28,10 @@ public class MateFieldWriteNode extends AbstractWriteFieldNode {
   
   @Override
   public Object write(SObject receiver, Object value) {
-    VirtualFrame frame = (VirtualFrame) Truffle.getRuntime().getCurrentFrame().getFrame(FrameAccess.NONE, false);
+    VirtualFrame frame = (VirtualFrame) Truffle.getRuntime().getCallerFrame().getFrame(FrameAccess.READ_WRITE, false);
     Object[] args = {receiver, (long)this.getFieldIndex(), value};
-    SMateEnvironment env;
-    if (MateUniverse.current().executingMeta()){
-      env = null;
-    } else {
+    SMateEnvironment env = null;
+    if (!MateUniverse.current().executingMeta()){
       env = (SMateEnvironment)environment.executeGeneric(frame);
       if (env == null){
         env = (SMateEnvironment)object.executeGeneric(frame, receiver);
