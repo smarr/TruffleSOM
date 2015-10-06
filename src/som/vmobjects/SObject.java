@@ -255,7 +255,7 @@ public class SObject extends SAbstractObject {
   private boolean isFieldSet(final long index) {
     CompilerAsserts.neverPartOfCompilation("isFieldSet");
     StorageLocation location = getLocation(index);
-    return location.isSet(this, true);
+    return location.isSet(this);
   }
 
   public final Object getField(final long index) {
