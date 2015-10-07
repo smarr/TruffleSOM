@@ -7,11 +7,11 @@ BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
 GRAAL_HOME  = os.getenv('GRAAL_HOME',  None)
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 
-GRAAL_LOCATIONS = [BASE_DIR + '/../graal/jvmci',
-                   BASE_DIR + '/../GraalVM/jvmci',
-                   '/home/smarr/Projects/SOM/graal/jvmci',
+GRAAL_LOCATIONS = ['/home/smarr/Projects/SOM/graal/jvmci',
                    '/Users/smarr/Projects/SOM/graal/jvmci',
-                   '/Users/guidochari/Documents/Projects/graal-compiler/jvmci']
+                   '/Users/guidochari/Documents/Projects/graal-compiler/jvmci',
+                   BASE_DIR + '/../graal/jvmci',
+                   BASE_DIR + '/../GraalVM/jvmci']
 JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_40', 'jdk1.8.0_25']
 
 parser = argparse.ArgumentParser(
