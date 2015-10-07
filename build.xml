@@ -1,19 +1,21 @@
 <project name="som" basedir="." default="compile">
-     
+
     <property name="src.dir"     value="src"/>
     <property name="src.dirMate" value="MateExtensions"/>
     <property name="src_gen.dir" value="src_gen"/>
     <property name="lib.dir"     value="libs" />
     <property name="truffle.dir" value="${lib.dir}/truffle" />
     <property name="truffle.build" value="${truffle.dir}/build" />
- 
+    <property name="junit.version" value="4.12" />
+
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
 
     <path id="project.classpath">
         <pathelement location="${classes.dir}" />
-	<pathelement location="tests/" />
-        <pathelement location="${lib.dir}/junit-4.8.1.jar" />
+        <pathelement location="tests/" />
+        <pathelement location="${lib.dir}/junit-${junit.version}.jar" />
+        <pathelement location="${lib.dir}/hamcrest-core-1.3.jar" />
         <pathelement location="${truffle.build}/truffle-api.jar" />
         <pathelement location="${truffle.build}/truffle-dsl-processor.jar" />
     </path>
@@ -22,7 +24,13 @@
         <delete dir="${build.dir}"/>
         <delete dir="${src_gen.dir}"/>
     </target>
-
+    
+    <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
+        <exec executable="../mxtool/mx" dir="${truffle.dir}">
+            <arg value="clean"/>
+        </exec>
+    </target>
+    
     <target name="check-core-lib-available">
         <available file="core-lib/.git" property="core-lib.present"/>
     </target>
@@ -35,24 +43,19 @@
       </exec>
     </target>
 
-    <!-- Work around for issue with non-existing env file -->
-    <target name="truffle-env">
-        <exec executable="touch">
-            <arg value="${truffle.dir}/mx.truffle/env"/>
-        </exec>
-    </target>
-    
-    <target name="truffle-libs" depends="truffle-env">
-        <exec executable="./mx.sh" dir="${truffle.dir}">
+    <target name="truffle-libs" >
+        <exec executable="../mxtool/mx" dir="${truffle.dir}">
             <arg value="build"/>
         </exec>
     </target>
-
+    
     <target name="libs" depends="core-lib,truffle-libs">
-        <get src="http://kuiper.mirrorservice.org/sites/downloads.sourceforge.net/j/ju/junit/junit/4.8.1/junit-4.8.1.jar"
+        <get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar"
             usetimestamp="true"
-		    dest="${lib.dir}/junit-4.8.1.jar" />
-            <!-- http://search.maven.org/remotecontent?filepath=junit/junit/4.8.1/junit-4.8.1.jar -->
+            dest="${lib.dir}/junit-${junit.version}.jar" />
+        <get src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/hamcrest-core-1.3.jar" />
     </target>
 
     <target name="compile" depends="libs" description="Compile TruffleSOM">
@@ -65,10 +68,12 @@
           <classpath refid="project.classpath" />
           <compilerarg line="-s ${src_gen.dir}" />
           <compilerarg line="-XDignore.symbol.file" />
+          <compilerarg line="-Xlint:all" />
         </javac>
         <javac includeantruntime="false" srcdir="${src_gen.dir}" destdir="${classes.dir}" debug="true">
           <classpath refid="project.classpath" />
           <compilerarg line="-s ${src_gen.dir}" />
+          <compilerarg line="-Xlint:all" />
         </javac>
         <javac includeantruntime="false" srcdir="tests/" destdir="${classes.dir}" debug="true">
           <classpath refid="project.classpath" />
@@ -79,27 +84,27 @@
         <jar destfile="${build.dir}/som.jar" basedir="${classes.dir}"></jar>
     </target>
     
-    <target name="develop" depends="libs" description="Load all dependencies for development">
-    </target>
-
     <target name="test" depends="compile" description="Execute tests">
-        <junit haltonerror="false" haltonfailure="false">
+        <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed"
+            outputtoformatters="true">
             <jvmarg value="-ea" />
             <jvmarg value="-esa" />
             <classpath refid="project.classpath" />
-            <batchtest fork="yes"><!--  todir="${reports.tests}" -->
+            <batchtest fork="yes" filtertrace="false">
               <fileset dir="tests">
                   <include name="**/*Test*.java"/>
               </fileset>
             </batchtest>
+            <formatter type="brief" usefile="false"/>
         </junit>
-      
+
         <java classname="som.vm.Universe" fork="true" failonerror="true">
             <classpath refid="project.classpath" />
             <jvmarg value="-ea" />
             <jvmarg value="-esa" />
             <arg line="-cp Smalltalk TestSuite/TestHarness.som --ignore-inefficacies" />
         </java>
+        <fail message="Basic tests failed." if="test.failed" />
     </target>
     <target name="tests" depends="test" />
 
