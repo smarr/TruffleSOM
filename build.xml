@@ -3,7 +3,7 @@
     <property name="src.dir"     value="src"/>
     <property name="src.dirMate" value="MateExtensions"/>
     <property name="src_gen.dir" value="src_gen"/>
-    <property name="lib.dir"     value="libs" />
+    <property name="lib.dir"     value="${basedir}/libs" />
     <property name="truffle.dir" value="${lib.dir}/truffle" />
     <property name="truffle.build" value="${truffle.dir}/build" />
     <property name="junit.version" value="4.12" />
@@ -26,7 +26,7 @@
     </target>
     
     <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
-        <exec executable="../mxtool/mx" dir="${truffle.dir}">
+        <exec executable="${lib.dir}/mxtool/mx" dir="${truffle.dir}">
             <arg value="clean"/>
         </exec>
     </target>
@@ -44,7 +44,7 @@
     </target>
 
     <target name="truffle-libs" >
-        <exec executable="../mxtool/mx" dir="${truffle.dir}">
+        <exec executable="${lib.dir}/mxtool/mx" dir="${truffle.dir}">
             <arg value="build"/>
         </exec>
     </target>
