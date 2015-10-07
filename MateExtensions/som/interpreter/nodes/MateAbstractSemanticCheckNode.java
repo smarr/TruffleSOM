@@ -2,8 +2,10 @@ package som.interpreter.nodes;
 
 import som.vmobjects.SReflectiveObject;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -34,7 +36,13 @@ public abstract class MateAbstractSemanticCheckNode extends Node {
     }
 
     public static FrameSlot semanticsFromSlot(final VirtualFrame frame){
-      return frame.getFrameDescriptor().findFrameSlot("semantics");
+      return semanticsFromDescriptor(frame.getFrameDescriptor());
+    }
+
+    // TODO: remove this boundary, and fix the way 'semantics' objects are handled
+    @TruffleBoundary
+    public static FrameSlot semanticsFromDescriptor(final FrameDescriptor desc) {
+      return desc.findFrameSlot("semantics");
     }
   }
 

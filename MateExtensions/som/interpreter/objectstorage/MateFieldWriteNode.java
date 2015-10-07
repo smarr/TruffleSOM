@@ -11,7 +11,9 @@ import som.vm.MateUniverse;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -30,7 +32,7 @@ public class MateFieldWriteNode extends AbstractWriteFieldNode {
 
   @Override
   public Object write(final SObject receiver, final Object value) {
-    VirtualFrame frame = (VirtualFrame) Truffle.getRuntime().getCallerFrame().getFrame(FrameAccess.READ_WRITE, false);
+    VirtualFrame frame = (VirtualFrame) getCallerFrame();
     Object[] args = {receiver, (long)this.getFieldIndex(), value};
     SMateEnvironment env = null;
     if (!MateUniverse.current().executingMeta()){
@@ -41,5 +43,10 @@ public class MateFieldWriteNode extends AbstractWriteFieldNode {
     }
     return mateDispatch.executeDispatch(frame, env, args);
   }
-}
 
+  // TODO: remove the need to access the caller frame, this is TruffleBoundary needs to be removed
+  @TruffleBoundary
+  protected Frame getCallerFrame() {
+    return Truffle.getRuntime().getCallerFrame().getFrame(FrameAccess.READ_WRITE, false);
+  }
+}
