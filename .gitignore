@@ -5,3 +5,4 @@ mini.sh
 rebench.conf
 user-dict.txt
 .classpath
+libs/*.jar
