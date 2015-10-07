@@ -1,8 +1,5 @@
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateAbstractExpressionNodeGen.MateFieldNodeGen;
-import som.interpreter.nodes.MateAbstractExpressionNodeGen.MateMessageSendNodeGen;
-import som.interpreter.nodes.MateAbstractReceiverNode.MateReceiverExpressionNode;
 import som.interpreter.nodes.MateAbstractReflectiveDispatch.MateDispatchFieldAccess;
 import som.interpreter.nodes.MateAbstractReflectiveDispatch.MateDispatchMessageLookup;
 import som.interpreter.nodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
@@ -34,18 +31,6 @@ public abstract class MateAbstractExpressionNode extends ExpressionNode{
 
   public MateAbstractExpressionNode(final Node node){
     super(node.getSourceSection());
-  }
-  public static MateAbstractExpressionNode createForNode(ExpressionWithReceiverNode node){
-    if (node instanceof FieldNode){
-      return MateFieldNodeGen.create((FieldNode)node,
-          new MateReceiverExpressionNode(node), 
-          MateEnvironmentSemanticCheckNode.create(), 
-          MateObjectSemanticCheckNode.create());
-    }
-    return MateMessageSendNodeGen.create(node,    
-        new MateReceiverExpressionNode(node), 
-        MateEnvironmentSemanticCheckNode.create(), 
-        MateObjectSemanticCheckNode.create());
   }
 
   /*public static MateAbstractNode createForNode(AbstractWriteFieldNode node){

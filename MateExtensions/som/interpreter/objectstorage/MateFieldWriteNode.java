@@ -1,17 +1,19 @@
 package som.interpreter.objectstorage;
 
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
-import com.oracle.truffle.api.frame.VirtualFrame;
-
-import som.interpreter.nodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldWriteLayoutNodeGen;
 import som.interpreter.nodes.MateAbstractReflectiveDispatch.MateDispatchFieldAccessor;
+import som.interpreter.nodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldWriteLayoutNodeGen;
 import som.interpreter.nodes.MateAbstractSemanticCheckNode.MateEnvironmentSemanticCheckNode;
 import som.interpreter.nodes.MateAbstractSemanticCheckNode.MateObjectSemanticCheckNode;
+import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateEnvironmentSemanticCheckNodeGen;
+import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateObjectSemanticCheckNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.vm.MateUniverse;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
+
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public class MateFieldWriteNode extends AbstractWriteFieldNode {

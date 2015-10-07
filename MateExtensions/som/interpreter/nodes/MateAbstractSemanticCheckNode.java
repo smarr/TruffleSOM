@@ -1,8 +1,5 @@
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateEnvironmentSemanticCheckNodeGen;
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateObjectSemanticCheckNodeGen;
-import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
 import com.oracle.truffle.api.dsl.Cached;
@@ -18,9 +15,6 @@ public abstract class MateAbstractSemanticCheckNode extends Node {
     public static abstract class MateEnvironmentSemanticCheckNode extends MateAbstractSemanticCheckNode {
 
     public abstract Object executeGeneric(VirtualFrame frame);
-    public static MateEnvironmentSemanticCheckNode create(){
-      return MateEnvironmentSemanticCheckNodeGen.create();
-    }
 
     @Specialization(guards="semanticsFromSlot(frame) != null")
     public Object doSemanticsInFrame(
@@ -45,9 +39,6 @@ public abstract class MateAbstractSemanticCheckNode extends Node {
   }
 
   public static abstract class MateObjectSemanticCheckNode extends MateAbstractSemanticCheckNode {
-    public static MateObjectSemanticCheckNode create(){
-      return MateObjectSemanticCheckNodeGen.create();
-    }
 
     public abstract Object executeGeneric(VirtualFrame frame, Object receiver);
 
