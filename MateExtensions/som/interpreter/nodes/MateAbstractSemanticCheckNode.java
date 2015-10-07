@@ -14,53 +14,51 @@ import com.oracle.truffle.api.nodes.Node;
 
 
 public abstract class MateAbstractSemanticCheckNode extends Node {
-  
+
     public static abstract class MateEnvironmentSemanticCheckNode extends MateAbstractSemanticCheckNode {
-    
+
     public abstract Object executeGeneric(VirtualFrame frame);
-    
     public static MateEnvironmentSemanticCheckNode create(){
       return MateEnvironmentSemanticCheckNodeGen.create();
     }
-    
+
     @Specialization(guards="semanticsFromSlot(frame) != null")
     public Object doSemanticsInFrame(
-        VirtualFrame frame, 
-        @Cached("semanticsFromSlot(frame)") FrameSlot slot){
+        final VirtualFrame frame,
+        @Cached("semanticsFromSlot(frame)") final FrameSlot slot){
         try {
-          return (SMateEnvironment)frame.getObject(slot);
+          return frame.getObject(slot);
         }
         catch (FrameSlotTypeException e) {
           return null;
         }
     }
-    
+
     @Specialization(guards="semanticsFromSlot(frame) == null")
-    public Object doNoSemanticsInFrame(VirtualFrame frame){
+    public Object doNoSemanticsInFrame(final VirtualFrame frame){
       return null;
     }
-    
-    public static FrameSlot semanticsFromSlot(VirtualFrame frame){
+
+    public static FrameSlot semanticsFromSlot(final VirtualFrame frame){
       return frame.getFrameDescriptor().findFrameSlot("semantics");
     }
   }
-  
+
   public static abstract class MateObjectSemanticCheckNode extends MateAbstractSemanticCheckNode {
-    
     public static MateObjectSemanticCheckNode create(){
       return MateObjectSemanticCheckNodeGen.create();
     }
-    
+
     public abstract Object executeGeneric(VirtualFrame frame, Object receiver);
-    
+
     @Specialization
     public Object doSReflectiveObject(
-        VirtualFrame frame, SReflectiveObject receiver){
+        final VirtualFrame frame, final SReflectiveObject receiver){
       return receiver.getEnvironment();
     }
-    
+
     @Specialization
-    public Object doSObject(VirtualFrame frame, Object receiver){
+    public Object doSObject(final VirtualFrame frame, final Object receiver){
       return null;
     }
   }

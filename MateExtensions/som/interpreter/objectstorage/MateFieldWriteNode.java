@@ -18,16 +18,16 @@ public class MateFieldWriteNode extends AbstractWriteFieldNode {
   @Child protected MateEnvironmentSemanticCheckNode environment;
   @Child protected MateObjectSemanticCheckNode object;
   @Child protected MateDispatchFieldAccessor mateDispatch;
-  
-  public MateFieldWriteNode(AbstractWriteFieldNode node) {
+
+  public MateFieldWriteNode(final AbstractWriteFieldNode node) {
     super(node.getFieldIndex());
-    environment = MateEnvironmentSemanticCheckNode.create();
-    object = MateObjectSemanticCheckNode.create();
+    environment = MateEnvironmentSemanticCheckNodeGen.create();
+    object = MateObjectSemanticCheckNodeGen.create();
     mateDispatch = MateDispatchFieldWriteLayoutNodeGen.create(node);
   }
-  
+
   @Override
-  public Object write(SObject receiver, Object value) {
+  public Object write(final SObject receiver, final Object value) {
     VirtualFrame frame = (VirtualFrame) Truffle.getRuntime().getCallerFrame().getFrame(FrameAccess.READ_WRITE, false);
     Object[] args = {receiver, (long)this.getFieldIndex(), value};
     SMateEnvironment env = null;
@@ -40,5 +40,4 @@ public class MateFieldWriteNode extends AbstractWriteFieldNode {
     return mateDispatch.executeDispatch(frame, env, args);
   }
 }
-  
- 
+

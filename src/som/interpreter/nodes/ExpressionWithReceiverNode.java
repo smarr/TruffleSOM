@@ -7,16 +7,17 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ExpressionWithReceiverNode extends ExpressionNode {
 
-  public ExpressionWithReceiverNode(SourceSection sourceSection) {
+  public ExpressionWithReceiverNode(final SourceSection sourceSection) {
     super(sourceSection);
   }
 
   public abstract ExpressionNode getReceiver();
-  
-  public Object evaluateReceiver(VirtualFrame frame){
+
+  public Object evaluateReceiver(final VirtualFrame frame){
     return this.getReceiver().executeGeneric(frame);
   }
-  
+
+  @Override
   public Node wrapIntoMateNode(){
     return MateAbstractExpressionNode.createForNode(this);
   }

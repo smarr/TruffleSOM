@@ -28,14 +28,13 @@ import com.oracle.truffle.api.nodes.Node;
   @NodeChild(value = "object", type = MateObjectSemanticCheckNode.class, executeWith="receiver")
 })
 public abstract class MateAbstractExpressionNode extends ExpressionNode{
-  
-  protected Object doMateDispatchNode(VirtualFrame frame, SMateEnvironment environment, SObject receiver){return null;}
-  protected Object doBaseSOMNode(VirtualFrame frame){return null;}
-    
-  public MateAbstractExpressionNode(Node node){
+
+  protected Object doMateDispatchNode(final VirtualFrame frame, final SMateEnvironment environment, final SObject receiver){return null;}
+  protected Object doBaseSOMNode(final VirtualFrame frame){return null;}
+
+  public MateAbstractExpressionNode(final Node node){
     super(node.getSourceSection());
   }
-  
   public static MateAbstractExpressionNode createForNode(ExpressionWithReceiverNode node){
     if (node instanceof FieldNode){
       return MateFieldNodeGen.create((FieldNode)node,
@@ -48,121 +47,125 @@ public abstract class MateAbstractExpressionNode extends ExpressionNode{
         MateEnvironmentSemanticCheckNode.create(), 
         MateObjectSemanticCheckNode.create());
   }
-  
+
   /*public static MateAbstractNode createForNode(AbstractWriteFieldNode node){
     return MateFieldWriteNodeGen.create(node,
-                              new MateReceiverNode(), 
-                              MateEnvironmentSemanticCheckNode.create(), 
+                              new MateReceiverNode(),
+                              MateEnvironmentSemanticCheckNode.create(),
                               MateObjectSemanticCheckNode.create());
   }*/
-    
+
   @ShortCircuit("environment")
-  boolean needsContextSemanticsCheck(Object receiver) {
+  boolean needsContextSemanticsCheck(final Object receiver) {
     return !(MateUniverse.current().executingMeta()) && (receiver instanceof SReflectiveObject);
   }
-  
+
   @ShortCircuit("object")
-  boolean needsObjectSemanticsCheck(Object receiver, boolean needContextSemanticsCheck, Object contextSemantics) {
+  boolean needsObjectSemanticsCheck(final Object receiver, final boolean needContextSemanticsCheck, final Object contextSemantics) {
     return needContextSemanticsCheck && (contextSemantics == null);
   }
-  
+
   @Specialization(guards="!executingBaseLevel")
-  public Object doPrimitiveObject(VirtualFrame frame,
-                                    Object receiver,
-                                    boolean executingBaseLevel,
-                                    Object contextSemantics, 
-                                    boolean needObjectSemanticsCheck, 
-                                    Object objectSemantics){
+  public Object doPrimitiveObject(final VirtualFrame frame,
+                                    final Object receiver,
+                                    final boolean executingBaseLevel,
+                                    final Object contextSemantics,
+                                    final boolean needObjectSemanticsCheck,
+                                    final Object objectSemantics){
     return this.doBaseSOMNode(frame);
   }
-  
+
   @Specialization(guards="executeBaseLevel(executingBaseLevel, contextSemantics, objectSemantics)")
-  public Object doSOMNode(VirtualFrame frame,
-                                    Object receiver,
-                                    boolean executingBaseLevel,
-                                    Object contextSemantics, 
-                                    boolean needObjectSemanticsCheck, 
-                                    Object objectSemantics){
+  public Object doSOMNode(final VirtualFrame frame,
+                                    final Object receiver,
+                                    final boolean executingBaseLevel,
+                                    final Object contextSemantics,
+                                    final boolean needObjectSemanticsCheck,
+                                    final Object objectSemantics){
     return this.doBaseSOMNode(frame);
   }
-  
+
   @Specialization
-  public Object doMateDispatchWithContextSemantics(VirtualFrame frame,
-      SReflectiveObject receiver,
-      boolean executingBaseLevel,
-      SMateEnvironment contextSemantics, 
-      boolean needObjectSemanticsCheck, 
-      Object objectSemantics){
+  public Object doMateDispatchWithContextSemantics(final VirtualFrame frame,
+      final SReflectiveObject receiver,
+      final boolean executingBaseLevel,
+      final SMateEnvironment contextSemantics,
+      final boolean needObjectSemanticsCheck,
+      final Object objectSemantics){
     return this.doMateDispatchNode(frame, contextSemantics, receiver);
   }
-  
+
   @Specialization(guards="needObjectSemanticsCheck")
-  public Object doMateDispatchWithObjectSemantics(VirtualFrame frame,
-      SReflectiveObject receiver,
-      boolean executingBaseLevel,
-      Object contextSemantics, 
-      boolean needObjectSemanticsCheck, 
-      SMateEnvironment objectSemantics){
+  public Object doMateDispatchWithObjectSemantics(final VirtualFrame frame,
+      final SReflectiveObject receiver,
+      final boolean executingBaseLevel,
+      final Object contextSemantics,
+      final boolean needObjectSemanticsCheck,
+      final SMateEnvironment objectSemantics){
     return this.doMateDispatchNode(frame, objectSemantics, receiver);
   }
-  
-  
-  protected static boolean executeBaseLevel(boolean executingBaseLevel, Object contextSemantics, Object objectSemantics){
+
+
+  protected static boolean executeBaseLevel(final boolean executingBaseLevel, final Object contextSemantics, final Object objectSemantics){
     return (!executingBaseLevel) || (contextSemantics == null && objectSemantics == null);
   }
-  
+
   public abstract static class MateMessageSendNode extends MateAbstractExpressionNode{
     @Child protected MateDispatchMessageLookup mateDispatch;
-    
-    public MateMessageSendNode(ExpressionWithReceiverNode node) {
+
+    public MateMessageSendNode(final ExpressionWithReceiverNode node) {
       super(node);
       mateDispatch = MateDispatchMessageLookupNodeGen.create(node);
     }
-    
-    protected Object doMateDispatchNode(VirtualFrame frame, SMateEnvironment environment, SObject receiver){
+
+    @Override
+    protected Object doMateDispatchNode(final VirtualFrame frame, final SMateEnvironment environment, final SObject receiver){
       return this.mateDispatch.executeDispatch(frame, environment, receiver);
     }
-    
-    protected Object doBaseSOMNode(VirtualFrame frame){
+
+    @Override
+    protected Object doBaseSOMNode(final VirtualFrame frame){
       return this.mateDispatch.doWrappedNode(frame);
     }
-    
+
     public AbstractMessageSendNode getSOMWrappedNode(){
       return this.mateDispatch.getSOMWrappedNode();
     }
   }
-  
+
   public abstract static class MateFieldNode extends MateAbstractExpressionNode{
     @Child protected MateDispatchFieldAccess mateDispatch;
-    
-    public MateFieldNode(FieldNode node) {
+
+    public MateFieldNode(final FieldNode node) {
       super(node);
       mateDispatch = MateDispatchFieldAccessNodeGen.create(node);
     }
-    
-    protected Object doMateDispatchNode(VirtualFrame frame, SMateEnvironment environment, SObject receiver){
+
+    @Override
+    protected Object doMateDispatchNode(final VirtualFrame frame, final SMateEnvironment environment, final SObject receiver){
       return this.mateDispatch.executeDispatch(frame, environment, receiver);
     }
-    
-    protected Object doBaseSOMNode(VirtualFrame frame){
+
+    @Override
+    protected Object doBaseSOMNode(final VirtualFrame frame){
       return this.mateDispatch.doWrappedNode(frame);
     }
   }
-  
+
   /*public abstract static class MateMessageActivationNode extends MateMessageSendNode{
     public MateMessageSendNode(AbstractMessageSendNode node) {
       super(node);
     }
-    
+
     public Object[] evaluateArguments(final VirtualFrame frame) {
       return ((PreevaluatedExpression)this.wrappedNode).evaluateArguments(frame);
     }
   }
-  
+
   public abstract static class MateFieldAccessNode extends MateAbstractExpressionNode{
     public MateFieldAccessNode(FieldNode node) {
       super(node);
     }
-  }*/  
+  }*/
 
-}  
+}

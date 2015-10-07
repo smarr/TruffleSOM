@@ -18,16 +18,16 @@ public class MateFieldReadNode extends AbstractReadFieldNode {
   @Child protected MateEnvironmentSemanticCheckNode environment;
   @Child protected MateObjectSemanticCheckNode object;
   @Child protected MateDispatchFieldAccessor mateDispatch;
-  
-  public MateFieldReadNode(AbstractReadFieldNode node) {
+
+  public MateFieldReadNode(final AbstractReadFieldNode node) {
     super(node.getFieldIndex());
-    environment = MateEnvironmentSemanticCheckNode.create();
-    object = MateObjectSemanticCheckNode.create();
+    environment = MateEnvironmentSemanticCheckNodeGen.create();
+    object = MateObjectSemanticCheckNodeGen.create();
     mateDispatch = MateDispatchFieldReadLayoutNodeGen.create(node);
   }
-  
+
   @Override
-  public Object read(SObject receiver) {
+  public Object read(final SObject receiver) {
     VirtualFrame frame = (VirtualFrame) Truffle.getRuntime().getCallerFrame().getFrame(FrameAccess.READ_WRITE, false);
     Object[] args = {receiver, (long)this.getFieldIndex()};
     SMateEnvironment env = null;

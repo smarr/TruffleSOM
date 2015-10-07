@@ -42,9 +42,9 @@ public class SObject extends SAbstractObject {
 
   @CompilationFinal protected SClass clazz;
   @CompilationFinal private DynamicObject dynamicObject;
-  
+
   public static final Layout LAYOUT = Layout.createLayout(Layout.INT_TO_LONG);
-  
+
   protected SObject(final SClass instanceClass) {
     clazz          = instanceClass;
     dynamicObject  = new DynamicObjectBasic(instanceClass.getLayoutForInstances());
@@ -57,11 +57,11 @@ public class SObject extends SAbstractObject {
        this.getDynamicObject().define(i, Nil.nilObject);
     }
   }
-  
+
   public final int getNumberOfFields() {
     return dynamicObject.size();
   }
-  
+
   public DynamicObject getDynamicObject() {
     return this.dynamicObject;
   }
@@ -84,7 +84,7 @@ public class SObject extends SAbstractObject {
         this.getDynamicObject().set(i, Nil.nilObject);
     }
   }
-  
+
   @ExplodeLoop
   private void setAllFields(final List<Object> fieldValues) {
     assert fieldValues.size() == this.getNumberOfFields();
@@ -137,7 +137,7 @@ public class SObject extends SAbstractObject {
 
   /*
     Todo: Implement interop
-   * 
+   *
   @Override
   public ForeignAccess getForeignAccess() {
     return new ForeignAccess(getContext());
