@@ -78,7 +78,9 @@ public class SObject extends SAbstractObject {
     clazz = value;
   }
 
-  @ExplodeLoop
+  // @ExplodeLoop
+  // TODO: make sure we have a compilation constant for the number of fields
+  //        and reenable @ExplodeLoop, or better, avoid preinitializing fields completely.
   private void initializeFields() {
     for (int i = 0; i < this.getNumberOfFields(); i++) {
         this.getDynamicObject().set(i, Nil.nilObject);
