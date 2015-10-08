@@ -59,7 +59,8 @@ public abstract class FieldAccessorNode extends Node {
     protected final AbstractReadFieldNode specialize(final SObject obj,
         final String reason, final AbstractReadFieldNode next) {
       TruffleCompiler.transferToInterpreterAndInvalidate(reason);
-      obj.updateLayoutToMatchClass();
+      //I think we do not need this test in Mate since we need to support user defined shapes.
+      //obj.updateLayoutToMatchClass();
 
       final ReadSpecializedFieldNode newNode;
       final Shape layout = obj.getObjectLayout();
