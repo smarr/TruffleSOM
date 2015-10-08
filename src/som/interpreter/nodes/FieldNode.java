@@ -106,12 +106,13 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       arguments[1] = this.read.getFieldIndex();
       return arguments;
     }
-    
+
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       return executeEvaluated((SObject)this.evaluateArguments(frame)[0]);
     }
-    
+
+    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ReadField;
     }
@@ -130,7 +131,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     @Child private AbstractWriteFieldNode write;
 
     protected abstract ExpressionNode getValue();
-    
+
     public FieldWriteNode(final int fieldIndex, final SourceSection source) {
       super(source);
       write = new UninitializedWriteFieldNode(fieldIndex);
@@ -168,24 +169,27 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
         final Object value) {
       return executeEvaluated(frame, self, value);
     }
-    
-    public Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver) {
+
+    @Override
+    public Object[] argumentsForReceiver(final VirtualFrame frame, final SObject receiver) {
       Object[] arguments = new Object[3];
       arguments[0] = receiver;
       arguments[1] = this.write.getFieldIndex();
       arguments[2] = this.getValue().executeGeneric(frame);
       return arguments;
     }
-    
+
     @Override
     public ExpressionNode getReceiver() {
       return this.getSelf();
     }
-    
+
+    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.WriteField;
     }
-    
+
+    @Override
     public Object[] evaluateArguments(final VirtualFrame frame) {
       SObject object;
       try {
