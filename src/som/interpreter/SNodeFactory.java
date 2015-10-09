@@ -12,7 +12,6 @@ import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.interpreter.nodes.FieldNodeFactory.FieldReadNodeGen;
 import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
@@ -45,7 +44,7 @@ public final class SNodeFactory {
 
   public static FieldReadNode createFieldRead(final ExpressionNode self,
       final int fieldIndex, final SourceSection source) {
-    return FieldReadNodeGen.create(fieldIndex, source, self);
+    return new FieldReadNode(self, fieldIndex, source);
   }
 
   public static GlobalNode createGlobalRead(final String name,
