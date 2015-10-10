@@ -67,12 +67,12 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     }
     return this.argumentsForReceiver(frame, object);
   }
-  
+
   public static final class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
     @Child private ExpressionNode self;
     @Child private AbstractReadFieldNode read;
-   
+
     public FieldReadNode(final ExpressionNode self, final int fieldIndex,
         final SourceSection source) {
       super(source);
@@ -112,7 +112,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     }
 
     @Override
-    public Object[] argumentsForReceiver(VirtualFrame frame, SObject receiver) {
+    public Object[] argumentsForReceiver(final VirtualFrame frame, final SObject receiver) {
       Object[] arguments = new Object[2];
       arguments[0] = receiver;
       arguments[1] = this.read.getFieldIndex();

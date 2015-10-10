@@ -24,7 +24,7 @@ import com.oracle.truffle.api.nodes.Node;
   @NodeChild(value = "environment", type = MateEnvironmentSemanticCheckNode.class),
   @NodeChild(value = "object", type = MateObjectSemanticCheckNode.class, executeWith="receiver")
 })
-public abstract class MateAbstractExpressionNode extends ExpressionNode{
+public abstract class MateAbstractExpressionNode extends ExpressionNode {
 
   protected Object doMateDispatchNode(final VirtualFrame frame, final SMateEnvironment environment, final SObject receiver){return null;}
   protected Object doBaseSOMNode(final VirtualFrame frame){return null;}

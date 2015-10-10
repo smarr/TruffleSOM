@@ -35,9 +35,9 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public final int getFieldIndex() {
     return fieldIndex;
   }
-  
+
   public abstract ReflectiveOp reflectiveOperation();
-  
+
   public abstract static class AbstractReadFieldNode extends FieldAccessorNode {
     public AbstractReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
@@ -91,7 +91,8 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     public void wrapIntoMateNode(){
       replace(new MateFieldReadNode(this));
     }
-    
+
+    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ReadLayout;
     }
@@ -214,7 +215,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     public ReadObjectFieldNode(final int fieldIndex, final Shape layout,
         final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (Location) layout.getProperty(fieldIndex).getLocation();
+      this.storage = layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
@@ -279,7 +280,8 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     public void wrapIntoMateNode(){
       replace(new MateFieldWriteNode(this));
     }
-    
+
+    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.WriteLayout;
     }
