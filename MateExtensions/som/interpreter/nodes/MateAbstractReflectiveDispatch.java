@@ -28,12 +28,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.impl.DefaultTruffleRuntime;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.utilities.ValueProfile;
 
 public abstract class MateAbstractReflectiveDispatch extends Node {
-  
-  public MateAbstractReflectiveDispatch(Node node){
-    super(node.getSourceSection());
+
+  public MateAbstractReflectiveDispatch(final SourceSection source){
+    super(source);
   }
   
   /*public Object[] evaluateArguments(final VirtualFrame frame) {
@@ -53,8 +54,8 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   protected abstract ReflectiveOp getReflectiveOperation();
   
   public abstract static class MateDispatchFieldAccessor extends MateAbstractReflectiveDispatch {
-    public MateDispatchFieldAccessor(FieldAccessorNode node) {
-      super(node);
+    public MateDispatchFieldAccessor(final SourceSection source) {
+      super(source);
     }
     
     public abstract Object executeDispatch(final VirtualFrame frame, Object environment, Object[] arguments);
@@ -86,9 +87,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   
   public abstract static class MateDispatchFieldReadLayout extends MateDispatchFieldAccessor {
     @Child protected AbstractReadFieldNode wrappedNode;
-    
-    public MateDispatchFieldReadLayout(AbstractReadFieldNode node) {
-      super(node);
+
+    public MateDispatchFieldReadLayout(final AbstractReadFieldNode node) {
+      super(node.getSourceSection());
       wrappedNode = node;
     }
     
@@ -104,9 +105,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   
   public abstract static class MateDispatchFieldWriteLayout extends MateDispatchFieldAccessor {
     @Child protected AbstractWriteFieldNode wrappedNode;
-    
-    public MateDispatchFieldWriteLayout(AbstractWriteFieldNode node) {
-      super(node);
+
+    public MateDispatchFieldWriteLayout(final AbstractWriteFieldNode node) {
+      super(node.getSourceSection());
       wrappedNode = node;
     }
     
@@ -122,9 +123,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   
   public abstract static class MateDispatchFieldAccess extends MateAbstractReflectiveDispatch {
     @Child protected FieldNode wrappedNode;
-    
-    public MateDispatchFieldAccess(FieldNode node) {
-      super(node);
+
+    public MateDispatchFieldAccess(final FieldNode node) {
+      super(node.getSourceSection());
       wrappedNode = node;
     }
     
@@ -163,9 +164,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   public abstract static class MateDispatchMessageLookup extends MateAbstractReflectiveDispatch {
     @Child protected ExpressionWithReceiverNode wrappedNode;
     @Child MateDispatchActivation activationDispatch;
-    
-    public MateDispatchMessageLookup(ExpressionWithReceiverNode node) {
-      super(node);
+
+    public MateDispatchMessageLookup(final ExpressionWithReceiverNode node) {
+      super(node.getSourceSection());
       this.wrappedNode = node;
       activationDispatch = MateDispatchActivationNodeGen.create(node);
     }
@@ -214,10 +215,10 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   
   public abstract static class MateDispatchActivation extends MateAbstractReflectiveDispatch {
     protected final ExpressionWithReceiverNode wrappedNode;
-    
-    public MateDispatchActivation(ExpressionWithReceiverNode node) {
-      super(node);
-      wrappedNode = node; 
+
+    public MateDispatchActivation(final ExpressionWithReceiverNode node) {
+      super(node.getSourceSection());
+      wrappedNode = node;
     }
     
     public abstract Object executeDispatch(final VirtualFrame frame, SMateEnvironment environment, Object receiver, SMethod methodToCall);
