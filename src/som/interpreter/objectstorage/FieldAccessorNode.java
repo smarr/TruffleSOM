@@ -1,5 +1,6 @@
 package som.interpreter.objectstorage;
 
+import som.interpreter.MateNode;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
 import som.vm.constants.Nil;
@@ -16,7 +17,7 @@ import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.LongLocation;
 import com.oracle.truffle.api.object.Shape;
 
-public abstract class FieldAccessorNode extends Node {
+public abstract class FieldAccessorNode extends Node implements MateNode {
   protected final int fieldIndex;
 
   public static AbstractReadFieldNode createRead(final int fieldIndex) {
@@ -85,9 +86,10 @@ public abstract class FieldAccessorNode extends Node {
       //}
       return replace(newNode, reason);
     }
-    
-    public Node wrapIntoMateNode(){
-      return new MateFieldReadNode(this);
+
+    @Override
+    public void wrapIntoMateNode(){
+      replace(new MateFieldReadNode(this));
     }
     
     public ReflectiveOp reflectiveOperation(){
@@ -272,9 +274,10 @@ public abstract class FieldAccessorNode extends Node {
       //}
       replace(newNode, reason);
     }
-    
-    public Node wrapIntoMateNode(){
-      return new MateFieldWriteNode(this);
+
+    @Override
+    public void wrapIntoMateNode(){
+      replace(new MateFieldWriteNode(this));
     }
     
     public ReflectiveOp reflectiveOperation(){

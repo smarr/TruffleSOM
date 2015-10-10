@@ -21,6 +21,10 @@
  */
 package som.interpreter.nodes;
 
+import som.interpreter.nodes.MateAbstractExpressionNodeGen.MateFieldNodeGen;
+import som.interpreter.nodes.MateAbstractReceiverNode.MateReceiverExpressionNode;
+import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateEnvironmentSemanticCheckNodeGen;
+import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateObjectSemanticCheckNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.UninitializedReadFieldNode;
@@ -44,7 +48,15 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
 
   protected abstract ExpressionNode getSelf();
   public abstract Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver);
-  
+
+  @Override
+  public void wrapIntoMateNode() {
+    replace(MateFieldNodeGen.create((FieldNode) this,
+        new MateReceiverExpressionNode(this),
+        MateEnvironmentSemanticCheckNodeGen.create(),
+        MateObjectSemanticCheckNodeGen.create()));
+  }
+
   public Object[] evaluateArguments(final VirtualFrame frame) {
     SObject object;
     try {

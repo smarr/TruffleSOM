@@ -23,7 +23,6 @@ package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.source.SourceSection;
@@ -48,9 +47,5 @@ public final class SequenceNode extends ExpressionNode {
     for (int i = 0; i < expressions.length - 1; i++) {
       expressions[i].executeGeneric(frame);
     }
-  }
-  
-  public Node wrapIntoMateNode(){
-    return this;
   }
 }
