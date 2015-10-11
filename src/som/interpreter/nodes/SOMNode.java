@@ -23,6 +23,7 @@ package som.interpreter.nodes;
 
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import som.interpreter.MateNode;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.Types;
 
@@ -31,7 +32,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 @TypeSystemReference(Types.class)
-public abstract class SOMNode extends Node {
+public abstract class SOMNode extends Node implements MateNode {
 
   public SOMNode(final SourceSection sourceSection) {
     super(sourceSection);
@@ -88,8 +89,10 @@ public abstract class SOMNode extends Node {
    * @return body of a node that just wraps the actual method body.
    */
   public abstract ExpressionNode getFirstMethodBodyNode();
-  
-  public Node wrapIntoMateNode(){
-    return this;
+
+  @Override
+  public void wrapIntoMateNode() {
+    // do nothing!
+    // only a small subset of nodes needs to implement this method.
   }
 }
