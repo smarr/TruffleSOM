@@ -11,7 +11,6 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
 
 
 public abstract class WhileCache extends BinaryExpressionNode {
@@ -66,5 +65,10 @@ public abstract class WhileCache extends BinaryExpressionNode {
       loopConditionResult = obj2bool(conditionResult);
     }
     return Nil.nilObject;
+  }
+
+  @Override
+  public void wrapIntoMateNode() {
+    // do nothing, don't want to do the same as for other nodes with receiver
   }
 }

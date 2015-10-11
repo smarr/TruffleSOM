@@ -17,20 +17,20 @@ import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.ShortCircuit;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 
 @NodeChildren({
   @NodeChild(value = "receiver", type = MateAbstractReceiverNode.class),
   @NodeChild(value = "environment", type = MateEnvironmentSemanticCheckNode.class),
   @NodeChild(value = "object", type = MateObjectSemanticCheckNode.class, executeWith="receiver")
 })
-public abstract class MateAbstractExpressionNode extends ExpressionNode{
+public abstract class MateAbstractExpressionNode extends ExpressionNode {
 
   protected Object doMateDispatchNode(final VirtualFrame frame, final SMateEnvironment environment, final SObject receiver){return null;}
   protected Object doBaseSOMNode(final VirtualFrame frame){return null;}
 
-  public MateAbstractExpressionNode(final Node node){
-    super(node.getSourceSection());
+  public MateAbstractExpressionNode(final SourceSection source){
+    super(source);
   }
 
   /*public static MateAbstractNode createForNode(AbstractWriteFieldNode node){
@@ -99,7 +99,7 @@ public abstract class MateAbstractExpressionNode extends ExpressionNode{
     @Child protected MateDispatchMessageLookup mateDispatch;
 
     public MateMessageSendNode(final ExpressionWithReceiverNode node) {
-      super(node);
+      super(node.getSourceSection());
       mateDispatch = MateDispatchMessageLookupNodeGen.create(node);
     }
 
@@ -122,7 +122,7 @@ public abstract class MateAbstractExpressionNode extends ExpressionNode{
     @Child protected MateDispatchFieldAccess mateDispatch;
 
     public MateFieldNode(final FieldNode node) {
-      super(node);
+      super(node.getSourceSection());
       mateDispatch = MateDispatchFieldAccessNodeGen.create(node);
     }
 

@@ -10,7 +10,6 @@ import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.nodes.Node;
 
 @ImportStatic(SystemPrims.class)
 public abstract class HasGlobalPrim extends BinarySystemNode {
@@ -37,9 +36,10 @@ public abstract class HasGlobalPrim extends BinarySystemNode {
     public ExpressionNode getFirstMethodBodyNode() {
       throw new NotYetImplementedException();
     }
-    
-    public Node wrapIntoMateNode(){
-      return this;
+
+    @Override
+    public void wrapIntoMateNode() {
+      // do nothing, don't want to do the same as for other nodes with receiver
     }
   }
 
