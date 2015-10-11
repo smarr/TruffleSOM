@@ -28,6 +28,7 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 
 import java.util.List;
 
+import som.interpreter.objectstorage.MateLocationFactory;
 import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -35,6 +36,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Layout;
+import com.oracle.truffle.api.object.LocationFactory;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
@@ -54,7 +56,7 @@ public class SObject extends SAbstractObject {
   protected SObject(final int numFields) {
     dynamicObject = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType()));
     for (int i = 0; i < numFields; i++) {
-       this.getDynamicObject().define(i, Nil.nilObject);
+       this.getDynamicObject().define(i, Nil.nilObject , 0, new MateLocationFactory());
     }
   }
 
@@ -83,7 +85,7 @@ public class SObject extends SAbstractObject {
   //        and reenable @ExplodeLoop, or better, avoid preinitializing fields completely.
   private void initializeFields() {
     for (int i = 0; i < this.getNumberOfFields(); i++) {
-        this.getDynamicObject().set(i, Nil.nilObject);
+      this.getDynamicObject().define(i, Nil.nilObject , 0, new MateLocationFactory());
     }
   }
 

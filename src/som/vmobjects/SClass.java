@@ -29,6 +29,7 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
+import som.interpreter.objectstorage.MateLocationFactory;
 import som.primitives.Primitives;
 import som.vm.Universe;
 import som.vm.constants.Nil;
@@ -38,7 +39,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.Property;
+import com.oracle.truffle.api.object.LocationFactory;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.utilities.ValueProfile;
 import com.oracle.truffle.object.basic.DynamicObjectBasic;
@@ -94,8 +95,9 @@ public final class SClass extends SObject {
     if (layoutForInstances == null ||
         instanceFields.getObjectStorage(storageType).length != layoutForInstances.getPropertyCount()) {
         DynamicObject mockForShape = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType())); 
+        LocationFactory factory = new MateLocationFactory();
         for (int i = 0; i < instanceFields.getObjectStorage(storageType).length; i++) {
-          mockForShape.define(i, Nil.nilObject); 
+          mockForShape.define(i, Nil.nilObject , 0, factory); 
         }
         layoutForInstances = mockForShape.getShape();
     }

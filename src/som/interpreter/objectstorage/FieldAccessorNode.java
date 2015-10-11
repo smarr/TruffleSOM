@@ -13,10 +13,11 @@ import com.oracle.truffle.api.object.DoubleLocation;
 import com.oracle.truffle.api.object.FinalLocationException;
 import com.oracle.truffle.api.object.IncompatibleLocationException;
 import com.oracle.truffle.api.object.Location;
-import com.oracle.truffle.api.object.LongLocation;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.Locations.DualLocation;
 
 public abstract class FieldAccessorNode extends Node {
+
   protected final int fieldIndex;
 
   public static AbstractReadFieldNode createRead(final int fieldIndex) {
@@ -34,10 +35,11 @@ public abstract class FieldAccessorNode extends Node {
   public final int getFieldIndex() {
     return fieldIndex;
   }
-  
+
   public abstract ReflectiveOp reflectiveOperation();
-  
+
   public abstract static class AbstractReadFieldNode extends FieldAccessorNode {
+
     public AbstractReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
     }
@@ -48,54 +50,57 @@ public abstract class FieldAccessorNode extends Node {
       return TypesGen.expectLong(read(obj));
     }
 
-    public double readDouble(final SObject obj) throws UnexpectedResultException {
+    public double readDouble(final SObject obj)
+        throws UnexpectedResultException {
       return TypesGen.expectDouble(read(obj));
     }
 
-    protected final Object specializeAndRead(final SObject obj, final String reason, final AbstractReadFieldNode next) {
+    protected final Object specializeAndRead(final SObject obj,
+        final String reason, final AbstractReadFieldNode next) {
       return specialize(obj, reason, next).read(obj);
     }
 
     protected final AbstractReadFieldNode specialize(final SObject obj,
         final String reason, final AbstractReadFieldNode next) {
       TruffleCompiler.transferToInterpreterAndInvalidate(reason);
-      //I think we do not need this test in Mate since we need to support user defined shapes.
-      //obj.updateLayoutToMatchClass();
+      // I think we do not need this test in Mate since we need to support user
+      // defined shapes.
+      // obj.updateLayoutToMatchClass();
 
       final ReadSpecializedFieldNode newNode;
       final Shape layout = obj.getObjectLayout();
 
-      /*if (property == null) {
-          newNode = new ReadMissingObjectFieldNode(layout, this);
-      } else {*/
-          final Location storageLocation = layout.getProperty(fieldIndex).getLocation();
-          assert storageLocation != null;
+      final DualLocation storageLocation = (DualLocation) layout.getProperty(
+          fieldIndex).getLocation();
+      assert storageLocation != null;
 
-          /*if (storageLocation instanceof BooleanLocation) {
-              newNode = new ReadBooleanObjectFieldNode(layout, (BooleanLocation) storageLocation, this);
-          } else if (storageLocation instanceof IntLocation) {
-              newNode = new ReadIntegerObjectFieldNode(layout, (IntLocation) storageLocation, this);
-          } else*/ if (storageLocation instanceof LongLocation) {
-              newNode = new ReadLongFieldNode(fieldIndex, layout, this);
-          } else if (storageLocation instanceof DoubleLocation) {
-              newNode = new ReadDoubleFieldNode(fieldIndex, layout, this);
-          } else {
-              newNode = new ReadObjectFieldNode(fieldIndex, layout, this);
-          }
-      //}
+      if (storageLocation.getType() == null) {
+        /* reading uninitializedField */
+        newNode = new ReadUnwrittenFieldNode(fieldIndex, layout, this);
+      } else {
+        Class<?> type = storageLocation.getType();
+        if (type == long.class) {
+          newNode = new ReadLongFieldNode(fieldIndex, layout, this);
+        } else if (type == double.class) {
+          newNode = new ReadDoubleFieldNode(fieldIndex, layout, this);
+        } else {
+          newNode = new ReadObjectFieldNode(fieldIndex, layout, this);
+        }
+      }
       return replace(newNode, reason);
     }
-    
-    public Node wrapIntoMateNode(){
+
+    public Node wrapIntoMateNode() {
       return new MateFieldReadNode(this);
     }
-    
-    public ReflectiveOp reflectiveOperation(){
+
+    public ReflectiveOp reflectiveOperation() {
       return ReflectiveOp.ReadLayout;
     }
   }
 
-  public static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
+  public static final class UninitializedReadFieldNode extends
+      AbstractReadFieldNode {
 
     public UninitializedReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
@@ -104,16 +109,20 @@ public abstract class FieldAccessorNode extends Node {
     @Override
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      return specializeAndRead(obj, "uninitalized node", new UninitializedReadFieldNode(fieldIndex));
+      return specializeAndRead(obj, "uninitalized node",
+          new UninitializedReadFieldNode(fieldIndex));
     }
   }
 
-  public abstract static class ReadSpecializedFieldNode extends AbstractReadFieldNode {
-    protected final Shape layout;
-    @Child private AbstractReadFieldNode nextInCache;
+  public abstract static class ReadSpecializedFieldNode extends
+      AbstractReadFieldNode {
 
-    public ReadSpecializedFieldNode(final int fieldIndex,
-        final Shape layout, final AbstractReadFieldNode next) {
+    protected final Shape         layout;
+    @Child
+    private AbstractReadFieldNode nextInCache;
+
+    public ReadSpecializedFieldNode(final int fieldIndex, final Shape layout,
+        final AbstractReadFieldNode next) {
       super(fieldIndex);
       this.layout = layout;
       nextInCache = next;
@@ -123,7 +132,8 @@ public abstract class FieldAccessorNode extends Node {
       return layout == obj.getObjectLayout();
     }
 
-    protected final AbstractReadFieldNode respecializedNodeOrNext(final SObject obj) {
+    protected final AbstractReadFieldNode respecializedNodeOrNext(
+        final SObject obj) {
       if (this.hasExpectedLayout(obj)) {
         return specialize(obj, "update outdated read node", nextInCache);
       } else {
@@ -132,9 +142,11 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
-  public static final class ReadUnwrittenFieldNode extends ReadSpecializedFieldNode {
-    public ReadUnwrittenFieldNode(final int fieldIndex,
-        final Shape layout, final AbstractReadFieldNode next) {
+  public static final class ReadUnwrittenFieldNode extends
+      ReadSpecializedFieldNode {
+
+    public ReadUnwrittenFieldNode(final int fieldIndex, final Shape layout,
+        final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
     }
 
@@ -149,19 +161,21 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   public static final class ReadLongFieldNode extends ReadSpecializedFieldNode {
-    private final LongLocation storage;
+
+    private final DualLocation storage;
 
     public ReadLongFieldNode(final int fieldIndex, final Shape layout,
         final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (LongLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (DualLocation) layout.getProperty(fieldIndex)
+          .getLocation();
     }
 
     @Override
     public long readLong(final SObject obj) throws UnexpectedResultException {
       boolean assumption = hasExpectedLayout(obj);
       if (assumption) {
-        return storage.getLong(obj.getDynamicObject(), assumption);
+        return (long) storage.get(obj.getDynamicObject(), assumption);
       } else {
         return respecializedNodeOrNext(obj).readLong(obj);
       }
@@ -177,20 +191,24 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
-  public static final class ReadDoubleFieldNode extends ReadSpecializedFieldNode {
-    private final DoubleLocation storage;
+  public static final class ReadDoubleFieldNode extends
+      ReadSpecializedFieldNode {
+
+    private final DualLocation storage;
 
     public ReadDoubleFieldNode(final int fieldIndex, final Shape layout,
         final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (DoubleLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (DualLocation) layout.getProperty(fieldIndex)
+          .getLocation();
     }
 
     @Override
-    public double readDouble(final SObject obj) throws UnexpectedResultException {
+    public double readDouble(final SObject obj)
+        throws UnexpectedResultException {
       boolean assumption = hasExpectedLayout(obj);
       if (assumption) {
-        return storage.getDouble(obj.getDynamicObject(), assumption);
+        return (double) storage.get(obj.getDynamicObject(), assumption);
       } else {
         return respecializedNodeOrNext(obj).readDouble(obj);
       }
@@ -206,7 +224,9 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
-  public static final class ReadObjectFieldNode extends ReadSpecializedFieldNode {
+  public static final class ReadObjectFieldNode extends
+      ReadSpecializedFieldNode {
+
     private final Location storage;
 
     public ReadObjectFieldNode(final int fieldIndex, final Shape layout,
@@ -227,6 +247,7 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   public abstract static class AbstractWriteFieldNode extends FieldAccessorNode {
+
     public AbstractWriteFieldNode(final int fieldIndex) {
       super(fieldIndex);
     }
@@ -243,8 +264,9 @@ public abstract class FieldAccessorNode extends Node {
       return value;
     }
 
-    protected final void writeAndRespecialize(final SObject obj, final Object value,
-        final String reason, final AbstractWriteFieldNode next) {
+    protected final void writeAndRespecialize(final SObject obj,
+        final Object value, final String reason,
+        final AbstractWriteFieldNode next) {
       TruffleCompiler.transferToInterpreterAndInvalidate(reason);
 
       obj.setField(fieldIndex, value);
@@ -252,57 +274,52 @@ public abstract class FieldAccessorNode extends Node {
       final WriteSpecializedFieldNode newNode;
       final Shape layout = obj.getObjectLayout();
 
-      /*if (property == null) {
-          newNode = new ReadMissingObjectFieldNode(layout, this);
-      } else {*/
-          final Location storageLocation = layout.getProperty(fieldIndex).getLocation();
-          assert storageLocation != null;
-
-          /*if (storageLocation instanceof BooleanLocation) {
-              newNode = new ReadBooleanObjectFieldNode(layout, (BooleanLocation) storageLocation, this);
-          } else if (storageLocation instanceof IntLocation) {
-              newNode = new ReadIntegerObjectFieldNode(layout, (IntLocation) storageLocation, this);
-          } else*/ if (storageLocation instanceof LongLocation) {
-              newNode = new WriteLongFieldNode(fieldIndex, layout, this);
-          } else if (storageLocation instanceof DoubleLocation) {
-              newNode = new WriteDoubleFieldNode(fieldIndex, layout, this);
-          } else {
-              newNode = new WriteObjectFieldNode(fieldIndex, layout, this);
-          }
-      //}
+      if (value instanceof Long) {
+        newNode = new WriteLongFieldNode(fieldIndex, layout, this);
+      } else if (value instanceof Double) {
+        newNode = new WriteDoubleFieldNode(fieldIndex, layout, this);
+      } else {
+        newNode = new WriteObjectFieldNode(fieldIndex, layout, this);
+      }
       replace(newNode, reason);
     }
-    
-    public Node wrapIntoMateNode(){
+
+    public Node wrapIntoMateNode() {
       return new MateFieldWriteNode(this);
     }
-    
-    public ReflectiveOp reflectiveOperation(){
+
+    public ReflectiveOp reflectiveOperation() {
       return ReflectiveOp.WriteLayout;
     }
   }
 
-  public static final class UninitializedWriteFieldNode extends AbstractWriteFieldNode {
+  public static final class UninitializedWriteFieldNode extends
+      AbstractWriteFieldNode {
+
     public UninitializedWriteFieldNode(final int fieldIndex) {
       super(fieldIndex);
     }
 
     @Override
     public Object write(final SObject obj, final Object value) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      writeAndRespecialize(obj, value, "initialize write field node",
-          new UninitializedWriteFieldNode(fieldIndex));
+      if (value != Nil.nilObject) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        writeAndRespecialize(obj, value, "initialize write field node",
+            new UninitializedWriteFieldNode(fieldIndex));
+      }
       return value;
     }
   }
 
-  private abstract static class WriteSpecializedFieldNode extends AbstractWriteFieldNode {
+  private abstract static class WriteSpecializedFieldNode extends
+      AbstractWriteFieldNode {
 
-    protected final Shape layout;
-    @Child protected AbstractWriteFieldNode nextInCache;
+    protected final Shape            layout;
+    @Child
+    protected AbstractWriteFieldNode nextInCache;
 
-    public WriteSpecializedFieldNode(final int fieldIndex,
-        final Shape layout, final AbstractWriteFieldNode next) {
+    public WriteSpecializedFieldNode(final int fieldIndex, final Shape layout,
+        final AbstractWriteFieldNode next) {
       super(fieldIndex);
       this.layout = layout;
       nextInCache = next;
@@ -313,25 +330,28 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
-  public static final class WriteLongFieldNode extends WriteSpecializedFieldNode {
-    private final LongLocation storage;
+  public static final class WriteLongFieldNode extends
+      WriteSpecializedFieldNode {
+
+    private final DualLocation storage;
 
     public WriteLongFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (LongLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (DualLocation) layout.getProperty(fieldIndex)
+          .getLocation();
     }
 
     @Override
     public long write(final SObject obj, final long value) {
       if (hasExpectedLayout(obj)) {
         try {
-          storage.setLong(obj.getDynamicObject(), value);
-        } catch (FinalLocationException e) {
-          writeAndRespecialize(obj, value, "update outdated write node", nextInCache);
+          storage.set(obj.getDynamicObject(), value);
+        } catch (IncompatibleLocationException | FinalLocationException e) {
+          e.printStackTrace();
         }
       } else {
-          nextInCache.write(obj, value);
+        nextInCache.write(obj, value);
       }
       return value;
     }
@@ -342,34 +362,39 @@ public abstract class FieldAccessorNode extends Node {
         write(obj, (long) value);
       } else {
         if (hasExpectedLayout(obj)) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+          writeAndRespecialize(obj, value, "update outdated read node",
+              nextInCache);
         } else {
-          nextInCache.write(obj, (long) value);
+          nextInCache.write(obj, value);
         }
       }
       return value;
     }
   }
 
-  public static final class WriteDoubleFieldNode extends WriteSpecializedFieldNode {
+  public static final class WriteDoubleFieldNode extends
+      WriteSpecializedFieldNode {
+
     private final DoubleLocation storage;
 
     public WriteDoubleFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (DoubleLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (DoubleLocation) layout.getProperty(fieldIndex)
+          .getLocation();
     }
 
     @Override
     public double write(final SObject obj, final double value) {
       if (hasExpectedLayout(obj)) {
         try {
-          storage.setDouble(obj.getDynamicObject(), value);
-        } catch (FinalLocationException e) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+          storage.set(obj.getDynamicObject(), value);
+        } catch (FinalLocationException | IncompatibleLocationException e) {
+          writeAndRespecialize(obj, value, "update outdated read node",
+              nextInCache);
         }
       } else {
-          nextInCache.write(obj, value);
+        nextInCache.write(obj, value);
       }
       return value;
     }
@@ -380,16 +405,19 @@ public abstract class FieldAccessorNode extends Node {
         write(obj, (double) value);
       } else {
         if (hasExpectedLayout(obj)) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+          writeAndRespecialize(obj, value, "update outdated read node",
+              nextInCache);
         } else {
-          nextInCache.write(obj, (double) value);
+          nextInCache.write(obj, value);
         }
       }
       return value;
     }
   }
 
-  public static final class WriteObjectFieldNode extends WriteSpecializedFieldNode {
+  public static final class WriteObjectFieldNode extends
+      WriteSpecializedFieldNode {
+
     private final Location storage;
 
     public WriteObjectFieldNode(final int fieldIndex, final Shape layout,
@@ -407,10 +435,11 @@ public abstract class FieldAccessorNode extends Node {
           // TODO Auto-generated catch block
           e.printStackTrace();
         } catch (FinalLocationException e) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+          writeAndRespecialize(obj, value, "update outdated read node",
+              nextInCache);
         }
       } else {
-          nextInCache.write(obj, value);
+        nextInCache.write(obj, value);
       }
       return value;
     }
