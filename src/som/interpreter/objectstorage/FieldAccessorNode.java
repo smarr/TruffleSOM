@@ -63,9 +63,6 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     protected final AbstractReadFieldNode specialize(final SObject obj,
         final String reason, final AbstractReadFieldNode next) {
       TruffleCompiler.transferToInterpreterAndInvalidate(reason);
-      // I think we do not need this test in Mate since we need to support user
-      // defined shapes.
-      // obj.updateLayoutToMatchClass();
 
       final ReadSpecializedFieldNode newNode;
       final Shape layout = obj.getObjectLayout();
@@ -111,8 +108,9 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     @Override
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      return specializeAndRead(obj, "uninitalized node",
-          new UninitializedReadFieldNode(fieldIndex));
+      //return specializeAndRead(obj, "uninitalized node",
+          //new UninitializedReadFieldNode(fieldIndex));
+      return obj.getField(this.fieldIndex);
     }
   }
 
@@ -337,18 +335,18 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteLongFieldNode extends
       WriteSpecializedFieldNode {
 
-    private final DualLocation storage;
+    //private final DualLocation storage;
 
     public WriteLongFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (DualLocation) layout.getProperty(fieldIndex)
-          .getLocation();
+      //this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
     public long write(final SObject obj, final long value) {
-      if (hasExpectedLayout(obj)) {
+      obj.setField(fieldIndex, value);
+      /*if (hasExpectedLayout(obj)) {
         try {
           storage.set(obj.getDynamicObject(), value);
         } catch (IncompatibleLocationException | FinalLocationException e) {
@@ -360,7 +358,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         } else {
           nextInCache.write(obj, value);
         }
-      }
+      }*/
       return value;
     }
 
@@ -383,18 +381,18 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteDoubleFieldNode extends
       WriteSpecializedFieldNode {
 
-    private final DualLocation storage;
+    //private final DualLocation storage;
 
     public WriteDoubleFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (DualLocation) layout.getProperty(fieldIndex)
-          .getLocation();
+      //this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
     public double write(final SObject obj, final double value) {
-      if (hasExpectedLayout(obj)) {
+      obj.setField(fieldIndex, value);
+      /*if (hasExpectedLayout(obj)) {
         try {
           storage.set(obj.getDynamicObject(), value);
         } catch (FinalLocationException | IncompatibleLocationException e) {
@@ -407,7 +405,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         } else {
           nextInCache.write(obj, value);
         }
-      }
+      }*/
       return value;
     }
 
@@ -430,17 +428,18 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteObjectFieldNode extends
       WriteSpecializedFieldNode {
 
-    private final DualLocation storage;
+    //private final DualLocation storage;
 
     public WriteObjectFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
+      //this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
     public Object write(final SObject obj, final Object value) {
-      if (hasExpectedLayout(obj)) {
+      obj.setField(fieldIndex, value);
+      /*if (hasExpectedLayout(obj)) {
         try {
           storage.set(obj.getDynamicObject(), value);
         } catch (IncompatibleLocationException | FinalLocationException e) {
@@ -453,7 +452,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         } else {
           nextInCache.write(obj, value);
         }
-      }
+      }*/
       return value;
     }
   }
