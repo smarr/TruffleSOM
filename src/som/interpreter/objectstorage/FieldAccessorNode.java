@@ -330,7 +330,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     }
 
     protected final boolean hasExpectedLayout(final SObject obj) {
-      return layout == obj.getObjectLayout();
+      return layout.check(obj.getDynamicObject());
     }
   }
 
@@ -355,7 +355,11 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
           e.printStackTrace();
         }
       } else {
-        nextInCache.write(obj, value);
+        if (obj.getNumberOfFields() == this.layout.getPropertyCount()) {
+          writeAndRespecialize(obj, value,"",nextInCache);
+        } else {
+          nextInCache.write(obj, value);
+        }
       }
       return value;
     }
@@ -365,7 +369,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       if (value instanceof Long) {
         write(obj, (long) value);
       } else {
-        if (hasExpectedLayout(obj)) {
+        if (obj.getNumberOfFields() == this.layout.getPropertyCount()) {
           writeAndRespecialize(obj, value, "update outdated read node",
               nextInCache);
         } else {
@@ -379,12 +383,12 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteDoubleFieldNode extends
       WriteSpecializedFieldNode {
 
-    private final DoubleLocation storage;
+    private final DualLocation storage;
 
     public WriteDoubleFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = (DoubleLocation) layout.getProperty(fieldIndex)
+      this.storage = (DualLocation) layout.getProperty(fieldIndex)
           .getLocation();
     }
 
@@ -394,11 +398,15 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         try {
           storage.set(obj.getDynamicObject(), value);
         } catch (FinalLocationException | IncompatibleLocationException e) {
-          writeAndRespecialize(obj, value, "update outdated read node",
-              nextInCache);
+          e.printStackTrace();
+          //writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
         }
       } else {
-        nextInCache.write(obj, value);
+        if (obj.getNumberOfFields() == this.layout.getPropertyCount()) {
+          writeAndRespecialize(obj, value, "", nextInCache);
+        } else {
+          nextInCache.write(obj, value);
+        }
       }
       return value;
     }
@@ -408,7 +416,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       if (value instanceof Double) {
         write(obj, (double) value);
       } else {
-        if (hasExpectedLayout(obj)) {
+        if (obj.getNumberOfFields() == this.layout.getPropertyCount()) {
           writeAndRespecialize(obj, value, "update outdated read node",
               nextInCache);
         } else {
@@ -422,12 +430,12 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteObjectFieldNode extends
       WriteSpecializedFieldNode {
 
-    private final Location storage;
+    private final DualLocation storage;
 
     public WriteObjectFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      this.storage = layout.getProperty(fieldIndex).getLocation();;
+      this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
@@ -435,15 +443,16 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       if (hasExpectedLayout(obj)) {
         try {
           storage.set(obj.getDynamicObject(), value);
-        } catch (IncompatibleLocationException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        } catch (FinalLocationException e) {
-          writeAndRespecialize(obj, value, "update outdated read node",
-              nextInCache);
+        } catch (IncompatibleLocationException | FinalLocationException e) {
+          //This case can only happen if there was an explicit write with nil to previously unwritten fields
+          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
         }
       } else {
-        nextInCache.write(obj, value);
+        if (obj.getNumberOfFields() == this.layout.getPropertyCount()) {
+          writeAndRespecialize(obj, value, "", nextInCache);
+        } else {
+          nextInCache.write(obj, value);
+        }
       }
       return value;
     }
