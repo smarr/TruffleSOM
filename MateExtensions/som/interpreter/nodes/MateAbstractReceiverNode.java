@@ -18,7 +18,7 @@ public abstract class MateAbstractReceiverNode extends Node {
   }
   
   public static class MateReceiverExpressionNode extends MateAbstractReceiverNode {
-    @Child protected ExpressionWithReceiverNode wrappedNode;
+    protected final ExpressionWithReceiverNode wrappedNode;
     
     public MateReceiverExpressionNode(ExpressionWithReceiverNode node){
       wrappedNode = node;

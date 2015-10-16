@@ -1,9 +1,9 @@
-package som.interpreter.objectstorage;
+/*package som.interpreter.objectstorage;
 
 import som.interpreter.nodes.MateAbstractReflectiveDispatch.MateDispatchFieldAccessor;
 import som.interpreter.nodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldWriteLayoutNodeGen;
-import som.interpreter.nodes.MateAbstractSemanticCheckNode.MateEnvironmentSemanticCheckNode;
-import som.interpreter.nodes.MateAbstractSemanticCheckNode.MateObjectSemanticCheckNode;
+import som.interpreter.nodes.MateAbstractSemanticNodes.MateEnvironmentSemanticCheckNode;
+import som.interpreter.nodes.MateAbstractSemanticNodes.MateObjectSemanticCheckNode;
 import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateEnvironmentSemanticCheckNodeGen;
 import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateObjectSemanticCheckNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -50,3 +50,4 @@ public class MateFieldWriteNode extends AbstractWriteFieldNode {
     return Truffle.getRuntime().getCallerFrame().getFrame(FrameAccess.READ_WRITE, false);
   }
 }
+*/

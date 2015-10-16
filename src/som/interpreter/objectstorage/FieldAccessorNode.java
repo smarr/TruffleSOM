@@ -10,9 +10,6 @@ import som.vmobjects.SObject;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.object.DoubleLocation;
-import com.oracle.truffle.api.object.FinalLocationException;
-import com.oracle.truffle.api.object.IncompatibleLocationException;
 import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.object.Locations.DualLocation;
@@ -89,7 +86,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public void wrapIntoMateNode(){
-      replace(new MateFieldReadNode(this));
+      //replace(new MateFieldReadNode(this));
     }
 
     @Override
@@ -286,7 +283,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public void wrapIntoMateNode(){
-      replace(new MateFieldWriteNode(this));
+      //replace(new MateFieldWriteNode(this));
     }
 
     @Override

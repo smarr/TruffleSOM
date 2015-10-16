@@ -1,10 +1,5 @@
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateAbstractExpressionNodeGen.MateMessageSendNodeGen;
-import som.interpreter.nodes.MateAbstractReceiverNode.MateReceiverExpressionNode;
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateEnvironmentSemanticCheckNodeGen;
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateObjectSemanticCheckNodeGen;
-
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -23,10 +18,10 @@ public abstract class ExpressionWithReceiverNode extends ExpressionNode {
 
   @Override
   public void wrapIntoMateNode() {
-    replace(MateMessageSendNodeGen.create(this,
+    /*replace(MateMessageSendNodeGen.create(this,
         new MateReceiverExpressionNode(this),
         MateEnvironmentSemanticCheckNodeGen.create(),
-        MateObjectSemanticCheckNodeGen.create()));
+        MateObjectSemanticCheckNodeGen.create()));*/
   }
 }
 

@@ -2,7 +2,6 @@ package som.interpreter.nodes;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
-import som.interpreter.nodes.MateAbstractExpressionNode.MateMessageSendNode;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
@@ -101,11 +100,7 @@ public final class MessageSendNode {
     }
 
     public boolean isSuperSend() {
-      if (argumentNodes[0] instanceof MateMessageSendNode){
-        return ((MateMessageSendNode)argumentNodes[0]).getSOMWrappedNode() instanceof ISuperReadNode;
-      } else {
-        return argumentNodes[0] instanceof ISuperReadNode;
-      }
+      return argumentNodes[0] instanceof ISuperReadNode;
     }
 
     @Override
@@ -495,11 +490,7 @@ public final class MessageSendNode {
     @Override
     protected PreevaluatedExpression makeSuperSend() {
       ISuperReadNode argumentNode;
-      if (argumentNodes[0] instanceof MateAbstractExpressionNode){
-        argumentNode = (ISuperReadNode)((MateMessageSendNode)argumentNodes[0]).getSOMWrappedNode();
-      } else {
-        argumentNode = (ISuperReadNode)(argumentNodes[0]);
-      }
+      argumentNode = (ISuperReadNode)(argumentNodes[0]);
       GenericMessageSendNode node = new GenericMessageSendNode(selector,
         argumentNodes, SuperDispatchNode.create(selector,
             argumentNode), getSourceSection());

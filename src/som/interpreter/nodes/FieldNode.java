@@ -21,10 +21,6 @@
  */
 package som.interpreter.nodes;
 
-import som.interpreter.nodes.MateAbstractExpressionNodeGen.MateFieldNodeGen;
-import som.interpreter.nodes.MateAbstractReceiverNode.MateReceiverExpressionNode;
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateEnvironmentSemanticCheckNodeGen;
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateObjectSemanticCheckNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.UninitializedReadFieldNode;
@@ -49,13 +45,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
   protected abstract ExpressionNode getSelf();
   public abstract Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver);
 
-  @Override
-  public void wrapIntoMateNode() {
-    replace(MateFieldNodeGen.create((FieldNode) this,
-        new MateReceiverExpressionNode(this),
-        MateEnvironmentSemanticCheckNodeGen.create(),
-        MateObjectSemanticCheckNodeGen.create()));
-  }
+  
 
   public Object[] evaluateArguments(final VirtualFrame frame) {
     SObject object;
@@ -68,7 +58,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     return this.argumentsForReceiver(frame, object);
   }
 
-  public static final class FieldReadNode extends FieldNode
+  public static class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
     @Child private ExpressionNode self;
     @Child private AbstractReadFieldNode read;
@@ -89,14 +79,14 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       return self;
     }
 
-    public Object executeEvaluated(final SObject obj) {
+    public Object executeEvaluated(final VirtualFrame frame, final SObject obj) {
        return read.read(obj);
     }
 
     @Override
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return executeEvaluated((SObject) arguments[0]);
+      return executeEvaluated(frame, (SObject) arguments[0]);
     }
 
     @Override
@@ -121,7 +111,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      return executeEvaluated((SObject)this.evaluateArguments(frame)[0]);
+      return executeEvaluated(frame, (SObject)this.evaluateArguments(frame)[0]);
     }
     
     public ReflectiveOp reflectiveOperation(){
@@ -131,6 +121,11 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     @Override
     public ExpressionNode getReceiver() {
       return this.getSelf();
+    }
+    
+    @Override
+    public void wrapIntoMateNode() {
+      replace(new MateFieldNodes.MateFieldReadNode(this));
     }
   }
 
@@ -152,7 +147,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       this(node.write.getFieldIndex(), node.getSourceSection());
     }
 
-    public final Object executeEvaluated(final VirtualFrame frame,
+    public Object doEvaluated(final VirtualFrame frame,
         final SObject self, final Object value) {
       return write.write(self, value);
     }
@@ -160,7 +155,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return executeEvaluated(frame, (SObject) arguments[0], arguments[1]);
+      return doEvaluated(frame, (SObject) arguments[0], arguments[1]);
     }
 
     @Specialization
@@ -178,7 +173,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     @Specialization
     public Object doObject(final VirtualFrame frame, final SObject self,
         final Object value) {
-      return executeEvaluated(frame, self, value);
+      return doEvaluated(frame, self, value);
     }
     
     public Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver) {
@@ -207,6 +202,11 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
         throw new RuntimeException("This should never happen by construction");
       }
       return this.argumentsForReceiver(frame, object);
+    }
+    
+    @Override
+    public void wrapIntoMateNode() {
+      //replace(MateFieldNodesFactory.MateFieldWriteNodeGen.create(this, this.getSelf(), this.getValue()));
     }
   }
 }
