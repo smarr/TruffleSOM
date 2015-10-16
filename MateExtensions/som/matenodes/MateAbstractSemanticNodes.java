@@ -1,7 +1,9 @@
-package som.interpreter.nodes;
+package som.matenodes;
 
-import som.interpreter.nodes.MateAbstractSemanticNodesFactory.MateEnvironmentSemanticCheckNodeGen;
-import som.interpreter.nodes.MateAbstractSemanticNodesFactory.MateObjectSemanticCheckNodeGen;
+import som.matenodes.MateAbstractSemanticNodesFactory.MateEnvironmentSemanticCheckNodeGen;
+import som.matenodes.MateAbstractSemanticNodesFactory.MateObjectSemanticCheckNodeGen;
+import som.matenodes.MateAbstractSemanticNodesFactory.MateSemanticCheckNodeGen;
+import som.vm.MateSemanticsException;
 import som.vm.MateUniverse;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SInvokable;
@@ -61,7 +63,7 @@ public abstract class MateAbstractSemanticNodes {
   }
 
   public static abstract class MateObjectSemanticCheckNode extends Node {
-    private final ReflectiveOp reflectiveOperation;
+    protected final ReflectiveOp reflectiveOperation;
     
     protected MateObjectSemanticCheckNode(ReflectiveOp operation){
       super();
@@ -70,15 +72,29 @@ public abstract class MateAbstractSemanticNodes {
     
     public abstract SInvokable executeGeneric(VirtualFrame frame, Object receiver);
 
-    @Specialization
-    public SInvokable doSReflectiveObject(
+    @Specialization(guards="receiver.getEnvironment() == null")
+    public SInvokable doStandardSOMBehavior(
         final VirtualFrame frame, final SReflectiveObject receiver){
-      return receiver.getEnvironment().methodImplementing(this.reflectiveOperation);
+      return this.doSObject(frame, receiver);
+    }
+    
+    @Specialization(guards="cachedEnvironment == receiver.getEnvironment() || cachedEnvironment == null")
+    public SInvokable doSReflectiveObject(
+        final VirtualFrame frame, 
+        final SReflectiveObject receiver,
+        @Cached("receiver.getEnvironment()") final SMateEnvironment cachedEnvironment,
+        @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method
+        ){
+      return method;
     }
 
     @Specialization
     public SInvokable doSObject(final VirtualFrame frame, final Object receiver){
       return null;
+    }
+    
+    protected static SInvokable environmentReflectiveMethod(SMateEnvironment environment, ReflectiveOp operation){
+      return environment.methodImplementing(operation);
     }
   }
   
@@ -89,9 +105,22 @@ public abstract class MateAbstractSemanticNodes {
     public abstract SInvokable execute(final VirtualFrame frame, Object[] arguments);
     protected Object doMateDispatchNode(final VirtualFrame frame, final SInvokable environment, final SReflectiveObject receiver){throw new RuntimeException();}
     
+    public MateSemanticCheckNode(MateEnvironmentSemanticCheckNode env, MateObjectSemanticCheckNode obj) {
+      super();
+      environment = env;
+      object = obj;
+    }
+    
+    public static MateSemanticCheckNode createForFullCheck(SourceSection source, ReflectiveOp operation){
+      return MateSemanticCheckNodeGen.create(
+          MateEnvironmentSemanticCheckNodeGen.create(operation), 
+          MateObjectSemanticCheckNodeGen.create(operation)
+      );
+    }
+    
     @Specialization(guards = "executeBase(arguments)")
     protected SInvokable executeSOM(final VirtualFrame frame, Object[] arguments){
-      throw new RuntimeException();
+      throw new MateSemanticsException();
     }
     
     @Specialization()
@@ -101,7 +130,7 @@ public abstract class MateAbstractSemanticNodes {
       if (environmentOfContext == null){
         SInvokable environmentOfReceiver = object.executeGeneric(frame, receiver);
         if (environmentOfReceiver == null){
-          throw new RuntimeException();
+          throw new MateSemanticsException();
         }
         return environmentOfReceiver;
       }  

@@ -104,7 +104,7 @@ public final class MessageSendNode {
     }
 
     @Override
-    public final Object executeGeneric(final VirtualFrame frame) {
+    public Object executeGeneric(final VirtualFrame frame) {
       Object[] arguments = evaluateArguments(frame);
       return doPreEvaluated(frame, arguments);
     }
@@ -479,7 +479,7 @@ public final class MessageSendNode {
     }
   }
 
-  private static final class UninitializedMessageSendNode
+  public static class UninitializedMessageSendNode
       extends AbstractUninitializedMessageSendNode implements PreevaluatedExpression{
 
     protected UninitializedMessageSendNode(final SSymbol selector,
@@ -495,6 +495,10 @@ public final class MessageSendNode {
         argumentNodes, SuperDispatchNode.create(selector,
             argumentNode), getSourceSection());
       return replace(node);
+    }
+    
+    public void wrapIntoMateNode() {
+      replace(new MateUninitializedMessageSendNode(this));
     }
   }
 
@@ -544,14 +548,14 @@ public final class MessageSendNode {
 
 /// TODO: currently, we do not only specialize the given stuff above, but also what has been classified as 'value' sends in the OMOP branch. Is that a problem?
 
-  public static final class GenericMessageSendNode
+  public static class GenericMessageSendNode
       extends AbstractMessageSendNode {
 
     private final SSymbol selector;
 
     @Child private AbstractDispatchNode dispatchNode;
 
-    private GenericMessageSendNode(final SSymbol selector,
+    protected GenericMessageSendNode(final SSymbol selector,
         final ExpressionNode[] arguments,
         final AbstractDispatchNode dispatchNode, final SourceSection source) {
       super(arguments, source);
@@ -592,6 +596,10 @@ public final class MessageSendNode {
     
     public SSymbol getSelector(){
       return this.selector;
+    }
+    
+    public void wrapIntoMateNode() {
+      replace(new MateGenericMessageSendNode(this));
     }
   }
 }

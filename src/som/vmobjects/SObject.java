@@ -36,7 +36,6 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Layout;
-import com.oracle.truffle.api.object.LocationFactory;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.object.basic.DynamicObjectBasic;
 

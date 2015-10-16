@@ -1,4 +1,4 @@
-package som.interpreter.nodes;
+package som.matenodes;
 
 import som.vm.MateUniverse;
 import som.vmobjects.SInvokable;
@@ -50,15 +50,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
 
 
   public abstract static class MateDispatchFieldAccess extends MateAbstractReflectiveDispatch {
-    public MateDispatchFieldAccess(final FieldNode node) {
-      super(node.getSourceSection());
-    }
-
-    protected Object[] computeArgumentsForMetaDispatch(){
-      Object[] arguments = new Object[2];
-      /*arguments[0] = receiver;
-      arguments[1] = this.read.getFieldIndex();*/
-      return arguments;
+    
+    public MateDispatchFieldAccess(SourceSection source) {
+      super(source);
     }
   }
 

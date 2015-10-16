@@ -21,6 +21,7 @@
  */
 package som.interpreter.nodes;
 
+import som.interpreter.nodes.MateFieldNodesFactory.MateFieldWriteNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.UninitializedReadFieldNode;
@@ -61,7 +62,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
   public static class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
     @Child private ExpressionNode self;
-    @Child private AbstractReadFieldNode read;
+    @Child protected AbstractReadFieldNode read;
 
     public FieldReadNode(final ExpressionNode self, final int fieldIndex,
         final SourceSection source) {
@@ -134,7 +135,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     @NodeChild(value = "value", type = ExpressionNode.class)})
   public abstract static class FieldWriteNode extends FieldNode
       implements PreevaluatedExpression {
-    @Child private AbstractWriteFieldNode write;
+    @Child protected AbstractWriteFieldNode write;
 
     protected abstract ExpressionNode getValue();
     
@@ -206,7 +207,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     
     @Override
     public void wrapIntoMateNode() {
-      //replace(MateFieldNodesFactory.MateFieldWriteNodeGen.create(this, this.getSelf(), this.getValue()));
+      replace(MateFieldWriteNodeGen.create(this, this.getSelf(), this.getValue()));
     }
   }
 }

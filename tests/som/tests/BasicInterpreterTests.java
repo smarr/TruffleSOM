@@ -98,6 +98,8 @@ public class BasicInterpreterTests {
         {"BlockInlining", "testDeepDeepNestedFalse",                 43, Long.class },
 
         {"BlockInlining", "testToDoNestDoNestIfTrue",                 2, Long.class },
+        
+        {"ObjectFieldAccess", "test", 4, Long.class }
 
     });
   }

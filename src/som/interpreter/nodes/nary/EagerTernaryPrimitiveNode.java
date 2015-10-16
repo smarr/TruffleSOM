@@ -11,7 +11,7 @@ import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 
-public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
+public class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
 
   @Child private ExpressionNode receiver;
   @Child private ExpressionNode argument1;

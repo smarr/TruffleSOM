@@ -1,5 +1,7 @@
 package som.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.nodes.ExpressionNode;
 import som.matenodes.MateAbstractReflectiveDispatch;
 import som.matenodes.MateBehavior;
@@ -8,16 +10,14 @@ import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
 
-
-public class MateEagerUnaryPrimitive extends EagerUnaryPrimitiveNode implements MateBehavior {
+public class MateEagerTernaryPrimitiveNode extends EagerTernaryPrimitiveNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractReflectiveDispatch     reflectiveDispatch;
   
-  public MateEagerUnaryPrimitive(SSymbol selector, ExpressionNode receiver,
-      UnaryExpressionNode primitive) {
-    super(selector, receiver, primitive);
+  public MateEagerTernaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument1, ExpressionNode argument2,
+      TernaryExpressionNode primitive) {
+    super(selector, receiver, argument1, argument2, primitive);
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
     reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection());
   }
@@ -25,13 +25,15 @@ public class MateEagerUnaryPrimitive extends EagerUnaryPrimitiveNode implements 
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
     Object rcvr = this.getReceiver().executeGeneric(frame);
+    Object arg1 = this.getFirstArg().executeGeneric(frame);
+    Object arg2 = this.getSecondArg().executeGeneric(frame);
     try{
-      return this.doMateSemantics(frame, new Object[] {rcvr});
+      return this.doMateSemantics(frame, new Object[] {rcvr, arg1, arg2});
     } catch(MateSemanticsException e){
-      return executeEvaluated(frame, rcvr);
+      return executeEvaluated(frame, rcvr, arg1, arg2);
     }
   }
-  
+
   @Override
   public MateSemanticCheckNode getMateNode() {
     return semanticCheck;
@@ -41,4 +43,5 @@ public class MateEagerUnaryPrimitive extends EagerUnaryPrimitiveNode implements 
   public MateAbstractReflectiveDispatch getMateDispatch() {
     return reflectiveDispatch;
   }
+
 }

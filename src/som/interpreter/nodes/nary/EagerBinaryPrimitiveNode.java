@@ -10,7 +10,7 @@ import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 
-public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
+public class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
 
   @Child private ExpressionNode receiver;
   @Child private ExpressionNode argument;
