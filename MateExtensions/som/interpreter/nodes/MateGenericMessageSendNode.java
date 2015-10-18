@@ -1,23 +1,23 @@
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import som.matenodes.MateAbstractReflectiveDispatch;
-import som.matenodes.MateBehavior;
-import som.matenodes.MateAbstractReflectiveDispatchNodeGen.MateDispatchFieldAccessNodeGen;
+import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
+import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
+
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public class MateGenericMessageSendNode extends GenericMessageSendNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
-  @Child MateAbstractReflectiveDispatch     reflectiveDispatch;
+  @Child MateAbstractStandardDispatch     reflectiveDispatch;
 
   protected MateGenericMessageSendNode(GenericMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getDispatchListHead(), somNode.getSourceSection());
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-    reflectiveDispatch = MateDispatchFieldAccessNodeGen.create(this.getSourceSection());
+    reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
   }
 
   @Override
@@ -36,7 +36,7 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
   }
 
   @Override
-  public MateAbstractReflectiveDispatch getMateDispatch() {
+  public MateAbstractStandardDispatch getMateDispatch() {
     return reflectiveDispatch;
   }
 

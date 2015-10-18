@@ -1,24 +1,24 @@
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
-
 import som.interpreter.TypesGen;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.matenodes.MateAbstractReflectiveDispatch;
-import som.matenodes.MateBehavior;
-import som.matenodes.MateAbstractReflectiveDispatchNodeGen.MateDispatchFieldAccessNodeGen;
+import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
+import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
 import som.vmobjects.SObject;
+
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 
 public abstract class MateFieldNodes {
   public static final class MateFieldReadNode extends FieldReadNode implements MateBehavior {
     @Child MateSemanticCheckNode                   semanticCheck;
-    @Child MateAbstractReflectiveDispatch     reflectiveDispatch;
+    @Child MateAbstractStandardDispatch     reflectiveDispatch;
     
     public MateFieldReadNode(FieldReadNode node) {
       super(node);
@@ -62,14 +62,14 @@ public abstract class MateFieldNodes {
     }
 
     @Override
-    public MateAbstractReflectiveDispatch getMateDispatch() {
+    public MateAbstractStandardDispatch getMateDispatch() {
       return reflectiveDispatch;
     }
   }
   
   public static abstract class MateFieldWriteNode extends FieldWriteNode implements MateBehavior {
     @Child MateSemanticCheckNode                   semanticCheck;
-    @Child MateAbstractReflectiveDispatch     reflectiveDispatch;
+    @Child MateAbstractStandardDispatch     reflectiveDispatch;
     
     public MateFieldWriteNode(FieldWriteNode node) {
       super(node);
@@ -83,7 +83,7 @@ public abstract class MateFieldNodes {
     }
 
     @Override
-    public MateAbstractReflectiveDispatch getMateDispatch() {
+    public MateAbstractStandardDispatch getMateDispatch() {
       return reflectiveDispatch;
     }
     
