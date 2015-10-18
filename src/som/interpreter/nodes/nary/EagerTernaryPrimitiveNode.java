@@ -65,4 +65,8 @@ public class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
         getSourceSection());
     return replace(node);
   }
+  
+  protected SSymbol getSelector(){
+    return selector;
+  }
 }

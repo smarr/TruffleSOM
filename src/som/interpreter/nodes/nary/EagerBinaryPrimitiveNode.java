@@ -64,4 +64,8 @@ public class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
   public ExpressionNode getArgument() {
     return argument;
   }
+  
+  protected SSymbol getSelector(){
+    return selector;
+  }
 }
