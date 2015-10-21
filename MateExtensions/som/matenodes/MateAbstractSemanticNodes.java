@@ -133,12 +133,12 @@ public abstract class MateAbstractSemanticNodes {
           MateObjectSemanticCheckNodeGen.create(operation));
     }
 
-    @Specialization(guards = "executeBase(arguments)")
+    @Specialization(guards = "!executeBase(arguments)")
     protected SInvokable executeSOM(final VirtualFrame frame, Object[] arguments) {
       throw new MateSemanticsException();
     }
 
-    @Specialization()
+    @Specialization(guards = "executeBase(arguments)")
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
         Object[] arguments) {
       SReflectiveObject receiver = (SReflectiveObject) arguments[0];
@@ -166,8 +166,8 @@ public abstract class MateAbstractSemanticNodes {
     }
 
     public static boolean executeBase(Object[] arguments) {
-      return !(arguments[0] instanceof SReflectiveObject)
-          || MateUniverse.current().executingMeta();
+      return (arguments[0] instanceof SReflectiveObject)
+          && !MateUniverse.current().executingMeta();
     }
   }
 }

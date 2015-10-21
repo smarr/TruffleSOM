@@ -8,6 +8,7 @@ import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
+import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerTernaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
@@ -105,6 +106,9 @@ public final class MessageSendNode {
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
+      if (this.getSelector().toString().equals("#assert:equals:")){
+        int i = 1;
+      }
       Object[] arguments = evaluateArguments(frame);
       return doPreEvaluated(frame, arguments);
     }
@@ -181,7 +185,7 @@ public final class MessageSendNode {
 
     protected abstract PreevaluatedExpression makeSuperSend();
 
-    private GenericMessageSendNode makeGenericSend() {
+    protected GenericMessageSendNode makeGenericSend() {
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
           argumentNodes,
           new UninitializedDispatchNode(selector),
@@ -220,42 +224,46 @@ public final class MessageSendNode {
       return makeGenericSend();
     }
 
+    protected EagerBinaryPrimitiveNode binaryPrimitiveFor(SSymbol selector, ExpressionNode receiver, ExpressionNode argument, BinaryExpressionNode primitive){
+      return new EagerBinaryPrimitiveNode(selector, receiver, argument, primitive);
+    }
+    
     protected PreevaluatedExpression specializeBinary(final Object[] arguments) {
       switch (selector.getString()) {
         case "at:":
           if (arguments[0] instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+            return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
                 argumentNodes[1],
                 AtPrimFactory.create(null, null)));
           }
           break;
         case "new:":
           if (arguments[0] == Classes.arrayClass) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+            return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
                 argumentNodes[1],
                 NewPrimFactory.create(null, null)));
           }
           break;
         case "instVarAt:":
-          return replace(new EagerBinaryPrimitiveNode(selector,
+          return replace(this.binaryPrimitiveFor(selector,
               argumentNodes[0], argumentNodes[1],
               InstVarAtPrimFactory.create(null, null)));
         case "doIndexes:":
           if (arguments[0] instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+            return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
                 argumentNodes[1],
                 DoIndexesPrimFactory.create(null, null)));
           }
           break;
         case "do:":
           if (arguments[0] instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+            return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
                 argumentNodes[1],
                 DoPrimFactory.create(null, null)));
           }
           break;
         case "putAll:":
-          return replace(new EagerBinaryPrimitiveNode(selector,
+          return replace(this.binaryPrimitiveFor(selector,
                 argumentNodes[0], argumentNodes[1],
                 PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
         case "whileTrue:": {
@@ -325,7 +333,7 @@ public final class MessageSendNode {
               argumentNodes[0], argumentNodes[1]));
         case "to:":
           if (arguments[0] instanceof Long) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+            return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
                 argumentNodes[1],
                 ToPrimFactory.create(null, null)));
           }
@@ -333,81 +341,81 @@ public final class MessageSendNode {
 
         // TODO: find a better way for primitives, use annotation or something
         case "<":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               LessThanPrimFactory.create(null, null)));
         case "<=":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               LessThanOrEqualPrimFactory.create(null, null)));
         case ">":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               GreaterThanPrimFactory.create(null, null)));
         case "+":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               AdditionPrimFactory.create(null, null)));
         case "-":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               SubtractionPrimFactory.create(null, null)));
         case "*":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               MultiplicationPrimFactory.create(null, null)));
         case "=":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               EqualsPrimFactory.create(null, null)));
         case "<>":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               UnequalsPrimFactory.create(null, null)));
         case "~=":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               UnequalsPrimFactory.create(null, null)));
         case "==":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               EqualsEqualsPrimFactory.create(null, null)));
         case "bitXor:":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               BitXorPrimFactory.create(null, null)));
         case "//":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               DoubleDivPrimFactory.create(null, null)));
         case "%":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               ModuloPrimFactory.create(null, null)));
         case "rem:":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               RemainderPrimFactory.create(null, null)));
         case "/":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               DividePrimFactory.create(null, null)));
         case "&":
-          return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+          return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
               LogicAndPrimFactory.create(null, null)));
 
         // eagerly but cautious:
         case "<<":
           if (arguments[0] instanceof Long) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+            return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
                 argumentNodes[1],
                 LeftShiftPrimFactory.create(null, null)));
           }
           break;
         case ">>>":
           if (arguments[0] instanceof Long) {
-            return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
+            return replace(this.binaryPrimitiveFor(selector, argumentNodes[0],
                 argumentNodes[1],
                 UnsignedRightShiftPrimFactory.create(null, null)));
           }
