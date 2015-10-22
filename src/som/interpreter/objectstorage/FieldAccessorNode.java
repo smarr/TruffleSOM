@@ -85,11 +85,6 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     }
 
     @Override
-    public void wrapIntoMateNode(){
-      //replace(new MateFieldReadNode(this));
-    }
-
-    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ReadLayout;
     }
@@ -279,11 +274,6 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         newNode = new WriteObjectFieldNode(fieldIndex, layout, this);
       }
       replace(newNode, reason);
-    }
-
-    @Override
-    public void wrapIntoMateNode(){
-      //replace(new MateFieldWriteNode(this));
     }
 
     @Override
