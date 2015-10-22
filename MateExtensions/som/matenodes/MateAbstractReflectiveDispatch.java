@@ -84,8 +84,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       MateAbstractStandardDispatch {
 
     private final SSymbol    selector;
-    @Child
-    MateMethodActivationNode activationNode;
+    @Child MateMethodActivationNode activationNode;
 
     public MateDispatchMessageLookup(SourceSection source, SSymbol sel) {
       super(source);
