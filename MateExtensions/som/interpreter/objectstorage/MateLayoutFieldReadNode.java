@@ -1,53 +1,48 @@
-/*package som.interpreter.objectstorage;
+package som.interpreter.objectstorage;
 
-import som.interpreter.nodes.MateAbstractReflectiveDispatch.MateDispatchFieldAccessor;
-import som.interpreter.nodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldReadLayoutNodeGen;
-import som.interpreter.nodes.MateAbstractSemanticNodes.MateEnvironmentSemanticCheckNode;
-import som.interpreter.nodes.MateAbstractSemanticNodes.MateObjectSemanticCheckNode;
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateEnvironmentSemanticCheckNodeGen;
-import som.interpreter.nodes.MateAbstractSemanticCheckNodeFactory.MateObjectSemanticCheckNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.vm.MateUniverse;
-import som.vmobjects.SMateEnvironment;
+import som.matenodes.MateBehavior;
+import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
+import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
+import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.vm.MateSemanticsException;
 import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.frame.Frame;
-import com.oracle.truffle.api.frame.FrameInstance.FrameAccess;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 
-public class MateFieldReadNode extends AbstractReadFieldNode {
-  @Child protected MateEnvironmentSemanticCheckNode environment;
-  @Child protected MateObjectSemanticCheckNode object;
-  @Child protected MateDispatchFieldAccessor mateDispatch;
+public class MateLayoutFieldReadNode extends AbstractReadFieldNode implements MateBehavior {
+  @Child private MateSemanticCheckNode          semanticCheck;
+  @Child private MateAbstractStandardDispatch   reflectiveDispatch;
+  @Child private AbstractReadFieldNode          read;
 
-  public MateFieldReadNode(final AbstractReadFieldNode node) {
+  public MateLayoutFieldReadNode(final AbstractReadFieldNode node) {
     super(node.getFieldIndex());
-    environment = MateEnvironmentSemanticCheckNodeGen.create();
-    object = MateObjectSemanticCheckNodeGen.create();
-    mateDispatch = MateDispatchFieldReadLayoutNodeGen.create(node);
+    semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
+    reflectiveDispatch = MateDispatchFieldAccessNodeGen.create(this.getSourceSection());
+    read = node;
+  }
+
+  public Object read(final VirtualFrame frame, final SObject receiver) {
+    try {
+      return this.doMateSemantics(frame, new Object[] {receiver, this.getFieldIndex()});
+   } catch (MateSemanticsException e){
+     return read.read(receiver);
+   }
   }
 
   @Override
-  public Object read(final SObject receiver) {
-    VirtualFrame frame = (VirtualFrame) getCallerFrame();
-    Object[] args = {receiver, (long)this.getFieldIndex()};
-    SMateEnvironment env = null;
-    if (!MateUniverse.current().executingMeta()){
-      env = (SMateEnvironment)environment.executeGeneric(frame);
-      if (env == null){
-        env = (SMateEnvironment)object.executeGeneric(frame, receiver);
-      }
-    }
-    return mateDispatch.executeDispatch(frame, env, args);
+  public MateSemanticCheckNode getMateNode() {
+    return semanticCheck;
   }
 
-  // TODO: remove the need to access the caller frame, this is TruffleBoundary needs to be removed
-  @TruffleBoundary
-  protected Frame getCallerFrame() {
-    return Truffle.getRuntime().getCallerFrame().getFrame(FrameAccess.READ_WRITE, false);
+  @Override
+  public MateAbstractStandardDispatch getMateDispatch() {
+    return reflectiveDispatch;
+  }
+
+  @Override
+  public Object read(SObject obj) {
+    return read.read(obj);
   }
 }
-*/

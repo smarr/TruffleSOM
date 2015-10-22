@@ -3,6 +3,8 @@ package som.interpreter.nodes;
 import som.interpreter.TypesGen;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
+import som.interpreter.objectstorage.MateLayoutFieldReadNode;
+import som.interpreter.objectstorage.MateLayoutFieldWriteNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
@@ -24,6 +26,7 @@ public abstract class MateFieldNodes {
       super(node);
       semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
       reflectiveDispatch = MateDispatchFieldAccessNodeGen.create(this.getSourceSection());
+      read = new MateLayoutFieldReadNode(read);
     }
     
     @Override
@@ -31,7 +34,7 @@ public abstract class MateFieldNodes {
       try {
          return this.doMateSemantics(frame, new Object[] {obj, this.read.getFieldIndex()});
       } catch (MateSemanticsException e){
-        return super.executeEvaluated(frame, obj);
+        return ((MateLayoutFieldReadNode)read).read(frame, obj);
       }
     }
     
@@ -41,7 +44,7 @@ public abstract class MateFieldNodes {
       try {
         return TypesGen.expectLong(this.doMateSemantics(frame, new Object[] {obj, this.read.getFieldIndex()}));
       } catch (MateSemanticsException e){
-        return super.executeLong(frame);
+        return (long)((MateLayoutFieldReadNode)read).read(frame, obj);
       }
     }
 
@@ -51,7 +54,7 @@ public abstract class MateFieldNodes {
       try {
         return TypesGen.expectDouble(this.doMateSemantics(frame, new Object[] {obj, this.read.getFieldIndex()}));
       } catch (MateSemanticsException e){
-        return super.executeDouble(frame);
+        return (double)((MateLayoutFieldReadNode)read).read(frame, obj);
       }
     }
 
@@ -75,6 +78,7 @@ public abstract class MateFieldNodes {
       super(node);
       semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
       reflectiveDispatch = MateDispatchFieldAccessNodeGen.create(this.getSourceSection());
+      write = new MateLayoutFieldWriteNode(write);
     }
 
     @Override
@@ -91,9 +95,9 @@ public abstract class MateFieldNodes {
     public final Object doEvaluated(final VirtualFrame frame,
         final SObject self, final Object value) {
       try {
-         return this.doMateSemantics(frame, new Object[] {self, this.write.getFieldIndex(), value});
+         return this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value});
       } catch (MateSemanticsException e){
-        return super.doEvaluated(frame, self, value);
+        return ((MateLayoutFieldWriteNode)write).write(frame, self, value);
       }
     }
     
@@ -103,9 +107,9 @@ public abstract class MateFieldNodes {
         final long value) {
       try {
         /*Todo: There is a bug here in the cases where the metaobject returns a value with a different type*/
-        return (long) this.doMateSemantics(frame, new Object[] {self, this.write.getFieldIndex(), value});
+        return (long) this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value});
       } catch (MateSemanticsException e){
-        return super.doLong(frame, self, value);
+        return (long)((MateLayoutFieldWriteNode)write).write(frame, self, value);
       }
     }
 
@@ -115,9 +119,9 @@ public abstract class MateFieldNodes {
         final double value) {
       try {
         /*Todo: There is a bug here in the cases where the metaobject returns a value with a different type*/
-        return (double) this.doMateSemantics(frame, new Object[] {self, this.write.getFieldIndex(), value});
+        return (double) this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value});
       } catch (MateSemanticsException e){
-        return super.doDouble(frame, self, value);
+        return (double)((MateLayoutFieldWriteNode)write).write(frame, self, value);
       }
     }
     
