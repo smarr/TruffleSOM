@@ -3,16 +3,11 @@ package som.interpreter.nodes;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.UninitializedMessageSendNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
-import som.interpreter.nodes.nary.MateEagerBinaryPrimitiveNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
-import som.vmobjects.SSymbol;
-
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class MateUninitializedMessageSendNode extends
@@ -28,10 +23,6 @@ public class MateUninitializedMessageSendNode extends
   
   @Override
   public final Object executeGeneric(final VirtualFrame frame) {
-    if (this.getSelector().toString().equals("#assert:description:")){
-      int i = 1;
-    }
-    
     Object[] arguments = evaluateArguments(frame);
     try {
       return this.doMateSemantics(frame, arguments);
@@ -57,10 +48,5 @@ public class MateUninitializedMessageSendNode extends
         new UninitializedDispatchNode(selector),
         getSourceSection());
     return replace(send);
-  }
-  
-  @Override
-  protected EagerBinaryPrimitiveNode binaryPrimitiveFor(SSymbol selector, ExpressionNode receiver, ExpressionNode argument, BinaryExpressionNode primitive){
-    return new MateEagerBinaryPrimitiveNode(selector, receiver, argument, primitive);
   }
 }

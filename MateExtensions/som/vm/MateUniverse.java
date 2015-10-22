@@ -7,6 +7,8 @@ import static som.vm.constants.MateClasses.ShapeClass;
 import static som.vm.constants.Classes.objectClass;
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
+import som.interpreter.nodes.MateMessageSpecializationsFactory;
+import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
@@ -36,6 +38,7 @@ public class MateUniverse extends Universe {
       loadSystemClass(ShapeClass);
       
       this.executingMeta = false;
+      AbstractMessageSendNode.specializationFactory = new MateMessageSpecializationsFactory();
     }
   }
   
@@ -71,7 +74,6 @@ public class MateUniverse extends Universe {
   
   public static void main(final String[] arguments) {
     MateUniverse u = current();
-
     try {
       u.interpret(arguments);
       u.exit(0);

@@ -11,11 +11,11 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 
-public class MateEagerUnaryPrimitive extends EagerUnaryPrimitiveNode implements MateBehavior {
+public class MateEagerUnaryPrimitiveNode extends EagerUnaryPrimitiveNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
 
-  public MateEagerUnaryPrimitive(SSymbol selector, ExpressionNode receiver,
+  public MateEagerUnaryPrimitiveNode(SSymbol selector, ExpressionNode receiver,
       UnaryExpressionNode primitive) {
     super(selector, receiver, primitive);
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
