@@ -99,7 +99,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public Object read(final SObject obj) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
+      //CompilerDirectives.transferToInterpreterAndInvalidate();
       //return specializeAndRead(obj, "uninitalized node",
           //new UninitializedReadFieldNode(fieldIndex));
       return obj.getField(this.fieldIndex);
@@ -291,21 +291,21 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public Object write(final SObject obj, final Object value) {
-      if (value != Nil.nilObject) {
+      /*if (value != Nil.nilObject) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         writeAndRespecialize(obj, value, "initialize write field node",
             new UninitializedWriteFieldNode(fieldIndex));
-      }
+      }*/
+      obj.setField(fieldIndex, value);
       return value;
-    }
+    }  
   }
 
   private abstract static class WriteSpecializedFieldNode extends
       AbstractWriteFieldNode {
 
     protected final Shape            layout;
-    @Child
-    protected AbstractWriteFieldNode nextInCache;
+    @Child protected AbstractWriteFieldNode nextInCache;
 
     public WriteSpecializedFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {

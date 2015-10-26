@@ -31,7 +31,6 @@ import java.util.List;
 import som.interpreter.objectstorage.MateLocationFactory;
 import som.vm.constants.Nil;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -134,7 +133,7 @@ public class SObject extends SAbstractObject {
   }
 
   public final void setField(final int index, final Object value) {
-    CompilerAsserts.neverPartOfCompilation("setField");
+    //CompilerAsserts.neverPartOfCompilation("setField");
     this.dynamicObject.set(index, value);
   }
 
