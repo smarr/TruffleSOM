@@ -99,7 +99,7 @@ public abstract class ArgumentReadNode {
 
     public LocalSuperReadNode(final SSymbol holderClass,
         final boolean classSide, final SourceSection source) {
-      super(SArguments.RCVR_IDX, source);
+      super(0, source);
       this.holderClass = holderClass;
       this.classSide   = classSide;
     }
@@ -124,7 +124,7 @@ public abstract class ArgumentReadNode {
     public NonLocalSuperReadNode(final int contextLevel,
         final SSymbol holderClass, final boolean classSide,
         final SourceSection source) {
-      super(SArguments.RCVR_IDX, contextLevel, source);
+      super(0, contextLevel, source);
       this.holderClass = holderClass;
       this.classSide   = classSide;
     }

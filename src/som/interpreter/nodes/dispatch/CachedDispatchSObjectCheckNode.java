@@ -1,7 +1,10 @@
 package som.interpreter.nodes.dispatch;
 
+import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CallTarget;
@@ -20,12 +23,12 @@ public final class CachedDispatchSObjectCheckNode extends AbstractCachedDispatch
 
   @Override
   public Object executeDispatch(
-      final VirtualFrame frame, final Object[] arguments) {
+      final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
     SObject rcvr = (SObject) arguments[0];
     if (rcvr.getSOMClass() == expectedClass) {
-      return cachedMethod.call(frame, arguments);
+      return cachedMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
     } else {
-      return nextInCache.executeDispatch(frame, arguments);
+      return nextInCache.executeDispatch(frame, environment, exLevel, arguments);
     }
   }
 }

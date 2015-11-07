@@ -3,7 +3,9 @@ package som.interpreter.nodes.dispatch;
 import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 import som.vm.Universe;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -25,10 +27,10 @@ public abstract class AbstractCachedDnuNode extends AbstractCachedDispatchNode {
     this.selector = selector;
   }
 
-  protected final Object performDnu(final VirtualFrame frame, final Object[] arguments,
+  protected final Object performDnu(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments,
       final Object rcvr) {
     Object[] argsArr = new Object[] {
-        rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments) };
+        environment, exLevel, rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments) };
     return cachedMethod.call(frame, argsArr);
   }
 }

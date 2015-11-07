@@ -1,5 +1,6 @@
 package som.interpreter.nodes;
 
+import som.interpreter.SArguments;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
@@ -564,7 +565,7 @@ public final class MessageSendNode {
     @Override
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return dispatchNode.executeDispatch(frame, arguments);
+      return dispatchNode.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), arguments);
     }
 
     public AbstractDispatchNode getDispatchListHead() {

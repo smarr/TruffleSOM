@@ -1,6 +1,7 @@
 package som.primitives.arrays;
 
 import som.interpreter.Invokable;
+import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -40,7 +41,7 @@ public abstract class DoPrim extends BinaryExpressionNode
   }
 
   private void execBlock(final VirtualFrame frame, final SBlock block, final Object arg) {
-    this.block.executeDispatch(frame, new Object[] {block, arg});
+    this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block, arg});
   }
 
   @Specialization(guards = "isEmptyType(arr)")

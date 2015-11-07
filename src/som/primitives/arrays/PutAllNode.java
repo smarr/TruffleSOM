@@ -1,6 +1,7 @@
 package som.primitives.arrays;
 
 import som.interpreter.Invokable;
+import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -68,28 +69,28 @@ public abstract class PutAllNode extends BinaryExpressionNode
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final Object[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final long[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (long) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (long) this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final double[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (double) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (double) this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final boolean[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (boolean) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (boolean) this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 
@@ -101,7 +102,7 @@ public abstract class PutAllNode extends BinaryExpressionNode
     }
 // TODO: this version does not handle the case that a subsequent value is not of the expected type...
     try {
-      Object result = this.block.executeDispatch(frame, new Object[] {block});
+      Object result = this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
       if (result instanceof Long) {
         long[] newStorage = new long[(int) length];
         newStorage[0] = (long) result;

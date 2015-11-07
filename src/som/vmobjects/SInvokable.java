@@ -27,7 +27,9 @@ package som.vmobjects;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.interpreter.Invokable;
+import som.interpreter.SArguments;
 import som.vm.constants.Classes;
+import som.vm.constants.ExecutionLevel;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
@@ -114,6 +116,10 @@ public abstract class SInvokable extends SAbstractObject {
 
   public final Object invoke(final VirtualFrame frame, final IndirectCallNode node, final Object... arguments) {
     return node.call(frame, callTarget, arguments);
+  }
+  
+  public final Object invoke(final SMateEnvironment environment, final ExecutionLevel exLevel, final Object... arguments) {
+      return callTarget.call(SArguments.createSArguments(environment, exLevel, arguments));
   }
 
   @Override

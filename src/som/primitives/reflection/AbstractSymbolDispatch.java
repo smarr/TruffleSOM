@@ -1,5 +1,6 @@
 package som.primitives.reflection;
 
+import som.interpreter.SArguments;
 import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
@@ -60,7 +61,8 @@ public abstract class AbstractSymbolDispatch extends Node {
       @Cached("create()") final IndirectCallNode call) {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
 
-    Object[] arguments = { receiver };
+    /*Todo: Analyze what is the best to do here with the Mate arguments*/
+    Object[] arguments = { null, SArguments.getExecutionLevel(frame), receiver };
 
     return call.call(frame, invokable.getCallTarget(), arguments);
   }

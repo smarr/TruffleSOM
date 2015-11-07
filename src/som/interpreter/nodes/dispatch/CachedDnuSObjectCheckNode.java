@@ -1,6 +1,8 @@
 package som.interpreter.nodes.dispatch;
 
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
@@ -17,12 +19,12 @@ public final class CachedDnuSObjectCheckNode extends AbstractCachedDnuNode {
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,final Object[] arguments) {
     SObject rcvr = (SObject) arguments[0];
     if (rcvr.getSOMClass() == expectedClass) {
-      return performDnu(frame, arguments, rcvr);
+      return performDnu(frame, environment, exLevel, arguments, rcvr);
     } else {
-      return nextInCache.executeDispatch(frame, arguments);
+      return nextInCache.executeDispatch(frame, environment, exLevel, arguments);
     }
   }
 }

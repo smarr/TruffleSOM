@@ -5,8 +5,10 @@ import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.interpreter.nodes.dispatch.CachedDispatchSimpleCheckNode.CachedDispatchFalseCheckNode;
 import som.interpreter.nodes.dispatch.CachedDispatchSimpleCheckNode.CachedDispatchTrueCheckNode;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
@@ -97,9 +99,9 @@ public final class UninitializedDispatchNode extends AbstractDispatchWithLookupN
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,final Object[] arguments) {
     return specialize(arguments).
-        executeDispatch(frame, arguments);
+        executeDispatch(frame, environment, exLevel, arguments);
   }
 
   @Override

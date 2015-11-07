@@ -1,6 +1,9 @@
 package som.interpreter.nodes.dispatch;
 
+import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
+import som.vm.constants.ExecutionLevel;
+import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -17,13 +20,13 @@ public final class CachedDispatchSimpleCheckNode extends AbstractCachedDispatchN
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame,
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,
       final Object[] arguments) {
     Object rcvr = arguments[0];
     if (rcvr.getClass() == expectedClass) {
-      return cachedMethod.call(frame, arguments);
+      return cachedMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
     } else {
-      return nextInCache.executeDispatch(frame, arguments);
+      return nextInCache.executeDispatch(frame, environment, exLevel, arguments);
     }
   }
 
@@ -35,12 +38,12 @@ public final class CachedDispatchSimpleCheckNode extends AbstractCachedDispatchN
     }
 
     @Override
-    public Object executeDispatch(final VirtualFrame frame,
+    public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,
         final Object[] arguments) {
       if (arguments[0] == Boolean.TRUE) {
-        return cachedMethod.call(frame, arguments);
+        return cachedMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
       } else {
-        return nextInCache.executeDispatch(frame, arguments);
+        return nextInCache.executeDispatch(frame, environment, exLevel, arguments);
       }
     }
   }
@@ -53,12 +56,12 @@ public final class CachedDispatchSimpleCheckNode extends AbstractCachedDispatchN
     }
 
     @Override
-    public Object executeDispatch(final VirtualFrame frame,
+    public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,
         final Object[] arguments) {
       if (arguments[0] == Boolean.FALSE) {
-        return cachedMethod.call(frame, arguments);
+        return cachedMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
       } else {
-        return nextInCache.executeDispatch(frame, arguments);
+        return nextInCache.executeDispatch(frame, environment, exLevel, arguments);
       }
     }
   }

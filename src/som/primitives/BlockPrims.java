@@ -1,5 +1,6 @@
 package som.primitives;
 
+import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -48,7 +49,7 @@ public abstract class BlockPrims {
 
     @Specialization
     public final Object doSBlock(final VirtualFrame frame, final SBlock receiver) {
-      return dispatchNode.executeDispatch(frame, new Object[] {receiver});
+      return dispatchNode.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {receiver});
     }
 
     @Specialization
@@ -89,7 +90,7 @@ public abstract class BlockPrims {
     @Specialization
     public final Object doSBlock(final VirtualFrame frame, final SBlock receiver,
         final Object arg) {
-      return dispatchNode.executeDispatch(frame, new Object[] {receiver, arg});
+      return dispatchNode.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {receiver, arg});
     }
 
     @Override
@@ -125,7 +126,7 @@ public abstract class BlockPrims {
     @Specialization
     public final Object doSBlock(final VirtualFrame frame,
         final SBlock receiver, final Object arg1, final Object arg2) {
-      return dispatchNode.executeDispatch(frame, new Object[] {receiver, arg1, arg2});
+      return dispatchNode.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {receiver, arg1, arg2});
     }
 
     @Override

@@ -1,5 +1,7 @@
 package som.interpreter.nodes.dispatch;
 
+import som.vm.constants.ExecutionLevel;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -21,14 +23,13 @@ public final class SObjectCheckDispatchNode extends AbstractDispatchNode {
   }
 
   @Override
-  public Object executeDispatch(
-      final VirtualFrame frame, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,final Object[] arguments) {
     Object rcvr = arguments[0];
     if (rcvr instanceof SObject) {
-      return nextInCache.executeDispatch(frame, arguments);
+      return nextInCache.executeDispatch(frame, environment, exLevel, arguments);
     } else {
       uninitialized.enter();
-      return uninitializedDispatch.executeDispatch(frame, arguments);
+      return uninitializedDispatch.executeDispatch(frame, environment, exLevel, arguments);
     }
   }
 

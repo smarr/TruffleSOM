@@ -2,8 +2,10 @@ package som.interpreter.nodes.dispatch;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.primitives.BlockPrims.ValuePrimitiveNode;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
+import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -40,9 +42,9 @@ public final class UninitializedValuePrimDispatchNode
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
     return specialize((SBlock) arguments[0]).
-        executeDispatch(frame, arguments);
+        executeDispatch(frame, environment, exLevel, arguments);
   }
 
   @Override

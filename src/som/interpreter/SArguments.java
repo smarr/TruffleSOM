@@ -1,23 +1,43 @@
 package som.interpreter;
 
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SArray;
+import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.frame.Frame;
 
 public final class SArguments {
 
-  public static final int RCVR_IDX = 0;
+  private static final int ENVIRONMENT_IDX = 0;
+  private static final int EXECUTION_LEVEL_IDX = 1;
+  public static final int RCVR_IDX = 2;
+  
+  private static final int ARGUMENT_OFFSET = RCVR_IDX;
 
   private static Object[] args(final Frame frame) {
     return frame.getArguments();
   }
 
   public static Object arg(final Frame frame, final int index) {
-    return args(frame)[index];
+    if (index + ARGUMENT_OFFSET >= args(frame).length){
+      int i = 1;
+    }
+    return args(frame)[index + ARGUMENT_OFFSET];
   }
 
   public static Object rcvr(final Frame frame) {
-    return arg(frame, RCVR_IDX);
+    if (RCVR_IDX >= args(frame).length){
+      int i = 1;
+    }
+    return args(frame)[RCVR_IDX];
+  }
+  
+  public static SMateEnvironment getEnvironment(final Frame frame) {
+    return (SMateEnvironment)args(frame)[ENVIRONMENT_IDX];
+  }
+  
+  public static ExecutionLevel getExecutionLevel(final Frame frame) {
+    return (ExecutionLevel)args(frame)[EXECUTION_LEVEL_IDX];
   }
 
   /**
@@ -35,5 +55,14 @@ public final class SArguments {
     }
     System.arraycopy(arguments, 1, argsArr, 0, argsArr.length);
     return SArray.create(argsArr);
+  }
+  
+  public static Object[] createSArguments(final SMateEnvironment environment,
+      final ExecutionLevel exLevel, final Object[] arguments) {
+    Object[] args = new Object[arguments.length + ARGUMENT_OFFSET];
+    args[ENVIRONMENT_IDX]     = environment;
+    args[EXECUTION_LEVEL_IDX] = exLevel;
+    System.arraycopy(arguments, 0, args, ARGUMENT_OFFSET, arguments.length);
+    return args;
   }
 }

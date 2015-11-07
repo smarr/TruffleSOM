@@ -2,9 +2,11 @@ package som.interpreter.nodes.dispatch;
 
 import som.interpreter.SArguments;
 import som.interpreter.Types;
+import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
+import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -21,8 +23,7 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
   }
 
   @Override
-  public Object executeDispatch(
-      final VirtualFrame frame, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
     Object rcvr = arguments[0];
     SClass rcvrClass = Types.getClassOf(rcvr);
     SInvokable method = rcvrClass.lookupInvokable(selector);
@@ -32,11 +33,11 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
 
     if (method != null) {
       target = method.getCallTarget();
-      args = arguments;
+      args = SArguments.createSArguments(environment, exLevel, arguments);
     } else {
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
-      args = new Object[] {arguments[0], selector, argumentsArray};
+      args = new Object[] {environment, exLevel, arguments[0], selector, argumentsArray};
       target = AbstractCachedDnuNode.getDnuCallTarget(rcvrClass);
     }
     return call.call(frame, target, args);

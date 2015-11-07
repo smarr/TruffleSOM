@@ -47,6 +47,7 @@ import som.compiler.Disassembler;
 import som.interpreter.Invokable;
 import som.interpreter.TruffleCompiler;
 import som.vm.constants.Blocks;
+import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Globals;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
@@ -285,7 +286,7 @@ public class Universe {
     // Lookup the initialize invokable on the system class
     SInvokable initialize = clazz.getSOMClass().lookupInvokable(
         symbolFor(selector));
-    return initialize.invoke(clazz);
+    return initialize.invoke(null, ExecutionLevel.Base, clazz);
   }
 
   private Object execute(final String[] arguments) {
@@ -301,8 +302,7 @@ public class Universe {
     SInvokable initialize = systemClass.
         lookupInvokable(symbolFor("initialize:"));
 
-    return initialize.invoke(new Object[] {systemObject,
-        SArray.create(arguments)});
+    return initialize.invoke(null, ExecutionLevel.Base, systemObject,SArray.create(arguments));
   }
 
   protected void initializeObjectSystem() {
