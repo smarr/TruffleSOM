@@ -1,8 +1,10 @@
 package som.interpreter.nodes.specialized;
 
 import som.interpreter.Invokable;
+import som.interpreter.SArguments;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
+import som.vm.MateUniverse;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
@@ -43,10 +45,10 @@ public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
   public final long doIntDownToDo(final VirtualFrame frame, final long receiver, final long limit, final SBlock block) {
     try {
       if (receiver >= limit) {
-        valueSend.call(frame, new Object[] {block, receiver});
+        valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, receiver});
       }
       for (long i = receiver - 1; i >= limit; i--) {
-        valueSend.call(frame, new Object[] {block, i});
+        valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, i});
       }
     } finally {
       if (CompilerDirectives.inInterpreter() && (receiver - limit) > 0) {
@@ -86,5 +88,10 @@ public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
     if (current != null) {
       ((Invokable) current).propagateLoopCountThroughoutLexicalScope(count);
     }
+  }
+  
+  public void wrapIntoMateNode(){
+    super.wrapIntoMateNode();
+    MateUniverse.current().mateifyMethod(blockMethod);
   }
 }
