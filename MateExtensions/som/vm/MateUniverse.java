@@ -55,14 +55,19 @@ public class MateUniverse extends Universe {
       return super.loadClass(name);
     } else {
       SClass result = super.loadClass(name);
-      mateify(name);
+      mateify(result);
+      mateify(result.getSOMClass());
       return result;
     }
   }
   
-  public void mateify(final SSymbol name) {
-    SClass clazz = (SClass) getGlobal(name);
-    //MateUniverse.current().println(name.getString());
+  protected void loadSystemClass(final SClass systemClass) {
+    super.loadSystemClass(systemClass);
+    mateify(systemClass);
+    mateify(systemClass.getSOMClass());
+  }
+  
+  public void mateify(SClass clazz) {
     int countOfInvokables = clazz.getNumberOfInstanceInvokables();
     MateifyVisitor visitor = new MateifyVisitor();
     for (int i = 0; i < countOfInvokables; i++){
@@ -70,6 +75,12 @@ public class MateUniverse extends Universe {
       Invokable node = method.getInvokable();
       node.accept(visitor);
     }
+  }
+  
+  public void mateifyMethod(SInvokable method) {
+    MateifyVisitor visitor = new MateifyVisitor();
+    Invokable node = method.getInvokable();
+    node.accept(visitor);
   }
   
   public static void main(final String[] arguments) {
