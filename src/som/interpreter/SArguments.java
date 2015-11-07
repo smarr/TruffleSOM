@@ -47,7 +47,7 @@ public final class SArguments {
    */
   public static SArray getArgumentsWithoutReceiver(final Object[] arguments) {
     // the code and magic numbers below are based on the following assumption
-    assert RCVR_IDX == 0;
+    //assert RCVR_IDX == 0;
     assert arguments.length >= 1;  // <- that's the receiver
     Object[] argsArr = new Object[arguments.length - 1];
     if (argsArr.length == 0) {
