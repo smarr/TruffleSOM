@@ -45,4 +45,9 @@ public class MateLayoutFieldWriteNode extends AbstractWriteFieldNode implements 
   public Object write(SObject obj, Object value) {
     return write.write(obj, value);
   }
+  
+  @Override
+  public int lengthOfDispatchChain() {
+    return 0;
+  }
 }

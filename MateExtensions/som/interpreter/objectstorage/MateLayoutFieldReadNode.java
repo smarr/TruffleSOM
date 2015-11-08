@@ -45,4 +45,9 @@ public class MateLayoutFieldReadNode extends AbstractReadFieldNode implements Ma
   public Object read(SObject obj) {
     return read.read(obj);
   }
+  
+  @Override
+  public int lengthOfDispatchChain() {
+    return 0;
+  }
 }

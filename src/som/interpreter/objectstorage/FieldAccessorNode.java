@@ -3,6 +3,8 @@ package som.interpreter.objectstorage;
 import som.interpreter.MateNode;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
+import som.interpreter.nodes.dispatch.AbstractDispatchNode;
+import som.interpreter.nodes.dispatch.DispatchChain;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SObject;
@@ -16,7 +18,7 @@ import com.oracle.truffle.object.Locations.DualLocation;
 
 public abstract class FieldAccessorNode extends Node implements MateNode {
   protected final int fieldIndex;
-
+  
   public static AbstractReadFieldNode createRead(final int fieldIndex) {
     return new UninitializedReadFieldNode(fieldIndex);
   }
@@ -35,7 +37,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
   public abstract ReflectiveOp reflectiveOperation();
 
-  public abstract static class AbstractReadFieldNode extends FieldAccessorNode {
+  public abstract static class AbstractReadFieldNode extends FieldAccessorNode implements DispatchChain {
 
     public AbstractReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
@@ -64,29 +66,59 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       final ReadSpecializedFieldNode newNode;
       final Shape layout = obj.getObjectLayout();
 
-      final DualLocation storageLocation = (DualLocation) layout.getProperty(
-          fieldIndex).getLocation();
-      assert storageLocation != null;
-
-      if (storageLocation.getType() == null) {
-        /* reading uninitializedField */
-        newNode = new ReadUnwrittenFieldNode(fieldIndex, layout, this);
-      } else {
-        Class<?> type = storageLocation.getType();
-        if (type == long.class) {
-          newNode = new ReadLongFieldNode(fieldIndex, layout, this);
-        } else if (type == double.class) {
-          newNode = new ReadDoubleFieldNode(fieldIndex, layout, this);
+      if (this.lengthOfDispatchChain() < AbstractDispatchNode.INLINE_CACHE_SIZE) {
+        final DualLocation storageLocation = (DualLocation) layout.getProperty(
+            fieldIndex).getLocation();
+        assert storageLocation != null;
+  
+        if (storageLocation.getType() == null) {
+          /* reading uninitializedField */
+          newNode = new ReadUnwrittenFieldNode(fieldIndex, layout, next);
         } else {
-          newNode = new ReadObjectFieldNode(fieldIndex, layout, this);
+          Class<?> type = storageLocation.getType();
+          if (type == long.class) {
+            newNode = new ReadLongFieldNode(fieldIndex, layout, next);
+          } else if (type == double.class) {
+            newNode = new ReadDoubleFieldNode(fieldIndex, layout, next);
+          } else {
+            newNode = new ReadObjectFieldNode(fieldIndex, layout, next);
+          }
         }
+        return replace(newNode, reason);
       }
-      return replace(newNode, reason);
+
+      // the chain is longer than the maximum defined by INLINE_CACHE_SIZE and
+      // thus, this field accessing is considered to be megamorphic, and we generalize
+      // it.
+      Node i = this;
+      while (i.getParent() instanceof ReadSpecializedFieldNode) {
+        i = i.getParent();
+      }
+      GenericReadFieldNode genericReplacement = new GenericReadFieldNode(this.fieldIndex);
+      i.replace(genericReplacement);
+      return genericReplacement;
     }
 
     @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ReadLayout;
+    }
+  }
+  
+  public static final class GenericReadFieldNode extends AbstractReadFieldNode {
+
+    public GenericReadFieldNode(int fieldIndex) {
+      super(fieldIndex);
+    }
+
+    @Override
+    public int lengthOfDispatchChain() {
+      return 1000;
+    }
+
+    @Override
+    public Object read(SObject obj) {
+      return obj.getField(this.fieldIndex);
     }
   }
 
@@ -100,18 +132,22 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     @Override
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      //return specializeAndRead(obj, "uninitalized node",
-          //new UninitializedReadFieldNode(fieldIndex));
-      return obj.getField(this.fieldIndex);
+      return specializeAndRead(obj, "uninitalized node",
+          new UninitializedReadFieldNode(fieldIndex));
+      //return obj.getField(this.fieldIndex);
+    }
+    
+    @Override
+    public final int lengthOfDispatchChain() {
+      return 0;
     }
   }
 
   public abstract static class ReadSpecializedFieldNode extends
       AbstractReadFieldNode {
 
-    protected final Shape         layout;
-    @Child
-    private AbstractReadFieldNode nextInCache;
+    protected final Shape layout;
+    @Child private AbstractReadFieldNode nextInCache;
 
     public ReadSpecializedFieldNode(final int fieldIndex, final Shape layout,
         final AbstractReadFieldNode next) {
@@ -131,6 +167,11 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       } else {
         return nextInCache;
       }
+    }
+    
+    @Override
+    public final int lengthOfDispatchChain() {
+      return 1 + nextInCache.lengthOfDispatchChain();
     }
   }
 
@@ -238,7 +279,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     }
   }
 
-  public abstract static class AbstractWriteFieldNode extends FieldAccessorNode {
+  public abstract static class AbstractWriteFieldNode extends FieldAccessorNode implements DispatchChain {
 
     public AbstractWriteFieldNode(final int fieldIndex) {
       super(fieldIndex);
@@ -298,14 +339,18 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       }
       return value;
     }
+    
+    @Override
+    public final int lengthOfDispatchChain() {
+      return 0;
+    }
   }
 
   private abstract static class WriteSpecializedFieldNode extends
       AbstractWriteFieldNode {
 
-    protected final Shape            layout;
-    @Child
-    protected AbstractWriteFieldNode nextInCache;
+    protected final Shape layout;
+    @Child protected AbstractWriteFieldNode nextInCache;
 
     public WriteSpecializedFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
@@ -316,6 +361,11 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     protected final boolean hasExpectedLayout(final SObject obj) {
       return layout.check(obj.getDynamicObject());
+    }
+    
+    @Override
+    public final int lengthOfDispatchChain() {
+      return 1 + nextInCache.lengthOfDispatchChain();
     }
   }
 
