@@ -19,16 +19,10 @@ public final class SArguments {
   }
 
   public static Object arg(final Frame frame, final int index) {
-    if (index + ARGUMENT_OFFSET >= args(frame).length){
-      int i = 1;
-    }
     return args(frame)[index + ARGUMENT_OFFSET];
   }
 
   public static Object rcvr(final Frame frame) {
-    if (RCVR_IDX >= args(frame).length){
-      int i = 1;
-    }
     return args(frame)[RCVR_IDX];
   }
   
