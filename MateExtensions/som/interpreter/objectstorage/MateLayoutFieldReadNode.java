@@ -25,7 +25,7 @@ public class MateLayoutFieldReadNode extends AbstractReadFieldNode implements Ma
 
   public Object read(final VirtualFrame frame, final SObject receiver) {
     try {
-      return this.doMateSemantics(frame, new Object[] {receiver, this.getFieldIndex()});
+      return this.doMateSemantics(frame, new Object[] {receiver, (long)this.getFieldIndex()});
    } catch (MateSemanticsException e){
      return read.read(receiver);
    }
