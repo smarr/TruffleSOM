@@ -12,6 +12,8 @@ import som.vmobjects.SObject;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.object.FinalLocationException;
+import com.oracle.truffle.api.object.IncompatibleLocationException;
 import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.object.Locations.DualLocation;
@@ -296,6 +298,25 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       write(obj, (Object) value);
       return value;
     }
+    
+    public static final class GenericWriteFieldNode extends AbstractWriteFieldNode {
+
+      public GenericWriteFieldNode(int fieldIndex) {
+        super(fieldIndex);
+      }
+
+      @Override
+      public int lengthOfDispatchChain() {
+        return 1000;
+      }
+
+      @Override
+      public Object write(SObject obj, Object value) {
+        obj.setField(this.fieldIndex, value);
+        return value;
+      }
+    }
+
 
     protected final void writeAndRespecialize(final SObject obj,
         final Object value, final String reason,
@@ -306,15 +327,27 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
       final WriteSpecializedFieldNode newNode;
       final Shape layout = obj.getObjectLayout();
-
-      if (value instanceof Long) {
-        newNode = new WriteLongFieldNode(fieldIndex, layout, this);
-      } else if (value instanceof Double) {
-        newNode = new WriteDoubleFieldNode(fieldIndex, layout, this);
-      } else {
-        newNode = new WriteObjectFieldNode(fieldIndex, layout, this);
+      
+      if (this.lengthOfDispatchChain() < AbstractDispatchNode.INLINE_CACHE_SIZE) {
+        if (value instanceof Long) {
+          newNode = new WriteLongFieldNode(fieldIndex, layout, this);
+        } else if (value instanceof Double) {
+          newNode = new WriteDoubleFieldNode(fieldIndex, layout, this);
+        } else {
+          newNode = new WriteObjectFieldNode(fieldIndex, layout, this);
+        }
+        replace(newNode, reason);
       }
-      replace(newNode, reason);
+
+      // the chain is longer than the maximum defined by INLINE_CACHE_SIZE and
+      // thus, this field accessing is considered to be megamorphic, and we generalize
+      // it.
+      Node i = this;
+      while (i.getParent() instanceof WriteSpecializedFieldNode) {
+        i = i.getParent();
+      }
+      GenericWriteFieldNode genericReplacement = new GenericWriteFieldNode(this.fieldIndex);
+      i.replace(genericReplacement);
     }
 
     @Override
@@ -372,18 +405,17 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteLongFieldNode extends
       WriteSpecializedFieldNode {
 
-    //private final DualLocation storage;
+    private final DualLocation storage;
 
     public WriteLongFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      //this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
     public long write(final SObject obj, final long value) {
-      obj.setField(fieldIndex, value);
-      /*if (hasExpectedLayout(obj)) {
+      if (hasExpectedLayout(obj)) {
         try {
           storage.set(obj.getDynamicObject(), value);
         } catch (IncompatibleLocationException | FinalLocationException e) {
@@ -395,7 +427,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         } else {
           nextInCache.write(obj, value);
         }
-      }*/
+      }
       return value;
     }
 
@@ -418,18 +450,17 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteDoubleFieldNode extends
       WriteSpecializedFieldNode {
 
-    //private final DualLocation storage;
+    private final DualLocation storage;
 
     public WriteDoubleFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      //this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
     public double write(final SObject obj, final double value) {
-      obj.setField(fieldIndex, value);
-      /*if (hasExpectedLayout(obj)) {
+      if (hasExpectedLayout(obj)) {
         try {
           storage.set(obj.getDynamicObject(), value);
         } catch (FinalLocationException | IncompatibleLocationException e) {
@@ -442,7 +473,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         } else {
           nextInCache.write(obj, value);
         }
-      }*/
+      }
       return value;
     }
 
@@ -465,18 +496,17 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   public static final class WriteObjectFieldNode extends
       WriteSpecializedFieldNode {
 
-    //private final DualLocation storage;
+    private final DualLocation storage;
 
     public WriteObjectFieldNode(final int fieldIndex, final Shape layout,
         final AbstractWriteFieldNode next) {
       super(fieldIndex, layout, next);
-      //this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
+      this.storage = (DualLocation) layout.getProperty(fieldIndex).getLocation();
     }
 
     @Override
     public Object write(final SObject obj, final Object value) {
-      obj.setField(fieldIndex, value);
-      /*if (hasExpectedLayout(obj)) {
+      if (hasExpectedLayout(obj)) {
         try {
           storage.set(obj.getDynamicObject(), value);
         } catch (IncompatibleLocationException | FinalLocationException e) {
@@ -489,7 +519,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         } else {
           nextInCache.write(obj, value);
         }
-      }*/
+      }
       return value;
     }
   }
