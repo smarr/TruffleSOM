@@ -1,21 +1,18 @@
 package som.matenodes;
 
+import som.interpreter.SArguments;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateEnvironmentSemanticCheckNodeGen;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateObjectSemanticCheckNodeGen;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateSemanticCheckNodeGen;
 import som.vm.MateSemanticsException;
-import som.vm.MateUniverse;
+import som.vm.constants.ExecutionLevel;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
@@ -33,35 +30,22 @@ public abstract class MateAbstractSemanticNodes {
 
     public abstract SInvokable executeGeneric(VirtualFrame frame);
 
-    @Specialization(guards = "semanticsFromSlot(frame) != null")
+    @Specialization(guards = "getEnvironment(frame) != null")
     public SInvokable doSemanticsInFrame(final VirtualFrame frame,
-        @Cached("semanticsFromSlot(frame)") final FrameSlot slot) {
-      try {
-        SMateEnvironment env = (SMateEnvironment) frame.getObject(slot);
-        if (env == null) {
+        @Cached("getEnvironment(frame)") final SMateEnvironment environment) {
+        if (environment == null) {
           return this.doNoSemanticsInFrame(frame);
         }
-        return env.methodImplementing(this.reflectiveOperation);
-      } catch (FrameSlotTypeException e) {
-        return null;
-      }
+        return environment.methodImplementing(this.reflectiveOperation);
     }
 
-    @Specialization(guards = "semanticsFromSlot(frame) == null")
+    @Specialization(guards = "getEnvironment(frame) == null")
     public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
       return null;
     }
-
-    public static FrameSlot semanticsFromSlot(final VirtualFrame frame) {
-      return semanticsFromDescriptor(frame.getFrameDescriptor());
-      // return null;
-    }
-
-    // TODO: remove this boundary, and fix the way 'semantics' objects are
-    // handled
-    @TruffleBoundary
-    public static FrameSlot semanticsFromDescriptor(final FrameDescriptor desc) {
-      return desc.findFrameSlot("semantics");
+    
+    public static SMateEnvironment getEnvironment(VirtualFrame frame){
+      return SArguments.getEnvironment(frame);
     }
   }
 
@@ -106,10 +90,8 @@ public abstract class MateAbstractSemanticNodes {
 
   public static abstract class MateSemanticCheckNode extends Node {
 
-    @Child
-    MateEnvironmentSemanticCheckNode environment;
-    @Child
-    MateObjectSemanticCheckNode      object;
+    @Child MateEnvironmentSemanticCheckNode environment;
+    @Child MateObjectSemanticCheckNode      object;
 
     public abstract SInvokable execute(final VirtualFrame frame,
         Object[] arguments);
@@ -133,23 +115,27 @@ public abstract class MateAbstractSemanticNodes {
           MateObjectSemanticCheckNodeGen.create(operation));
     }
 
-    @Specialization(guards = "!executeBase(arguments)")
+    @Specialization(guards = "!executeBase(frame)")
     protected SInvokable executeSOM(final VirtualFrame frame, Object[] arguments) {
       throw new MateSemanticsException();
     }
 
-    @Specialization(guards = "executeBase(arguments)")
+    @Specialization(guards = "executeBase(frame)")
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
         Object[] arguments) {
-      SReflectiveObject receiver = (SReflectiveObject) arguments[0];
       SInvokable environmentOfContext = environment.executeGeneric(frame);
       if (environmentOfContext == null) {
-        SInvokable environmentOfReceiver = object.executeGeneric(frame,
-            receiver);
-        if (environmentOfReceiver == null) {
+        try{
+          SReflectiveObject receiver = (SReflectiveObject) arguments[0];
+          SInvokable environmentOfReceiver = object.executeGeneric(frame,
+              receiver);
+          if (environmentOfReceiver == null) {
+            throw new MateSemanticsException();
+          }
+          return environmentOfReceiver;
+        } catch (ClassCastException e){
           throw new MateSemanticsException();
         }
-        return environmentOfReceiver;
       }
       return environmentOfContext;
     }
@@ -165,9 +151,8 @@ public abstract class MateAbstractSemanticNodes {
       object = MateObjectSemanticCheckNodeGen.create(operation);
     }
 
-    public static boolean executeBase(Object[] arguments) {
-      return (arguments[0] instanceof SReflectiveObject)
-          && !MateUniverse.current().executingMeta();
+    public static boolean executeBase(VirtualFrame frame) {
+      return SArguments.getExecutionLevel(frame) == ExecutionLevel.Base;
     }
   }
 }
