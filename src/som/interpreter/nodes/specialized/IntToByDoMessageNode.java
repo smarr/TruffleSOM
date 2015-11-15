@@ -1,6 +1,7 @@
 package som.interpreter.nodes.specialized;
 
 import som.interpreter.Invokable;
+import som.interpreter.SArguments;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
 import som.vmobjects.SBlock;
@@ -46,10 +47,10 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
   public final long doIntToByDo(final VirtualFrame frame, final long receiver, final long limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
-        valueSend.call(frame, new Object[] {block, receiver});
+        valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, receiver});
       }
       for (long i = receiver + 1; i <= limit; i += step) {
-        valueSend.call(frame, new Object[] {block, i});
+        valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, i});
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -63,10 +64,10 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
   public final long doIntToByDo(final VirtualFrame frame, final long receiver, final double limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
-        valueSend.call(frame, new Object[] {block, receiver});
+        valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, receiver});
       }
       for (long i = receiver + 1; i <= limit; i += step) {
-        valueSend.call(frame, new Object[] {block, i});
+        valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, i});
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {

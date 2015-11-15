@@ -1,5 +1,6 @@
 package som.interpreter.nodes.specialized;
 
+import som.interpreter.SArguments;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
@@ -38,7 +39,7 @@ public abstract class OrMessageNode extends BinaryExpressionNode {
     if (receiver) {
       return true;
     } else {
-      return (boolean) blockValueSend.call(frame, new Object[] {argument});
+      return (boolean) blockValueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), argument});
     }
   }
 
