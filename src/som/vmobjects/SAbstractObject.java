@@ -3,6 +3,7 @@ package som.vmobjects;
 import som.interpreter.Types;
 import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
+import som.vm.constants.MateClasses;
 
 import com.oracle.truffle.api.CompilerAsserts;
 
@@ -45,7 +46,7 @@ public abstract class SAbstractObject {
       final SBlock block) {
     Object[] arguments = {receiver, block};
     /*Must fix and check what to do in this case since we have no context to do the send with the corresponding semantics and execution levels*/
-    return send("escapedBlock:", arguments, null, ExecutionLevel.Base);
+    return send("escapedBlock:", arguments, MateClasses.STANDARD_ENVIRONMENT, ExecutionLevel.Base);
   }
 
 }

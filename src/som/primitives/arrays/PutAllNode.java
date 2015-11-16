@@ -7,6 +7,7 @@ import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.primitives.BlockPrims.ValuePrimitiveNode;
 import som.primitives.LengthPrim;
+import som.vm.constants.MateClasses;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
@@ -69,28 +70,28 @@ public abstract class PutAllNode extends BinaryExpressionNode
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final Object[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
+      storage[i] = this.block.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final long[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (long) this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
+      storage[i] = (long) this.block.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final double[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (double) this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
+      storage[i] = (double) this.block.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final boolean[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (boolean) this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
+      storage[i] = (boolean) this.block.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), new Object[] {block});
     }
   }
 

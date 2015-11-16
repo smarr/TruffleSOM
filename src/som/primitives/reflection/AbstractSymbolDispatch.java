@@ -7,6 +7,7 @@ import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.primitives.arrays.ToArgumentsArrayNode;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
+import som.vm.constants.MateClasses;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
@@ -62,7 +63,7 @@ public abstract class AbstractSymbolDispatch extends Node {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
 
     /*Todo: Analyze what is the best to do here with the Mate arguments*/
-    Object[] arguments = { null, SArguments.getExecutionLevel(frame), receiver };
+    Object[] arguments = { MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), receiver };
 
     return call.call(frame, invokable.getCallTarget(), arguments);
   }

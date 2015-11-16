@@ -37,7 +37,7 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
     } else {
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
-      args = new Object[] {environment, exLevel, arguments[0], selector, argumentsArray};
+      args = new Object[] {environment, exLevel, arguments[SArguments.RCVR_ARGUMENTS_OFFSET], selector, argumentsArray};
       target = AbstractCachedDnuNode.getDnuCallTarget(rcvrClass);
     }
     return call.call(frame, target, args);
