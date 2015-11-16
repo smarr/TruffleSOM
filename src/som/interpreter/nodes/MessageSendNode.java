@@ -57,6 +57,7 @@ import som.primitives.arrays.PutAllNodeFactory;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.vm.NotYetImplementedException;
 import som.vm.constants.Classes;
+import som.vm.constants.MateClasses;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -565,7 +566,7 @@ public final class MessageSendNode {
     @Override
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return dispatchNode.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), arguments);
+      return dispatchNode.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), arguments);
     }
 
     public AbstractDispatchNode getDispatchListHead() {
