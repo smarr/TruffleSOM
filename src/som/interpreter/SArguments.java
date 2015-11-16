@@ -11,6 +11,10 @@ public final class SArguments {
   private static final int ENVIRONMENT_IDX = 0;
   private static final int EXECUTION_LEVEL_IDX = 1;
   public static final int RCVR_IDX = 2;
+  //Offset of the receiver considering all arguments in the stack including Mate behavior arguments.
+  
+  public static final int RCVR_ARGUMENTS_OFFSET = 0;
+  //Offset of the receiver when just considering the standard arguments of a method (for example for the parser)
   
   private static final int ARGUMENT_OFFSET = RCVR_IDX;
 

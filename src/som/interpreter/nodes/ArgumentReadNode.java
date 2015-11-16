@@ -99,7 +99,7 @@ public abstract class ArgumentReadNode {
 
     public LocalSuperReadNode(final SSymbol holderClass,
         final boolean classSide, final SourceSection source) {
-      super(0, source);
+      super(SArguments.RCVR_ARGUMENTS_OFFSET, source);
       this.holderClass = holderClass;
       this.classSide   = classSide;
     }
