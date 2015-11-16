@@ -1,5 +1,6 @@
 package som.vmobjects;
 
+import som.vm.MateSemanticsException;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
@@ -22,7 +23,7 @@ public class SMateEnvironment extends SObject {
     Object metaobject = null;
     switch (operation){
       case None: 
-        return null;
+        throw new MateSemanticsException();
       case Lookup: case Activation: 
         metaobject = this.getField(Message_IDX);
         break;
@@ -33,7 +34,7 @@ public class SMateEnvironment extends SObject {
         metaobject = this.getField(Layout_IDX);  
         break;
     }
-    if (metaobject == Nil.nilObject) return null;
+    if (metaobject == Nil.nilObject) throw new MateSemanticsException();
     return this.methodForOperation((SObject)metaobject, operation);
   }
   

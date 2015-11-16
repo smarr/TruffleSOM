@@ -41,7 +41,7 @@ public abstract class MateAbstractSemanticNodes {
 
     @Specialization(guards = "getEnvironment(frame) == null")
     public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
-      return null;
+      throw new MateSemanticsException();
     }
     
     public static SMateEnvironment getEnvironment(VirtualFrame frame){
@@ -79,7 +79,7 @@ public abstract class MateAbstractSemanticNodes {
 
     @Specialization
     public SInvokable doSObject(final VirtualFrame frame, final Object receiver) {
-      return null;
+      throw new MateSemanticsException();
     }
 
     protected static SInvokable environmentReflectiveMethod(
@@ -98,7 +98,7 @@ public abstract class MateAbstractSemanticNodes {
 
     protected Object doMateDispatchNode(final VirtualFrame frame,
         final SInvokable environment, final SReflectiveObject receiver) {
-      throw new RuntimeException();
+      throw new MateSemanticsException();
     }
 
     public MateSemanticCheckNode(MateEnvironmentSemanticCheckNode env,
@@ -123,25 +123,15 @@ public abstract class MateAbstractSemanticNodes {
     @Specialization(guards = "executeBase(frame)")
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
         Object[] arguments) {
-      SInvokable environmentOfContext = environment.executeGeneric(frame);
-      if (environmentOfContext == null) {
-        try{
-          SReflectiveObject receiver = (SReflectiveObject) arguments[0];
-          SInvokable environmentOfReceiver = object.executeGeneric(frame,
-              receiver);
-          if (environmentOfReceiver == null) {
-            throw new MateSemanticsException();
-          }
-          return environmentOfReceiver;
-        } catch (ClassCastException e){
+      try{
+        return environment.executeGeneric(frame);
+      } catch (MateSemanticsException e) {
+        if (arguments[0] instanceof SReflectiveObject){
+          return object.executeGeneric(frame, (SReflectiveObject) arguments[0]);
+        } else {
           throw new MateSemanticsException();
         }
       }
-      return environmentOfContext;
-    }
-
-    protected Object doBaseSOMNode(final VirtualFrame frame) {
-      return null;
     }
 
     public MateSemanticCheckNode(final SourceSection source,
