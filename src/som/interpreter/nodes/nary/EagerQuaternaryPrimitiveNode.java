@@ -32,6 +32,7 @@ public class EagerQuaternaryPrimitiveNode extends QuaternaryExpressionNode {
     this.receiver  = receiver;
     this.argument1 = argument1;
     this.argument2 = argument2;
+    this.argument3 = argument3;
     this.primitive = primitive;
     this.selector = selector;
   }
