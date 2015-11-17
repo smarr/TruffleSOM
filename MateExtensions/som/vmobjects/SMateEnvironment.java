@@ -40,21 +40,30 @@ public class SMateEnvironment extends SObject {
   
   /*Optimize this method. It can have the definition of the symbols in a static ahead of time  way*/
   private SInvokable methodForOperation(SObject metaobject, ReflectiveOp operation){
+    SInvokable method; 
     switch (operation){
       case Lookup:
-        return metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("find:since:"));
+        method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("find:since:"));
+        break;
       case Activation:  
-        return metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("activate:withArguments:"));
+        method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("activate:withArguments:"));
+        break;
       case ReadField: 
-        return metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
+        method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
+        break;
       case WriteField: 
-        return metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
+        method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
+        break;
       case ReadLayout: 
-        return metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
+        method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
+        break;
       case WriteLayout: 
-        return metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
+        method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
+        break;
       default:
-        return null;
+        method = null;
     }
+    if (method == null) throw new MateSemanticsException();
+    return method;
   }
 }
