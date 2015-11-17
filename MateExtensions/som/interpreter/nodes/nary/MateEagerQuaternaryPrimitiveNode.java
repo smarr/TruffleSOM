@@ -1,23 +1,22 @@
 package som.interpreter.nodes.nary;
 
 import som.interpreter.nodes.ExpressionNode;
+import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
-import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-
-public class MateEagerTernaryPrimitiveNode extends EagerTernaryPrimitiveNode implements MateBehavior {
+public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
   
-  public MateEagerTernaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument1, ExpressionNode argument2,
-      TernaryExpressionNode primitive) {
-    super(selector, receiver, argument1, argument2, primitive);
+  public MateEagerQuaternaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument1, ExpressionNode argument2,
+      ExpressionNode argument3, QuaternaryExpressionNode primitive) {
+    super(selector, receiver, argument1, argument2, argument3, primitive);
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
     reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
   }
@@ -27,10 +26,12 @@ public class MateEagerTernaryPrimitiveNode extends EagerTernaryPrimitiveNode imp
     Object rcvr = this.getReceiver().executeGeneric(frame);
     Object arg1 = this.getFirstArg().executeGeneric(frame);
     Object arg2 = this.getSecondArg().executeGeneric(frame);
+    Object arg3 = this.getThirdArg().executeGeneric(frame);
+    
     try{
-      return this.doMateSemantics(frame, new Object[] {rcvr, arg1, arg2});
+      return this.doMateSemantics(frame, new Object[] {rcvr, arg1, arg2, arg3});
     } catch(MateSemanticsException e){
-      return executeEvaluated(frame, rcvr, arg1, arg2);
+      return executeEvaluated(frame, rcvr, arg1, arg2, arg3);
     }
   }
 

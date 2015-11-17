@@ -263,10 +263,13 @@ public final class MessageSendNode {
               argumentNodes[0] instanceof BlockNode) {
             BlockNode argBlockNode = (BlockNode) argumentNodes[1];
             SBlock    argBlock     = (SBlock)    arguments[1];
-            return replace(new WhileTrueStaticBlocksNode(
-                (BlockNode) argumentNodes[0], argBlockNode,
-                (SBlock) arguments[0],
-                argBlock, getSourceSection()));
+            return replace(
+                AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
+                    argumentNodes[1],
+                    new WhileTrueStaticBlocksNode(
+                        (BlockNode) argumentNodes[0], argBlockNode,
+                        (SBlock) arguments[0],
+                        argBlock, getSourceSection())));
           }
           break; // use normal send
         }
@@ -275,9 +278,11 @@ public final class MessageSendNode {
               argumentNodes[0] instanceof BlockNode) {
             BlockNode argBlockNode = (BlockNode) argumentNodes[1];
             SBlock    argBlock     = (SBlock)    arguments[1];
-            return replace(new WhileFalseStaticBlocksNode(
-                (BlockNode) argumentNodes[0], argBlockNode,
-                (SBlock) arguments[0], argBlock, getSourceSection()));
+            return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
+                argumentNodes[1], 
+                new WhileFalseStaticBlocksNode(
+                    (BlockNode) argumentNodes[0], argBlockNode,
+                    (SBlock) arguments[0], argBlock, getSourceSection())));
           }
           break; // use normal send
         case "and:":
@@ -287,8 +292,11 @@ public final class MessageSendNode {
               return replace(AndMessageNodeFactory.create((SBlock) arguments[1],
                   getSourceSection(), argumentNodes[0], argumentNodes[1]));
             } else if (arguments[1] instanceof Boolean) {
-              return replace(AndBoolMessageNodeFactory.create(getSourceSection(),
-                  argumentNodes[0], argumentNodes[1]));
+              return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
+                  argumentNodes[1],
+                  AndBoolMessageNodeFactory.create(
+                      getSourceSection(),
+                      argumentNodes[0], argumentNodes[1])));
             }
           }
           break;
@@ -296,13 +304,17 @@ public final class MessageSendNode {
         case "||":
           if (arguments[0] instanceof Boolean) {
             if (argumentNodes[1] instanceof BlockNode) {
-              return replace(OrMessageNodeGen.create((SBlock) arguments[1],
-                  getSourceSection(),
-                  argumentNodes[0], argumentNodes[1]));
+              return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
+                  argumentNodes[1],
+                  OrMessageNodeGen.create((SBlock) arguments[1],
+                      getSourceSection(),
+                      argumentNodes[0], argumentNodes[1])));
             } else if (arguments[1] instanceof Boolean) {
-              return replace(OrBoolMessageNodeGen.create(
-                  getSourceSection(),
-                  argumentNodes[0], argumentNodes[1]));
+              return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
+                  argumentNodes[1],
+                  OrBoolMessageNodeGen.create(
+                      getSourceSection(),
+                      argumentNodes[0], argumentNodes[1])));
             }
           }
           break;
@@ -316,13 +328,17 @@ public final class MessageSendNode {
           break;
 
         case "ifTrue:":
-          return replace(IfTrueMessageNodeGen.create(arguments[0],
-              arguments[1], getSourceSection(),
-              argumentNodes[0], argumentNodes[1]));
+          return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
+              argumentNodes[1],
+              IfTrueMessageNodeGen.create(arguments[0],
+                  arguments[1], getSourceSection(),
+                  argumentNodes[0], argumentNodes[1])));
         case "ifFalse:":
-          return replace(IfFalseMessageNodeGen.create(arguments[0],
-              arguments[1], getSourceSection(),
-              argumentNodes[0], argumentNodes[1]));
+          return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
+              argumentNodes[1],
+              IfFalseMessageNodeGen.create(arguments[0],
+                  arguments[1], getSourceSection(),
+                  argumentNodes[0], argumentNodes[1])));
         case "to:":
           if (arguments[0] instanceof Long) {
             return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
@@ -428,17 +444,21 @@ public final class MessageSendNode {
           }
           break;
         case "ifTrue:ifFalse:":
-          return replace(IfTrueIfFalseMessageNodeGen.create(arguments[0],
-              arguments[1], arguments[2], argumentNodes[0],
-              argumentNodes[1], argumentNodes[2]));
+          return replace(AbstractMessageSendNode.specializationFactory.ternaryPrimitiveFor(selector, argumentNodes[0],
+              argumentNodes[1], argumentNodes[2],
+              IfTrueIfFalseMessageNodeGen.create(arguments[0],
+                  arguments[1], arguments[2], argumentNodes[0],
+                  argumentNodes[1], argumentNodes[2])));
         case "to:do:":
           if (TypesGen.isLong(arguments[0]) &&
               (TypesGen.isLong(arguments[1]) ||
                   TypesGen.isDouble(arguments[1])) &&
               TypesGen.isSBlock(arguments[2])) {
-            return replace(IntToDoMessageNodeGen.create(this,
-                (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
-                argumentNodes[2]));
+            return replace(AbstractMessageSendNode.specializationFactory.ternaryPrimitiveFor(selector, argumentNodes[0],
+                argumentNodes[1], argumentNodes[2],
+                IntToDoMessageNodeGen.create(this,
+                    (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
+                    argumentNodes[2])));
           }
           break;
         case "downTo:do:":
@@ -446,9 +466,11 @@ public final class MessageSendNode {
               (TypesGen.isLong(arguments[1]) ||
                   TypesGen.isDouble(arguments[1])) &&
               TypesGen.isSBlock(arguments[2])) {
-            return replace(IntDownToDoMessageNodeGen.create(this,
-                (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
-                argumentNodes[2]));
+            return replace(AbstractMessageSendNode.specializationFactory.ternaryPrimitiveFor(selector, argumentNodes[0],
+                argumentNodes[1], argumentNodes[2],
+                IntDownToDoMessageNodeGen.create(this,
+                    (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
+                    argumentNodes[2])));
           }
           break;
 
@@ -457,8 +479,10 @@ public final class MessageSendNode {
               argumentNodes[0], argumentNodes[1], argumentNodes[2],
               ToArgumentsArrayNodeGen.create(null, null)));
         case "instVarAt:put:":
-          return replace(InstVarAtPutPrimFactory.create(
-            argumentNodes[0], argumentNodes[1], argumentNodes[2]));
+          return replace(AbstractMessageSendNode.specializationFactory.ternaryPrimitiveFor(selector, argumentNodes[0],
+              argumentNodes[1], argumentNodes[2],
+              InstVarAtPutPrimFactory.create(
+                  argumentNodes[0], argumentNodes[1], argumentNodes[2])));
       }
       return makeGenericSend();
     }
@@ -467,9 +491,11 @@ public final class MessageSendNode {
         final Object[] arguments) {
       switch (selector.getString()) {
         case "to:by:do:":
-          return replace(IntToByDoMessageNodeGen.create(this,
-              (SBlock) arguments[3], argumentNodes[0], argumentNodes[1],
-              argumentNodes[2], argumentNodes[3]));
+          return replace(AbstractMessageSendNode.specializationFactory.quaternaryPrimitiveFor(selector, argumentNodes[0],
+              argumentNodes[1], argumentNodes[2], argumentNodes[3],
+              IntToByDoMessageNodeGen.create(this,
+                  (SBlock) arguments[3], argumentNodes[0], argumentNodes[1],
+                  argumentNodes[2], argumentNodes[3])));
       }
       return makeGenericSend();
     }
