@@ -133,7 +133,6 @@ public class SObject extends SAbstractObject {
   }
 
   public final void setField(final int index, final Object value) {
-    //CompilerAsserts.neverPartOfCompilation("setField");
     this.dynamicObject.set(index, value);
   }
 
