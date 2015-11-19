@@ -101,9 +101,9 @@ public abstract class PutAllNode extends BinaryExpressionNode
     if (length <= 0) {
       return rcvr;
     }
-// TODO: this version does not handle the case that a subsequent value is not of the expected type...
+    //TODO: this version does not handle the case that a subsequent value is not of the expected type...
     try {
-      Object result = this.block.executeDispatch(frame, null, SArguments.getExecutionLevel(frame), new Object[] {block});
+      Object result = this.block.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), new Object[] {block});
       if (result instanceof Long) {
         long[] newStorage = new long[(int) length];
         newStorage[0] = (long) result;
