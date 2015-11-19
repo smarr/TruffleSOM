@@ -16,6 +16,7 @@ import com.oracle.truffle.api.object.FinalLocationException;
 import com.oracle.truffle.api.object.IncompatibleLocationException;
 import com.oracle.truffle.api.object.Location;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.Locations.DeclaredDualLocation;
 import com.oracle.truffle.object.Locations.DualLocation;
 
 public abstract class FieldAccessorNode extends Node implements MateNode {
@@ -159,7 +160,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     }
 
     protected final boolean hasExpectedLayout(final SObject obj) {
-      return layout == obj.getObjectLayout();
+      return layout.check(obj.getDynamicObject());
     }
 
     protected final AbstractReadFieldNode respecializedNodeOrNext(
@@ -208,9 +209,8 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public long readLong(final SObject obj) throws UnexpectedResultException {
-      boolean assumption = hasExpectedLayout(obj);
-      if (assumption) {
-        return (long) storage.get(obj.getDynamicObject(), assumption);
+      if (hasExpectedLayout(obj)) {
+        return (long) storage.get(obj.getDynamicObject(), layout);
       } else {
         return respecializedNodeOrNext(obj).readLong(obj);
       }
@@ -241,9 +241,8 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     @Override
     public double readDouble(final SObject obj)
         throws UnexpectedResultException {
-      boolean assumption = hasExpectedLayout(obj);
-      if (assumption) {
-        return (double) storage.get(obj.getDynamicObject(), assumption);
+      if (hasExpectedLayout(obj)) {
+        return (double) storage.get(obj.getDynamicObject(), layout);
       } else {
         return respecializedNodeOrNext(obj).readDouble(obj);
       }
@@ -272,9 +271,8 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public Object read(final SObject obj) {
-      boolean assumption = hasExpectedLayout(obj);
-      if (assumption) {
-        return storage.get(obj.getDynamicObject(), assumption);
+      if (hasExpectedLayout(obj)) {
+        return storage.get(obj.getDynamicObject(), layout);
       } else {
         return respecializedNodeOrNext(obj).read(obj);
       }
@@ -323,10 +321,10 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
         final AbstractWriteFieldNode next) {
       TruffleCompiler.transferToInterpreterAndInvalidate(reason);
 
-      obj.setField(fieldIndex, value);
-
       final WriteSpecializedFieldNode newNode;
       final Shape layout = obj.getObjectLayout();
+      
+      obj.setField(fieldIndex, value);
       
       if (this.lengthOfDispatchChain() < AbstractDispatchNode.INLINE_CACHE_SIZE) {
         if (value instanceof Long) {
@@ -365,7 +363,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public Object write(final SObject obj, final Object value) {
-      if (value != Nil.nilObject) {
+      if (value != Nil.nilObject || !(obj.getObjectLayout().getProperty(fieldIndex).getLocation() instanceof DeclaredDualLocation)) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         writeAndRespecialize(obj, value, "initialize write field node",
             new UninitializedWriteFieldNode(fieldIndex));
