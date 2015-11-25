@@ -1,9 +1,11 @@
 package som.interpreter.nodes;
 
+import som.interpreter.SArguments;
 import som.matenodes.MateAbstractReflectiveDispatch.MateActivationDispatch;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateActivationDispatchNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.MateSemanticsException;
+import som.vm.constants.ExecutionLevel;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SInvokable.SMethod;
 
@@ -24,7 +26,7 @@ public class MateMethodActivationNode extends Node {
     try{
       return this.getMateDispatch().executeDispatch(frame, this.getMateNode().execute(frame, arguments), method, arguments);
     } catch(MateSemanticsException e){
-      return method.getCallTarget().call(arguments);
+      return method.getCallTarget().call(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments));
     }
   }
 
@@ -35,7 +37,4 @@ public class MateMethodActivationNode extends Node {
   public MateActivationDispatch getMateDispatch() {
     return reflectiveDispatch;
   }
-  
-  
-
 }

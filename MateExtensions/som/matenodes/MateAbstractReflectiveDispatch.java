@@ -59,10 +59,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
-      MateUniverse.current().enterMetaExecutionLevel();
-      Object value = reflectiveMethod.call(frame,
-          this.computeArgumentsForMetaDispatch(frame, arguments));
-      MateUniverse.current().leaveMetaExecutionLevel();
+      //MateUniverse.current().enterMetaExecutionLevel();
+      Object value = reflectiveMethod.call(frame, this.computeArgumentsForMetaDispatch(frame, arguments));
+      //MateUniverse.current().leaveMetaExecutionLevel();
       return value;
     }
   }
@@ -93,13 +92,10 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
-      // The MOP receives the class where the lookup must start (find: aSelector
-      // since: aClass)
+      // The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       SObject receiver = (SObject) arguments[0];
-      MateUniverse.current().enterMetaExecutionLevel();
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, receiver, this.getSelector(), receiver.getSOMClass() };
       SMethod actualMethod = (SMethod) reflectiveMethod.call(frame, args);
-      MateUniverse.current().leaveMetaExecutionLevel();
       return activationNode.doActivation(frame, actualMethod, arguments);
     }
 
