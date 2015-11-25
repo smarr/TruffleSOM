@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src" />
-	<classpathentry kind="src" path="tests" />
-	<classpathentry kind="src" path="MateExtensions" />
-	<classpathentry kind="con"
-		path="org.eclipse.jdt.launching.JRE_CONTAINER" />
-	<classpathentry kind="con"
-		path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4" />
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="tests"/>
+	<classpathentry kind="src" path="MateExtensions"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="src" path="src_gen">
 		<attributes>
-			<attribute name="optional" value="true" />
+			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib"
-		path="libs/truffle/build/truffle-dsl-processor.jar" />
-	<classpathentry kind="lib"
-		path="libs/truffle/build/truffle-api.jar" sourcepath="libs/truffle/build/truffle-api.src.zip" />
-	<classpathentry kind="output" path="build/classes" />
+	<classpathentry kind="lib" path="/home/guido/Documents/Projects/TruffleMATE/libs/truffle/mxbuild/dists/truffle-api.jar" sourcepath="/home/guido/Documents/Projects/TruffleMATE/libs/truffle/mxbuild/dists/truffle-api.src.zip"/>
+	<classpathentry kind="lib" path="/home/guido/Documents/Projects/TruffleMATE/libs/truffle/mxbuild/dists/truffle-dsl-processor.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
 </classpath>

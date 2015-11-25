@@ -43,7 +43,7 @@ public class SObject extends SAbstractObject {
   @CompilationFinal protected SClass clazz;
   @CompilationFinal private DynamicObject dynamicObject;
 
-  public static final Layout LAYOUT = Layout.createLayout(Layout.INT_TO_LONG);
+  public static final Layout LAYOUT = Layout.createLayout();
 
   protected SObject(final SClass instanceClass) {
     clazz          = instanceClass;
