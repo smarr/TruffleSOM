@@ -53,7 +53,7 @@ public class MateTests {
   @Test
   public void testSomeTest() {
     u.setAvoidExit(true);
-    String[] args = {"-cp", "Smalltalk:Smalltalk/Mate:Smalltalk/Mate/MOP:TestSuite/", "TestSuite/MateMOPSuite/MateTestHarness.som", testName};
+    String[] args = {"-cp", "Smalltalk:Smalltalk/Mate:Smalltalk/Mate/MOP:TestSuite/:Examples/Benchmarks/Mate", "TestSuite/MateMOPSuite/MateTestHarness.som", testName};
 
     u.interpret(args);
 
