@@ -6,7 +6,6 @@ import som.vm.MateUniverse;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
-import som.vmobjects.SArray.ArrayType;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SMateEnvironment;
@@ -19,7 +18,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.utilities.ValueProfile;
 
 public abstract class MateAbstractReflectiveDispatch extends Node {
 
@@ -126,25 +124,13 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (SObject) arguments[0], methodToActivate, SArguments.getArgumentsWithoutReceiver(arguments)};
       Object metacontext = reflectiveMethod.call(frame, args);
       MateUniverse.current().leaveMetaExecutionLevel();
-      Object[] activationValue = this
-          .gatherArrayFromSArray((SArray) metacontext);
+      Object[] activationValue = ((SArray) metacontext).toJavaArray();
       SMateEnvironment activationSemantics = (SMateEnvironment) activationValue[0];
-      Object[] realArguments = this
-          .gatherArrayFromSArray((SArray) activationValue[1]);
+      Object[] realArguments = ((SArray)activationValue[1]).toJavaArray();
       if (activationSemantics == Nil.nilObject) {
         activationSemantics = null;
       }
       return methodToActivate.getCallTarget().call(SArguments.createSArguments(activationSemantics, ExecutionLevel.Base, realArguments));
-    }
-
-    private Object[] gatherArrayFromSArray(final SArray array) {
-      if (array.getType() == ArrayType.PARTIAL_EMPTY) {
-        return array
-            .getPartiallyEmptyStorage(ValueProfile.createClassProfile())
-            .getStorage();
-      } else {
-        return array.getObjectStorage(ValueProfile.createClassProfile());
-      }
     }
   }
 }
