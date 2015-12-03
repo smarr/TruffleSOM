@@ -73,6 +73,16 @@ public final class SArray extends SAbstractObject {
     assert type == ArrayType.BOOLEAN;
     return (boolean[]) storage;
   }
+  
+  public Object[] toJavaArray(){
+    if (this.getType() == ArrayType.PARTIAL_EMPTY) {
+      return this
+          .getPartiallyEmptyStorage(ValueProfile.createClassProfile())
+          .getStorage();
+    } else {
+      return this.getObjectStorage(ValueProfile.createClassProfile());
+    }
+  }
 
   /**
    * Creates and empty array, using the EMPTY strategy.
