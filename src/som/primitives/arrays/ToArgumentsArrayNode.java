@@ -43,13 +43,13 @@ public abstract class ToArgumentsArrayNode extends ExpressionNode {
   public final Object[] doEmptyArray(final SArray somArray, final Object rcvr) {
     Object[] result = new Object[somArray.getEmptyStorage(storageType) + 1];
     Arrays.fill(result, Nil.nilObject);
-    result[SArguments.RCVR_IDX] = rcvr;
+    result[SArguments.RCVR_ARGUMENTS_OFFSET] = rcvr;
     return result;
   }
 
   private Object[] addRcvrToObjectArray(final Object rcvr, final Object[] storage) {
     Object[] argsArray = new Object[storage.length + 1];
-    argsArray[SArguments.RCVR_IDX] = rcvr;
+    argsArray[SArguments.RCVR_ARGUMENTS_OFFSET] = rcvr;
     System.arraycopy(storage, 0, argsArray, 1, storage.length);
     return argsArray;
   }
