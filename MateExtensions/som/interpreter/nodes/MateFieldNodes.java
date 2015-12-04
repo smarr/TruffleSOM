@@ -68,6 +68,8 @@ public abstract class MateFieldNodes {
     public MateAbstractStandardDispatch getMateDispatch() {
       return reflectiveDispatch;
     }
+    
+    public void wrapIntoMateNode(){}
   }
   
   public static abstract class MateFieldWriteNode extends FieldWriteNode implements MateBehavior {
@@ -131,5 +133,7 @@ public abstract class MateFieldNodes {
         final Object value) {
       return doEvaluated(frame, self, value);
     }
+    
+    public void wrapIntoMateNode(){}
   }
 }

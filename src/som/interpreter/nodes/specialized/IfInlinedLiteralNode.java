@@ -1,5 +1,6 @@
 package som.interpreter.nodes.specialized;
 
+import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.vm.constants.Nil;
@@ -59,5 +60,10 @@ public final class IfInlinedLiteralNode extends ExpressionWithReceiverNode {
   @Override
   public ExpressionNode getReceiver() {
     return conditionNode;
+  }
+  
+  public void wrapIntoMateNode() {
+    MateifyVisitor visitor = new MateifyVisitor();
+    bodyActualNode.accept(visitor);
   }
 }

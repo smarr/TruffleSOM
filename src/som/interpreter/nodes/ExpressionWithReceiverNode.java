@@ -17,12 +17,7 @@ public abstract class ExpressionWithReceiverNode extends ExpressionNode {
   }
 
   @Override
-  public void wrapIntoMateNode() {
-    /*replace(MateMessageSendNodeGen.create(this,
-        new MateReceiverExpressionNode(this),
-        MateEnvironmentSemanticCheckNodeGen.create(),
-        MateObjectSemanticCheckNodeGen.create()));*/
-  }
+  public void wrapIntoMateNode() {}
 }
 
 

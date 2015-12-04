@@ -1,6 +1,7 @@
 package som.interpreter.nodes.specialized.whileloops;
 
 import som.interpreter.Invokable;
+import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.ExpressionWithReceiverNode;
 import som.vm.constants.Nil;
@@ -88,5 +89,11 @@ public final class WhileInlinedLiteralsNode extends ExpressionWithReceiverNode {
   @Override
   public ExpressionNode getReceiver() {
     return conditionNode;
+  }
+  
+  public void wrapIntoMateNode() {
+    MateifyVisitor visitor = new MateifyVisitor();
+    conditionActualNode.accept(visitor);
+    bodyActualNode.accept(visitor);
   }
 }

@@ -43,7 +43,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     super(source);
   }
 
-  protected abstract ExpressionNode getSelf();
+  public abstract ExpressionNode getSelf();
   public abstract Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver);
 
   
@@ -76,7 +76,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     }
 
     @Override
-    protected ExpressionNode getSelf() {
+    public ExpressionNode getSelf() {
       return self;
     }
 
@@ -137,7 +137,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       implements PreevaluatedExpression {
     @Child protected AbstractWriteFieldNode write;
 
-    protected abstract ExpressionNode getValue();
+    public abstract ExpressionNode getValue();
     
     public FieldWriteNode(final int fieldIndex, final SourceSection source) {
       super(source);

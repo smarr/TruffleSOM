@@ -5,9 +5,11 @@ import som.compiler.Variable.Local;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.Invokable;
+import som.interpreter.MateifyVisitor;
 import som.interpreter.Method;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
+import som.vm.MateUniverse;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable.SMethod;
@@ -75,6 +77,10 @@ public class BlockNode extends LiteralNode {
     // self doesn't need to be passed
     assert blockMethod.getNumberOfArguments() - 1 == blockArguments.length;
     return blockMethod.getInvokable().inline(mgenc, blockArguments);
+  }
+  
+  public void wrapIntoMateNode() {
+    MateUniverse.current().mateifyMethod(blockMethod);
   }
 
   public static final class BlockNodeWithContext extends BlockNode {

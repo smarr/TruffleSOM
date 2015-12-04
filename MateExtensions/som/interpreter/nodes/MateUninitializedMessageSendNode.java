@@ -8,6 +8,8 @@ import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLo
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
+import som.vm.MateUniverse;
+
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class MateUninitializedMessageSendNode extends
@@ -15,7 +17,7 @@ public class MateUninitializedMessageSendNode extends
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
 
-  protected MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {
+  public MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getSourceSection());
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
     reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
@@ -49,4 +51,6 @@ public class MateUninitializedMessageSendNode extends
         getSourceSection());
     return replace(send);
   }
+  
+  public void wrapIntoMateNode() {}
 }
