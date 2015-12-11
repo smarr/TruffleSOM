@@ -14,7 +14,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 
 public class MateGenericMessageSendNode extends GenericMessageSendNode implements MateBehavior {
-  @Child MateSemanticCheckNode                   semanticCheck;
+  @Child MateSemanticCheckNode            semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
 
   protected MateGenericMessageSendNode(final SSymbol selector,

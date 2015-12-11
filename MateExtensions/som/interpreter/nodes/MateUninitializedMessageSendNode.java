@@ -8,7 +8,6 @@ import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLo
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
-import som.vm.MateUniverse;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
