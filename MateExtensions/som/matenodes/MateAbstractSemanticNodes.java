@@ -73,6 +73,7 @@ public abstract class MateAbstractSemanticNodes {
         final SReflectiveObject receiver,
         @Cached("receiver.getEnvironment()") final SMateEnvironment cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
+      /*Check if we can do better to avoid the execution of this if. One option is to do the specialization by hand*/
       if (method == null){
         throw new MateSemanticsException();
       }
