@@ -2,21 +2,20 @@ package som.interpreter.nodes.dispatch;
 
 import som.interpreter.SArguments;
 import som.vm.constants.ExecutionLevel;
-import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
-public final class GenericMethodDispatchNode extends AbstractDispatchNode {
+public final class GenericMethodDispatchNode extends AbstractMethodDispatchNode {
   @Child private IndirectCallNode call = Truffle.getRuntime().createIndirectCallNode();
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,
-      final Object[] arguments) {
-    SBlock rcvr = (SBlock) arguments[0];
-    return rcvr.getMethod().invoke(frame, call, SArguments.createSArguments(environment, exLevel, arguments));
+      SMethod method, final Object[] arguments) {
+    return method.getCallTarget().call(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments));
   }
 
   @Override

@@ -32,7 +32,7 @@ public abstract class MateFieldNodes {
     @Override
     public Object executeEvaluated(final VirtualFrame frame, final SObject obj) {
       try {
-         return this.doMateSemantics(frame, new Object[] {obj, this.read.getFieldIndex()});
+         return this.doMateSemantics(frame, new Object[] {obj, (long) this.read.getFieldIndex()});
       } catch (MateSemanticsException e){
         return ((MateLayoutFieldReadNode)read).read(frame, obj);
       }
