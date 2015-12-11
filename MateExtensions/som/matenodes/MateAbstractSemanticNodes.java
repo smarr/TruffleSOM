@@ -67,13 +67,15 @@ public abstract class MateAbstractSemanticNodes {
       return this.doSObject(frame, receiver);
     }
 
-    @Specialization(
-        guards = "cachedEnvironment == receiver.getEnvironment() || cachedEnvironment == null")
+    @Specialization(guards = "cachedEnvironment == receiver.getEnvironment()")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
         final SReflectiveObject receiver,
         @Cached("receiver.getEnvironment()") final SMateEnvironment cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
+      if (method == null){
+        throw new MateSemanticsException();
+      }
       return method;
     }
 
@@ -84,7 +86,11 @@ public abstract class MateAbstractSemanticNodes {
 
     protected static SInvokable environmentReflectiveMethod(
         SMateEnvironment environment, ReflectiveOp operation) {
-      return environment.methodImplementing(operation);
+      try{
+        return environment.methodImplementing(operation);
+      } catch (MateSemanticsException e){
+        return null;
+      }
     }
   }
 
