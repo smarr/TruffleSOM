@@ -15,7 +15,7 @@ public final class GenericMethodDispatchNode extends AbstractMethodDispatchNode 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,
       SMethod method, final Object[] arguments) {
-    return method.getCallTarget().call(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments));
+    return call.call(frame, method.getCallTarget(), SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments));
   }
 
   @Override
