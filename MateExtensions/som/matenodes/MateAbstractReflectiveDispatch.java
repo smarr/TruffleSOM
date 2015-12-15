@@ -7,7 +7,6 @@ import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -91,17 +90,44 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
       // The MOP receives the class where the lookup must start (find: aSelector since: aClass)
+      SInvokable actualMethod = this.reflectiveLookup(frame, reflectiveMethod, arguments);
+      return activationNode.doActivation(frame, actualMethod, arguments);
+    }
+    
+    public SInvokable reflectiveLookup(final VirtualFrame frame, DirectCallNode reflectiveMethod,
+        final Object[] arguments) {
       SObject receiver = (SObject) arguments[0];
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, receiver, this.getSelector(), receiver.getSOMClass() };
-      SMethod actualMethod = (SMethod) reflectiveMethod.call(frame, args);
-      return activationNode.doActivation(frame, actualMethod, arguments);
+      return (SInvokable) reflectiveMethod.call(frame, args);
     }
 
     protected SSymbol getSelector() {
       return selector;
     }
   }
+  
+  public abstract static class MateCachedDispatchMessageLookup extends
+    MateDispatchMessageLookup {
 
+    public MateCachedDispatchMessageLookup(SourceSection source, SSymbol sel) {
+      super(source, sel);
+    }
+    
+    @Specialization(guards = "cachedMethod==method", insertBefore="doMateNode")
+    public Object doMateNodeCached(final VirtualFrame frame, final SInvokable method,
+        final Object[] arguments,
+        @Cached("method") final SInvokable cachedMethod,
+        @Cached("lookupResult(frame, method, arguments)") SInvokable lookupResult) {
+      // The MOP receives the class where the lookup must start (find: aSelector since: aClass)
+      return activationNode.doActivation(frame, lookupResult, arguments);
+    }
+    
+    public SInvokable lookupResult(final VirtualFrame frame, final SInvokable method,
+        final Object[] arguments){
+      return this.reflectiveLookup(frame, this.createDispatch(method), arguments);
+    }
+  }
+  
   public abstract static class MateActivationDispatch extends
       MateAbstractReflectiveDispatch {
 
@@ -110,11 +136,11 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     }
 
     public abstract Object executeDispatch(final VirtualFrame frame,
-        SInvokable method, SMethod methodToActivate, Object[] arguments);
+        SInvokable method, SInvokable methodToActivate, Object[] arguments);
 
     @Specialization(guards = "cachedMethod==method")
     public Object doMetaLevel(final VirtualFrame frame,
-        final SInvokable method, final SMethod methodToActivate,
+        final SInvokable method, final SInvokable methodToActivate,
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {

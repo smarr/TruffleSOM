@@ -3,6 +3,7 @@ package som.interpreter.nodes;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
+import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
@@ -31,7 +32,8 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
   
   protected void initializeMateNodes(){
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-    reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+    reflectiveDispatch = MateCachedDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+    //reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
   }
 
   @Override
