@@ -21,7 +21,7 @@ public final class CachedMethodDispatchNode extends AbstractMethodCachedDispatch
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final SMethod method, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final SInvokable method, final Object[] arguments) {
     if (method == cachedSomMethod) {
       return cachedMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
     } else {

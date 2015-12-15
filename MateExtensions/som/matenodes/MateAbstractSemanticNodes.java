@@ -30,22 +30,24 @@ public abstract class MateAbstractSemanticNodes {
 
     public abstract SInvokable executeGeneric(VirtualFrame frame);
 
-    @Specialization(guards = "getEnvironment(frame) != null")
-    public SInvokable doSemanticsInFrame(final VirtualFrame frame,
-        @Cached("getEnvironment(frame)") final SMateEnvironment environment) {
-        if (environment == null) {
-          return this.doNoSemanticsInFrame(frame);
-        }
-        return environment.methodImplementing(this.reflectiveOperation);
-    }
-
     @Specialization(guards = "getEnvironment(frame) == null")
     public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
       throw new MateSemanticsException();
     }
     
+    @Specialization(guards = "getEnvironment(frame) != null")
+    public SInvokable doSemanticsInFrame(final VirtualFrame frame,
+        @Cached("getEnvironment(frame)") final SMateEnvironment environment,
+        @Cached("methodImplementingOperationOn(environment)") final SInvokable reflectiveMethod) {
+        return reflectiveMethod;
+    }
+    
     public static SMateEnvironment getEnvironment(VirtualFrame frame){
       return SArguments.getEnvironment(frame);
+    }
+    
+    public SInvokable methodImplementingOperationOn(final SMateEnvironment environment){
+      return environment.methodImplementing(this.reflectiveOperation);
     }
   }
 
@@ -67,19 +69,24 @@ public abstract class MateAbstractSemanticNodes {
       return this.doSObject(frame, receiver);
     }
 
-    @Specialization(guards = "cachedEnvironment == receiver.getEnvironment()")
+        
+    @Specialization(guards = {"cachedEnvironment == receiver.getEnvironment()" , "method != null"})
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
         final SReflectiveObject receiver,
         @Cached("receiver.getEnvironment()") final SMateEnvironment cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
-      /*Check if we can do better to avoid the execution of this if. One option is to do the specialization by hand*/
-      if (method == null){
-        throw new MateSemanticsException();
-      }
       return method;
     }
 
+    @Specialization(guards = "cachedEnvironment == receiver.getEnvironment()")
+    public SInvokable doMetaObjectWithoutOperation(
+        final VirtualFrame frame,
+        final SReflectiveObject receiver,
+        @Cached("receiver.getEnvironment()") final SMateEnvironment cachedEnvironment) {
+        throw new MateSemanticsException();
+    }
+    
     @Specialization
     public SInvokable doSObject(final VirtualFrame frame, final Object receiver) {
       throw new MateSemanticsException();
@@ -133,11 +140,7 @@ public abstract class MateAbstractSemanticNodes {
       try{
         return environment.executeGeneric(frame);
       } catch (MateSemanticsException e) {
-        if (arguments[0] instanceof SReflectiveObject){
-          return object.executeGeneric(frame, (SReflectiveObject) arguments[0]);
-        } else {
-          throw new MateSemanticsException();
-        }
+        return object.executeGeneric(frame, arguments[0]);
       }
     }
 

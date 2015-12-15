@@ -2,7 +2,7 @@ package som.interpreter.nodes.dispatch;
 
 import som.interpreter.SArguments;
 import som.vm.constants.ExecutionLevel;
-import som.vmobjects.SInvokable.SMethod;
+import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.Truffle;
@@ -14,7 +14,7 @@ public final class GenericMethodDispatchNode extends AbstractMethodDispatchNode 
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel,
-      SMethod method, final Object[] arguments) {
+      SInvokable method, final Object[] arguments) {
     return call.call(frame, method.getCallTarget(), SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments));
   }
 
