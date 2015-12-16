@@ -2,11 +2,15 @@ package som.interpreter;
 
 import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
+import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
+import som.interpreter.nodes.MateArgumentReadNode;
 import som.interpreter.nodes.MateFieldNodes;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
-import som.interpreter.nodes.MateFieldNodes.MateFieldWriteNode;
 import som.interpreter.nodes.MateUninitializedMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.UninitializedMessageSendNode;
 import som.vm.MateUniverse;
@@ -18,6 +22,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+
 import som.interpreter.nodes.MateFieldNodesFactory.MateFieldWriteNodeGen;
 
 public abstract class Invokable extends RootNode implements MateNode{
@@ -75,6 +80,18 @@ public abstract class Invokable extends RootNode implements MateNode{
       if (uninitialized instanceof FieldWriteNode){
         FieldWriteNode node = (FieldWriteNode)uninitialized;
         return MateFieldWriteNodeGen.create(node, node.getSelf(), node.getValue());
+      }
+      if (uninitialized instanceof LocalArgumentReadNode){
+        return new MateArgumentReadNode.MateLocalArgumentReadNode((LocalArgumentReadNode)uninitialized);
+      }
+      if (uninitialized instanceof NonLocalArgumentReadNode){
+        return new MateArgumentReadNode.MateNonLocalArgumentReadNode((NonLocalArgumentReadNode)uninitialized);
+      }
+      if (uninitialized instanceof LocalSuperReadNode){
+        return new MateArgumentReadNode.MateLocalSuperReadNode((LocalSuperReadNode)uninitialized);
+      }
+      if (uninitialized instanceof NonLocalSuperReadNode){
+        return new MateArgumentReadNode.MateNonLocalSuperReadNode((NonLocalSuperReadNode)uninitialized);
       }
     }
     return uninitialized;
