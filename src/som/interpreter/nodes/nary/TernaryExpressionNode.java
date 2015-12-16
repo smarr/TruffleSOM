@@ -46,6 +46,6 @@ public abstract class TernaryExpressionNode extends ExpressionWithReceiverNode
   }
   
   public ReflectiveOp reflectiveOperation(){
-    return ReflectiveOp.Lookup;
+    return ReflectiveOp.MessageLookup;
   }
 }

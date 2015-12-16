@@ -4,8 +4,6 @@ import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.UninitializedMessageSendNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchMessageLookupNodeGen;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
@@ -19,9 +17,8 @@ public class MateUninitializedMessageSendNode extends
 
   public MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getSourceSection());
-    semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-    reflectiveDispatch = MateCachedDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
-    //reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+    this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
   }
   
   @Override
@@ -42,6 +39,16 @@ public class MateUninitializedMessageSendNode extends
   @Override
   public MateAbstractStandardDispatch getMateDispatch() {
     return reflectiveDispatch;
+  }
+  
+  @Override
+  public void setMateNode(MateSemanticCheckNode node) {
+    semanticCheck = node;
+  }
+
+  @Override
+  public void setMateDispatch(MateAbstractStandardDispatch node) {
+    reflectiveDispatch = node;
   }
   
   @Override

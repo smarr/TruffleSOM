@@ -1,5 +1,9 @@
 package som.vm.constants;
 
 public enum ReflectiveOp {
-  Lookup, Activation, ReadField, WriteField, ReadLayout, WriteLayout, None
+  ExecutorReadField, ExecutorWriteField, ExecutorLocalArg, ExecutorNonLocalArg, 
+    ExecutorLocalSuperArg, ExecutorNonLocalSuperArg,
+  MessageLookup, MessageActivation, 
+  LayoutReadField, LayoutWriteField, 
+  None
 }

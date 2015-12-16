@@ -2,7 +2,6 @@ package som.interpreter.nodes.nary;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
@@ -18,8 +17,8 @@ public class MateEagerBinaryPrimitiveNode extends EagerBinaryPrimitiveNode imple
   public MateEagerBinaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument,
       BinaryExpressionNode primitive) {
     super(selector, receiver, argument, primitive);
-    semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-    reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+    this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
   }
 
   @Override
@@ -41,5 +40,15 @@ public class MateEagerBinaryPrimitiveNode extends EagerBinaryPrimitiveNode imple
   @Override
   public MateAbstractStandardDispatch getMateDispatch() {
     return reflectiveDispatch;
+  }
+  
+  @Override
+  public void setMateNode(MateSemanticCheckNode node) {
+    semanticCheck = node;
+  }
+
+  @Override
+  public void setMateDispatch(MateAbstractStandardDispatch node) {
+    reflectiveDispatch = node;
   }
 }

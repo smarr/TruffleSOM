@@ -2,7 +2,6 @@ package som.interpreter.objectstorage;
 
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
@@ -18,8 +17,8 @@ public class MateLayoutFieldWriteNode extends AbstractWriteFieldNode implements 
   
   public MateLayoutFieldWriteNode(final AbstractWriteFieldNode node) {
     super(node.getFieldIndex());
-    semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-    reflectiveDispatch = MateDispatchFieldAccessNodeGen.create(this.getSourceSection());
+    this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
+    this.initializeMateDispatchForFieldAccess(this.getSourceSection());
     write = node;
   }
 
@@ -39,6 +38,16 @@ public class MateLayoutFieldWriteNode extends AbstractWriteFieldNode implements 
   @Override
   public MateAbstractStandardDispatch getMateDispatch() {
     return reflectiveDispatch;
+  }
+  
+  @Override
+  public void setMateNode(MateSemanticCheckNode node) {
+    semanticCheck = node;
+  }
+
+  @Override
+  public void setMateDispatch(MateAbstractStandardDispatch node) {
+    reflectiveDispatch = node;
   }
 
   @Override

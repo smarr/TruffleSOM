@@ -48,6 +48,6 @@ implements PreevaluatedExpression {
   }
   
   public ReflectiveOp reflectiveOperation(){
-    return ReflectiveOp.Lookup;
+    return ReflectiveOp.MessageLookup;
   }
 }

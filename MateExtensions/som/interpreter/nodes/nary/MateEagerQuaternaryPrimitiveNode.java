@@ -17,8 +17,8 @@ public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNo
   public MateEagerQuaternaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument1, ExpressionNode argument2,
       ExpressionNode argument3, QuaternaryExpressionNode primitive) {
     super(selector, receiver, argument1, argument2, argument3, primitive);
-    semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-    reflectiveDispatch = MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+    this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
   }
 
   @Override
@@ -43,5 +43,15 @@ public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNo
   @Override
   public MateAbstractStandardDispatch getMateDispatch() {
     return reflectiveDispatch;
+  }
+  
+  @Override
+  public void setMateNode(MateSemanticCheckNode node) {
+    semanticCheck = node;
+  }
+
+  @Override
+  public void setMateDispatch(MateAbstractStandardDispatch node) {
+    reflectiveDispatch = node;
   }
 }

@@ -45,6 +45,6 @@ public abstract class BinaryExpressionNode extends ExpressionWithReceiverNode
   }
   
   public ReflectiveOp reflectiveOperation(){
-    return ReflectiveOp.Lookup;
+    return ReflectiveOp.MessageLookup;
   }
 }
