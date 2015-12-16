@@ -35,11 +35,6 @@ public abstract class ArgumentReadNode {
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorLocalArg;
     }
-    
-    @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateLocalArgumentReadNode(this));
-    } 
   }
 
   public static class NonLocalArgumentReadNode extends ContextualNode {
@@ -98,11 +93,6 @@ public abstract class ArgumentReadNode {
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorNonLocalArg;
     }
-    
-    @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateNonLocalArgumentReadNode(this));
-    }
   }
 
   public static class LocalSuperReadNode extends LocalArgumentReadNode
@@ -130,11 +120,6 @@ public abstract class ArgumentReadNode {
     
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorLocalSuperArg;
-    }
-    
-    @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateLocalSuperReadNode(this));
     }
   }
 
@@ -175,11 +160,6 @@ public abstract class ArgumentReadNode {
     
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorNonLocalSuperArg;
-    }
-    
-    @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateNonLocalSuperReadNode(this));
     }
   }
 }
