@@ -127,7 +127,7 @@ public final class MessageSendNode {
     public abstract SSymbol getSelector();
     
     public ReflectiveOp reflectiveOperation(){
-      return ReflectiveOp.Lookup;
+      return ReflectiveOp.MessageLookup;
     }
   }
 

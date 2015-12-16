@@ -6,7 +6,6 @@ import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.objectstorage.MateLayoutFieldReadNode;
 import som.interpreter.objectstorage.MateLayoutFieldWriteNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
@@ -19,13 +18,13 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 public abstract class MateFieldNodes {
   public static final class MateFieldReadNode extends FieldReadNode implements MateBehavior {
-    @Child MateSemanticCheckNode                   semanticCheck;
+    @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     
     public MateFieldReadNode(FieldReadNode node) {
       super(node);
-      semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-      reflectiveDispatch = MateDispatchFieldAccessNodeGen.create(this.getSourceSection());
+      this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
+      this.initializeMateDispatchForFieldAccess(this.getSourceSection());
       read = new MateLayoutFieldReadNode(read);
     }
     
@@ -69,6 +68,16 @@ public abstract class MateFieldNodes {
       return reflectiveDispatch;
     }
     
+    @Override
+    public void setMateNode(MateSemanticCheckNode node) {
+      semanticCheck = node;
+    }
+
+    @Override
+    public void setMateDispatch(MateAbstractStandardDispatch node) {
+      reflectiveDispatch = node;
+    }
+    
     public void wrapIntoMateNode(){}
   }
   
@@ -78,8 +87,8 @@ public abstract class MateFieldNodes {
     
     public MateFieldWriteNode(FieldWriteNode node) {
       super(node);
-      semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), this.reflectiveOperation());
-      reflectiveDispatch = MateDispatchFieldAccessNodeGen.create(this.getSourceSection());
+      this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
+      this.initializeMateDispatchForFieldAccess(this.getSourceSection());
       write = new MateLayoutFieldWriteNode(write);
     }
 
@@ -91,6 +100,16 @@ public abstract class MateFieldNodes {
     @Override
     public MateAbstractStandardDispatch getMateDispatch() {
       return reflectiveDispatch;
+    }
+    
+    @Override
+    public void setMateNode(MateSemanticCheckNode node) {
+      semanticCheck = node;
+    }
+
+    @Override
+    public void setMateDispatch(MateAbstractStandardDispatch node) {
+      reflectiveDispatch = node;
     }
     
     @Override

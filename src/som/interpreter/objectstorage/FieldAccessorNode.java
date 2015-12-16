@@ -104,7 +104,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public ReflectiveOp reflectiveOperation(){
-      return ReflectiveOp.ReadLayout;
+      return ReflectiveOp.LayoutReadField;
     }
   }
   
@@ -350,7 +350,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Override
     public ReflectiveOp reflectiveOperation(){
-      return ReflectiveOp.WriteLayout;
+      return ReflectiveOp.LayoutWriteField;
     }
   }
 

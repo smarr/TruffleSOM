@@ -116,7 +116,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     }
     
     public ReflectiveOp reflectiveOperation(){
-      return ReflectiveOp.ReadField;
+      return ReflectiveOp.ExecutorReadField;
     }
 
     @Override
@@ -191,7 +191,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     }
     
     public ReflectiveOp reflectiveOperation(){
-      return ReflectiveOp.WriteField;
+      return ReflectiveOp.ExecutorWriteField;
     }
     
     public Object[] evaluateArguments(final VirtualFrame frame) {

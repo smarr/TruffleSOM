@@ -24,14 +24,16 @@ public class SMateEnvironment extends SObject {
     switch (operation){
       case None: 
         throw new MateSemanticsException();
-      case Lookup: case Activation: 
+      case MessageLookup: case MessageActivation: 
         metaobject = this.getField(Message_IDX);
         break;
-      case ReadField: case WriteField: 
+      case ExecutorReadField: case ExecutorWriteField: 
         metaobject = this.getField(Semantics_IDX);
         break;
-      case ReadLayout: case WriteLayout: 
+      case LayoutReadField: case LayoutWriteField: 
         metaobject = this.getField(Layout_IDX);  
+        break;
+      default:
         break;
     }
     if (metaobject == Nil.nilObject) throw new MateSemanticsException();
@@ -42,22 +44,22 @@ public class SMateEnvironment extends SObject {
   private SInvokable methodForOperation(SObject metaobject, ReflectiveOp operation){
     SInvokable method; 
     switch (operation){
-      case Lookup:
+      case MessageLookup:
         method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("find:since:"));
         break;
-      case Activation:  
+      case MessageActivation:  
         method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("activate:withArguments:"));
         break;
-      case ReadField: 
+      case ExecutorReadField: 
         method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
         break;
-      case WriteField: 
+      case ExecutorWriteField: 
         method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
         break;
-      case ReadLayout: 
+      case LayoutReadField: 
         method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("read:"));
         break;
-      case WriteLayout: 
+      case LayoutWriteField: 
         method = metaobject.getSOMClass().lookupInvokable(Universe.current().symbolFor("write:value:"));
         break;
       default:
