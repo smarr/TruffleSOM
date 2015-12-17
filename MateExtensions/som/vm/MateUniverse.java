@@ -17,8 +17,6 @@ import som.vmobjects.SSymbol;
 
 public class MateUniverse extends Universe {
   
-  protected boolean executingMeta;
-  
   protected void initializeObjectSystem() {
     if (alreadyInitialized) {
       return;
@@ -37,7 +35,6 @@ public class MateUniverse extends Universe {
       loadSystemClass(messageMO);
       loadSystemClass(ShapeClass);
       
-      this.executingMeta = false;
       AbstractMessageSendNode.specializationFactory = new MateMessageSpecializationsFactory();
     }
   }
@@ -98,17 +95,5 @@ public class MateUniverse extends Universe {
       Universe.setCurrent(new MateUniverse());
     }
     return (MateUniverse) Universe.getCurrent();
-  }
-  
-  public boolean executingMeta() {
-    return executingMeta;
-  }
-  
-  public void enterMetaExecutionLevel() {
-    this.executingMeta = true;
-  }
-  
-  public void leaveMetaExecutionLevel() {
-    this.executingMeta = false;
   }
 }
