@@ -75,6 +75,9 @@ public final class SArray extends SAbstractObject {
   }
   
   public Object[] toJavaArray(){
+    if (ArrayType.isEmptyType(this)){
+      this.transitionToObjectWithAll((int)this.storage, Nil.nilObject);
+    }
     if (this.getType() == ArrayType.PARTIAL_EMPTY) {
       return this
           .getPartiallyEmptyStorage(ValueProfile.createClassProfile())

@@ -56,9 +56,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
-      //MateUniverse.current().enterMetaExecutionLevel();
       Object value = reflectiveMethod.call(frame, this.computeArgumentsForMetaDispatch(frame, arguments));
-      //MateUniverse.current().leaveMetaExecutionLevel();
       return value;
     }
   }
@@ -146,16 +144,16 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
       // The MOP receives the standard ST message Send stack (rcvr, method,
       // arguments) and returns its own
-      MateUniverse.current().enterMetaExecutionLevel();
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (SObject) arguments[0], methodToActivate, SArguments.getArgumentsWithoutReceiver(arguments)};
       Object metacontext = reflectiveMethod.call(frame, args);
-      MateUniverse.current().leaveMetaExecutionLevel();
       Object[] activationValue = ((SArray) metacontext).toJavaArray();
-      SMateEnvironment activationSemantics = (SMateEnvironment) activationValue[0];
-      Object[] realArguments = ((SArray)activationValue[1]).toJavaArray();
-      if (activationSemantics == Nil.nilObject) {
+      SMateEnvironment activationSemantics;
+      if (activationValue[0] == Nil.nilObject) {
         activationSemantics = null;
-      }
+      } else {
+        activationSemantics = (SMateEnvironment) activationValue[0];
+      }  
+      Object[] realArguments = ((SArray)activationValue[1]).toJavaArray();
       return methodToActivate.getCallTarget().call(SArguments.createSArguments(activationSemantics, ExecutionLevel.Base, realArguments));
     }
   }

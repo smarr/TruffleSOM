@@ -1,6 +1,7 @@
 package som.interpreter.nodes.specialized;
 
 import som.interpreter.Invokable;
+import som.interpreter.SArguments;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.vmobjects.SBlock;
@@ -71,10 +72,10 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
   protected void doLooping(final VirtualFrame frame, final long receiver,
       long limit, final SBlock block) {
     if (receiver <= limit) {
-      valueSend.call(frame, new Object[] {block, receiver});
+      valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, receiver});
     }
     for (long i = receiver + 1; i <= limit; i++) {
-      valueSend.call(frame, new Object[] {block, i});
+      valueSend.call(frame, new Object[] {SArguments.getEnvironment(frame), SArguments.getExecutionLevel(frame), block, i});
     }
   }
 

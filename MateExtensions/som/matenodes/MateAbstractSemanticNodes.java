@@ -9,6 +9,7 @@ import som.vm.constants.ExecutionLevel;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
+import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
 
 import com.oracle.truffle.api.dsl.Cached;
@@ -30,16 +31,18 @@ public abstract class MateAbstractSemanticNodes {
 
     public abstract SInvokable executeGeneric(VirtualFrame frame);
 
-    @Specialization(guards = "getEnvironment(frame) == null")
-    public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
-      throw new MateSemanticsException();
-    }
     
-    @Specialization(guards = "getEnvironment(frame) != null")
+    @Specialization(guards = {"getEnvironment(frame)!=null", 
+                  "getEnvironment(frame)==environment"})
     public SInvokable doSemanticsInFrame(final VirtualFrame frame,
         @Cached("getEnvironment(frame)") final SMateEnvironment environment,
         @Cached("methodImplementingOperationOn(environment)") final SInvokable reflectiveMethod) {
         return reflectiveMethod;
+    }
+    
+    @Specialization(guards = "getEnvironment(frame)==null")
+    public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
+      throw new MateSemanticsException();
     }
     
     public static SMateEnvironment getEnvironment(VirtualFrame frame){
@@ -137,11 +140,14 @@ public abstract class MateAbstractSemanticNodes {
     @Specialization(guards = "executeBase(frame)")
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
         Object[] arguments) {
-      try{
-        return environment.executeGeneric(frame);
-      } catch (MateSemanticsException e) {
-        return object.executeGeneric(frame, arguments[0]);
+      if (arguments[0] instanceof SObject){
+        try{
+          return environment.executeGeneric(frame);
+        } catch (MateSemanticsException e) {
+          return object.executeGeneric(frame, arguments[0]);
+        }
       }
+      throw new MateSemanticsException(); 
     }
 
     public MateSemanticCheckNode(final SourceSection source,
