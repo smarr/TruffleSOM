@@ -56,9 +56,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
-      //MateUniverse.current().enterMetaExecutionLevel();
       Object value = reflectiveMethod.call(frame, this.computeArgumentsForMetaDispatch(frame, arguments));
-      //MateUniverse.current().leaveMetaExecutionLevel();
       return value;
     }
   }
