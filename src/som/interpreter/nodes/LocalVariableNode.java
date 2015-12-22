@@ -4,6 +4,7 @@ import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.compiler.Variable.Local;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.vm.constants.Nil;
+import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -98,6 +99,15 @@ public abstract class LocalVariableNode extends ExpressionNode {
     protected final boolean isUninitialized() {
       return slot.getKind() == FrameSlotKind.Illegal;
     }
+    
+    public ReflectiveOp reflectiveOperation(){
+      return ReflectiveOp.ExecutorReadLocal;
+    }
+    
+    @Override
+    public void wrapIntoMateNode() {
+      replace(new MateLocalVariableNode.MateLocalVariableReadNode(this));
+    }
   }
 
   @NodeChild(value = "exp", type = ExpressionNode.class)
@@ -189,6 +199,15 @@ public abstract class LocalVariableNode extends ExpressionNode {
     public final void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
       CompilerAsserts.neverPartOfCompilation("replaceWithIndependentCopyForInlining");
       throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+    }
+    
+    public ReflectiveOp reflectiveOperation(){
+      return ReflectiveOp.ExecutorWriteLocal;
+    }
+    
+    @Override
+    public void wrapIntoMateNode() {
+      replace(new MateLocalVariableNode.MateLocalVariableWriteNode(this));
     }
   }
 }

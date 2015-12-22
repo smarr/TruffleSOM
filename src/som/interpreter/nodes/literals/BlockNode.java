@@ -5,7 +5,6 @@ import som.compiler.Variable.Local;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.Invokable;
-import som.interpreter.MateifyVisitor;
 import som.interpreter.Method;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;

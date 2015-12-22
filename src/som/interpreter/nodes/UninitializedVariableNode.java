@@ -28,7 +28,7 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     this.variable = variable;
   }
 
-  public static final class UninitializedVariableReadNode extends UninitializedVariableNode {
+  public static class UninitializedVariableReadNode extends UninitializedVariableNode {
     public UninitializedVariableReadNode(final Local variable,
         final int contextLevel, final SourceSection source) {
       super(variable, contextLevel, source);
@@ -50,11 +50,14 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         return replace(node).executeGeneric(frame);
       } else {
         // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) == variable.getSlot();
-        LocalVariableReadNode node = LocalVariableReadNodeGen.create(variable, getSourceSection());
-        return replace(node).executeGeneric(frame);
+        return replace(this.specializedNode()).executeGeneric(frame);
       }
     }
-
+    
+    protected LocalVariableReadNode specializedNode(){
+      return LocalVariableReadNodeGen.create(variable, getSourceSection());
+    }
+    
     @Override
     public void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
       FrameSlot varSlot = inliner.getFrameSlot(this, variable.getSlotIdentifier());
@@ -96,10 +99,15 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         return;
       }
     }
+    
+    @Override
+    public void wrapIntoMateNode() {
+      replace(new MateUninitializedVariableNode.MateUninitializedVariableReadNode(this));
+    }
   }
 
-  public static final class UninitializedVariableWriteNode extends UninitializedVariableNode {
-    @Child private ExpressionNode exp;
+  public static class UninitializedVariableWriteNode extends UninitializedVariableNode {
+    @Child protected ExpressionNode exp;
 
     public UninitializedVariableWriteNode(final Local variable,
         final int contextLevel, final ExpressionNode exp,
@@ -125,10 +133,12 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       } else {
         // not sure about removing this assertion :(((
         // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) == variable.getSlot();
-        LocalVariableWriteNode node = LocalVariableWriteNodeGen.create(
-            variable, getSourceSection(), exp);
-        return replace(node).executeGeneric(frame);
+        return replace(this.specializedNode()).executeGeneric(frame);
       }
+    }
+    
+    protected LocalVariableWriteNode specializedNode(){
+      return LocalVariableWriteNodeGen.create(variable, getSourceSection(), exp); 
     }
 
     @Override
@@ -176,6 +186,11 @@ public abstract class UninitializedVariableNode extends ContextualNode {
             exp, getSourceSection());
       }
       replace(inlined);
+    }
+    
+    @Override
+    public void wrapIntoMateNode() {
+        replace(new MateUninitializedVariableNode.MateUninitializedVariableWriteNode(this));
     }
   }
 }

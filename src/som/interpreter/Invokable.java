@@ -12,7 +12,10 @@ import som.interpreter.nodes.MateArgumentReadNode;
 import som.interpreter.nodes.MateFieldNodes;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.MateUninitializedMessageSendNode;
+import som.interpreter.nodes.MateUninitializedVariableNode;
 import som.interpreter.nodes.MessageSendNode.UninitializedMessageSendNode;
+import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
+import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
 import som.vm.MateUniverse;
 import som.vm.Universe;
 
@@ -92,6 +95,12 @@ public abstract class Invokable extends RootNode implements MateNode{
       }
       if (uninitialized instanceof NonLocalSuperReadNode){
         return new MateArgumentReadNode.MateNonLocalSuperReadNode((NonLocalSuperReadNode)uninitialized);
+      }
+      if (uninitialized instanceof UninitializedVariableReadNode){
+        return new MateUninitializedVariableNode.MateUninitializedVariableReadNode((UninitializedVariableReadNode)uninitialized);
+      }
+      if (uninitialized instanceof UninitializedVariableWriteNode){
+        return new MateUninitializedVariableNode.MateUninitializedVariableWriteNode((UninitializedVariableWriteNode)uninitialized);
       }
     }
     return uninitialized;
