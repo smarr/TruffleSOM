@@ -4,10 +4,8 @@ import som.interpreter.SArguments;
 import som.interpreter.nodes.MateMethodActivationNode;
 import som.vm.MateUniverse;
 import som.vm.constants.ExecutionLevel;
-import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
@@ -136,25 +134,23 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     public abstract Object executeDispatch(final VirtualFrame frame,
         SInvokable method, SInvokable methodToActivate, Object[] arguments);
 
-    @Specialization(guards = "cachedMethod==method")
+    @Specialization(guards = {"cachedMethod==method","methodToActivate == cachedMethodToActivate"})
     public Object doMetaLevel(final VirtualFrame frame,
         final SInvokable method, final SInvokable methodToActivate,
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
+        @Cached("methodToActivate") final SInvokable cachedMethodToActivate,
+        @Cached("createDirectCall(methodToActivate)") DirectCallNode callNode,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
-      // The MOP receives the standard ST message Send stack (rcvr, method,
-      // arguments) and returns its own
-      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (SObject) arguments[0], methodToActivate, SArguments.getArgumentsWithoutReceiver(arguments)};
-      Object metacontext = reflectiveMethod.call(frame, args);
-      Object[] activationValue = ((SArray) metacontext).toJavaArray();
-      SMateEnvironment activationSemantics;
-      if (activationValue[0] == Nil.nilObject) {
-        activationSemantics = null;
-      } else {
-        activationSemantics = (SMateEnvironment) activationValue[0];
-      }  
-      Object[] realArguments = ((SArray)activationValue[1]).toJavaArray();
-      return methodToActivate.getCallTarget().call(SArguments.createSArguments(activationSemantics, ExecutionLevel.Base, realArguments));
+      // The MOP receives the standard ST message Send stack (rcvr, method, arguments) and returns its own
+      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (SObject) arguments[0], methodToActivate, 
+          SArray.create(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments))};
+      SArray realArguments = (SArray)reflectiveMethod.call(frame, args);
+      return callNode.call(frame, realArguments.toJavaArray());
     }
+  }
+  
+  public static DirectCallNode createDirectCall(SInvokable methodToActivate){
+    return DirectCallNode.create(methodToActivate.getCallTarget());
   }
 }
