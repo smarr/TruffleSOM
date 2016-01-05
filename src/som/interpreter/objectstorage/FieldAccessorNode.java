@@ -9,6 +9,7 @@ import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
@@ -79,7 +80,7 @@ public abstract class FieldAccessorNode extends Node {
 
   public abstract static class ReadSpecializedFieldNode extends AbstractReadFieldNode {
     protected final ObjectLayout layout;
-    @Child private AbstractReadFieldNode nextInCache;
+    @Child protected AbstractReadFieldNode nextInCache;
 
     public ReadSpecializedFieldNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractReadFieldNode next) {
@@ -88,7 +89,8 @@ public abstract class FieldAccessorNode extends Node {
       nextInCache = next;
     }
 
-    protected final boolean hasExpectedLayout(final SObject obj) {
+    protected final boolean hasExpectedLayout(final SObject obj) throws InvalidAssumptionException {
+      layout.checkIsLatest();
       return layout == obj.getObjectLayout();
     }
 
@@ -109,10 +111,14 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public Object read(final SObject obj) {
-      if (hasExpectedLayout(obj)) {
-        return Nil.nilObject;
-      } else {
-        return respecializedNodeOrNext(obj).read(obj);
+      try {
+        if (hasExpectedLayout(obj)) {
+          return Nil.nilObject;
+        } else {
+          return respecializedNodeOrNext(obj).read(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        return replace(nextInCache).read(obj);
       }
     }
   }
@@ -128,10 +134,14 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public long readLong(final SObject obj) throws UnexpectedResultException {
-      if (hasExpectedLayout(obj)) {
-        return storage.readLong(obj);
-      } else {
-        return respecializedNodeOrNext(obj).readLong(obj);
+      try {
+        if (hasExpectedLayout(obj)) {
+          return storage.readLong(obj);
+        } else {
+          return respecializedNodeOrNext(obj).readLong(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        return replace(nextInCache).readLong(obj);
       }
     }
 
@@ -156,10 +166,14 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public double readDouble(final SObject obj) throws UnexpectedResultException {
-      if (hasExpectedLayout(obj)) {
-        return storage.readDouble(obj);
-      } else {
-        return respecializedNodeOrNext(obj).readDouble(obj);
+      try {
+        if (hasExpectedLayout(obj)) {
+          return storage.readDouble(obj);
+        } else {
+          return respecializedNodeOrNext(obj).readDouble(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        return replace(nextInCache).readDouble(obj);
       }
     }
 
@@ -184,10 +198,14 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public Object read(final SObject obj) {
-      if (hasExpectedLayout(obj)) {
-        return storage.read(obj);
-      } else {
-        return respecializedNodeOrNext(obj).read(obj);
+      try {
+        if (hasExpectedLayout(obj)) {
+          return storage.read(obj);
+        } else {
+          return respecializedNodeOrNext(obj).read(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        return replace(nextInCache).read(obj);
       }
     }
   }
@@ -248,7 +266,8 @@ public abstract class FieldAccessorNode extends Node {
       nextInCache = next;
     }
 
-    protected final boolean hasExpectedLayout(final SObject obj) {
+    protected final boolean hasExpectedLayout(final SObject obj) throws InvalidAssumptionException {
+      layout.checkIsLatest();
       return layout == obj.getObjectLayout();
     }
   }
@@ -264,14 +283,18 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public long write(final SObject obj, final long value) {
-      if (hasExpectedLayout(obj)) {
-        storage.writeLong(obj, value);
-      } else {
-        if (layout.layoutForSameClass(obj.getObjectLayout())) {
-          writeAndRespecialize(obj, value, "update outdated write node", nextInCache);
+      try {
+        if (hasExpectedLayout(obj)) {
+          storage.writeLong(obj, value);
         } else {
-          nextInCache.write(obj, value);
+          if (layout.layoutForSameClass(obj.getObjectLayout())) {
+            writeAndRespecialize(obj, value, "update outdated write node", nextInCache);
+          } else {
+            nextInCache.write(obj, value);
+          }
         }
+      } catch (InvalidAssumptionException e) {
+        replace(nextInCache).write(obj, value);
       }
       return value;
     }
@@ -302,14 +325,18 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public double write(final SObject obj, final double value) {
-      if (hasExpectedLayout(obj)) {
-        storage.writeDouble(obj, value);
-      } else {
-        if (layout.layoutForSameClass(obj.getObjectLayout())) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+      try {
+        if (hasExpectedLayout(obj)) {
+          storage.writeDouble(obj, value);
         } else {
-          nextInCache.write(obj, value);
+          if (layout.layoutForSameClass(obj.getObjectLayout())) {
+            writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+          } else {
+            nextInCache.write(obj, value);
+          }
         }
+      } catch (InvalidAssumptionException e) {
+        replace(nextInCache).write(obj, value);
       }
       return value;
     }
@@ -340,14 +367,18 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public Object write(final SObject obj, final Object value) {
-      if (hasExpectedLayout(obj)) {
-        storage.write(obj, value);
-      } else {
-        if (layout.layoutForSameClass(obj.getObjectLayout())) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+      try {
+        if (hasExpectedLayout(obj)) {
+          storage.write(obj, value);
         } else {
-          nextInCache.write(obj, value);
+          if (layout.layoutForSameClass(obj.getObjectLayout())) {
+            writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+          } else {
+            nextInCache.write(obj, value);
+          }
         }
+      } catch (InvalidAssumptionException e) {
+        replace(nextInCache).write(obj, value);
       }
       return value;
     }

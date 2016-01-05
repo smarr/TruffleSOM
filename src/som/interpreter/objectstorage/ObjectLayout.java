@@ -4,10 +4,15 @@ import som.interpreter.objectstorage.StorageLocation.UnwrittenStorageLocation;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
+import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 
 public final class ObjectLayout {
   private final SClass forClass;
+  private final Assumption latestLayoutForClass;
 
   private final int primitiveStorageLocationsUsed;
   private final int objectStorageLocationsUsed;
@@ -21,7 +26,10 @@ public final class ObjectLayout {
   }
 
   public ObjectLayout(final Class<?>[] knownFieldTypes, final SClass forClass) {
+    CompilerAsserts.neverPartOfCompilation("Layouts should not be created in compiled code");
+
     this.forClass = forClass;
+    this.latestLayoutForClass = Truffle.getRuntime().createAssumption();
 
     storageTypes = knownFieldTypes;
     totalNumberOfStorageLocations = knownFieldTypes.length;
@@ -55,7 +63,20 @@ public final class ObjectLayout {
     objectStorageLocationsUsed    = nextFreeObjIdx;
   }
 
+  public boolean isValid() {
+    return latestLayoutForClass.isValid();
+  }
+
+  public void checkIsLatest() throws InvalidAssumptionException {
+    latestLayoutForClass.check();
+  }
+
+  Assumption getAssumption() {
+    return latestLayoutForClass;
+  }
+
   public boolean layoutForSameClass(final ObjectLayout other) {
+    // TODO: think we don't need this with new guard logic
     return forClass == other.forClass;
   }
 
@@ -74,6 +95,8 @@ public final class ObjectLayout {
       assert storageTypes[fieldIndex] != Object.class;
       Class<?>[] withGeneralizedField = storageTypes.clone();
       withGeneralizedField[fieldIndex] = Object.class;
+
+      latestLayoutForClass.invalidate();
       return new ObjectLayout(withGeneralizedField, forClass);
     }
   }
@@ -95,6 +118,8 @@ public final class ObjectLayout {
       assert storageTypes[fieldIndex] == null;
       Class<?>[] withInitializedField = storageTypes.clone();
       withInitializedField[fieldIndex] = type;
+
+      latestLayoutForClass.invalidate();
       return new ObjectLayout(withInitializedField, forClass);
     }
   }
