@@ -547,15 +547,6 @@ public final class MessageSendNode {
       return dispatchNode.executeDispatch(frame, arguments);
     }
 
-    public AbstractDispatchNode getDispatchListHead() {
-      return dispatchNode;
-    }
-
-    public void adoptNewDispatchListHead(final AbstractDispatchNode newHead) {
-      CompilerAsserts.neverPartOfCompilation();
-      dispatchNode = insert(newHead);
-    }
-
     public void replaceDispatchListHead(
         final GenericDispatchNode replacement) {
       CompilerAsserts.neverPartOfCompilation();

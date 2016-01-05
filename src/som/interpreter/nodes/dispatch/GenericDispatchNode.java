@@ -12,11 +12,12 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
-public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
+public final class GenericDispatchNode extends AbstractDispatchNode {
   @Child private IndirectCallNode call;
+  protected final SSymbol selector;
 
   public GenericDispatchNode(final SSymbol selector) {
-    super(selector);
+    this.selector = selector;
     call = Truffle.getRuntime().createIndirectCallNode();
   }
 
@@ -37,7 +38,7 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
       args = new Object[] {arguments[0], selector, argumentsArray};
-      target = AbstractCachedDnuNode.getDnuCallTarget(rcvrClass);
+      target = CachedDnuNode.getDnuCallTarget(rcvrClass);
     }
     return call.call(frame, target, args);
   }

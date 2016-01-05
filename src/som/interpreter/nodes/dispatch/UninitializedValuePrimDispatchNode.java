@@ -30,7 +30,8 @@ public final class UninitializedValuePrimDispatchNode
       assert method != null;
 
       UninitializedValuePrimDispatchNode uninitialized = new UninitializedValuePrimDispatchNode();
-      CachedBlockDispatchNode node = new CachedBlockDispatchNode(method, uninitialized);
+      CachedDispatchNode node = new CachedDispatchNode(
+          DispatchGuard.createForBlock(rcvr), method.getCallTarget(), uninitialized);
       return replace(node);
     } else {
       GenericBlockDispatchNode generic = new GenericBlockDispatchNode();

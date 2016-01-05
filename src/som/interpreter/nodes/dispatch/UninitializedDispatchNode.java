@@ -3,11 +3,8 @@ package som.interpreter.nodes.dispatch;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import som.interpreter.nodes.dispatch.CachedDispatchSimpleCheckNode.CachedDispatchFalseCheckNode;
-import som.interpreter.nodes.dispatch.CachedDispatchSimpleCheckNode.CachedDispatchTrueCheckNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -15,10 +12,11 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
 
-public final class UninitializedDispatchNode extends AbstractDispatchWithLookupNode {
+public final class UninitializedDispatchNode extends AbstractDispatchNode {
+  protected final SSymbol selector;
 
   public UninitializedDispatchNode(final SSymbol selector) {
-    super(selector);
+    this.selector = selector;
   }
 
   private AbstractDispatchNode specialize(final Object[] arguments) {
@@ -47,45 +45,14 @@ public final class UninitializedDispatchNode extends AbstractDispatchWithLookupN
       }
 
       UninitializedDispatchNode newChainEnd = new UninitializedDispatchNode(selector);
-
-      if (rcvr instanceof SObject) {
-        AbstractCachedDispatchNode node;
-        if (method != null) {
-          node = new CachedDispatchSObjectCheckNode(
-              rcvrClass, callTarget, newChainEnd);
-        } else {
-          node = new CachedDnuSObjectCheckNode(rcvrClass, selector, newChainEnd);
-        }
-
-        if ((getParent() instanceof CachedDispatchSObjectCheckNode)) {
-          return replace(node);
-        } else {
-          SObjectCheckDispatchNode checkNode = new SObjectCheckDispatchNode(node,
-              new UninitializedDispatchNode(selector));
-          return replace(checkNode);
-        }
+      DispatchGuard guard = DispatchGuard.create(rcvr);
+      AbstractCachedDispatchNode node;
+      if (method != null) {
+        node = new CachedDispatchNode(guard, callTarget, newChainEnd);
       } else {
-        AbstractDispatchNode next = sendNode.getDispatchListHead();
-
-        AbstractCachedDispatchNode node;
-        if (method == null) {
-          node = new CachedDnuSimpleCheckNode(
-              rcvr.getClass(), rcvrClass, selector, next);
-        } else {
-          if (rcvr == Boolean.TRUE) {
-            node = new CachedDispatchTrueCheckNode(callTarget, next);
-          } else if (rcvr == Boolean.FALSE) {
-            node = new CachedDispatchFalseCheckNode(callTarget, next);
-          } else {
-            node = new CachedDispatchSimpleCheckNode(
-                  rcvr.getClass(), callTarget, next);
-          }
-        }
-
-        // the simple checks are prepended
-        sendNode.adoptNewDispatchListHead(node);
-        return node;
+        node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd);
       }
+      return replace(node);
     }
 
     // the chain is longer than the maximum defined by INLINE_CACHE_SIZE and
@@ -106,5 +73,4 @@ public final class UninitializedDispatchNode extends AbstractDispatchWithLookupN
   public int lengthOfDispatchChain() {
     return 0;
   }
-
 }
