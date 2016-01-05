@@ -6,7 +6,7 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.utilities.BranchProfile;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 @GenerateNodeFactory

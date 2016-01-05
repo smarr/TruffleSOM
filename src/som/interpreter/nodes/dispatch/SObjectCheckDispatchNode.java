@@ -3,7 +3,7 @@ package som.interpreter.nodes.dispatch;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.utilities.BranchProfile;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public final class SObjectCheckDispatchNode extends AbstractDispatchNode {
