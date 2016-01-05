@@ -46,7 +46,6 @@ import java.util.StringTokenizer;
 import som.compiler.Disassembler;
 import som.interpreter.Invokable;
 import som.interpreter.TruffleCompiler;
-import som.vm.constants.Blocks;
 import som.vm.constants.Globals;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
@@ -381,7 +380,7 @@ public final class Universe {
       errorExit("Initialization went wrong for class Globals");
     }
 
-    if (Blocks.blockClass1 != blockClasses[1]) {
+    if (null == blockClasses[1]) {
       errorExit("Initialization went wrong for class Blocks");
     }
     objectSystemInitialized = true;
@@ -397,8 +396,9 @@ public final class Universe {
     return newSymbol(interned);
   }
 
-  public static SBlock newBlock(final SMethod method, final MaterializedFrame context) {
-    return SBlock.create(method, context);
+  public static SBlock newBlock(final SMethod method, final SClass blockClass,
+      final MaterializedFrame context) {
+    return new SBlock(method, blockClass, context);
   }
 
   @TruffleBoundary
