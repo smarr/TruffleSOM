@@ -101,7 +101,7 @@ public abstract class DispatchGuard {
 
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      return obj instanceof SClass &&
+      return obj instanceof SObject &&
           ((SObject) obj).getSOMClass() == expected;
     }
   }
