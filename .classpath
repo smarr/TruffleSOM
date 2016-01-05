@@ -3,13 +3,21 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="tests"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="src" path="src_gen">
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="libs/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="libs/hamcrest-core-1.3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.dsl"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.interop"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.object"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.dsl.processor"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.object"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.object.basic"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.tck"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.profiles"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
