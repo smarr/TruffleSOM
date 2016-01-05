@@ -6,7 +6,6 @@ import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.MateFieldNodes;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
-import som.interpreter.nodes.MateFieldNodes.MateFieldWriteNode;
 import som.interpreter.nodes.MateUninitializedMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.UninitializedMessageSendNode;
 import som.vm.MateUniverse;

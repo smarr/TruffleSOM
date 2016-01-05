@@ -5,6 +5,7 @@ import som.interpreter.nodes.MateMethodActivationNode;
 import som.vm.MateUniverse;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SArray;
+import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -79,8 +80,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       activationNode = new MateMethodActivationNode();
     }
 
-    @Override
-    @Specialization(guards = "cachedMethod==method")
+    @Specialization(guards = {"cachedMethod==method"})
     public Object doMateNode(final VirtualFrame frame, final SInvokable method,
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
@@ -99,7 +99,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
 
     protected SSymbol getSelector() {
       return selector;
-    }
+    }    
   }
   
   public abstract static class MateCachedDispatchMessageLookup extends
@@ -109,10 +109,11 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       super(source, sel);
     }
     
-    @Specialization(guards = "cachedMethod==method", insertBefore="doMateNode")
+    @Specialization(guards = {"cachedMethod==method", "classOfReceiver(arguments) == cachedClass"}, insertBefore="doMateNode")
     public Object doMateNodeCached(final VirtualFrame frame, final SInvokable method,
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
+        @Cached("classOfReceiver(arguments)") final SClass cachedClass,
         @Cached("lookupResult(frame, method, arguments)") SInvokable lookupResult) {
       // The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       return activationNode.doActivation(frame, lookupResult, arguments);
@@ -122,6 +123,11 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments){
       return this.reflectiveLookup(frame, this.createDispatch(method), arguments);
     }
+    
+    protected SClass classOfReceiver(Object[] arguments){
+      return ((SObject) arguments[0]).getSOMClass();
+    }
+
   }
   
   public abstract static class MateActivationDispatch extends
