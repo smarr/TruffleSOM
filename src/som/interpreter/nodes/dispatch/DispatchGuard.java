@@ -1,5 +1,6 @@
 package som.interpreter.nodes.dispatch;
 
+import som.interpreter.objectstorage.ObjectLayout;
 import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
@@ -21,11 +22,11 @@ public abstract class DispatchGuard {
     }
 
     if (obj instanceof SClass) {
-      return new CheckSClass(((SClass) obj).getSOMClass());
+      return new CheckSClass(((SClass) obj).getObjectLayout());
     }
 
     if (obj instanceof SObject) {
-      return new CheckSObject(((SObject) obj).getSOMClass());
+      return new CheckSObject(((SObject) obj).getObjectLayout());
     }
 
     return new CheckClass(obj.getClass());
@@ -78,31 +79,33 @@ public abstract class DispatchGuard {
 
   private static final class CheckSClass extends DispatchGuard {
 
-    private final SClass expected;
+    private final ObjectLayout expected;
 
-    public CheckSClass(final SClass expected) {
+    public CheckSClass(final ObjectLayout expected) {
       this.expected = expected;
     }
 
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
+      expected.checkIsLatest();
       return obj instanceof SClass &&
-          ((SClass) obj).getSOMClass() == expected;
+          ((SClass) obj).getObjectLayout() == expected;
     }
   }
 
   private static final class CheckSObject extends DispatchGuard {
 
-    private final SClass expected;
+    private final ObjectLayout expected;
 
-    public CheckSObject(final SClass expected) {
+    public CheckSObject(final ObjectLayout expected) {
       this.expected = expected;
     }
 
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
+      expected.checkIsLatest();
       return obj instanceof SObject &&
-          ((SObject) obj).getSOMClass() == expected;
+          ((SObject) obj).getObjectLayout() == expected;
     }
   }
 }

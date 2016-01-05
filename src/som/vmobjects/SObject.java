@@ -160,6 +160,8 @@ public class SObject extends SAbstractObject {
     assert layoutAtClass.getNumberOfFields() == numberOfFields;
 
     if (objectLayout != layoutAtClass) {
+      assert !objectLayout.isValid();
+      assert layoutAtClass.isValid();
       setLayoutAndTransferFields(layoutAtClass);
       return true;
     } else {
