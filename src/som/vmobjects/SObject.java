@@ -32,8 +32,6 @@ import java.util.Arrays;
 import som.interpreter.objectstorage.ObjectLayout;
 import som.interpreter.objectstorage.StorageLocation;
 import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
-import som.interpreter.objectstorage.StorageLocation.GeneralizeStorageLocationException;
-import som.interpreter.objectstorage.StorageLocation.UninitalizedStorageLocationException;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 
@@ -264,31 +262,30 @@ public class SObject extends SAbstractObject {
     return location.read(this);
   }
 
+  public final void setUninitializedField(final long index, final Object value) {
+    CompilerAsserts.neverPartOfCompilation("setUninitializedField");
+    updateLayoutWithInitializedField(index, value.getClass());
+    setFieldAfterLayoutChange(index, value);
+  }
+
+  public final void setFieldAndGeneralize(final long index, final Object value) {
+    CompilerAsserts.neverPartOfCompilation("setFieldAndGeneralize");
+    updateLayoutWithGeneralizedField(index);
+    setFieldAfterLayoutChange(index, value);
+  }
+
   public final void setField(final long index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("setField");
     StorageLocation location = getLocation(index);
 
-    try {
-      location.write(this, value);
-    } catch (UninitalizedStorageLocationException e) {
-      updateLayoutWithInitializedField(index, value.getClass());
-      setFieldAfterLayoutChange(index, value);
-    } catch (GeneralizeStorageLocationException e) {
-      updateLayoutWithGeneralizedField(index);
-      setFieldAfterLayoutChange(index, value);
-    }
+    location.write(this, value);
   }
 
   private void setFieldAfterLayoutChange(final long index, final Object value) {
     CompilerAsserts.neverPartOfCompilation("SObject.setFieldAfterLayoutChange(..)");
 
     StorageLocation location = getLocation(index);
-    try {
-      location.write(this, value);
-    } catch (GeneralizeStorageLocationException
-        | UninitalizedStorageLocationException e) {
-      throw new RuntimeException("This should not happen, we just prepared this field for the new value.");
-    }
+    location.write(this, value);
   }
 
   private static long getFirstObjectFieldOffset() {

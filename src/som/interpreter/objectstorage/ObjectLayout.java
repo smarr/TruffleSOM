@@ -43,17 +43,17 @@ public final class ObjectLayout {
 
       StorageLocation storage;
       if (type == Long.class) {
-        storage = StorageLocation.createForLong(this, nextFreePrimIdx);
+        storage = StorageLocation.createForLong(this, i, nextFreePrimIdx);
         nextFreePrimIdx++;
       } else if (type == Double.class) {
-        storage = StorageLocation.createForDouble(this, nextFreePrimIdx);
+        storage = StorageLocation.createForDouble(this, i, nextFreePrimIdx);
         nextFreePrimIdx++;
       } else if (type == Object.class) {
         storage = StorageLocation.createForObject(this, nextFreeObjIdx);
         nextFreeObjIdx++;
       } else {
         assert type == null;
-        storage = new UnwrittenStorageLocation(this);
+        storage = new UnwrittenStorageLocation(this, i);
       }
 
       storageLocations[i] = storage;
