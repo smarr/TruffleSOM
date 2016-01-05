@@ -21,10 +21,9 @@
  */
 package som.interpreter.nodes;
 
+import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.UninitializedReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.UninitializedWriteFieldNode;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerDirectives;
@@ -52,7 +51,7 @@ public abstract class FieldNode extends ExpressionNode {
         final SourceSection source) {
       super(source);
       this.self = self;
-      read = new UninitializedReadFieldNode(fieldIndex);
+      read = FieldAccessorNode.createRead(fieldIndex);
     }
 
     public FieldReadNode(final FieldReadNode node) {
@@ -108,7 +107,7 @@ public abstract class FieldNode extends ExpressionNode {
 
     public FieldWriteNode(final int fieldIndex, final SourceSection source) {
       super(source);
-      write = new UninitializedWriteFieldNode(fieldIndex);
+      write = FieldAccessorNode.createWrite(fieldIndex);
     }
 
     public FieldWriteNode(final FieldWriteNode node) {

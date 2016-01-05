@@ -65,7 +65,7 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
-  public static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
+  private static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
 
     public UninitializedReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
@@ -240,7 +240,7 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
-  public static final class UninitializedWriteFieldNode extends AbstractWriteFieldNode {
+  private static final class UninitializedWriteFieldNode extends AbstractWriteFieldNode {
     public UninitializedWriteFieldNode(final int fieldIndex) {
       super(fieldIndex);
     }
