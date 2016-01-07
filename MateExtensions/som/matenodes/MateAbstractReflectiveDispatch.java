@@ -93,13 +93,28 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     public SInvokable reflectiveLookup(final VirtualFrame frame, DirectCallNode reflectiveMethod,
         final Object[] arguments) {
       SObject receiver = (SObject) arguments[0];
-      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, receiver, this.getSelector(), receiver.getSOMClass() };
+      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, receiver, this.getSelector(), this.lookupSinceFor(receiver)};
       return (SInvokable) reflectiveMethod.call(frame, args);
+    }
+    
+    protected SClass lookupSinceFor(SObject receiver){
+      return receiver.getSOMClass();
     }
 
     protected SSymbol getSelector() {
       return selector;
     }    
+  }
+  
+  public abstract static class MateDispatchSuperMessageLookup extends MateDispatchMessageLookup{
+    public MateDispatchSuperMessageLookup(SourceSection source, SSymbol sel) {
+      super(source, sel);
+    }
+
+    @Override
+    protected SClass lookupSinceFor(SObject receiver){
+      return (SClass) receiver.getSOMClass().getSuperClass();
+    }
   }
   
   public abstract static class MateCachedDispatchMessageLookup extends
@@ -128,6 +143,17 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       return ((SObject) arguments[0]).getSOMClass();
     }
 
+  }
+  
+  public abstract static class MateCachedDispatchSuperMessageLookup extends MateCachedDispatchMessageLookup{
+    public MateCachedDispatchSuperMessageLookup(SourceSection source,SSymbol sel) {
+      super(source, sel);
+    }
+
+    @Override
+    protected SClass lookupSinceFor(SObject receiver){
+      return (SClass) receiver.getSOMClass().getSuperClass();
+    }
   }
   
   public abstract static class MateActivationDispatch extends

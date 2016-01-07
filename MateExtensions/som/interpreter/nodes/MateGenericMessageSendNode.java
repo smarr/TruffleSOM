@@ -20,17 +20,18 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
       final ExpressionNode[] arguments,
       final AbstractDispatchNode dispatchNode, final SourceSection source) {
     super(selector, arguments, dispatchNode, source);
-    this.initializeMateNodes();
+    this.initializeMateNodes(false);
   }
   
   protected MateGenericMessageSendNode(GenericMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getDispatchListHead(), somNode.getSourceSection());
-    this.initializeMateNodes();
+    ((ISuperReadNode)somNode).getHolderClass();
+    this.initializeMateNodes(somNode.isSuperSend());
   }
   
-  protected void initializeMateNodes(){
+  protected void initializeMateNodes(boolean isSuperSend){
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector(), isSuperSend);
   }
 
   @Override

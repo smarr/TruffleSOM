@@ -3,7 +3,6 @@ package som.interpreter.nodes.nary;
 import som.interpreter.nodes.ExpressionNode;
 import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;
@@ -18,7 +17,7 @@ public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNo
       ExpressionNode argument3, QuaternaryExpressionNode primitive) {
     super(selector, receiver, argument1, argument2, argument3, primitive);
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector(), false);
   }
 
   @Override

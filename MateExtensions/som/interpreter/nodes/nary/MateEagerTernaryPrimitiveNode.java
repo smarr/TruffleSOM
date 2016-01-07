@@ -18,7 +18,7 @@ public class MateEagerTernaryPrimitiveNode extends EagerTernaryPrimitiveNode imp
       TernaryExpressionNode primitive) {
     super(selector, receiver, argument1, argument2, primitive);
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector(), false);
   }
 
   @Override
