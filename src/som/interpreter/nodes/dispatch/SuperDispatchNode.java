@@ -2,9 +2,7 @@ package som.interpreter.nodes.dispatch;
 
 import som.interpreter.SArguments;
 import som.interpreter.nodes.ISuperReadNode;
-import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
-import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SSymbol;
@@ -27,7 +25,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
         superNode.isClassSide());
   }
 
-  private static final class UninitializedDispatchNode extends SuperDispatchNode {
+  private static final class UninitializedDispatchNode extends SuperDispatchNode implements ISuperReadNode{
     private final SSymbol selector;
     private final SSymbol holderClass;
     private final boolean classSide;
@@ -37,14 +35,6 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
       this.selector    = selector;
       this.holderClass = holderClass;
       this.classSide   = classSide;
-    }
-
-    private SClass getLexicalSuperClass() {
-      SClass clazz = (SClass) Universe.current().getGlobal(holderClass);
-      if (classSide) {
-        clazz = clazz.getSOMClass();
-      }
-      return (SClass) clazz.getSuperClass();
     }
 
     private CachedDispatchNode specialize() {
@@ -64,6 +54,16 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
         final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
       return specialize().
           executeDispatch(frame, environment, exLevel, arguments);
+    }
+
+    @Override
+    public SSymbol getHolderClass() {
+      return holderClass;
+    }
+
+    @Override
+    public boolean isClassSide() {
+      return classSide;
     }
   }
 

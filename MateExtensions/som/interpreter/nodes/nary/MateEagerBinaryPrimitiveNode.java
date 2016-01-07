@@ -18,7 +18,7 @@ public class MateEagerBinaryPrimitiveNode extends EagerBinaryPrimitiveNode imple
       BinaryExpressionNode primitive) {
     super(selector, receiver, argument, primitive);
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector(), false);
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
   }
 
   @Override

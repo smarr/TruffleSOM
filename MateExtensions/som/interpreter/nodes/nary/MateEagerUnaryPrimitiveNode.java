@@ -18,7 +18,7 @@ public class MateEagerUnaryPrimitiveNode extends EagerUnaryPrimitiveNode impleme
       UnaryExpressionNode primitive) {
     super(selector, receiver, primitive);
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector(), false);
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
   }
 
   @Override

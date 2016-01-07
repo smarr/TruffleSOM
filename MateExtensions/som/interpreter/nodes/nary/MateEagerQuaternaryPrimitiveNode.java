@@ -17,7 +17,7 @@ public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNo
       ExpressionNode argument3, QuaternaryExpressionNode primitive) {
     super(selector, receiver, argument1, argument2, argument3, primitive);
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector(), false);
+    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
   }
 
   @Override

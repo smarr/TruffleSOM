@@ -18,8 +18,12 @@ public class MateUninitializedMessageSendNode extends
   public MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getSourceSection());
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    ((ISuperReadNode)somNode).getHolderClass();
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector(), somNode.isSuperSend());
+    if (this.isSuperSend()){
+      ISuperReadNode superNode = (ISuperReadNode)this.argumentNodes[0];
+      this.initializeMateDispatchForSuperMessages(this.getSourceSection(), this.getSelector(), superNode);
+    } else {
+      this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    }
   }
   
   @Override

@@ -21,9 +21,19 @@
  */
 package som.interpreter.nodes;
 
+import som.vm.Universe;
+import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
 public interface ISuperReadNode {
   SSymbol getHolderClass();
   boolean isClassSide();
+  
+  public default SClass getLexicalSuperClass() {
+    SClass clazz = (SClass) Universe.current().getGlobal(this.getHolderClass());
+    if (this.isClassSide()) {
+      clazz = clazz.getSOMClass();
+    }
+    return (SClass) clazz.getSuperClass();
+  }
 }

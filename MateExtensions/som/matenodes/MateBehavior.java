@@ -1,5 +1,6 @@
 package som.matenodes;
 
+import som.interpreter.nodes.ISuperReadNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchSuperMessageLookupNodeGen;
@@ -32,12 +33,12 @@ public interface MateBehavior {
     this.setMateDispatch(MateDispatchFieldAccessNodeGen.create(source));
   }
   
-  public default void initializeMateDispatchForMessages(SourceSection source, SSymbol selector, boolean superSend){
-    if (superSend){
-      this.setMateDispatch(MateCachedDispatchSuperMessageLookupNodeGen.create(source, selector));
-    } else {
-      this.setMateDispatch(MateCachedDispatchMessageLookupNodeGen.create(source, selector));
-    }
+  public default void initializeMateDispatchForMessages(SourceSection source, SSymbol selector){
+    this.setMateDispatch(MateCachedDispatchMessageLookupNodeGen.create(source, selector));
     //MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+  }
+  
+  public default void initializeMateDispatchForSuperMessages(SourceSection source, SSymbol selector, ISuperReadNode node){
+    this.setMateDispatch(MateCachedDispatchSuperMessageLookupNodeGen.create(source, selector, node));
   }
 }

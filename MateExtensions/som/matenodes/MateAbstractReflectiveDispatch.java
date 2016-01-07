@@ -1,6 +1,7 @@
 package som.matenodes;
 
 import som.interpreter.SArguments;
+import som.interpreter.nodes.ISuperReadNode;
 import som.interpreter.nodes.MateMethodActivationNode;
 import som.vm.MateUniverse;
 import som.vm.constants.ExecutionLevel;
@@ -107,13 +108,16 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   }
   
   public abstract static class MateDispatchSuperMessageLookup extends MateDispatchMessageLookup{
-    public MateDispatchSuperMessageLookup(SourceSection source, SSymbol sel) {
+    ISuperReadNode superNode;
+    
+    public MateDispatchSuperMessageLookup(SourceSection source, SSymbol sel, ISuperReadNode node) {
       super(source, sel);
+      superNode = node;
     }
 
     @Override
     protected SClass lookupSinceFor(SObject receiver){
-      return (SClass) receiver.getSOMClass().getSuperClass();
+      return superNode.getLexicalSuperClass();
     }
   }
   
@@ -146,13 +150,16 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
   }
   
   public abstract static class MateCachedDispatchSuperMessageLookup extends MateCachedDispatchMessageLookup{
-    public MateCachedDispatchSuperMessageLookup(SourceSection source,SSymbol sel) {
+    ISuperReadNode superNode;
+    
+    public MateCachedDispatchSuperMessageLookup(SourceSection source, SSymbol sel, ISuperReadNode node) {
       super(source, sel);
+      superNode = node;
     }
 
     @Override
     protected SClass lookupSinceFor(SObject receiver){
-      return (SClass) receiver.getSOMClass().getSuperClass();
+      return superNode.getLexicalSuperClass();
     }
   }
   
