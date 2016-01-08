@@ -22,12 +22,12 @@ public abstract class DispatchGuard {
       return new CheckFalse();
     }
 
-    if (obj instanceof SClass) {
-      return new CheckSClass(((SClass) obj).getObjectLayout());
-    }
+    //if (obj instanceof SClass) {
+    //  return new CheckSClass(((SClass) obj).getLayoutForInstances());
+    //}
 
     if (obj instanceof SObject) {
-      return new CheckSObject(((SObject) obj).getObjectLayout());
+      return new CheckSObject(((SObject) obj));
     }
 
     return new CheckClass(obj.getClass());
@@ -91,20 +91,25 @@ public abstract class DispatchGuard {
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
       valid.check();
       return obj instanceof SClass &&
-          expected.check(((SClass) obj).getDynamicObject());
+          ((SClass) obj).getNumberOfInstanceFields() == expected.getPropertyCount();
     }
   }
 
   private static final class CheckSObject extends CheckSClass {
-    public CheckSObject(Shape expected) {
-      super(expected);
+    private final SClass clazz;
+    public CheckSObject(final SObject obj) {
+      super(obj.getObjectLayout());
+      clazz = obj.getSOMClass();
     }
 
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      valid.check();
       return obj instanceof SObject &&
-          expected.check(((SObject) obj).getDynamicObject());
+          ((SObject) obj).getSOMClass() == clazz;
+      /*valid.check();
+      return obj instanceof SObject &&
+          ((SObject) obj).isShapeCompatible(expected);*/
+      
     }
   }
 }
