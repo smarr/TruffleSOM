@@ -1,12 +1,12 @@
 package som.interpreter.nodes.dispatch;
 
-import som.interpreter.objectstorage.ObjectLayout;
 import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Shape;
 
 
 public abstract class DispatchGuard {
@@ -21,12 +21,8 @@ public abstract class DispatchGuard {
       return new CheckFalse();
     }
 
-    if (obj instanceof SClass) {
-      return new CheckSClass(((SClass) obj).getObjectLayout());
-    }
-
-    if (obj instanceof SObject) {
-      return new CheckSObject(((SObject) obj).getObjectLayout());
+    if (obj instanceof DynamicObject) {
+      return new CheckSObject(((DynamicObject) obj).getShape());
     }
 
     return new CheckClass(obj.getClass());
@@ -77,35 +73,22 @@ public abstract class DispatchGuard {
     }
   }
 
-  private static final class CheckSClass extends DispatchGuard {
-
-    private final ObjectLayout expected;
-
-    public CheckSClass(final ObjectLayout expected) {
-      this.expected = expected;
-    }
-
-    @Override
-    public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      expected.checkIsLatest();
-      return obj instanceof SClass &&
-          ((SClass) obj).getObjectLayout() == expected;
-    }
-  }
-
   private static final class CheckSObject extends DispatchGuard {
 
-    private final ObjectLayout expected;
+    private final Shape expected;
 
-    public CheckSObject(final ObjectLayout expected) {
+    public CheckSObject(final Shape expected) {
       this.expected = expected;
     }
 
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      expected.checkIsLatest();
-      return obj instanceof SObject &&
-          ((SObject) obj).getObjectLayout() == expected;
+      if (!expected.isValid()) {
+        CompilerDirectives.transferToInterpreter();
+        throw new InvalidAssumptionException();
+      }
+      return obj instanceof DynamicObject &&
+          ((DynamicObject) obj).getShape() == expected;
     }
   }
 }
