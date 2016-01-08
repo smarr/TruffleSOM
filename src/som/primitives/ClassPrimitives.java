@@ -30,6 +30,7 @@ import som.primitives.ClassPrimsFactory.InstanceInvokablesPrimFactory;
 import som.primitives.ClassPrimsFactory.NamePrimFactory;
 import som.primitives.ClassPrimsFactory.SuperClassPrimFactory;
 
+
 public final class ClassPrimitives extends Primitives {
   public ClassPrimitives(final boolean displayWarning) { super(displayWarning); }
 
