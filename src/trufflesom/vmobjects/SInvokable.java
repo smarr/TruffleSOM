@@ -33,9 +33,11 @@ import java.nio.file.Paths;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.Universe;
 
 
@@ -64,7 +66,7 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public void setHolder(final SClass value) {
+    public void setHolder(final DynamicObject value) {
       super.setHolder(value);
       for (SMethod m : embeddedBlocks) {
         m.setHolder(value);
@@ -72,14 +74,14 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SClass getSOMClass(final Universe universe) {
+    public DynamicObject getSOMClass(final Universe universe) {
       return universe.methodClass;
     }
 
     @Override
-    public String getIdentifier() {
+    public String getIdentifier(final Universe u) {
       if (holder != null) {
-        return holder.getName().getString() + "." + signature.getString();
+        return SClass.getName(holder, u).getString() + "." + signature.getString();
       } else if (invokable.getSourceSection() != null) {
         // TODO find a better solution than charIndex
         Path absolute = Paths.get(invokable.getSourceSection().getSource().getURI());
@@ -98,14 +100,14 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SClass getSOMClass(final Universe universe) {
+    public DynamicObject getSOMClass(final Universe universe) {
       return universe.primitiveClass;
     }
 
     @Override
-    public String getIdentifier() {
+    public String getIdentifier(final Universe u) {
       if (holder != null) {
-        return holder.getName().getString() + "." + signature.getString();
+        return SClass.getName(holder, u).getString() + "." + signature.getString();
       } else if (invokable.getSourceSection() != null) {
         // TODO find a better solution than charIndex
         Path absolute = Paths.get(invokable.getSourceSection().getSource().getURI());
@@ -133,11 +135,11 @@ public abstract class SInvokable extends SAbstractObject {
     return signature;
   }
 
-  public final SClass getHolder() {
+  public final DynamicObject getHolder() {
     return holder;
   }
 
-  public void setHolder(final SClass value) {
+  public void setHolder(final DynamicObject value) {
     transferToInterpreterAndInvalidate("SMethod.setHolder");
     holder = value;
   }
@@ -162,16 +164,19 @@ public abstract class SInvokable extends SAbstractObject {
       return "Method(nil>>" + getSignature().toString() + ")";
     }
 
-    return "Method(" + getHolder().getName().getString() + ">>" + getSignature().toString()
-        + ")";
+    Universe u = SomLanguage.getCurrentContext();
+    return "Method(" + SClass.getName(getHolder(), u).getString() + ">>"
+        + getSignature().toString() + ")";
   }
 
-  public abstract String getIdentifier();
+  public abstract String getIdentifier(Universe u);
 
-  private final SourceSection  sourceSection;
+  // Private variable holding Truffle runtime information
+  private final SourceSection sourceSection;
+
   protected final Invokable    invokable;
   private final RootCallTarget callTarget;
   protected final SSymbol      signature;
 
-  @CompilationFinal protected SClass holder;
+  @CompilationFinal protected DynamicObject holder;
 }

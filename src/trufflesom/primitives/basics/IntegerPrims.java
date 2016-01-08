@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 import bd.primitives.Primitive;
@@ -14,7 +15,6 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.primitives.arithmetic.ArithmeticPrim;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
-import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -49,21 +49,21 @@ public abstract class IntegerPrims {
 
   @Primitive(className = "Integer", primitive = "fromString:", classSide = true)
   public abstract static class FromStringPrim extends BinarySystemOperation {
-    @CompilationFinal protected SClass integerClass;
+    @CompilationFinal protected DynamicObject integerClass;
 
     @Override
     public BinarySystemOperation initialize(final Universe universe) {
-      this.integerClass = universe.integerClass;
+      integerClass = universe.integerClass;
       return this;
     }
 
     @Specialization(guards = "receiver == integerClass")
-    public final Object doSClass(final SClass receiver, final String argument) {
+    public final Object doSClass(final DynamicObject receiver, final String argument) {
       return Long.parseLong(argument);
     }
 
     @Specialization(guards = "receiver == integerClass")
-    public final Object doSClass(final SClass receiver, final SSymbol argument) {
+    public final Object doSClass(final DynamicObject receiver, final SSymbol argument) {
       return Long.parseLong(argument.getString());
     }
   }

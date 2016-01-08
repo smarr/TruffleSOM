@@ -4,11 +4,11 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.vm.Universe;
-import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -20,8 +20,8 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "~=")
 public abstract class UnequalsPrim extends BinarySystemOperation {
 
-  @CompilationFinal private SObject trueObject;
-  @CompilationFinal private SObject falseObject;
+  @CompilationFinal private DynamicObject trueObject;
+  @CompilationFinal private DynamicObject falseObject;
 
   @Override
   public BinarySystemOperation initialize(final Universe universe) {
@@ -37,7 +37,7 @@ public abstract class UnequalsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doBoolean(final boolean left, final SObject right) {
+  public final boolean doBoolean(final boolean left, final DynamicObject right) {
     return (left && right != trueObject) ||
         (!left && right != falseObject);
   }
@@ -93,7 +93,7 @@ public abstract class UnequalsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doLong(final long left, final SObject right) {
+  public final boolean doLong(final long left, final DynamicObject right) {
     return true;
   }
 
@@ -108,7 +108,7 @@ public abstract class UnequalsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doString(final String receiver, final SObject argument) {
+  public final boolean doString(final String receiver, final DynamicObject argument) {
     return true;
   }
 
@@ -118,7 +118,7 @@ public abstract class UnequalsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doSSymbol(final SSymbol receiver, final SObject argument) {
+  public final boolean doSSymbol(final SSymbol receiver, final DynamicObject argument) {
     return true;
   }
 }

@@ -9,6 +9,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
@@ -22,7 +23,6 @@ import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SArray.ArrayType;
 import trufflesom.vmobjects.SBlock;
-import trufflesom.vmobjects.SObject;
 
 
 @GenerateNodeFactory
@@ -38,7 +38,7 @@ public abstract class PutAllNode extends BinaryExpressionNode implements ValuePr
     block = insert(node);
   }
 
-  protected static final boolean valueIsNil(final SObject value) {
+  protected static final boolean valueIsNil(final DynamicObject value) {
     return value == Nil.nilObject;
   }
 
@@ -50,14 +50,14 @@ public abstract class PutAllNode extends BinaryExpressionNode implements ValuePr
   }
 
   @Specialization(guards = {"isEmptyType(rcvr)", "valueIsNil(nil)"})
-  public SArray doPutNilInEmptyArray(final SArray rcvr, final SObject nil,
+  public SArray doPutNilInEmptyArray(final SArray rcvr, final DynamicObject nil,
       final long length) {
     // NO OP
     return rcvr;
   }
 
   @Specialization(guards = {"valueIsNil(nil)"}, replaces = {"doPutNilInEmptyArray"})
-  public SArray doPutNilInOtherArray(final SArray rcvr, final SObject nil,
+  public SArray doPutNilInOtherArray(final SArray rcvr, final DynamicObject nil,
       final long length) {
     rcvr.transitionToEmpty(length);
     return rcvr;

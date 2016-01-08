@@ -25,22 +25,23 @@
 
 package trufflesom.compiler;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.object.DynamicObject;
+
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
-
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
 
 public final class Disassembler {
 
   @TruffleBoundary
-  public static void dump(final SClass cl) {
-    for (int i = 0; i < cl.getNumberOfInstanceInvokables(); i++) {
-      SInvokable inv = cl.getInstanceInvokable(i);
+  public static void dump(final DynamicObject cl, final Universe universe) {
+    for (int i = 0; i < SClass.getNumberOfInstanceInvokables(cl, universe); i++) {
+      SInvokable inv = SClass.getInstanceInvokable(cl, i, universe);
 
       // output header and skip if the Invokable is a Primitive
-      Universe.errorPrint(cl.getName().toString() + ">>"
+      Universe.errorPrint(SClass.getName(cl, universe).toString() + ">>"
           + inv.getSignature().toString() + " = ");
 
       // output actual method
@@ -54,5 +55,4 @@ public final class Disassembler {
     Universe.errorPrintln(m.getInvokable().toString());
     Universe.errorPrintln(indent + ")");
   }
-
 }

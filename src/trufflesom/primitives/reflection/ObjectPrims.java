@@ -4,10 +4,10 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -15,7 +15,6 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperatio
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
-import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -34,17 +33,17 @@ public final class ObjectPrims {
     }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final long idx) {
+    public final Object doSObject(final DynamicObject receiver, final long idx) {
       return dispatch.executeDispatch(receiver, (int) idx - 1);
     }
 
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
         final Object receiver, final Object firstArg) {
-      assert receiver instanceof SObject;
+      assert receiver instanceof DynamicObject;
       assert firstArg instanceof Long;
 
-      SObject rcvr = (SObject) receiver;
+      DynamicObject rcvr = (DynamicObject) receiver;
       long idx = (long) firstArg;
       return doSObject(rcvr, idx);
     }
@@ -63,7 +62,8 @@ public final class ObjectPrims {
     }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final long idx, final Object val) {
+    public final Object doSObject(final DynamicObject receiver, final long idx,
+        final Object val) {
       dispatch.executeDispatch(receiver, (int) idx - 1, val);
       return val;
     }
@@ -71,11 +71,11 @@ public final class ObjectPrims {
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
         final Object receiver, final Object firstArg, final Object secondArg) {
-      assert receiver instanceof SObject;
+      assert receiver instanceof DynamicObject;
       assert firstArg instanceof Long;
       assert secondArg != null;
 
-      SObject rcvr = (SObject) receiver;
+      DynamicObject rcvr = (DynamicObject) receiver;
       long idx = (long) firstArg;
       return doSObject(rcvr, idx, secondArg);
     }
@@ -83,11 +83,11 @@ public final class ObjectPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "instVarNamed:", selector = "instVarNamed:")
-  public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
+  public abstract static class InstVarNamedPrim extends BinarySystemOperation {
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol fieldName) {
+    public final Object doSObject(final DynamicObject receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation();
-      return receiver.getField(receiver.getFieldIndex(fieldName));
+      return receiver.get(SObject.getFieldIndex(receiver, fieldName, universe), Nil.nilObject);
     }
   }
 
@@ -104,13 +104,19 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "class")
   public abstract static class ClassPrim extends UnarySystemOperation {
+
     @Specialization
-    public final SClass doSAbstractObject(final SAbstractObject receiver) {
+    public final DynamicObject doSAbstractObject(final SAbstractObject receiver) {
       return receiver.getSOMClass(universe);
     }
 
     @Specialization
-    public final SClass doObject(final Object receiver) {
+    public final DynamicObject doDynamicObject(final DynamicObject receiver) {
+      return SObject.getSOMClass(receiver);
+    }
+
+    @Specialization
+    public final DynamicObject doObject(final Object receiver) {
       return Types.getClassOf(receiver, universe);
     }
   }

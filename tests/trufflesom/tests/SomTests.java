@@ -32,7 +32,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.oracle.truffle.api.object.DynamicObject;
+
 import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 
 
@@ -94,16 +97,15 @@ public class SomTests {
   }
 
   @Test
-  public void testSomeTest() {
+  public void testSomeTest() throws ReflectiveOperationException {
     Value returnCode = Universe.eval(
         new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName});
-    if (returnCode.isNumber()) {
-      assertEquals(0, returnCode.asInt());
+    if (TruffleAccessor.isDynamicObject(returnCode)) {
+      assertEquals("System", TruffleAccessor.getSomObjectClassName(returnCode));
     } else {
-      SObject obj = (SObject) readValue(returnCode);
+      DynamicObject obj = (DynamicObject) readValue(returnCode);
 
-      assertEquals("System",
-          obj.getSOMClass(null).getName().getString());
+      assertEquals("System", SClass.getName(SObject.getSOMClass(obj), null).getString());
     }
   }
 }

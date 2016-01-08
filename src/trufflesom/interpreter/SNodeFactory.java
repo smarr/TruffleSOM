@@ -17,6 +17,7 @@ import trufflesom.interpreter.nodes.ContextualNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldReadNodeGen;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
@@ -42,7 +43,7 @@ public final class SNodeFactory {
 
   public static FieldReadNode createFieldRead(final ExpressionNode self,
       final int fieldIndex, final SourceSection source) {
-    return new FieldReadNode(self, fieldIndex).initialize(source);
+    return FieldReadNodeGen.create(fieldIndex, self).initialize(source);
   }
 
   public static GlobalNode createGlobalRead(final String name,

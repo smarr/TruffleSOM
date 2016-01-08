@@ -25,6 +25,7 @@
 package trufflesom.vmobjects;
 
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import trufflesom.interpreter.SArguments;
 import trufflesom.vm.Universe;
@@ -32,7 +33,7 @@ import trufflesom.vm.Universe;
 
 public final class SBlock extends SAbstractObject {
 
-  public SBlock(final SInvokable blockMethod, final SClass blockClass,
+  public SBlock(final SInvokable blockMethod, final DynamicObject blockClass,
       final MaterializedFrame context) {
     this.method = blockMethod;
     this.context = context;
@@ -49,7 +50,7 @@ public final class SBlock extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass(final Universe universe) {
+  public DynamicObject getSOMClass(final Universe universe) {
     return blockClass;
   }
 
@@ -57,7 +58,7 @@ public final class SBlock extends SAbstractObject {
     return SArguments.rcvr(getContext());
   }
 
-  private final SClass            blockClass;
+  private final DynamicObject     blockClass;
   private final SInvokable        method;
   private final MaterializedFrame context;
 }

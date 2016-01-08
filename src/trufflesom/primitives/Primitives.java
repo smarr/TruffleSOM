@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.PrimitiveLoader;
@@ -106,6 +107,7 @@ import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -121,7 +123,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
 
   public static SInvokable constructEmptyPrimitive(final SSymbol signature,
       final SomLanguage lang, final SourceSection sourceSection,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
 
@@ -134,7 +136,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
         Universe.newMethod(signature, primMethodNode, true, new SMethod[0], sourceSection);
 
     if (probe != null) {
-      String id = prim.getIdentifier();
+      String id = prim.getIdentifier(lang.getUniverse());
       probe.recordNewMethod(lang.getUniverse().symbolFor(id), prim);
     }
     return prim;
@@ -147,31 +149,34 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     initialize();
   }
 
-  public void loadPrimitives(final SClass clazz, final boolean displayWarning,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+  public void loadPrimitives(final DynamicObject clazz, final boolean displayWarning,
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> probe) {
     HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> prims =
-        primitives.get(clazz.getName());
+        primitives.get(SClass.getName(clazz, universe));
     if (prims == null) {
       if (displayWarning) {
-        Universe.errorPrintln("No primitives found for " + clazz.getName().getString());
+        Universe.errorPrintln(
+            "No primitives found for " + SClass.getName(clazz, universe).getString());
       }
       return;
     }
 
     for (Entry<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> e : prims.entrySet()) {
-      SClass target;
+      DynamicObject target;
       if (e.getValue().classSide()) {
-        target = clazz.getSOMClass(universe);
+        target = SObject.getSOMClass(clazz);
       } else {
         target = clazz;
       }
 
-      SInvokable ivk = target.lookupInvokable(e.getKey());
+      SInvokable ivk = SClass.lookupInvokable(target, e.getKey(), universe);
       assert ivk != null : "Lookup of " + e.getKey().toString() + " failed in "
-          + target.getName().getString() + ". Can't install a primitive for it.";
+          + SClass.getName(target, universe).getString()
+          + ". Can't install a primitive for it.";
       SInvokable prim = constructPrimitive(
           e.getKey(), ivk.getSourceSection(), universe.getLanguage(), e.getValue(), probe);
-      target.addInstanceInvokable(prim);
+
+      SClass.addInstancePrimitive(target, prim, displayWarning, universe);
     }
   }
 
@@ -198,7 +203,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   private static SInvokable constructPrimitive(final SSymbol signature,
       final SourceSection source, final SomLanguage lang,
       final Specializer<Universe, ExpressionNode, SSymbol> specializer,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
     final int numArgs = signature.getNumberOfSignatureArguments();
 

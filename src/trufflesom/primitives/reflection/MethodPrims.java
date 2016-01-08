@@ -4,6 +4,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -37,7 +38,7 @@ public final class MethodPrims {
   @Primitive(className = "Primitive", primitive = "holder")
   public abstract static class HolderPrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doSMethod(final SInvokable receiver) {
+    public final DynamicObject doSMethod(final SInvokable receiver) {
       return receiver.getHolder();
     }
   }

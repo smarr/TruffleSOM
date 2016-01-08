@@ -7,4 +7,5 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class EagerPrimitive extends ExpressionNode
-    implements PreevaluatedExpression, Invocation<SSymbol> {}
+    implements PreevaluatedExpression, Invocation<SSymbol> {
+}

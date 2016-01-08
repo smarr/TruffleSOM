@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.tools.structure.StructuralProbe;
@@ -36,16 +37,17 @@ import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
 public final class ClassGenerationContext {
   private final Universe universe;
 
-  private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
+  private final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe;
 
   public ClassGenerationContext(final Universe universe,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe) {
     this.universe = universe;
     this.structuralProbe = structuralProbe;
   }
@@ -154,39 +156,38 @@ public final class ClassGenerationContext {
   }
 
   @TruffleBoundary
-  public SClass assemble() {
+  public DynamicObject assemble() {
     // build class class name
     String ccname = name.getString() + " class";
 
     // Load the super class
-    SClass superClass = universe.loadClass(superName);
+    DynamicObject superClass = universe.loadClass(superName);
 
     // Allocate the class of the resulting class
-    SClass resultClass = universe.newClass(universe.metaclassClass);
+    DynamicObject resultClass = universe.newClass(universe.metaclassClass);
 
     // Initialize the class of the resulting class
-    resultClass.setInstanceFields(classFields);
-    resultClass.setInstanceInvokables(
-        SArray.create(classMethods.toArray(new Object[0])));
-    resultClass.setName(universe.symbolFor(ccname));
+    SClass.setInstanceFields(resultClass, classFields, universe);
+    SClass.setInstanceInvokables(resultClass,
+        SArray.create(classMethods.toArray(new Object[0])), universe);
+    SClass.setName(resultClass, universe.symbolFor(ccname), universe);
 
-    SClass superMClass = superClass == null ? null : superClass.getSOMClass(universe);
-    resultClass.setSuperClass(superMClass);
-    resultClass.setSourceSection(sourceSection);
+    DynamicObject superMClass = SObject.getSOMClass(superClass);
+    SClass.setSuperClass(resultClass, superMClass, universe);
 
     if (structuralProbe != null) {
       structuralProbe.recordNewClass(resultClass);
     }
 
     // Allocate the resulting class
-    SClass result = universe.newClass(resultClass);
+    DynamicObject result = universe.newClass(resultClass);
 
     // Initialize the resulting class
-    result.setName(name);
-    result.setSuperClass(superClass);
-    result.setInstanceFields(instanceFields);
-    result.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
-    result.setSourceSection(sourceSection);
+    SClass.setName(result, name, universe);
+    SClass.setSuperClass(result, superClass, universe);
+    SClass.setInstanceFields(result, instanceFields, universe);
+    SClass.setInstanceInvokables(result,
+        SArray.create(instanceMethods.toArray(new Object[0])), universe);
 
     if (structuralProbe != null) {
       structuralProbe.recordNewClass(result);
@@ -195,22 +196,15 @@ public final class ClassGenerationContext {
   }
 
   @TruffleBoundary
-  public void assembleSystemClass(final SClass systemClass) {
-    systemClass.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
-    systemClass.setInstanceFields(instanceFields);
-
-    if (structuralProbe != null) {
-      structuralProbe.recordNewClass(systemClass);
-    }
-
+  public void assembleSystemClass(final DynamicObject systemClass) {
+    SClass.setInstanceInvokables(systemClass,
+        SArray.create(instanceMethods.toArray(new Object[0])), universe);
+    SClass.setInstanceFields(systemClass, instanceFields, universe);
     // class-bound == class-instance-bound
-    SClass superMClass = systemClass.getSOMClass(universe);
-    superMClass.setInstanceInvokables(SArray.create(classMethods.toArray(new Object[0])));
-    superMClass.setInstanceFields(classFields);
-
-    if (structuralProbe != null) {
-      structuralProbe.recordNewClass(superMClass);
-    }
+    DynamicObject superMClass = SObject.getSOMClass(systemClass);
+    SClass.setInstanceInvokables(superMClass,
+        SArray.create(classMethods.toArray(new Object[0])), universe);
+    SClass.setInstanceFields(superMClass, classFields, universe);
   }
 
   @Override

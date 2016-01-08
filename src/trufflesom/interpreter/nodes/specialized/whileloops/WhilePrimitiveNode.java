@@ -2,11 +2,12 @@ package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node.Child;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
-import trufflesom.vmobjects.SObject;
 
 
 public abstract class WhilePrimitiveNode extends BinarySystemOperation {
@@ -28,8 +29,8 @@ public abstract class WhilePrimitiveNode extends BinarySystemOperation {
   }
 
   @Specialization
-  protected SObject doWhileConditionally(final VirtualFrame frame,
+  protected DynamicObject doWhileConditionally(final VirtualFrame frame,
       final SBlock loopCondition, final SBlock loopBody) {
-    return (SObject) whileNode.executeEvaluated(frame, loopCondition, loopBody);
+    return (DynamicObject) whileNode.executeEvaluated(frame, loopCondition, loopBody);
   }
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import trufflesom.compiler.MethodGenerationContext;
@@ -14,19 +15,22 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
-import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
 public class BlockNode extends LiteralNode {
 
-  protected final SMethod            blockMethod;
-  @CompilationFinal protected SClass blockClass;
+  protected final SMethod blockMethod;
+  protected final Method  invokable;
+
+  @CompilationFinal protected DynamicObject blockClass;
 
   protected final Universe universe;
 
-  public BlockNode(final SMethod blockMethod, final Universe universe) {
+  public BlockNode(final SMethod blockMethod, final Method invokable,
+      final Universe universe) {
     this.blockMethod = blockMethod;
+    this.invokable = invokable;
     this.universe = universe;
   }
 
@@ -76,11 +80,11 @@ public class BlockNode extends LiteralNode {
         inliner.outerScopeChanged());
     SMethod method = (SMethod) Universe.newMethod(blockMethod.getSignature(), adapted, false,
         blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
-    replace(createNode(method));
+    replace(createNode(method, adapted));
   }
 
-  protected BlockNode createNode(final SMethod adapted) {
-    return new BlockNode(adapted, universe).initialize(sourceSection);
+  protected BlockNode createNode(final SMethod method, final Method adapted) {
+    return new BlockNode(method, adapted, universe).initialize(sourceSection);
   }
 
   @Override
@@ -90,8 +94,9 @@ public class BlockNode extends LiteralNode {
 
   public static final class BlockNodeWithContext extends BlockNode {
 
-    public BlockNodeWithContext(final SMethod blockMethod, final Universe universe) {
-      super(blockMethod, universe);
+    public BlockNodeWithContext(final SMethod blockMethod, final Method method,
+        final Universe universe) {
+      super(blockMethod, method, universe);
     }
 
     @Override
@@ -104,8 +109,8 @@ public class BlockNode extends LiteralNode {
     }
 
     @Override
-    protected BlockNode createNode(final SMethod adapted) {
-      return new BlockNodeWithContext(adapted, universe).initialize(sourceSection);
+    protected BlockNode createNode(final SMethod method, final Method adapted) {
+      return new BlockNodeWithContext(method, adapted, universe).initialize(sourceSection);
     }
   }
 }

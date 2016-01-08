@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
@@ -11,15 +12,14 @@ import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
 @Primitive(className = "Object", primitive = "==", selector = "==")
 public abstract class EqualsEqualsPrim extends BinarySystemOperation {
 
-  @CompilationFinal private SObject trueObject;
-  @CompilationFinal private SObject falseObject;
+  @CompilationFinal private DynamicObject trueObject;
+  @CompilationFinal private DynamicObject falseObject;
 
   @Override
   public EqualsEqualsPrim initialize(final Universe universe) {
@@ -35,7 +35,7 @@ public abstract class EqualsEqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doBoolean(final boolean left, final SObject right) {
+  public final boolean doBoolean(final boolean left, final DynamicObject right) {
     return (left && trueObject == right) ||
         (!left && falseObject == right);
   }
@@ -81,7 +81,7 @@ public abstract class EqualsEqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doSObject(final SObject left, final Object right) {
+  public final boolean doSObject(final DynamicObject left, final Object right) {
     return left == right;
   }
 
@@ -111,7 +111,7 @@ public abstract class EqualsEqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doLong(final long left, final SObject right) {
+  public final boolean doLong(final long left, final DynamicObject right) {
     return false;
   }
 
@@ -121,7 +121,7 @@ public abstract class EqualsEqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
-  public final boolean doString(final String receiver, final SObject argument) {
+  public final boolean doString(final String receiver, final DynamicObject argument) {
     return false;
   }
 }

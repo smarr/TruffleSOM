@@ -37,6 +37,7 @@ import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
@@ -58,7 +59,6 @@ import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
-import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
@@ -85,17 +85,17 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
   private final List<SMethod> embeddedBlockMethods;
 
-  private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
+  private final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe;
 
   private final Universe universe;
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe) {
     this(holderGenc, null, holderGenc.getUniverse(), false, structuralProbe);
   }
 
   public MethodGenerationContext(final Universe universe,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe) {
     this(null, null, universe, false, structuralProbe);
   }
 
@@ -107,7 +107,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
   private MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc, final Universe universe,
       final boolean isBlockMethod,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe) {
     this.holderGenc = holderGenc;
     this.outerGenc = outerGenc;
     this.blockMethod = isBlockMethod;
@@ -206,7 +206,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
         embeddedBlockMethods.toArray(new SMethod[0]), fullSourceSection);
 
     if (structuralProbe != null) {
-      String id = meth.getIdentifier();
+      String id = meth.getIdentifier(universe);
       structuralProbe.recordNewMethod(universe.symbolFor(id), meth);
     }
 

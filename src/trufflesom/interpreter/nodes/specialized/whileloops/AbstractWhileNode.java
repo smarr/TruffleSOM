@@ -8,12 +8,12 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SBlock;
-import trufflesom.vmobjects.SObject;
 
 
 public abstract class AbstractWhileNode extends BinaryExpressionNode {
@@ -40,7 +40,7 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
     return doWhileConditionally((SBlock) rcvr, (SBlock) arg);
   }
 
-  protected final SObject doWhileUnconditionally(final SBlock loopCondition,
+  protected final DynamicObject doWhileUnconditionally(final SBlock loopCondition,
       final SBlock loopBody) {
     long iterationCount = 0;
 
@@ -65,7 +65,7 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
     return Nil.nilObject;
   }
 
-  protected abstract SObject doWhileConditionally(SBlock loopCondition, SBlock loopBody);
+  protected abstract DynamicObject doWhileConditionally(SBlock loopCondition, SBlock loopBody);
 
   protected final void reportLoopCount(final long count) {
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");

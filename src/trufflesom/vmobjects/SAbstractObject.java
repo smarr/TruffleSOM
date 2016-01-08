@@ -5,6 +5,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
@@ -14,16 +15,17 @@ import trufflesom.vm.Universe;
 @ExportLibrary(InteropLibrary.class)
 public abstract class SAbstractObject implements TruffleObject {
 
-  public abstract SClass getSOMClass(Universe universe);
+  public abstract DynamicObject getSOMClass(Universe universe);
 
   @Override
   public String toString() {
     CompilerAsserts.neverPartOfCompilation();
-    SClass clazz = getSOMClass(SomLanguage.getCurrentContext());
+    Universe u = SomLanguage.getCurrentContext();
+    DynamicObject clazz = getSOMClass(u);
     if (clazz == null) {
       return "an Object(clazz==null)";
     }
-    return "a " + clazz.getName().getString();
+    return "a " + SClass.getName(clazz, u).getString();
   }
 
   public static final Object send(
@@ -33,7 +35,8 @@ public abstract class SAbstractObject implements TruffleObject {
     SSymbol selector = universe.symbolFor(selectorString);
 
     // Lookup the invokable
-    SInvokable invokable = Types.getClassOf(arguments[0], universe).lookupInvokable(selector);
+    SInvokable invokable = SClass.lookupInvokable(
+        Types.getClassOf(arguments[0], universe), selector, universe);
 
     return invokable.invoke(arguments);
   }

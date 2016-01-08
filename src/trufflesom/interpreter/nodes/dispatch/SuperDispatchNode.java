@@ -4,11 +4,13 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import trufflesom.interpreter.nodes.ISuperReadNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -39,17 +41,17 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
       this.universe = universe;
     }
 
-    private SClass getLexicalSuperClass() {
-      SClass clazz = (SClass) universe.getGlobal(holderClass);
+    private DynamicObject getLexicalSuperClass() {
+      DynamicObject clazz = (DynamicObject) universe.getGlobal(holderClass);
       if (classSide) {
-        clazz = clazz.getSOMClass(universe);
+        clazz = SObject.getSOMClass(clazz);
       }
-      return (SClass) clazz.getSuperClass();
+      return (DynamicObject) SClass.getSuperClass(clazz, universe);
     }
 
     private CachedDispatchNode specialize() {
       CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
-      SInvokable method = getLexicalSuperClass().lookupInvokable(selector);
+      SInvokable method = SClass.lookupInvokable(getLexicalSuperClass(), selector, universe);
 
       if (method == null) {
         throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");

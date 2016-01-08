@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
@@ -50,8 +51,10 @@ public class SourcecodeCompiler {
   }
 
   @TruffleBoundary
-  public SClass compileClass(final String path, final String file, final SClass systemClass,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
+  public DynamicObject compileClass(final String path, final String file,
+      final DynamicObject systemClass,
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> probe,
+      final Universe universe)
       throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
     FileReader stream = new FileReader(fname);
@@ -60,9 +63,9 @@ public class SourcecodeCompiler {
     Source source = SomLanguage.getSource(f);
     Parser parser = new Parser(stream, f.length(), source, probe, language.getUniverse());
 
-    SClass result = compile(parser, systemClass, language.getUniverse());
+    DynamicObject result = compile(parser, systemClass, universe);
 
-    SSymbol cname = result.getName();
+    SSymbol cname = SClass.getName(result, universe);
     String cnameC = cname.getString();
 
     if (file != cnameC) {
@@ -74,21 +77,20 @@ public class SourcecodeCompiler {
   }
 
   @TruffleBoundary
-  public SClass compileClass(final String stmt, final SClass systemClass,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
-      throws ProgramDefinitionError {
-    Parser parser =
-        new Parser(new StringReader(stmt), stmt.length(), null, probe, language.getUniverse());
+  public DynamicObject compileClass(final String stmt, final DynamicObject systemClass,
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> probe,
+      final Universe universe) throws ProgramDefinitionError {
+    Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, probe, universe);
 
-    SClass result = compile(parser, systemClass, language.getUniverse());
+    DynamicObject result = compile(parser, systemClass, universe);
     return result;
   }
 
-  public SClass compile(final Parser parser, final SClass systemClass,
+  public DynamicObject compile(final Parser parser, final DynamicObject systemClass,
       final Universe universe) throws ProgramDefinitionError {
     ClassGenerationContext cgc = new ClassGenerationContext(universe, parser.structuralProbe);
 
-    SClass result = systemClass;
+    DynamicObject result = systemClass;
     parser.classdef(cgc);
 
     if (systemClass == null) {

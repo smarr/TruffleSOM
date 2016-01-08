@@ -67,6 +67,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -92,6 +93,7 @@ import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -103,7 +105,7 @@ public class Parser {
 
   private final InlinableNodes<SSymbol> inlinableNodes;
 
-  protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
+  protected final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe;
 
   private Symbol sym;
   private String text;
@@ -215,7 +217,7 @@ public class Parser {
   }
 
   public Parser(final Reader reader, final long fileSize, final Source source,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe,
+      final StructuralProbe<SSymbol, DynamicObject, SInvokable, Field, Variable> structuralProbe,
       final Universe universe) {
     this.universe = universe;
     this.source = source;
@@ -282,15 +284,15 @@ public class Parser {
 
     // Load the super class, if it is not nil (break the dependency cycle)
     if (!superName.getString().equals("nil")) {
-      SClass superClass = universe.loadClass(superName);
+      DynamicObject superClass = universe.loadClass(superName);
       if (superClass == null) {
         throw new ParseError("Super class " + superName.getString() +
             " could not be loaded", NONE, this);
       }
 
-      cgenc.setInstanceFieldsOfSuper(superClass.getInstanceFieldDefinitions());
+      cgenc.setInstanceFieldsOfSuper(SClass.getInstanceFieldDefinitions(superClass, universe));
       cgenc.setClassFieldsOfSuper(
-          superClass.getSOMClass(universe).getInstanceFieldDefinitions());
+          SClass.getInstanceFieldDefinitions(SObject.getSOMClass(superClass), universe));
     }
   }
 
@@ -629,9 +631,13 @@ public class Parser {
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod, universe).initialize(getSource(coord));
+          return new BlockNodeWithContext(blockMethod,
+              (trufflesom.interpreter.Method) blockMethod.getInvokable(),
+              universe).initialize(getSource(coord));
         } else {
-          return new BlockNode(blockMethod, universe).initialize(getSource(coord));
+          return new BlockNode(blockMethod,
+              (trufflesom.interpreter.Method) blockMethod.getInvokable(), universe).initialize(
+                  getSource(coord));
         }
       }
       default: {

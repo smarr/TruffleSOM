@@ -2,6 +2,7 @@ package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -19,9 +20,9 @@ public abstract class ObjectSizePrim extends UnaryExpressionNode {
   }
 
   @Specialization
-  public final long doSObject(final SObject receiver) {
+  public final long doSObject(final DynamicObject receiver) {
     int size = 0;
-    size += receiver.getNumberOfFields();
+    size += SObject.getNumberOfFields(receiver);
     return size;
   }
 

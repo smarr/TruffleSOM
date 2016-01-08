@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
@@ -12,7 +13,6 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
-import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -38,7 +38,7 @@ public abstract class NewPrim extends BinarySystemOperation {
   }
 
   @Specialization(guards = "receiver == universe.arrayClass")
-  public final SArray doSClass(final SClass receiver, final long length) {
+  public final SArray doSClass(final DynamicObject receiver, final long length) {
     return new SArray(length);
   }
 }

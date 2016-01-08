@@ -25,14 +25,13 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import trufflesom.interpreter.TypesGen;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
-import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -74,17 +73,14 @@ public abstract class ExpressionNode extends SOMNode {
     return TypesGen.expectSBlock(executeGeneric(frame));
   }
 
-  public SClass executeSClass(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectSClass(executeGeneric(frame));
+  public DynamicObject executeDynamicObject(final VirtualFrame frame)
+      throws UnexpectedResultException {
+    return TypesGen.expectDynamicObject(executeGeneric(frame));
   }
 
   public SInvokable executeSInvokable(final VirtualFrame frame)
       throws UnexpectedResultException {
     return TypesGen.expectSInvokable(executeGeneric(frame));
-  }
-
-  public SObject executeSObject(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectSObject(executeGeneric(frame));
   }
 
   public SArray executeSArray(final VirtualFrame frame) throws UnexpectedResultException {

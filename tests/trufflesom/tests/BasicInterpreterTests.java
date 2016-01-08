@@ -23,7 +23,6 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static trufflesom.tests.SomTests.readValue;
 
 import java.util.Arrays;
 
@@ -139,35 +138,32 @@ public class BasicInterpreterTests {
     this.resultType = resultType;
   }
 
-  protected void assertEqualsSOMValue(final Object expectedResult, final Object actualResult) {
+  protected void assertEqualsSOMValue(final Object expectedResult, final Value actualResult)
+      throws ReflectiveOperationException, SecurityException, IllegalArgumentException {
     if (resultType == Long.class) {
-      if (actualResult instanceof Long) {
-        long expected = (int) expectedResult;
-        long actual = (long) actualResult;
-        assertEquals(expected, actual);
-      } else {
-        fail("Expected integer result, but got: " + actualResult.toString());
-      }
+      long expected = (int) expectedResult;
+      long actual = actualResult.as(Long.class);
+      assertEquals(expected, actual);
       return;
     }
 
     if (resultType == Double.class) {
       double expected = (double) expectedResult;
-      double actual = (double) actualResult;
+      double actual = actualResult.as(Double.class);
       assertEquals(expected, actual, 1e-15);
       return;
     }
 
     if (resultType == SClass.class) {
       String expected = (String) expectedResult;
-      String actual = ((SClass) readValue((Value) actualResult)).getName().getString();
+      String actual = TruffleAccessor.getSomClassName(actualResult);
       assertEquals(expected, actual);
       return;
     }
 
     if (resultType == SSymbol.class) {
       String expected = (String) expectedResult;
-      String actual = ((SSymbol) readValue((Value) actualResult)).getString();
+      String actual = ((SSymbol) TruffleAccessor.readValue(actualResult)).getString();
       assertEquals(expected, actual);
       return;
     }
@@ -175,7 +171,8 @@ public class BasicInterpreterTests {
   }
 
   @Test
-  public void testBasicInterpreterBehavior() {
+  public void testBasicInterpreterBehavior()
+      throws ReflectiveOperationException, SecurityException, IllegalArgumentException {
     Builder builder = Universe.createContextBuilder();
     builder.option("som.CLASS_PATH", "Smalltalk:TestSuite/BasicInterpreterTests");
     builder.option("som.TEST_CLASS", testClass);
@@ -184,6 +181,6 @@ public class BasicInterpreterTests {
     Context context = builder.build();
     Value actualResult = context.eval(SomLanguage.START);
 
-    assertEqualsSOMValue(expectedResult, actualResult.as(Object.class));
+    assertEqualsSOMValue(expectedResult, actualResult);
   }
 }

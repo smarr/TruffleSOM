@@ -7,12 +7,12 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.vm.constants.Nil;
-import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -50,7 +50,7 @@ public abstract class LocalVariableNode extends ExpressionNode implements Invoca
     }
 
     @Specialization(guards = "isUninitialized(frame)")
-    public final SObject doNil(final VirtualFrame frame) {
+    public final DynamicObject doNil(final VirtualFrame frame) {
       return Nil.nilObject;
     }
 

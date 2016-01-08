@@ -2,11 +2,11 @@ package trufflesom.primitives.basics;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
-import trufflesom.vmobjects.SClass;
 
 
 public abstract class DoublePrims {
@@ -33,7 +33,7 @@ public abstract class DoublePrims {
   @Primitive(className = "Double", primitive = "PositiveInfinity", classSide = true)
   public abstract static class PositiveInfinityPrim extends UnarySystemOperation {
     @Specialization(guards = "receiver == universe.doubleClass")
-    public final double doSClass(final SClass receiver) {
+    public final double doSClass(final DynamicObject receiver) {
       return Double.POSITIVE_INFINITY;
     }
   }
