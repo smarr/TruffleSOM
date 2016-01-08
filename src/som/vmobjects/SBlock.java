@@ -34,10 +34,12 @@ import som.vm.Universe;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 public final class SBlock extends SAbstractObject {
 
-  public SBlock(final SInvokable blockMethod, final SClass blockClass, final MaterializedFrame context) {
+  public SBlock(final SInvokable blockMethod, final DynamicObject blockClass,
+      final MaterializedFrame context) {
     this.method  = blockMethod;
     this.context = context;
     this.blockClass = blockClass;
@@ -53,7 +55,7 @@ public final class SBlock extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass() {
+  public DynamicObject getSOMClass() {
     return blockClass;
   }
 
@@ -62,7 +64,7 @@ public final class SBlock extends SAbstractObject {
   }
 
   public static SInvokable getEvaluationPrimitive(final int numberOfArguments,
-      final Universe universe, final SClass rcvrClass) {
+      final Universe universe, final DynamicObject rcvrClass) {
     CompilerAsserts.neverPartOfCompilation("SBlock.getEvaluationPrimitive(...)");
     SSymbol sig = universe.symbolFor(computeSignatureString(numberOfArguments));
 
@@ -92,7 +94,7 @@ public final class SBlock extends SAbstractObject {
     return signatureString;
   }
 
-  private final SClass            blockClass;
+  private final DynamicObject     blockClass;
   private final SInvokable        method;
   private final MaterializedFrame context;
 }

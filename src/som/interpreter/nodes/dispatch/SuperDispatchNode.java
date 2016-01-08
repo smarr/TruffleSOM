@@ -4,12 +4,14 @@ import som.interpreter.nodes.ISuperReadNode;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
+import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.object.DynamicObject;
 
 /**
  * Super sends are special, they lead to a lexically defined receiver class.
@@ -36,17 +38,17 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
       this.classSide   = classSide;
     }
 
-    private SClass getLexicalSuperClass() {
-      SClass clazz = (SClass) Universe.current().getGlobal(holderClass);
+    private DynamicObject getLexicalSuperClass() {
+      DynamicObject clazz = (DynamicObject) Universe.current().getGlobal(holderClass);
       if (classSide) {
-        clazz = clazz.getSOMClass();
+        clazz = SObject.getSOMClass(clazz);
       }
-      return (SClass) clazz.getSuperClass();
+      return (DynamicObject) SClass.getSuperClass(clazz);
     }
 
     private CachedDispatchNode specialize() {
       CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
-      SInvokable method = getLexicalSuperClass().lookupInvokable(selector);
+      SInvokable method = SClass.lookupInvokable(getLexicalSuperClass(), selector);
 
       if (method == null) {
         throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");

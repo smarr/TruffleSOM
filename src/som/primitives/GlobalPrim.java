@@ -8,12 +8,12 @@ import som.primitives.SystemPrims.BinarySystemNode;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
 import som.vm.constants.Nil;
-import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 @ImportStatic(SystemPrims.class)
@@ -21,7 +21,7 @@ public abstract class GlobalPrim extends BinarySystemNode {
   @Child private GetGlobalNode getGlobal = new UninitializedGetGlobal(0);
 
   @Specialization(guards = "receiverIsSystemObject(receiver)")
-  public final Object doSObject(final VirtualFrame frame, final SObject receiver, final SSymbol argument) {
+  public final Object doSObject(final VirtualFrame frame, final DynamicObject receiver, final SSymbol argument) {
     return getGlobal.getGlobal(frame, argument);
   }
 

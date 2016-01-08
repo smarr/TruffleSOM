@@ -5,6 +5,7 @@ import java.util.Arrays;
 import som.vm.constants.Classes;
 import som.vm.constants.Nil;
 
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
 /**
@@ -328,7 +329,7 @@ public final class SArray extends SAbstractObject {
 
 
   @Override
-  public SClass getSOMClass() {
+  public DynamicObject getSOMClass() {
     return Classes.arrayClass;
   }
 }

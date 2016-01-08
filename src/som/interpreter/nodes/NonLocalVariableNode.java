@@ -4,7 +4,6 @@ import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.vm.constants.Nil;
-import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -12,6 +11,7 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -49,7 +49,7 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     }
 
     @Specialization(guards = "isUninitialized()")
-    public final SObject doNil() {
+    public final DynamicObject doNil() {
       return Nil.nilObject;
     }
 

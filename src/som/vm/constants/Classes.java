@@ -1,24 +1,25 @@
 package som.vm.constants;
 
 import som.vm.Universe;
-import som.vmobjects.SClass;
+
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class Classes {
-  public static final SClass  objectClass;
-  public static final SClass  classClass;
-  public static final SClass  metaclassClass;
+  public static final DynamicObject  objectClass;
+  public static final DynamicObject  classClass;
+  public static final DynamicObject  metaclassClass;
 
-  public static final SClass  nilClass;
-  public static final SClass  integerClass;
-  public static final SClass  arrayClass;
-  public static final SClass  methodClass;
-  public static final SClass  symbolClass;
-  public static final SClass  primitiveClass;
-  public static final SClass  stringClass;
-  public static final SClass  doubleClass;
+  public static final DynamicObject  nilClass;
+  public static final DynamicObject  integerClass;
+  public static final DynamicObject  arrayClass;
+  public static final DynamicObject  methodClass;
+  public static final DynamicObject  symbolClass;
+  public static final DynamicObject  primitiveClass;
+  public static final DynamicObject  stringClass;
+  public static final DynamicObject  doubleClass;
 
-  public static final SClass  booleanClass;
+  public static final DynamicObject  booleanClass;
 
   // These classes can be statically preinitialized.
   static {

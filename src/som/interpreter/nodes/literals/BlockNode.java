@@ -10,18 +10,18 @@ import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
 import som.vmobjects.SInvokable.SMethod;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 public class BlockNode extends LiteralNode {
 
   protected final SMethod blockMethod;
-  @CompilationFinal protected SClass blockClass;
+  @CompilationFinal protected DynamicObject blockClass;
 
   public BlockNode(final SMethod blockMethod,
       final SourceSection source) {

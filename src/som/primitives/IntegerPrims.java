@@ -7,11 +7,11 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.arithmetic.ArithmeticPrim;
 import som.vm.constants.Classes;
 import som.vmobjects.SArray;
-import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 
@@ -43,17 +43,17 @@ public abstract class IntegerPrims {
 
   @GenerateNodeFactory
   public abstract static class FromStringPrim extends ArithmeticPrim {
-    protected final boolean receiverIsIntegerClass(final SClass receiver) {
+    protected final boolean receiverIsIntegerClass(final DynamicObject receiver) {
       return receiver == Classes.integerClass;
     }
 
     @Specialization(guards = "receiverIsIntegerClass(receiver)")
-    public final Object doSClass(final SClass receiver, final String argument) {
+    public final Object doSClass(final DynamicObject receiver, final String argument) {
       return Long.parseLong(argument);
     }
 
     @Specialization(guards = "receiverIsIntegerClass(receiver)")
-    public final Object doSClass(final SClass receiver, final SSymbol argument) {
+    public final Object doSClass(final DynamicObject receiver, final SSymbol argument) {
       return Long.parseLong(argument.getString());
     }
   }

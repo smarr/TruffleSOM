@@ -14,6 +14,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class MethodPrims {
@@ -29,7 +30,7 @@ public final class MethodPrims {
   @GenerateNodeFactory
   public abstract static class HolderPrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doSMethod(final SInvokable receiver) {
+    public final DynamicObject doSMethod(final SInvokable receiver) {
       return receiver.getHolder();
     }
   }

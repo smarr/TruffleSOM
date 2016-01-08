@@ -11,6 +11,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class UninitializedDispatchNode extends AbstractDispatchNode {
@@ -43,8 +44,8 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     }
 
     if (chainDepth < INLINE_CACHE_SIZE) {
-      SClass rcvrClass = Types.getClassOf(rcvr);
-      SInvokable method = rcvrClass.lookupInvokable(selector);
+      DynamicObject rcvrClass = Types.getClassOf(rcvr);
+      SInvokable method = SClass.lookupInvokable(rcvrClass, selector);
       CallTarget callTarget;
       if (method != null) {
         callTarget = method.getCallTarget();
