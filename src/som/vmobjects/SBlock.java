@@ -31,62 +31,16 @@ import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueTwoPrimFactory;
 import som.primitives.Primitives;
 import som.vm.Universe;
-import som.vm.constants.Blocks;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 
-public abstract class SBlock extends SAbstractObject {
+public final class SBlock extends SAbstractObject {
 
-  public static SBlock create(final SInvokable blockMethod,
-      final MaterializedFrame context) {
-    switch (blockMethod.getNumberOfArguments()) {
-      case 1: return new SBlock1(blockMethod, context);
-      case 2: return new SBlock2(blockMethod, context);
-      case 3: return new SBlock3(blockMethod, context);
-    }
-
-    CompilerDirectives.transferToInterpreter();
-    throw new RuntimeException("We do currently not have support for more than 3 arguments to a block.");
-  }
-
-  public static final class SBlock1 extends SBlock {
-    public SBlock1(final SInvokable blockMethod, final MaterializedFrame context) {
-      super(blockMethod, context);
-    }
-
-    @Override
-    public SClass getSOMClass() {
-      return Blocks.blockClass1;
-    }
-  }
-
-  public static final class SBlock2 extends SBlock {
-    public SBlock2(final SInvokable blockMethod, final MaterializedFrame context) {
-      super(blockMethod, context);
-    }
-
-    @Override
-    public SClass getSOMClass() {
-      return Blocks.blockClass2;
-    }
-  }
-
-  public static final class SBlock3 extends SBlock {
-    public SBlock3(final SInvokable blockMethod, final MaterializedFrame context) {
-      super(blockMethod, context);
-    }
-
-    @Override
-    public SClass getSOMClass() {
-      return Blocks.blockClass3;
-    }
-  }
-
-  public SBlock(final SInvokable blockMethod, final MaterializedFrame context) {
+  public SBlock(final SInvokable blockMethod, final SClass blockClass, final MaterializedFrame context) {
     this.method  = blockMethod;
     this.context = context;
+    this.blockClass = blockClass;
   }
 
   public final SInvokable getMethod() {
@@ -96,6 +50,11 @@ public abstract class SBlock extends SAbstractObject {
   public final MaterializedFrame getContext() {
     assert context != null;
     return context;
+  }
+
+  @Override
+  public SClass getSOMClass() {
+    return blockClass;
   }
 
   public final Object getOuterSelf() {
@@ -133,6 +92,7 @@ public abstract class SBlock extends SAbstractObject {
     return signatureString;
   }
 
+  private final SClass            blockClass;
   private final SInvokable        method;
   private final MaterializedFrame context;
 }

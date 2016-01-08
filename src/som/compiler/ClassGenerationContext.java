@@ -35,7 +35,7 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.utilities.ValueProfile;
+import com.oracle.truffle.api.profiles.ValueProfile;
 
 public final class ClassGenerationContext {
   private static final ValueProfile storageType = ValueProfile.createClassProfile();

@@ -41,7 +41,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.LocationFactory;
 import com.oracle.truffle.api.object.Shape;
-import com.oracle.truffle.api.utilities.ValueProfile;
+import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public final class SClass extends SObject {

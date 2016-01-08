@@ -99,6 +99,7 @@ public class SObject extends SAbstractObject {
     }
   }
 
+  /*
   public final boolean updateLayoutToMatchClass() {
     Shape layoutAtClass = clazz.getLayoutForInstances();
     assert layoutAtClass.getPropertyCount() == this.dynamicObject.size();
@@ -110,6 +111,7 @@ public class SObject extends SAbstractObject {
       return false;
     }
   }
+  */
 
   @Override
   public final SClass getSOMClass() {

@@ -22,10 +22,9 @@
 package som.interpreter.nodes;
 
 import som.interpreter.nodes.MateFieldNodesFactory.MateFieldWriteNodeGen;
+import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.UninitializedReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.UninitializedWriteFieldNode;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SObject;
 
@@ -68,7 +67,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
         final SourceSection source) {
       super(source);
       this.self = self;
-      read = new UninitializedReadFieldNode(fieldIndex);
+      read = FieldAccessorNode.createRead(fieldIndex);
     }
 
     public FieldReadNode(final FieldReadNode node) {
@@ -141,7 +140,7 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
     
     public FieldWriteNode(final int fieldIndex, final SourceSection source) {
       super(source);
-      write = new UninitializedWriteFieldNode(fieldIndex);
+      write = FieldAccessorNode.createWrite(fieldIndex);
     }
 
     public FieldWriteNode(final FieldWriteNode node) {

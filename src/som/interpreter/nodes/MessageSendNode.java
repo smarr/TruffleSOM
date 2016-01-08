@@ -11,9 +11,8 @@ import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory.AndBoolMessageNodeFactory;
-import som.interpreter.nodes.specialized.IfFalseMessageNodeGen;
+import som.interpreter.nodes.specialized.IfMessageNodeGen;
 import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeGen;
-import som.interpreter.nodes.specialized.IfTrueMessageNodeGen;
 import som.interpreter.nodes.specialized.IntDownToDoMessageNodeGen;
 import som.interpreter.nodes.specialized.IntToByDoMessageNodeGen;
 import som.interpreter.nodes.specialized.IntToDoMessageNodeGen;
@@ -330,14 +329,12 @@ public final class MessageSendNode {
         case "ifTrue:":
           return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
-              IfTrueMessageNodeGen.create(arguments[0],
-                  arguments[1], getSourceSection(),
+              IfMessageNodeGen.create(true, getSourceSection(), 
                   argumentNodes[0], argumentNodes[1])));
         case "ifFalse:":
           return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
-              IfFalseMessageNodeGen.create(arguments[0],
-                  arguments[1], getSourceSection(),
+              IfMessageNodeGen.create(false, getSourceSection(),
                   argumentNodes[0], argumentNodes[1])));
         case "to:":
           if (arguments[0] instanceof Long) {
@@ -595,19 +592,14 @@ public final class MessageSendNode {
       return dispatchNode.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), arguments);
     }
 
-    public AbstractDispatchNode getDispatchListHead() {
-      return dispatchNode;
-    }
-
-    public void adoptNewDispatchListHead(final AbstractDispatchNode newHead) {
-      CompilerAsserts.neverPartOfCompilation();
-      dispatchNode = insert(newHead);
-    }
-
     public void replaceDispatchListHead(
         final GenericDispatchNode replacement) {
       CompilerAsserts.neverPartOfCompilation();
       dispatchNode.replace(replacement);
+    }
+    
+    public AbstractDispatchNode getDispatchListHead() {   
+      return dispatchNode;    
     }
 
     @Override

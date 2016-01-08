@@ -4,7 +4,6 @@ import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractMethodDispatchNode.AbstractMethodCachedDispatchNode;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.frame.VirtualFrame;

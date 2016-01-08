@@ -14,16 +14,18 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
-public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
+public final class GenericDispatchNode extends AbstractDispatchNode {
   @Child private IndirectCallNode call;
+  protected final SSymbol selector;
 
   public GenericDispatchNode(final SSymbol selector) {
-    super(selector);
+    this.selector = selector;
     call = Truffle.getRuntime().createIndirectCallNode();
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, 
+      final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
     Object rcvr = arguments[0];
     SClass rcvrClass = Types.getClassOf(rcvr);
     SInvokable method = rcvrClass.lookupInvokable(selector);
@@ -38,7 +40,7 @@ public final class GenericDispatchNode extends AbstractDispatchWithLookupNode {
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
       args = new Object[] {environment, exLevel, arguments[SArguments.RCVR_ARGUMENTS_OFFSET], selector, argumentsArray};
-      target = AbstractCachedDnuNode.getDnuCallTarget(rcvrClass);
+      target = CachedDnuNode.getDnuCallTarget(rcvrClass);
     }
     return call.call(frame, target, args);
   }
