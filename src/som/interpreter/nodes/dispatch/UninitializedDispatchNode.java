@@ -21,8 +21,6 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   }
 
   private AbstractDispatchNode specialize(final Object[] arguments) {
-    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
-
     // Determine position in dispatch node chain, i.e., size of inline cache
     Node i = this;
     int chainDepth = 0;
@@ -74,6 +72,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
     return specialize(arguments).
         executeDispatch(frame, arguments);
   }
