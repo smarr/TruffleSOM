@@ -79,8 +79,11 @@ public final class SObject {
 
   public static final void setClass(final DynamicObject obj, final DynamicObject value) {
     CompilerAsserts.neverPartOfCompilation("SObject.setClass");
+    assert obj != null;
     assert value != null;
-    obj.set(CLASS, value);
+
+    assert !Universe.current().objectSystemInitialized : "This should really only be used during initialization of object system";
+    SOBJECT_SHAPE.getProperty(CLASS).setInternal(obj, value);
   }
 
   public static final long getFieldIndex(final DynamicObject obj, final SSymbol fieldName) {

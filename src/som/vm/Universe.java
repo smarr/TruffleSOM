@@ -694,7 +694,7 @@ public final class Universe {
   @CompilationFinal private static Universe current;
   @CompilationFinal private boolean alreadyInitialized;
 
-  @CompilationFinal private boolean objectSystemInitialized = false;
+  @CompilationFinal public boolean objectSystemInitialized = false;
 
   public boolean isObjectSystemInitialized() {
     return objectSystemInitialized;
