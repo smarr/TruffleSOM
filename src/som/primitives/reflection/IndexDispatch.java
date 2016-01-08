@@ -3,8 +3,8 @@ package som.primitives.reflection;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.interpreter.nodes.dispatch.DispatchChain;
 import som.interpreter.objectstorage.FieldAccessorNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
+import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
@@ -83,14 +83,15 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   private static final class CachedReadDispatchNode extends IndexDispatch {
     private final int index;
-    private final SClass clazz;
-    @Child private AbstractReadFieldNode access;
+    private final DynamicObject clazz;
+    @Child private ReadFieldNode access;
     // TODO: have a second cached class for the writing...
     @Child private IndexDispatch next;
 
-    public CachedReadDispatchNode(final SClass clazz, final int index,
+    public CachedReadDispatchNode(final DynamicObject clazz, final int index,
         final IndexDispatch next, final int depth) {
       super(depth);
+      assert SClass.isSClass(clazz);
       this.index = index;
       this.clazz = clazz;
       this.next = next;
@@ -98,16 +99,16 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final SObject obj, final int index) {
-      if (this.index == index && this.clazz == obj.getSOMClass()) {
-        return access.read(obj);
+    public Object executeDispatch(final DynamicObject obj, final int index) {
+      if (this.index == index && this.clazz == SObject.getSOMClass(obj)) {
+        return access.executeRead(obj);
       } else {
         return next.executeDispatch(obj, index);
       }
     }
 
     @Override
-    public Object executeDispatch(final SObject obj, final int index, final Object value) {
+    public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
       CompilerAsserts.neverPartOfCompilation();
       throw new RuntimeException("This should be never reached.");
     }
@@ -120,11 +121,11 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   private static final class CachedWriteDispatchNode extends IndexDispatch {
     private final int index;
-    private final SClass clazz;
-    @Child private AbstractWriteFieldNode access;
+    private final DynamicObject clazz;
+    @Child private WriteFieldNode access;
     @Child private IndexDispatch next;
 
-    public CachedWriteDispatchNode(final SClass clazz, final int index,
+    public CachedWriteDispatchNode(final DynamicObject clazz, final int index,
         final IndexDispatch next, final int depth) {
       super(depth);
       assert SClass.isSClass(clazz);
@@ -141,9 +142,9 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      if (this.index == index && this.clazz == obj.getSOMClass()) {
-        return access.write(obj, value);
+    public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
+      if (this.index == index && this.clazz == SObject.getSOMClass(obj)) {
+        return access.executeWrite(obj, value);
       } else {
         return next.executeDispatch(obj, index, value);
       }
@@ -162,13 +163,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final SObject obj, final int index) {
-      return obj.getField(index);
+    public Object executeDispatch(final DynamicObject obj, final int index) {
+      return obj.get(index);
     }
 
     @Override
-    public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      obj.setField(index, value);
+    public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
+      obj.set(index, value);
       return value;
     }
 
