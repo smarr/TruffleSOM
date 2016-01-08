@@ -5,7 +5,6 @@ import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -35,13 +34,6 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
 
     Object rcvr = arguments[0];
     assert rcvr != null;
-
-    if (rcvr instanceof SObject) {
-      SObject r = (SObject) rcvr;
-      if (r.updateLayoutToMatchClass() && first != this) { // if first is this, short cut and directly continue...
-        return first;
-      }
-    }
 
     if (chainDepth < INLINE_CACHE_SIZE) {
       DynamicObject rcvrClass = Types.getClassOf(rcvr);
