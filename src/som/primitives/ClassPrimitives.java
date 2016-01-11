@@ -33,6 +33,7 @@ import som.primitives.MatePrimsFactory.MateNewObjectPrimFactory;
 import som.vm.MateUniverse;
 import som.vm.Universe;
 
+
 public final class ClassPrimitives extends Primitives {
   public ClassPrimitives(final boolean displayWarning) { super(displayWarning); }
 

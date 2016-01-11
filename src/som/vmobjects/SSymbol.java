@@ -26,6 +26,8 @@ package som.vmobjects;
 
 import som.vm.constants.Classes;
 
+import com.oracle.truffle.api.object.DynamicObject;
+
 public final class SSymbol extends SAbstractObject {
   private final String string;
   private final int    numberOfSignatureArguments;
@@ -37,7 +39,7 @@ public final class SSymbol extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass() {
+  public DynamicObject getSOMClass() {
     assert Classes.symbolClass != null;
     return Classes.symbolClass;
   }

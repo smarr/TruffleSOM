@@ -1,4 +1,9 @@
-This version is used with the following version of the Graal repo:
-  https://github.com/smarr/GraalBasic.git
+#!/bin/sh
+# This version is used with the following version of the Graal repo:
+#  https://github.com/smarr/GraalBasic.git
 
-  git-rev: 013ffbcccd780a40f753114ac587d63e3786e436
+SCRIPT=`head -n 6 .graal-git-rev; echo ''; echo '# current revision'; echo ' '`
+echo "${SCRIPT}GIT-REV="`git --git-dir ../graal/.git rev-parse HEAD` > .graal-git-rev; exit 0
+
+# current revision
+ GIT-REV=6b13c73c862f7fc9e26701a898d8d2d9990f2852

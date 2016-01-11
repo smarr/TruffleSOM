@@ -12,6 +12,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class UninitializedDispatchNode extends AbstractDispatchNode {
@@ -22,8 +23,6 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   }
 
   private AbstractDispatchNode specialize(final Object[] arguments) {
-    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
-
     // Determine position in dispatch node chain, i.e., size of inline cache
     Node i = this;
     int chainDepth = 0;
@@ -32,23 +31,19 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
       chainDepth++;
     }
     AbstractDispatchNode first = (AbstractDispatchNode) i;
-
     Object rcvr = arguments[0];
     assert rcvr != null;
 
-    /*
-    Todo: Check if this has sense for Mate. I think no because objects can have layouts different from their class.  
-    if (rcvr instanceof SObject) {
-      SObject r = (SObject) rcvr;
-      if (r.updateLayoutToMatchClass() && first != this) { // if first is this, short cut and directly continue...
+    /*if (rcvr instanceof DynamicObject) {
+      DynamicObject r = (DynamicObject) rcvr;
+      if (r.updateShape() && first != this) { // if first is this, short cut and directly continue...
         return first;
       }
-    }
-    */
+    }*/
     
     if (chainDepth < INLINE_CACHE_SIZE) {
-      SClass rcvrClass = Types.getClassOf(rcvr);
-      SInvokable method = rcvrClass.lookupInvokable(selector);
+      DynamicObject rcvrClass = Types.getClassOf(rcvr);
+      SInvokable method = SClass.lookupInvokable(rcvrClass, selector);
       CallTarget callTarget;
       if (method != null) {
         callTarget = method.getCallTarget();
@@ -79,8 +74,9 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   @Override
   public Object executeDispatch(final VirtualFrame frame, 
       final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");    
     return specialize(arguments).
-        executeDispatch(frame, environment, exLevel, arguments);
+    executeDispatch(frame, environment, exLevel, arguments);
   }
 
   @Override

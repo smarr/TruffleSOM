@@ -1,12 +1,10 @@
 package som.interpreter.nodes.dispatch;
 
 import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
-
-import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
 
 
@@ -22,12 +20,8 @@ public abstract class DispatchGuard {
       return new CheckFalse();
     }
 
-    //if (obj instanceof SClass) {
-    //  return new CheckSClass(((SClass) obj).getLayoutForInstances());
-    //}
-
-    if (obj instanceof SObject) {
-      return new CheckSObject(((SObject) obj));
+    if (obj instanceof DynamicObject) {
+      return new CheckSObject(((DynamicObject) obj).getShape());
     }
 
     return new CheckClass(obj.getClass());
@@ -78,38 +72,22 @@ public abstract class DispatchGuard {
     }
   }
 
-  private static class CheckSClass extends DispatchGuard {
-    protected final Shape expected;
-    protected final Assumption valid;
+  private static final class CheckSObject extends DispatchGuard {
+    private final Shape expected;
 
-    public CheckSClass(final Shape expected) {
+    public CheckSObject(final Shape expected) {
       this.expected = expected;
-      valid = expected.getValidAssumption();
     }
 
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      valid.check();
-      return obj instanceof SClass &&
-          ((SClass) obj).getNumberOfInstanceFields() == expected.getPropertyCount();
-    }
-  }
-
-  private static final class CheckSObject extends CheckSClass {
-    private final SClass clazz;
-    public CheckSObject(final SObject obj) {
-      super(obj.getObjectLayout());
-      clazz = obj.getSOMClass();
-    }
-
-    @Override
-    public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      return obj instanceof SObject &&
-          ((SObject) obj).getSOMClass() == clazz;
-      /*valid.check();
-      return obj instanceof SObject &&
-          ((SObject) obj).isShapeCompatible(expected);*/
-      
+      if (!expected.isValid()) {
+        CompilerDirectives.transferToInterpreter();
+        throw new InvalidAssumptionException();
+      }
+      return obj instanceof DynamicObject && ((DynamicObject) obj).getShape() == expected;
+      /*return obj instanceof SObject &&
+           ((SObject) obj).getSOMClass() == clazz;*/
     }
   }
 }

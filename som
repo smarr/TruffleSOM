@@ -12,7 +12,7 @@ GRAAL_LOCATIONS = ['/home/smarr/Projects/SOM/graal/jvmci',
                    '/Users/guidochari/Documents/Projects/graal-compiler/jvmci',
                    BASE_DIR + '/../graal/jvmci',
                    BASE_DIR + '/../GraalVM/jvmci']
-JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_40', 'jdk1.8.0_25']
+JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_45-internal', 'jdk1.8.0_40', 'jdk1.8.0_25']
 
 parser = argparse.ArgumentParser(
     description='Helper script to run TruffleMate with/without Graal')
@@ -74,7 +74,7 @@ JAVA_ARGS = ['-d64']
 
 if args.java_interpreter:
     args.interpreter = True
-    
+
 if args.interpreter:
     java_bin = "java"
 else:
@@ -151,7 +151,6 @@ if not args.interpreter and (args.profile or args.profile_allocations or args.pr
         flags += ['-Dgraal.option.TimedDynamicCounters=1000']
     if args.profile:
         flags += ['-Dgraal.option.BenchmarkDynamicCounters=out,completed,total']
-
 if not args.interpreter and args.perf_warnings:
     flags += ['-Dgraal.option.TruffleCompilationExceptionsAreFatal=true',
               '-Dgraal.option.TraceTrufflePerformanceWarnings=true',

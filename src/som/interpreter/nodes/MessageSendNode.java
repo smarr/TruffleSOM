@@ -1,8 +1,8 @@
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
-import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
+import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;

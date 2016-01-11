@@ -25,35 +25,36 @@
 package som.vmobjects;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import som.vm.Universe;
+import som.vm.constants.Nil;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.Shape;
 
 public class SReflectiveObject extends SObject {
-
-  @CompilationFinal protected SMateEnvironment environment;
+  protected static final SSymbol ENVIRONMENT = Universe.current().symbolFor("environment");
+  protected static final Shape SREFLECTIVE_OBJECT_SHAPE = 
+      SOBJECT_SHAPE.createSeparateShape(SOBJECT_SHAPE.getData()).defineProperty(ENVIRONMENT, Nil.nilObject, 0);
+      
+  private static final DynamicObjectFactory SREFLECTIVE_OBJECT_FACTORY = SREFLECTIVE_OBJECT_SHAPE.createFactory();
   
-  protected SReflectiveObject(final SClass instanceClass) {
-    super(instanceClass);
+  public static DynamicObject create(final DynamicObject instanceClass) {
+    return SREFLECTIVE_OBJECT_FACTORY.newInstance(instanceClass);
   }
 
-  protected SReflectiveObject(final int numFields) {
-    super(numFields);
-  }
-  
-  public static SReflectiveObject create(final SClass instanceClass) {
-    return new SReflectiveObject(instanceClass);
-  }
-
-  public static SReflectiveObject create(final int numFields) {
-    return new SReflectiveObject(numFields);
+  public static DynamicObject create(final int numFields) {
+    return SREFLECTIVE_OBJECT_FACTORY.newInstance(Nil.nilObject);
   }
   
-  public final SMateEnvironment getEnvironment() {
-    return environment;
+  public static final SMateEnvironment getEnvironment(final DynamicObject obj) {
+    CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
+    return (SMateEnvironment) obj.get(ENVIRONMENT);
   }
 
-  public final void setEnvironment(final SMateEnvironment value) {
+  public static final void setEnvironment(final DynamicObject obj, final SMateEnvironment value) {
     transferToInterpreterAndInvalidate("SReflectiveObject.setEnvironment");
-    environment = value;
+    obj.set(ENVIRONMENT, value);
   }
 }

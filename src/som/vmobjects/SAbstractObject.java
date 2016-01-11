@@ -6,20 +6,21 @@ import som.vm.constants.ExecutionLevel;
 import som.vm.constants.MateClasses;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public abstract class SAbstractObject {
 
-  public abstract SClass getSOMClass();
+  public abstract DynamicObject getSOMClass();
 
   @Override
   public String toString() {
     CompilerAsserts.neverPartOfCompilation();
-    SClass clazz = getSOMClass();
+    DynamicObject clazz = getSOMClass();
     if (clazz == null) {
       return "an Object(clazz==null)";
     }
-    return "a " + clazz.getName().getString();
+    return "a " + SClass.getName(clazz).getString();
   }
 
   public static final Object send(
@@ -31,7 +32,7 @@ public abstract class SAbstractObject {
     SSymbol selector = Universe.current().symbolFor(selectorString);
 
     // Lookup the invokable
-    SInvokable invokable = Types.getClassOf(arguments[0]).lookupInvokable(selector);
+    SInvokable invokable = SClass.lookupInvokable(Types.getClassOf(arguments[0]), selector);
 
     return invokable.invoke(environment, exLevel, arguments);
   }

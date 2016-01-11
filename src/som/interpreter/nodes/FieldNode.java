@@ -21,120 +21,63 @@
  */
 package som.interpreter.nodes;
 
+import som.interpreter.nodes.MateFieldNodesFactory.MateFieldReadNodeGen;
 import som.interpreter.nodes.MateFieldNodesFactory.MateFieldWriteNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
+import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
 import som.vm.constants.ReflectiveOp;
-import som.vmobjects.SObject;
-
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
-public abstract class FieldNode extends ExpressionWithReceiverNode {
-
+public abstract class FieldNode extends ExpressionNode {
   protected FieldNode(final SourceSection source) {
     super(source);
   }
-
-  public abstract ExpressionNode getSelf();
-  public abstract Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver);
-
   
+  public abstract ExpressionNode getSelf();
+  
+  @NodeChild(value = "self", type = ExpressionNode.class)
+  public abstract static class FieldReadNode extends FieldNode {
 
-  public Object[] evaluateArguments(final VirtualFrame frame) {
-    SObject object;
-    try {
-      object = this.getSelf().executeSObject(frame);
-    } catch (UnexpectedResultException e) {
-      CompilerDirectives.transferToInterpreter();
-      throw new RuntimeException("This should never happen by construction");
-    }
-    return this.argumentsForReceiver(frame, object);
-  }
+    @Child protected ReadFieldNode read;
 
-  public static class FieldReadNode extends FieldNode
-      implements PreevaluatedExpression {
-    @Child private ExpressionNode self;
-    @Child protected AbstractReadFieldNode read;
-
-    public FieldReadNode(final ExpressionNode self, final int fieldIndex,
-        final SourceSection source) {
+    protected FieldReadNode(final int fieldIndex, final SourceSection source) {
+//    implements PreevaluatedExpression {       
       super(source);
-      this.self = self;
       read = FieldAccessorNode.createRead(fieldIndex);
     }
 
-    public FieldReadNode(final FieldReadNode node) {
-      this(node.self, node.read.getFieldIndex(), node.getSourceSection());
+    @Specialization
+    public final Object executeEvaluated(final DynamicObject obj) {
+      return read.executeRead(obj);
     }
 
-    @Override
-    public ExpressionNode getSelf() {
-      return self;
-    }
-
-    public Object executeEvaluated(final VirtualFrame frame, final SObject obj) {
-       return read.read(obj);
-    }
-
-    @Override
+    /*@Override
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return executeEvaluated(frame, (SObject) arguments[0]);
-    }
-
-    @Override
-    public long executeLong(final VirtualFrame frame) throws UnexpectedResultException {
-      SObject obj = self.executeSObject(frame);
-      return read.readLong(obj);
-    }
-
-    @Override
-    public double executeDouble(final VirtualFrame frame) throws UnexpectedResultException {
-      SObject obj = self.executeSObject(frame);
-      return read.readDouble(obj);
-    }
-
-    @Override
-    public Object[] argumentsForReceiver(final VirtualFrame frame, final SObject receiver) {
-      Object[] arguments = new Object[2];
-      arguments[0] = receiver;
-      arguments[1] = this.read.getFieldIndex();
-      return arguments;
-    }
-    
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      return executeEvaluated(frame, (SObject)this.evaluateArguments(frame)[0]);
-    }
+      return executeEvaluated((DynamicObject) arguments[0]);
+    }*/
     
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorReadField;
     }
 
     @Override
-    public ExpressionNode getReceiver() {
-      return this.getSelf();
-    }
-    
-    @Override
     public void wrapIntoMateNode() {
-      replace(new MateFieldNodes.MateFieldReadNode(this));
+      replace(MateFieldReadNodeGen.create(this, this.getSelf()));
     }
   }
 
   @NodeChildren({
     @NodeChild(value = "self", type = ExpressionNode.class),
     @NodeChild(value = "value", type = ExpressionNode.class)})
-  public abstract static class FieldWriteNode extends FieldNode
-      implements PreevaluatedExpression {
-    @Child protected AbstractWriteFieldNode write;
+  public abstract static class FieldWriteNode extends FieldNode {
+//      implements PreevaluatedExpression {
+    @Child protected WriteFieldNode write;
 
     public abstract ExpressionNode getValue();
     
@@ -143,65 +86,20 @@ public abstract class FieldNode extends ExpressionWithReceiverNode {
       write = FieldAccessorNode.createWrite(fieldIndex);
     }
 
-    public FieldWriteNode(final FieldWriteNode node) {
-      this(node.write.getFieldIndex(), node.getSourceSection());
+    @Specialization
+    public final Object executeEvaluated(final DynamicObject self, final Object value) {
+      return write.executeWrite(self, value);
     }
 
-    public Object doEvaluated(final VirtualFrame frame,
-        final SObject self, final Object value) {
-      return write.write(self, value);
-    }
-
-    @Override
+    /*@Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return doEvaluated(frame, (SObject) arguments[0], arguments[1]);
-    }
-
-    @Specialization
-    public long doLong(final VirtualFrame frame, final SObject self,
-        final long value) {
-      return write.write(self, value);
-    }
-
-    @Specialization
-    public double doDouble(final VirtualFrame frame, final SObject self,
-        final double value) {
-      return write.write(self, value);
-    }
-
-    @Specialization
-    public Object doObject(final VirtualFrame frame, final SObject self,
-        final Object value) {
-      return doEvaluated(frame, self, value);
-    }
-    
-    public Object[] argumentsForReceiver(final VirtualFrame frame, SObject receiver) {
-      Object[] arguments = new Object[3];
-      arguments[0] = receiver;
-      arguments[1] = this.write.getFieldIndex();
-      arguments[2] = this.getValue().executeGeneric(frame);
-      return arguments;
-    }
+      return executeEvaluated((DynamicObject) arguments[0], arguments[1]);
+    }*/
     
     @Override
-    public ExpressionNode getReceiver() {
-      return this.getSelf();
-    }
-    
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorWriteField;
-    }
-    
-    public Object[] evaluateArguments(final VirtualFrame frame) {
-      SObject object;
-      try {
-        object = this.getSelf().executeSObject(frame);
-      } catch (UnexpectedResultException e) {
-        CompilerDirectives.transferToInterpreter();
-        throw new RuntimeException("This should never happen by construction");
-      }
-      return this.argumentsForReceiver(frame, object);
     }
     
     @Override

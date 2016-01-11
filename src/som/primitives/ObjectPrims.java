@@ -8,7 +8,6 @@ import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
-import som.vmobjects.SClass;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
@@ -18,6 +17,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class ObjectPrims {
@@ -34,17 +34,17 @@ public final class ObjectPrims {
     public InstVarAtPrim(final InstVarAtPrim node) { this(); }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final long idx) {
+    public final Object doSObject(final DynamicObject receiver, final long idx) {
       return dispatch.executeDispatch(receiver, (int) idx - 1);
     }
 
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
       final Object receiver, final Object firstArg) {
-      assert receiver instanceof SObject;
+      assert receiver instanceof DynamicObject;
       assert firstArg instanceof Long;
 
-      SObject rcvr = (SObject) receiver;
+      DynamicObject rcvr = (DynamicObject) receiver;
       long idx     = (long) firstArg;
       return doSObject(rcvr, idx);
     }
@@ -61,7 +61,7 @@ public final class ObjectPrims {
     public InstVarAtPutPrim(final InstVarAtPutPrim node) { this(); }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final long idx, final Object val) {
+    public final Object doSObject(final DynamicObject receiver, final long idx, final Object val) {
       dispatch.executeDispatch(receiver, (int) idx - 1, val);
       return val;
     }
@@ -69,11 +69,11 @@ public final class ObjectPrims {
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
       final Object receiver, final Object firstArg, final Object secondArg) {
-      assert receiver instanceof SObject;
+      assert receiver instanceof DynamicObject;
       assert firstArg instanceof Long;
       assert secondArg != null;
 
-      SObject rcvr = (SObject) receiver;
+      DynamicObject rcvr = (DynamicObject) receiver;
       long idx     = (long) firstArg;
       return doSObject(rcvr, idx, secondArg);
     }
@@ -82,9 +82,9 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol fieldName) {
+    public final Object doSObject(final DynamicObject receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation();
-      return receiver.getField(receiver.getFieldIndex(fieldName));
+      return receiver.get(SObject.getFieldIndex(receiver, fieldName));
     }
   }
 
@@ -101,12 +101,17 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class ClassPrim extends UnaryExpressionNode {
     @Specialization
-    public final SClass doSAbstractObject(final SAbstractObject receiver) {
+    public final DynamicObject doSAbstractObject(final SAbstractObject receiver) {
       return receiver.getSOMClass();
     }
 
     @Specialization
-    public final SClass doObject(final Object receiver) {
+    public final DynamicObject doDynamicObject(final DynamicObject receiver) {
+      return SObject.getSOMClass(receiver);
+    }
+
+    @Specialization
+    public final DynamicObject doObject(final Object receiver) {
       return Types.getClassOf(receiver);
     }
   }
@@ -114,10 +119,16 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final SObject environment) {
-      //CompilerAsserts.neverPartOfCompilation();
-      if (environment == Nil.nilObject) ((SReflectiveObject)receiver).setEnvironment(null);
-      else ((SReflectiveObject)receiver).setEnvironment((SMateEnvironment)environment);
+    public final Object doSObject(final DynamicObject receiver, final Object environment) {
+      CompilerAsserts.neverPartOfCompilation();
+      //Todo: Allow to set the Smalltalk nil -> All mate node guards must be revised.
+      SMateEnvironment value;
+      if (environment == Nil.nilObject){
+        value = null;
+      } else {
+        value = (SMateEnvironment)environment;
+      }
+      SReflectiveObject.setEnvironment(receiver, value);
       return receiver;
     }
   }

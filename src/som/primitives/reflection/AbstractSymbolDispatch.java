@@ -9,6 +9,7 @@ import som.primitives.arrays.ToArgumentsArrayNode;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.vm.constants.MateClasses;
 import som.vmobjects.SArray;
+import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
@@ -60,7 +61,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doUncached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("create()") final IndirectCallNode call) {
-    SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
+    SInvokable invokable = SClass.lookupInvokable(Types.getClassOf(receiver), selector);
 
     /*Todo: Analyze what is the best to do here with the Mate arguments*/
     Object[] arguments = { MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), receiver };
@@ -73,7 +74,7 @@ public abstract class AbstractSymbolDispatch extends Node {
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("create()") final IndirectCallNode call,
       @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
-    SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
+    SInvokable invokable = SClass.lookupInvokable(Types.getClassOf(receiver), selector);
 
     Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
 

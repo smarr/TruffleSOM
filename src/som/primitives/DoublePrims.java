@@ -2,10 +2,10 @@ package som.primitives;
 
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.constants.Classes;
-import som.vmobjects.SClass;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public abstract class DoublePrims  {
@@ -20,12 +20,12 @@ public abstract class DoublePrims  {
 
   @GenerateNodeFactory
   public abstract static class PositiveInfinityPrim extends UnaryExpressionNode {
-    protected final boolean receiverIsDoubleClass(final SClass receiver) {
+    protected final boolean receiverIsDoubleClass(final DynamicObject receiver) {
       return receiver == Classes.doubleClass;
     }
 
     @Specialization(guards = "receiverIsDoubleClass(receiver)")
-    public final double doSClass(final SClass receiver) {
+    public final double doSClass(final DynamicObject receiver) {
       return Double.POSITIVE_INFINITY;
     }
   }
