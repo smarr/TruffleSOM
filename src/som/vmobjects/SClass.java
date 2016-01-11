@@ -127,7 +127,7 @@ public final class SClass extends SObject {
   }
 
   public void setInstanceInvokable(final int index, final SInvokable value) {
-    CompilerAsserts.neverPartOfCompilation();
+    CompilerAsserts.neverPartOfCompilation("setInstanceInvokable");
     // Set this class as the holder of the given invokable
     value.setHolder(this);
 
@@ -235,7 +235,7 @@ public final class SClass extends SObject {
   }
 
   public void loadPrimitives(final boolean displayWarning) {
-    CompilerAsserts.neverPartOfCompilation();
+    CompilerAsserts.neverPartOfCompilation("loadPrimitives");
 
     // Compute the class name of the Java(TM) class containing the
     // primitives

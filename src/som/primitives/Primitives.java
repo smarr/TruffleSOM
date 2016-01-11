@@ -64,7 +64,7 @@ public abstract class Primitives {
   public static SInvokable constructPrimitive(final SSymbol signature,
       final NodeFactory<? extends ExpressionNode> nodeFactory,
       final Universe universe, final SClass holder) {
-    CompilerAsserts.neverPartOfCompilation();
+    CompilerAsserts.neverPartOfCompilation("constructPrimitive");
     int numArgs = signature.getNumberOfSignatureArguments();
 
     MethodGenerationContext mgen = new MethodGenerationContext(null);
@@ -110,7 +110,7 @@ public abstract class Primitives {
   }
 
   public static SInvokable constructEmptyPrimitive(final SSymbol signature) {
-    CompilerAsserts.neverPartOfCompilation();
+    CompilerAsserts.neverPartOfCompilation("constructEmptyPrimitive");
     MethodGenerationContext mgen = new MethodGenerationContext(null);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));

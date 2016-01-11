@@ -83,7 +83,7 @@ public final class ObjectPrims {
   public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
     @Specialization
     public final Object doSObject(final SObject receiver, final SSymbol fieldName) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("InstVarNamedPrim");
       return receiver.getField(receiver.getFieldIndex(fieldName));
     }
   }

@@ -93,7 +93,7 @@ public abstract class GlobalNode extends ExpressionNode {
 
     @Override
     protected Object executeUnknownGlobal(final VirtualFrame frame) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("executeUnknownGlobal");
 
       // if it is not defined, we will send a error message to the current
       // receiver object

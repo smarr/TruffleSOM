@@ -594,7 +594,7 @@ public final class MessageSendNode {
 
     public void replaceDispatchListHead(
         final GenericDispatchNode replacement) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("GenericMessageSendNode.replaceDispatchListHead");
       dispatchNode.replace(replacement);
     }
     

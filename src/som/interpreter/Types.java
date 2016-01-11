@@ -56,7 +56,7 @@ import com.oracle.truffle.api.dsl.TypeSystem;
 public class Types {
 
   public static SClass getClassOf(final Object obj) {
-    CompilerAsserts.neverPartOfCompilation();
+    CompilerAsserts.neverPartOfCompilation("Types.getClassOf");
     assert obj != null;
 
     if (obj instanceof SAbstractObject) {

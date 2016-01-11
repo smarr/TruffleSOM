@@ -306,7 +306,7 @@ public class Universe {
   }
 
   protected void initializeObjectSystem() {
-    CompilerAsserts.neverPartOfCompilation();
+    CompilerAsserts.neverPartOfCompilation("initializeObjectSystem");
     if (alreadyInitialized) {
       return;
     } else {
