@@ -13,8 +13,6 @@ public final class UninitializedMethodDispatchNode
     extends AbstractMethodDispatchNode {
 
   private AbstractMethodDispatchNode specialize(final SInvokable method) {
-    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
-
     // Determine position in dispatch node chain, i.e., size of inline cache
     Node i = this;
     int chainDepth = 0;
@@ -23,7 +21,7 @@ public final class UninitializedMethodDispatchNode
       chainDepth++;
     }
     MateMethodActivationNode sendNode = (MateMethodActivationNode) i.getParent();
-    
+
     if (chainDepth < INLINE_CACHE_SIZE) {
       AbstractMethodDispatchNode next = sendNode.getDispatchListHead();
 
@@ -41,7 +39,8 @@ public final class UninitializedMethodDispatchNode
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, SInvokable method, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final SInvokable method, final Object[] arguments) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
     return specialize(method).
         executeDispatch(frame, environment, exLevel, method, arguments);
   }
