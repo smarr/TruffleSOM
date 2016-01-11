@@ -5,6 +5,7 @@ import som.interpreter.objectstorage.FieldAccessorNodeFactory.WriteFieldNodeGen;
 import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -86,13 +87,17 @@ public abstract class FieldAccessorNode extends Node {
     }
 
     @Specialization(guards = "self.updateShape()")
-    public Object updateShapeAndRead(final DynamicObject self) {
+    public final Object updateShapeAndRead(final DynamicObject self) {
       return executeRead(self); // restart execution of the whole node
     }
 
-    // TODO: need a fallback case, uncached...
+//    @TruffleBoundary
+    @Specialization(contains = {"readSetField", "readUnsetField", "updateShapeAndRead"})
+    public final Object readFieldUncached(final DynamicObject receiver) {
+      CompilerAsserts.neverPartOfCompilation("readFieldUncached");
+      return receiver.get(fieldIndex, Nil.nilObject);
+    }
   }
-
 
   public abstract static class WriteFieldNode extends FieldAccessorNode {
     public WriteFieldNode(final int fieldIndex) {
