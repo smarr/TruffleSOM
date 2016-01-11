@@ -57,8 +57,10 @@ public final class SObject {
     return SOBJECT_FACTORY.newInstance(instanceClass);
   }
 
-  public static DynamicObject create(final int numFields) {
-    return SOBJECT_FACTORY.newInstance(Nil.nilObject);
+  public static DynamicObject createNil() {
+    // TODO: this is work in progress, the class should go as shared data into the shape
+    // TODO: ideally, nil is like in SOMns an SObjectWithoutFields
+    return SOBJECT_FACTORY.newInstance(new Object[] { null });
   }
 
   public static boolean isSObject(final DynamicObject obj) {
