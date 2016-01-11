@@ -37,6 +37,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
+import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
@@ -52,69 +53,73 @@ public final class SClass {
   private static final SSymbol INSTANCE_INVOKABLES = Universe.current().symbolFor("instanceInvokables");
 
   private static final Object INVOKABLES_TABLE = new Object();
+  private static final Object OBJECT_FACTORY   = new Object();
 
-  private static final Shape SCLASS_SHAPE = SObject.LAYOUT.createShape(SCLASS_TYPE).
-      defineProperty(SObject.CLASS,       Nil.nilObject, 0).
-      defineProperty(SUPERCLASS,          Nil.nilObject, 0).
-      defineProperty(INVOKABLES_TABLE,    new HashMap<SSymbol, SInvokable>(), 0);
-  private static final DynamicObjectFactory SCLASS_FACTORY = SCLASS_SHAPE.createFactory();
+  // class which get's its own class set only later (to break up cyclic dependencies)
+  private static final Shape INIT_CLASS_SHAPE = createClassShape(null);
+  private static final DynamicObjectFactory INIT_CLASS_FACTORY = INIT_CLASS_SHAPE.createFactory();
 
-  public static DynamicObject create(final int numberOfFields) {
+  private static Shape createClassShape(final DynamicObject clazz) {
+    return SObject.LAYOUT.createShape(SCLASS_TYPE, clazz).
+        defineProperty(SUPERCLASS,          Nil.nilObject, 0).
+        defineProperty(INVOKABLES_TABLE,    new HashMap<SSymbol, SInvokable>(), 0).
+        defineProperty(OBJECT_FACTORY,      SObject.NIL_DUMMY_FACTORY, 0);
+  }
+
+  public static DynamicObject createWithoutClass() {
     CompilerAsserts.neverPartOfCompilation("Class creation");
-    // Initialize this class by calling the super constructor with the given
-    // value
-    DynamicObject clazz = SCLASS_FACTORY.newInstance(
-        Nil.nilObject,                       // CLASS
+    DynamicObject clazz =  INIT_CLASS_FACTORY.newInstance(
         Nil.nilObject,                       // SUPERCLASS
-        new HashMap<SSymbol, SInvokable>()); // INVOKABLES_TABLE
+        new HashMap<SSymbol, SInvokable>(),  // INVOKABLES_TABLE
+        SObject.NIL_DUMMY_FACTORY);          // OBJECT_FACTORY, temporary value
     return clazz;
   }
 
   public static DynamicObject create(final DynamicObject clazzClazz) {
     CompilerAsserts.neverPartOfCompilation("Class creation");
-    DynamicObject clazz = SCLASS_FACTORY.newInstance(
-        clazzClazz,                          // CLASS
+    Shape clazzShape = createClassShape(clazzClazz);
+    DynamicObjectFactory clazzFactory = clazzShape.createFactory();
+
+    internalSetObjectFactory(clazzClazz, clazzFactory);
+
+    DynamicObject clazz = clazzFactory.newInstance(
         Nil.nilObject,                       // SUPERCLASS
-        new HashMap<SSymbol, SInvokable>()); // INVOKABLES_TABLE
+        new HashMap<SSymbol, SInvokable>(),  // INVOKABLES_TABLE
+        SObject.NIL_DUMMY_FACTORY);          // OBJECT_FACTORY, temporary value
+
+    Shape objectShape = SObject.createObjectShapeForClass(clazz);
+    internalSetObjectFactory(clazz, objectShape.createFactory());
+
     return clazz;
   }
 
-  // TODO: if performance critical, use pre-created shape.
-  // but currently, it is problematic, because the shape based on examples is to restrictive and does not initialize with null values, so, whole initialization would need to be refactored
-//  private static final Shape SCLASS_SHAPE = SObject.LAYOUT.createShape(SCLASS_TYPE).
-//      defineProperty(SObject.CLASS,       Nil.nilObject, 0).
-//      defineProperty(SUPERCLASS,          Nil.nilObject, 0).
-//      defineProperty(NAME,                new SSymbol(""), 0).
-//      defineProperty(INSTANCE_FIELDS,     new SArray(0), 0).
-//      defineProperty(INSTANCE_INVOKABLES, new SArray(0), 0).
-//      defineProperty(INVOKABLES_TABLE,    new HashMap<SSymbol, SInvokable>(), 0);
-//  private static final DynamicObjectFactory SCLASS_FACTORY = SCLASS_SHAPE.createFactory();
-//
-//  public static DynamicObject create(final int numberOfFields) {
-//    CompilerAsserts.neverPartOfCompilation("Class creation");
-//    // Initialize this class by calling the super constructor with the given
-//    // value
-//    DynamicObject clazz = SCLASS_FACTORY.newInstance(
-//        Nil.nilObject, // CLASS
-//        Nil.nilObject, // SUPERCLASS
-//        null, // NAME
-//        null, // INSTANCE_FIELDS
-//        null, // INSTANCE_INVOKABLES,
-//        new HashMap<SSymbol, SInvokable>()); // INVOKABLES_TABLE
-//    return clazz;
-//  }
-//
-//  public static DynamicObject create(final DynamicObject clazzClazz) {
-//    CompilerAsserts.neverPartOfCompilation("Class creation");
-//    DynamicObject clazz = SCLASS_FACTORY.newInstance(
-//        clazzClazz,    // CLASS
-//        Nil.nilObject, // SUPERCLASS
-//        null, // NAME
-//        null, // INSTANCE_FIELDS
-//        null, // INSTANCE_INVOKABLES,
-//        new HashMap<SSymbol, SInvokable>()); // INVOKABLES_TABLE
-//    return clazz;
-//  }
+  private static void internalSetObjectFactory(final DynamicObject clazz, final DynamicObjectFactory factory) {
+    Shape shape = clazz.getShape();
+    Property property = shape.getProperty(OBJECT_FACTORY);
+    property.setInternal(clazz, factory);
+    assert shape == clazz.getShape();
+  }
+
+  public static final void internalSetClass(final DynamicObject obj, final DynamicObject clazzClazz) {
+    assert obj.getShape().getObjectType() == SCLASS_TYPE;
+    CompilerAsserts.neverPartOfCompilation("SObject.setClass");
+    assert obj != null;
+    assert clazzClazz != null;
+
+    assert !Universe.current().objectSystemInitialized : "This should really only be used during initialization of object system";
+
+    Shape withoutClass = obj.getShape();
+    Shape withClass = withoutClass.createSeparateShape(clazzClazz);
+
+    obj.setShapeAndGrow(withoutClass, withClass);
+    DynamicObjectFactory clazzFactory = withClass.createFactory();
+    internalSetObjectFactory(clazzClazz, clazzFactory);
+  }
+
+  public static final DynamicObjectFactory getFactory(final DynamicObject clazz) {
+    assert clazz.getShape().getObjectType() == SCLASS_TYPE;
+    return (DynamicObjectFactory) clazz.get(OBJECT_FACTORY);
+  }
 
   public static boolean isSClass(final DynamicObject obj) {
     return obj.getShape().getObjectType() == SCLASS_TYPE;

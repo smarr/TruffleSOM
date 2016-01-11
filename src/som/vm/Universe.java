@@ -317,7 +317,7 @@ public final class Universe {
     DynamicObject nilObject = Nil.nilObject;
 
     // Setup the class reference for the nil object
-    SObject.internalSetClass(nilObject, nilClass);
+    SObject.internalSetNilClass(nilObject, nilClass);
 
     // Initialize the system classes.
     initializeSystemClass(objectClass,            null, "Object");
@@ -359,12 +359,12 @@ public final class Universe {
     blockClasses[0] = loadClass(symbolFor("Block"));
 
     // Setup the true and false objects
-    trueObject  = newInstance(trueClass);
-    falseObject = newInstance(falseClass);
+    trueObject  = SObject.create(trueClass);
+    falseObject = SObject.create(falseClass);
 
     // Load the system class and create an instance of it
     systemClass  = loadClass(symbolFor("System"));
-    systemObject = newInstance(systemClass);
+    systemObject = SObject.create(systemClass);
 
     // Put special objects into the dictionary of globals
     setGlobal("nil",    nilObject);
@@ -418,14 +418,10 @@ public final class Universe {
     }
   }
 
-  public static DynamicObject newInstance(final DynamicObject instanceClass) {
-    return SObject.create(instanceClass);
-  }
-
   @TruffleBoundary
   public static DynamicObject newMetaclassClass() {
-    DynamicObject result = SClass.create(0);
-    SObject.internalSetClass(result, SClass.create(result));
+    DynamicObject result = SClass.createWithoutClass();
+    SClass.internalSetClass(result, SClass.create(result));
     return result;
   }
 
