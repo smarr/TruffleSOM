@@ -12,7 +12,7 @@ GRAAL_LOCATIONS = ['/home/smarr/Projects/SOM/graal/jvmci',
                    '/Users/guidochari/Documents/Projects/graal-compiler/jvmci',
                    BASE_DIR + '/../graal/jvmci',
                    BASE_DIR + '/../GraalVM/jvmci']
-JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_40', 'jdk1.8.0_25']
+JDK_VERSIONS = ['jdk1.8.0_65', 'jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_40', 'jdk1.8.0_25']
 
 parser = argparse.ArgumentParser(
     description='Helper script to run TruffleMate with/without Graal')
