@@ -77,7 +77,7 @@ public final class SObject {
     return (DynamicObject) obj.get(CLASS);
   }
 
-  public static final void setClass(final DynamicObject obj, final DynamicObject value) {
+  public static final void internalSetClass(final DynamicObject obj, final DynamicObject value) {
     CompilerAsserts.neverPartOfCompilation("SObject.setClass");
     assert obj != null;
     assert value != null;
