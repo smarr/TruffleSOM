@@ -94,10 +94,10 @@ public final class SClass extends SObject {
     instanceFields = fields;
     if (layoutForInstances == null ||
         instanceFields.getObjectStorage(storageType).length != layoutForInstances.getPropertyCount()) {
-        DynamicObject mockForShape = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType())); 
+        DynamicObject mockForShape = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType()));
         LocationFactory factory = new MateLocationFactory();
         for (int i = 0; i < instanceFields.getObjectStorage(storageType).length; i++) {
-          mockForShape.define(i, Nil.nilObject , 0, factory); 
+          mockForShape.define(i, Nil.nilObject , 0, factory);
         }
         layoutForInstances = mockForShape.getShape();
     }

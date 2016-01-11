@@ -702,11 +702,11 @@ public class Universe {
   public static Universe getCurrent(){
     return current;
   }
-  
-  public static void setCurrent(Universe universe){
+
+  public static void setCurrent(final Universe universe){
     current = universe;
   }
-  
+
   public static Universe current() {
     if (current == null) {
       current = new Universe();

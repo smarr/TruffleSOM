@@ -85,10 +85,10 @@ public final class MessageSendNode {
     return new GenericMessageSendNode(selector, argumentNodes,
       new UninitializedDispatchNode(selector), source);
   }
-  
+
   public abstract static class AbstractMessageSendNode extends ExpressionWithReceiverNode
       implements PreevaluatedExpression {
-    
+
     public static AbstractMessageSpecializationsFactory specializationFactory = new AbstractMessageSpecializationsFactory.SOMMessageSpecializationsFactory();
     @Children protected final ExpressionNode[] argumentNodes;
 
@@ -107,12 +107,13 @@ public final class MessageSendNode {
       Object[] arguments = evaluateArguments(frame);
       return doPreEvaluated(frame, arguments);
     }
-    
+
     @Override
     public ExpressionNode getReceiver() {
       return argumentNodes[0];
     }
-    
+
+    @Override
     @ExplodeLoop
     public Object[] evaluateArguments(final VirtualFrame frame) {
       Object[] arguments = new Object[argumentNodes.length];
@@ -122,9 +123,10 @@ public final class MessageSendNode {
       }
       return arguments;
     }
-    
+
     public abstract SSymbol getSelector();
-    
+
+    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.MessageLookup;
     }
@@ -278,7 +280,7 @@ public final class MessageSendNode {
             BlockNode argBlockNode = (BlockNode) argumentNodes[1];
             SBlock    argBlock     = (SBlock)    arguments[1];
             return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
-                argumentNodes[1], 
+                argumentNodes[1],
                 new WhileFalseStaticBlocksNode(
                     (BlockNode) argumentNodes[0], argBlockNode,
                     (SBlock) arguments[0], argBlock, getSourceSection())));
@@ -329,7 +331,7 @@ public final class MessageSendNode {
         case "ifTrue:":
           return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
-              IfMessageNodeGen.create(true, getSourceSection(), 
+              IfMessageNodeGen.create(true, getSourceSection(),
                   argumentNodes[0], argumentNodes[1])));
         case "ifFalse:":
           return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
@@ -496,7 +498,8 @@ public final class MessageSendNode {
       }
       return makeGenericSend();
     }
-    
+
+    @Override
     public SSymbol getSelector(){
       return this.selector;
     }
@@ -519,7 +522,8 @@ public final class MessageSendNode {
             argumentNode), getSourceSection());
       return replace(node);
     }
-    
+
+    @Override
     public void wrapIntoMateNode() {
       replace(new MateUninitializedMessageSendNode(this));
     }
@@ -597,9 +601,9 @@ public final class MessageSendNode {
       CompilerAsserts.neverPartOfCompilation("GenericMessageSendNode.replaceDispatchListHead");
       dispatchNode.replace(replacement);
     }
-    
-    public AbstractDispatchNode getDispatchListHead() {   
-      return dispatchNode;    
+
+    public AbstractDispatchNode getDispatchListHead() {
+      return dispatchNode;
     }
 
     @Override
@@ -611,11 +615,13 @@ public final class MessageSendNode {
     public NodeCost getCost() {
       return Cost.getCost(dispatchNode);
     }
-    
+
+    @Override
     public SSymbol getSelector(){
       return this.selector;
     }
-    
+
+    @Override
     public void wrapIntoMateNode() {
       replace(new MateGenericMessageSendNode(this));
     }

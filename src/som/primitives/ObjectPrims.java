@@ -110,14 +110,17 @@ public final class ObjectPrims {
       return Types.getClassOf(receiver);
     }
   }
-  
+
   @GenerateNodeFactory
   public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
     @Specialization
     public final Object doSObject(final SObject receiver, final SObject environment) {
       //CompilerAsserts.neverPartOfCompilation();
-      if (environment == Nil.nilObject) ((SReflectiveObject)receiver).setEnvironment(null);
-      else ((SReflectiveObject)receiver).setEnvironment((SMateEnvironment)environment);
+      if (environment == Nil.nilObject) {
+        ((SReflectiveObject)receiver).setEnvironment(null);
+      } else {
+        ((SReflectiveObject)receiver).setEnvironment((SMateEnvironment)environment);
+      }
       return receiver;
     }
   }
