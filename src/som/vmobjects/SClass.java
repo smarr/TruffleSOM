@@ -196,7 +196,7 @@ public final class SClass {
   }
 
   public static void setInstanceInvokable(final DynamicObject classObj, final int index, final SInvokable value) {
-    CompilerAsserts.neverPartOfCompilation();
+  CompilerAsserts.neverPartOfCompilation("setInstanceInvokable");
     // Set this class as the holder of the given invokable
     value.setHolder(classObj);
 
@@ -316,8 +316,7 @@ public final class SClass {
   }
 
   public static void loadPrimitives(final DynamicObject classObj, final boolean displayWarning) {
-    CompilerAsserts.neverPartOfCompilation();
-
+    CompilerAsserts.neverPartOfCompilation("loadPrimitives");
     // Compute the class name of the Java(TM) class containing the
     // primitives
     String className = "som.primitives." + getName(classObj).getString() + "Primitives";

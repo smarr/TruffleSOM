@@ -109,7 +109,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("CachedReadDispatchNode");
       throw new RuntimeException("This should be never reached.");
     }
 
@@ -137,7 +137,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final DynamicObject obj, final int index) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("CachedWriteDispatchNode");
       throw new RuntimeException("This should be never reached.");
     }
 

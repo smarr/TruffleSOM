@@ -39,12 +39,12 @@ import com.oracle.truffle.api.source.SourceSection;
 public abstract class GlobalNode extends ExpressionNode {
 
   protected final SSymbol  globalName;
-  
+
   public GlobalNode(final SSymbol globalName, final SourceSection source) {
     super(source);
     this.globalName = globalName;
   }
-  
+
   public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
     private final Universe universe;
 
@@ -93,7 +93,7 @@ public abstract class GlobalNode extends ExpressionNode {
 
     @Override
     protected Object executeUnknownGlobal(final VirtualFrame frame) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("executeUnknownGlobal");
 
       // if it is not defined, we will send a error message to the current
       // receiver object

@@ -82,7 +82,7 @@ public final class ObjectPrims {
   public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
     @Specialization
     public final Object doSObject(final DynamicObject receiver, final SSymbol fieldName) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("InstVarNamedPrim");
       Object value = receiver.get(SObject.getFieldIndex(receiver, fieldName));
       //With the new change fields may not have been initialized.
       if (value == null) return Nil.nilObject;
@@ -117,12 +117,12 @@ public final class ObjectPrims {
       return Types.getClassOf(receiver);
     }
   }
-  
+
   @GenerateNodeFactory
   public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
     @Specialization
     public final Object doSObject(final DynamicObject receiver, final DynamicObject environment) {
-      CompilerAsserts.neverPartOfCompilation();
+      //CompilerAsserts.neverPartOfCompilation("Install Environment primitive");
       SReflectiveObject.setEnvironment(receiver, environment);
       return receiver;
     }

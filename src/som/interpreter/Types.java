@@ -55,7 +55,7 @@ import com.oracle.truffle.api.object.DynamicObject;
 public class Types {
 
   public static DynamicObject getClassOf(final Object obj) {
-    CompilerAsserts.neverPartOfCompilation();
+    CompilerAsserts.neverPartOfCompilation("Types.getClassOf");
     assert obj != null;
 
     if (obj instanceof SAbstractObject) {
