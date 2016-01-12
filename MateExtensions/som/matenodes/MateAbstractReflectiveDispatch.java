@@ -6,7 +6,6 @@ import som.interpreter.nodes.MateMethodActivationNode;
 import som.vm.MateUniverse;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SArray;
-import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -16,6 +15,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class MateAbstractReflectiveDispatch extends Node {
@@ -93,13 +93,13 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     
     public SInvokable reflectiveLookup(final VirtualFrame frame, DirectCallNode reflectiveMethod,
         final Object[] arguments) {
-      SObject receiver = (SObject) arguments[0];
+      DynamicObject receiver = (DynamicObject) arguments[0];
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, receiver, this.getSelector(), this.lookupSinceFor(receiver)};
       return (SInvokable) reflectiveMethod.call(frame, args);
     }
     
-    protected SClass lookupSinceFor(SObject receiver){
-      return receiver.getSOMClass();
+    protected DynamicObject lookupSinceFor(DynamicObject receiver){
+      return SObject.getSOMClass(receiver);
     }
 
     protected SSymbol getSelector() {
@@ -116,7 +116,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     }
 
     @Override
-    protected SClass lookupSinceFor(SObject receiver){
+    protected DynamicObject lookupSinceFor(DynamicObject receiver){
       return superNode.getLexicalSuperClass();
     }
   }
@@ -132,7 +132,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     public Object doMateNodeCached(final VirtualFrame frame, final SInvokable method,
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
-        @Cached("classOfReceiver(arguments)") final SClass cachedClass,
+        @Cached("classOfReceiver(arguments)") final DynamicObject cachedClass,
         @Cached("lookupResult(frame, method, arguments)") SInvokable lookupResult) {
       // The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       return activationNode.doActivation(frame, lookupResult, arguments);
@@ -143,8 +143,8 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       return this.reflectiveLookup(frame, this.createDispatch(method), arguments);
     }
     
-    protected SClass classOfReceiver(Object[] arguments){
-      return ((SObject) arguments[0]).getSOMClass();
+    protected DynamicObject classOfReceiver(Object[] arguments){
+      return SObject.getSOMClass((DynamicObject) arguments[0]);
     }
 
   }
@@ -158,7 +158,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     }
 
     @Override
-    protected SClass lookupSinceFor(SObject receiver){
+    protected DynamicObject lookupSinceFor(DynamicObject receiver){
       return superNode.getLexicalSuperClass();
     }
   }
@@ -182,7 +182,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         @Cached("createDirectCall(methodToActivate)") DirectCallNode callNode,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
       // The MOP receives the standard ST message Send stack (rcvr, method, arguments) and returns its own
-      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (SObject) arguments[0], methodToActivate, 
+      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (DynamicObject) arguments[0], methodToActivate, 
           SArray.create(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments))};
       SArray realArguments = (SArray)reflectiveMethod.call(frame, args);
       return callNode.call(frame, realArguments.toJavaArray());

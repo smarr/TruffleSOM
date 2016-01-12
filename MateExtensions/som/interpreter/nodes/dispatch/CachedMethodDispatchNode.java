@@ -4,9 +4,9 @@ import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractMethodDispatchNode.AbstractMethodCachedDispatchNode;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class CachedMethodDispatchNode extends AbstractMethodCachedDispatchNode {
@@ -20,7 +20,7 @@ public final class CachedMethodDispatchNode extends AbstractMethodCachedDispatch
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final SInvokable method, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final SInvokable method, final Object[] arguments) {
     if (method == cachedSomMethod) {
       return cachedMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
     } else {

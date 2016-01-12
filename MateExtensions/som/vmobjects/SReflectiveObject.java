@@ -27,34 +27,48 @@ package som.vmobjects;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.vm.Universe;
 import som.vm.constants.Nil;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Shape;
 
 public class SReflectiveObject extends SObject {
   protected static final SSymbol ENVIRONMENT = Universe.current().symbolFor("environment");
+  private static final SReflectiveObjectObjectType SREFLECTIVE_OBJECT_TYPE = new SReflectiveObjectObjectType();
+  
   protected static final Shape SREFLECTIVE_OBJECT_SHAPE = 
-      SOBJECT_SHAPE.createSeparateShape(SOBJECT_SHAPE.getData()).defineProperty(ENVIRONMENT, Nil.nilObject, 0);
+      SOBJECT_SHAPE.createSeparateShape(SOBJECT_SHAPE.getData())
+      .changeType(SREFLECTIVE_OBJECT_TYPE)
+      .defineProperty(ENVIRONMENT, Nil.nilObject, 0);
       
   private static final DynamicObjectFactory SREFLECTIVE_OBJECT_FACTORY = SREFLECTIVE_OBJECT_SHAPE.createFactory();
   
   public static DynamicObject create(final DynamicObject instanceClass) {
-    return SREFLECTIVE_OBJECT_FACTORY.newInstance(instanceClass);
+    return SREFLECTIVE_OBJECT_FACTORY.newInstance(instanceClass, Nil.nilObject);
   }
 
   public static DynamicObject create(final int numFields) {
-    return SREFLECTIVE_OBJECT_FACTORY.newInstance(Nil.nilObject);
+    return SREFLECTIVE_OBJECT_FACTORY.newInstance(Nil.nilObject, Nil.nilObject);
   }
   
-  public static final SMateEnvironment getEnvironment(final DynamicObject obj) {
+  public static final DynamicObject getEnvironment(final DynamicObject obj) {
     CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
-    return (SMateEnvironment) obj.get(ENVIRONMENT);
+    return (DynamicObject) obj.get(ENVIRONMENT);
   }
 
-  public static final void setEnvironment(final DynamicObject obj, final SMateEnvironment value) {
+  public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
     transferToInterpreterAndInvalidate("SReflectiveObject.setEnvironment");
     obj.set(ENVIRONMENT, value);
+  }
+  
+  private static final class SReflectiveObjectObjectType extends ObjectType {
+    @Override
+    public String toString() {
+      return "SReflectiveObject";
+    }
+  }
+  public static boolean isSReflectiveObject(final DynamicObject obj) {
+    return obj.getShape().getObjectType() == SREFLECTIVE_OBJECT_TYPE;
   }
 }

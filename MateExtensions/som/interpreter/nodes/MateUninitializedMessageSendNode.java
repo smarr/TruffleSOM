@@ -12,7 +12,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class MateUninitializedMessageSendNode extends
     UninitializedMessageSendNode implements MateBehavior {
-  @Child MateSemanticCheckNode                   semanticCheck;
+  @Child MateSemanticCheckNode            semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
 
   public MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {

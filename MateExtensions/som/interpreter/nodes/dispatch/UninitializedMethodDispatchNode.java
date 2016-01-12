@@ -3,10 +3,9 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 import som.interpreter.nodes.MateMethodActivationNode;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SMateEnvironment;
-
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class UninitializedMethodDispatchNode
@@ -41,7 +40,7 @@ public final class UninitializedMethodDispatchNode
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, SInvokable method, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, SInvokable method, final Object[] arguments) {
     return specialize(method).
         executeDispatch(frame, environment, exLevel, method, arguments);
   }

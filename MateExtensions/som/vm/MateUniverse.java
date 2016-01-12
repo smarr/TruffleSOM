@@ -5,6 +5,9 @@ import static som.vm.constants.MateClasses.operationalSemanticsMO;
 import static som.vm.constants.MateClasses.messageMO;
 import static som.vm.constants.MateClasses.ShapeClass;
 import static som.vm.constants.Classes.objectClass;
+
+import com.oracle.truffle.api.object.DynamicObject;
+
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.MateMessageSpecializationsFactory;
@@ -12,6 +15,7 @@ import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
+import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SSymbol;
 
@@ -39,36 +43,37 @@ public class MateUniverse extends Universe {
     }
   }
   
-  public static SReflectiveObject newInstance(final SClass instanceClass) {
+  public static DynamicObject newInstance(final DynamicObject instanceClass) {
     return SReflectiveObject.create(instanceClass);
   }
   
-  public static SMateEnvironment newEnvironment(final SClass instanceClass) {
+  public static DynamicObject newEnvironment(final DynamicObject instanceClass) {
     return SMateEnvironment.create(instanceClass);
   }
   
-  public SClass loadClass(final SSymbol name) {
-    if ((SClass) getGlobal(name) != null){
+  @Override
+  public DynamicObject loadClass(final SSymbol name) {
+    if ((DynamicObject) getGlobal(name) != null){
       return super.loadClass(name);
     } else {
-      SClass result = super.loadClass(name);
+      DynamicObject result = super.loadClass(name);
       mateify(result);
-      mateify(result.getSOMClass());
+      mateify(SObject.getSOMClass(result));
       return result;
     }
   }
   
-  protected void loadSystemClass(final SClass systemClass) {
+  protected void loadSystemClass(final DynamicObject systemClass) {
     super.loadSystemClass(systemClass);
     mateify(systemClass);
-    mateify(systemClass.getSOMClass());
+    mateify(SObject.getSOMClass(systemClass));
   }
   
-  public void mateify(SClass clazz) {
-    int countOfInvokables = clazz.getNumberOfInstanceInvokables();
+  public void mateify(DynamicObject clazz) {
+    int countOfInvokables = SClass.getNumberOfInstanceInvokables(clazz);
     MateifyVisitor visitor = new MateifyVisitor();
     for (int i = 0; i < countOfInvokables; i++){
-      SInvokable method = clazz.getInstanceInvokable(i);
+      SInvokable method = SClass.getInstanceInvokable(clazz, i);
       Invokable node = method.getInvokable();
       node.accept(visitor);
     }

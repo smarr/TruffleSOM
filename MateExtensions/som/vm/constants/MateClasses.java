@@ -1,15 +1,15 @@
 package som.vm.constants;
 
-import som.vm.MateUniverse;
-import som.vmobjects.SClass;
-import som.vmobjects.SMateEnvironment;
+import com.oracle.truffle.api.object.DynamicObject;
 
-public class MateClasses extends Classes {
-  public static final SClass environmentMO;
-  public static final SClass operationalSemanticsMO;
-  public static final SClass messageMO;
-  public static final SClass ShapeClass;
-  public static final SMateEnvironment STANDARD_ENVIRONMENT;
+import som.vm.MateUniverse;
+
+public final class MateClasses extends Classes {
+  public static final DynamicObject environmentMO;
+  public static final DynamicObject operationalSemanticsMO;
+  public static final DynamicObject messageMO;
+  public static final DynamicObject ShapeClass;
+  public static final DynamicObject STANDARD_ENVIRONMENT;
   
   static {
     // Allocate the Metaclass classes
