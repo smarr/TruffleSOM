@@ -66,9 +66,4 @@ public abstract class WhileCache extends BinaryExpressionNode {
     }
     return Nil.nilObject;
   }
-
-  @Override
-  public void wrapIntoMateNode() {
-    // do nothing, don't want to do the same as for other nodes with receiver
-  }
 }

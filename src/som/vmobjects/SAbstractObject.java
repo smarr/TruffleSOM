@@ -26,7 +26,7 @@ public abstract class SAbstractObject {
   public static final Object send(
       final String selectorString,
       final Object[] arguments,
-      final SMateEnvironment environment,
+      final DynamicObject environment,
       final ExecutionLevel exLevel) {
     CompilerAsserts.neverPartOfCompilation("SAbstractObject.send()");
     SSymbol selector = Universe.current().symbolFor(selectorString);
@@ -38,7 +38,7 @@ public abstract class SAbstractObject {
   }
 
   public static final Object sendUnknownGlobal(final Object receiver,
-      final SSymbol globalName, final SMateEnvironment environment, final ExecutionLevel exLevel) {
+      final SSymbol globalName, final DynamicObject environment, final ExecutionLevel exLevel) {
     Object[] arguments = {receiver, globalName};
     return send("unknownGlobal:", arguments, environment, exLevel);
   }

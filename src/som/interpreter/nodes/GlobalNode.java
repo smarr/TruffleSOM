@@ -28,11 +28,11 @@ import som.vm.Universe.Association;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
-import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -98,7 +98,7 @@ public abstract class GlobalNode extends ExpressionNode {
       // if it is not defined, we will send a error message to the current
       // receiver object
       Object self = SArguments.rcvr(frame);
-      SMateEnvironment environment = SArguments.getEnvironment(frame);
+      DynamicObject environment = SArguments.getEnvironment(frame);
       ExecutionLevel exLevel = SArguments.getExecutionLevel(frame);
       return SAbstractObject.sendUnknownGlobal(self, globalName, environment, exLevel);
     }

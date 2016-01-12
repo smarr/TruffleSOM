@@ -6,7 +6,6 @@ import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -73,8 +72,8 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, 
-      final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
-    transferToInterpreterAndInvalidate("Initialize a dispatch node.");    
+      final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
     return specialize(arguments).
     executeDispatch(frame, environment, exLevel, arguments);
   }

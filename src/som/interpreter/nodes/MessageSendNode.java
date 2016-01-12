@@ -520,8 +520,9 @@ public final class MessageSendNode {
       return replace(node);
     }
     
-    public void wrapIntoMateNode() {
-      replace(new MateUninitializedMessageSendNode(this));
+    @Override
+    public ExpressionNode asMateNode() {
+      return new MateUninitializedMessageSendNode(this);
     }
   }
 
@@ -616,8 +617,9 @@ public final class MessageSendNode {
       return this.selector;
     }
     
-    public void wrapIntoMateNode() {
-      replace(new MateGenericMessageSendNode(this));
+    @Override
+    public ExpressionNode asMateNode() {
+      return new MateGenericMessageSendNode(this);
     }
   }
 }

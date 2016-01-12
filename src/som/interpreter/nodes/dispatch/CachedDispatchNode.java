@@ -3,11 +3,11 @@ package som.interpreter.nodes.dispatch;
 import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 import som.vm.constants.ExecutionLevel;
-import som.vmobjects.SMateEnvironment;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class CachedDispatchNode extends AbstractCachedDispatchNode {
@@ -22,7 +22,7 @@ public final class CachedDispatchNode extends AbstractCachedDispatchNode {
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, 
-      final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+      final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
     Object rcvr = arguments[0];
     try {
       if (guard.entryMatches(rcvr)) {

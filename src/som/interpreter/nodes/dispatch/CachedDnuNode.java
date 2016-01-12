@@ -5,7 +5,6 @@ import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatc
 import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
-import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -27,7 +26,7 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, 
-      final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+      final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
     Object rcvr = arguments[0];
     try {
       if (guard.entryMatches(rcvr)) {
@@ -49,7 +48,7 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
   }
 
   protected final Object performDnu(final VirtualFrame frame, 
-      final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments,
+      final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments,
       final Object rcvr) {
     Object[] argsArr = new Object[] {
         environment, exLevel, rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments) };

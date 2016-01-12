@@ -15,9 +15,6 @@ public abstract class ExpressionWithReceiverNode extends ExpressionNode {
   public Object evaluateReceiver(final VirtualFrame frame){
     return this.getReceiver().executeGeneric(frame);
   }
-
-  @Override
-  public void wrapIntoMateNode() {}
 }
 
 

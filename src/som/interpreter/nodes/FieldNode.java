@@ -27,6 +27,7 @@ import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
 import som.vm.constants.ReflectiveOp;
+
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -67,8 +68,8 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
-    public void wrapIntoMateNode() {
-      replace(MateFieldReadNodeGen.create(this, this.getSelf()));
+    public ExpressionNode asMateNode() {
+      return MateFieldReadNodeGen.create(this, this.getSelf());
     }
   }
 
@@ -76,7 +77,7 @@ public abstract class FieldNode extends ExpressionNode {
     @NodeChild(value = "self", type = ExpressionNode.class),
     @NodeChild(value = "value", type = ExpressionNode.class)})
   public abstract static class FieldWriteNode extends FieldNode {
-//      implements PreevaluatedExpression {
+    //implements PreevaluatedExpression {
     @Child protected WriteFieldNode write;
 
     public abstract ExpressionNode getValue();
@@ -103,8 +104,8 @@ public abstract class FieldNode extends ExpressionNode {
     }
     
     @Override
-    public void wrapIntoMateNode() {
-      replace(MateFieldWriteNodeGen.create(this, this.getSelf(), this.getValue()));
+    public ExpressionNode asMateNode() {
+      return MateFieldWriteNodeGen.create(this, this.getSelf(), this.getValue());
     }
   }
 }

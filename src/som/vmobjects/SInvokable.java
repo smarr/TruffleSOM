@@ -119,7 +119,7 @@ public abstract class SInvokable extends SAbstractObject {
     return node.call(frame, callTarget, arguments);
   }
   
-  public final Object invoke(final SMateEnvironment environment, final ExecutionLevel exLevel, final Object... arguments) {
+  public final Object invoke(final DynamicObject environment, final ExecutionLevel exLevel, final Object... arguments) {
       return callTarget.call(SArguments.createSArguments(environment, exLevel, arguments));
   }
 

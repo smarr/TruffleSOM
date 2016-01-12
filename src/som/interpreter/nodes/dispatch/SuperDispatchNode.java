@@ -2,12 +2,9 @@ package som.interpreter.nodes.dispatch;
 
 import som.interpreter.SArguments;
 import som.interpreter.nodes.ISuperReadNode;
-import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SMateEnvironment;
-import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -41,14 +38,6 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
       this.classSide   = classSide;
     }
 
-    private DynamicObject getLexicalSuperClass() {
-      DynamicObject clazz = (DynamicObject) Universe.current().getGlobal(holderClass);
-      if (classSide) {
-        clazz = SObject.getSOMClass(clazz);
-      }
-      return (DynamicObject) SClass.getSuperClass(clazz);
-    }
-
     private CachedDispatchNode specialize() {
       CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
       SInvokable method = SClass.lookupInvokable(getLexicalSuperClass(), selector);
@@ -63,7 +52,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
 
     @Override
     public Object executeDispatch(
-        final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+        final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
       return specialize().
           executeDispatch(frame, environment, exLevel, arguments);
     }
@@ -88,7 +77,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
 
     @Override
     public Object executeDispatch(
-        final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+        final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
       return cachedSuperMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
     }
   }

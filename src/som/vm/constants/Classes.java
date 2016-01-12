@@ -4,7 +4,7 @@ import som.vm.Universe;
 
 import com.oracle.truffle.api.object.DynamicObject;
 
-public final class Classes {
+public class Classes {
   public static final DynamicObject  objectClass;
   public static final DynamicObject  classClass;
   public static final DynamicObject  metaclassClass;

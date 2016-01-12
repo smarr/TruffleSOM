@@ -27,32 +27,18 @@ package som.vmobjects;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
-<<<<<<< HEAD
-import som.interpreter.objectstorage.MateLocationFactory;
-=======
->>>>>>> 3e597df8f65816b5b13ff3116f36ec1a2bafb562
 import som.primitives.Primitives;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SInvokable.SPrimitive;
 
 import com.oracle.truffle.api.CompilerAsserts;
-<<<<<<< HEAD
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.LocationFactory;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.object.basic.DynamicObjectBasic;
-=======
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
-import com.oracle.truffle.api.object.Shape;
-import com.oracle.truffle.api.profiles.ValueProfile;
->>>>>>> 3e597df8f65816b5b13ff3116f36ec1a2bafb562
 
 public final class SClass {
 
@@ -77,12 +63,6 @@ public final class SClass {
     CompilerAsserts.neverPartOfCompilation("Class creation");
     // Initialize this class by calling the super constructor with the given
     // value
-<<<<<<< HEAD
-    super(numberOfFields);
-    invokablesTable = new HashMap<SSymbol, SInvokable>();
-    this.superclass = Nil.nilObject;
-    layoutForInstances = LAYOUT.createShape(new MateObjectType());
-=======
     DynamicObject clazz = SCLASS_FACTORY.newInstance(
         Nil.nilObject,                       // CLASS
         Nil.nilObject,                       // SUPERCLASS
@@ -138,7 +118,6 @@ public final class SClass {
 
   public static boolean isSClass(final DynamicObject obj) {
     return obj.getShape().getObjectType() == SCLASS_TYPE;
->>>>>>> 3e597df8f65816b5b13ff3116f36ec1a2bafb562
   }
 
   // TODO: figure out whether this is really the best way for doing guards
@@ -154,9 +133,9 @@ public final class SClass {
 
 // TODO: combine setters that are only used for initialization
 
-  public static Object getSuperClass(final DynamicObject classObj) {
+  public static DynamicObject getSuperClass(final DynamicObject classObj) {
     CompilerAsserts.neverPartOfCompilation("optimize caller");
-    return classObj.get(SUPERCLASS);
+    return (DynamicObject) classObj.get(SUPERCLASS);
   }
 
   public static void setSuperClass(final DynamicObject classObj, final DynamicObject value) {
@@ -184,25 +163,10 @@ public final class SClass {
     return (SArray) classObj.get(INSTANCE_FIELDS);
   }
 
-<<<<<<< HEAD
-  public void setInstanceFields(final SArray fields) {
-    transferToInterpreterAndInvalidate("SClass.setInstanceFields");
-    instanceFields = fields;
-    if (layoutForInstances == null ||
-        instanceFields.getObjectStorage(storageType).length != layoutForInstances.getPropertyCount()) {
-        DynamicObject mockForShape = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType())); 
-        LocationFactory factory = new MateLocationFactory();
-        for (int i = 0; i < instanceFields.getObjectStorage(storageType).length; i++) {
-          mockForShape.define(i, Nil.nilObject , 0, factory); 
-        }
-        layoutForInstances = mockForShape.getShape();
-    }
-=======
   public static void setInstanceFields(final DynamicObject classObj, final SArray fields) {
     CompilerAsserts.neverPartOfCompilation("should only be used during class initialization");
-//    classObj.set(INSTANCE_FIELDS, fields);
+    //classObj.set(INSTANCE_FIELDS, fields);
     classObj.define(INSTANCE_FIELDS, fields);
->>>>>>> 3e597df8f65816b5b13ff3116f36ec1a2bafb562
   }
 
   public static SArray getInstanceInvokables(final DynamicObject classObj) {
@@ -211,7 +175,7 @@ public final class SClass {
 
   public static void setInstanceInvokables(final DynamicObject classObj, final SArray value) {
     CompilerAsserts.neverPartOfCompilation("should only be used during class initialization");
-//    classObj.set(INSTANCE_INVOKABLES, value);
+    //classObj.set(INSTANCE_INVOKABLES, value);
     classObj.define(INSTANCE_INVOKABLES, value);
 
     // Make sure this class is the holder of all invokables in the array
@@ -374,52 +338,4 @@ public final class SClass {
       }
     }
   }
-
-<<<<<<< HEAD
-  public Shape getLayoutForInstances() {
-    return layoutForInstances;
-  }
-
-  /*public ObjectLayout updateInstanceLayoutWithInitializedField(final long index, final Class<?> type) {
-    ObjectLayout updated = layoutForInstances.withInitializedField(index, type);
-
-    if (updated != layoutForInstances) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      layoutForInstances = updated;
-    }
-    return layoutForInstances;
-  }
-
-  public ObjectLayout updateInstanceLayoutWithGeneralizedField(final long index) {
-    ObjectLayout updated = layoutForInstances.withGeneralizedField(index);
-
-    if (updated != layoutForInstances) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      layoutForInstances = updated;
-    }
-    return layoutForInstances;
-  }*/
-
-
-  @Override
-  public String toString() {
-    return "Class(" + getName().getString() + ")";
-  }
-
-  // Mapping of symbols to invokables
-  private final HashMap<SSymbol, SInvokable> invokablesTable;
-
-  @CompilationFinal private SObject superclass;
-  @CompilationFinal private SSymbol name;
-  @CompilationFinal private SArray  instanceInvokables;
-  @CompilationFinal private SArray  instanceFields;
-  @CompilationFinal private Shape layoutForInstances;
-=======
-//
-//  @Override
-//  public String toString() {
-//    return "Class(" + getName().getString() + ")";
-//  }
-
->>>>>>> 3e597df8f65816b5b13ff3116f36ec1a2bafb562
 }

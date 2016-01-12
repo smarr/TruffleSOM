@@ -36,11 +36,6 @@ public abstract class HasGlobalPrim extends BinarySystemNode {
     public ExpressionNode getFirstMethodBodyNode() {
       throw new NotYetImplementedException();
     }
-
-    @Override
-    public void wrapIntoMateNode() {
-      // do nothing, don't want to do the same as for other nodes with receiver
-    }
   }
 
   private static final class UninitializedHasGlobal extends HasGlobalNode {

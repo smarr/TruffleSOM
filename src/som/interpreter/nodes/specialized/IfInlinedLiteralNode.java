@@ -61,8 +61,9 @@ public final class IfInlinedLiteralNode extends ExpressionWithReceiverNode {
     return conditionNode;
   }
   
+  @Override
   public void wrapIntoMateNode() {
-    //TODO: Mateify this node too!
+    super.wrapIntoMateNode();
     MateifyVisitor visitor = new MateifyVisitor();
     bodyActualNode.accept(visitor);
   }

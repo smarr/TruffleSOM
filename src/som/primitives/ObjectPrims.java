@@ -8,7 +8,6 @@ import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
-import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SSymbol;
@@ -84,7 +83,10 @@ public final class ObjectPrims {
     @Specialization
     public final Object doSObject(final DynamicObject receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation();
-      return receiver.get(SObject.getFieldIndex(receiver, fieldName));
+      Object value = receiver.get(SObject.getFieldIndex(receiver, fieldName));
+      //With the new change fields may not have been initialized.
+      if (value == null) return Nil.nilObject;
+      return value;    
     }
   }
 
@@ -119,16 +121,9 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final DynamicObject receiver, final Object environment) {
+    public final Object doSObject(final DynamicObject receiver, final DynamicObject environment) {
       CompilerAsserts.neverPartOfCompilation();
-      //Todo: Allow to set the Smalltalk nil -> All mate node guards must be revised.
-      SMateEnvironment value;
-      if (environment == Nil.nilObject){
-        value = null;
-      } else {
-        value = (SMateEnvironment)environment;
-      }
-      SReflectiveObject.setEnvironment(receiver, value);
+      SReflectiveObject.setEnvironment(receiver, environment);
       return receiver;
     }
   }

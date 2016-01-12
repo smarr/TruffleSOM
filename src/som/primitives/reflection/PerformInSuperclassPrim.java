@@ -25,9 +25,4 @@ public abstract class PerformInSuperclassPrim extends TernaryExpressionNode {
     SInvokable invokable = SClass.lookupInvokable(clazz, selector);
     return call.call(frame, invokable.getCallTarget(), new Object[] {receiver});
   }
-
-  @Override
-  public void wrapIntoMateNode() {
-    // do nothing
-  }
 }

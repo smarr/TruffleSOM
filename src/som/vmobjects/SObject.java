@@ -83,7 +83,7 @@ public class SObject {
     SOBJECT_SHAPE.getProperty(CLASS).setInternal(obj, value);
   }
 
-  public static final long getFieldIndex(final DynamicObject obj, final SSymbol fieldName) {
+  public static final int getFieldIndex(final DynamicObject obj, final SSymbol fieldName) {
     return SClass.lookupFieldIndex(getSOMClass(obj), fieldName);
   }
 

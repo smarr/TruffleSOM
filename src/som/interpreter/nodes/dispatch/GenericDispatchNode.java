@@ -6,7 +6,6 @@ import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CallTarget;
@@ -26,7 +25,7 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, 
-      final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+      final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
     Object rcvr = arguments[0];
     DynamicObject rcvrClass = Types.getClassOf(rcvr);
     SInvokable method = SClass.lookupInvokable(rcvrClass, selector);

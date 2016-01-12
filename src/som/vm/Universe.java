@@ -453,7 +453,7 @@ public class Universe {
     return systemClass;
   }
 
-  private void initializeSystemClass(final DynamicObject systemClass,
+  protected void initializeSystemClass(final DynamicObject systemClass,
       final DynamicObject superClass, final String name) {
     // Initialize the superclass hierarchy
     if (superClass != null) {
@@ -564,7 +564,7 @@ public class Universe {
   }
 
   @TruffleBoundary
-  private void loadSystemClass(final DynamicObject systemClass) {
+  protected void loadSystemClass(final DynamicObject systemClass) {
     // Load the system class
     DynamicObject result = loadClass(SClass.getName(systemClass), systemClass);
 

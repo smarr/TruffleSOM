@@ -6,6 +6,7 @@ import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.ReadFieldNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.WriteFieldNodeGen;
+
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
@@ -61,6 +62,13 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
   protected static final Assumption createAssumption() {
     return Truffle.getRuntime().createAssumption();
+  }
+  
+  public void wrapIntoMateNode(){
+    Node replacement = this.asMateNode();
+    if (replacement != null){
+      this.replace(replacement);
+    }
   }
 
   public abstract static class ReadFieldNode extends FieldAccessorNode {

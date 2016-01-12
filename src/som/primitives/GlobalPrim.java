@@ -25,11 +25,6 @@ public abstract class GlobalPrim extends BinarySystemNode {
     return getGlobal.getGlobal(frame, argument);
   }
 
-  @Override
-  public void wrapIntoMateNode() {
-    // do nothing
-  }
-
   private abstract static class GetGlobalNode extends SOMNode {
     protected static final int INLINE_CACHE_SIZE = 6;
 

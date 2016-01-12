@@ -5,6 +5,7 @@ import som.vmobjects.SArray;
 import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 public final class SArguments {
 
@@ -30,8 +31,8 @@ public final class SArguments {
     return args(frame)[RCVR_IDX];
   }
   
-  public static SMateEnvironment getEnvironment(final Frame frame) {
-    return (SMateEnvironment)args(frame)[ENVIRONMENT_IDX];
+  public static DynamicObject getEnvironment(final Frame frame) {
+    return (DynamicObject)args(frame)[ENVIRONMENT_IDX];
   }
   
   public static ExecutionLevel getExecutionLevel(final Frame frame) {
@@ -55,8 +56,9 @@ public final class SArguments {
     return SArray.create(argsArr);
   }
   
-  public static Object[] createSArguments(final SMateEnvironment environment,
+  public static Object[] createSArguments(final DynamicObject environment,
       final ExecutionLevel exLevel, final Object[] arguments) {
+    assert SMateEnvironment.isSMateEnvironment(environment);
     Object[] args = new Object[arguments.length + ARGUMENT_OFFSET];
     args[ENVIRONMENT_IDX]     = environment;
     args[EXECUTION_LEVEL_IDX] = exLevel;

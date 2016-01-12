@@ -3,9 +3,6 @@ package som.interpreter;
 import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
-import som.vm.MateUniverse;
-import som.vm.Universe;
-
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -24,8 +21,7 @@ public abstract class Invokable extends RootNode implements MateNode{
       final ExpressionNode expressionOrSequence,
       final ExpressionNode uninitialized) {
     super(SomLanguage.class, sourceSection, frameDescriptor);
-    this.uninitializedBody = uninitialized;
-    this.mateifyUninitializedNode(this.uninitializedBody);
+    this.uninitializedBody = this.mateifyUninitializedNode(uninitialized);
     this.expressionOrSequence = expressionOrSequence;
   }
 
@@ -54,19 +50,16 @@ public abstract class Invokable extends RootNode implements MateNode{
   public abstract void propagateLoopCountThroughoutLexicalScope(final long count);
   
   public void wrapIntoMateNode() {
+    if (this.asMateNode() != null) this.replace(this.asMateNode());
     MateifyVisitor visitor = new MateifyVisitor();
     uninitializedBody.accept(visitor);
   }
   
-  private void mateifyUninitializedNode(ExpressionNode uninitialized){
-    if (Universe.current() instanceof MateUniverse) 
-    /*  &&  (
-            (uninitialized instanceof UninitializedMessageSendNode) || 
-            (uninitialized instanceof FieldNode)   
-        )
-       )*/ 
-    {
-        uninitialized.wrapIntoMateNode();
+  private ExpressionNode mateifyUninitializedNode(ExpressionNode uninitialized){
+    if (uninitialized.asMateNode() == null) {
+        return uninitialized;
+    } else {
+      return (ExpressionNode)uninitialized.asMateNode();
     }
   }
 }
