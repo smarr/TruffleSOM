@@ -38,23 +38,20 @@ public class SReflectiveObject extends SObject {
   private static final SReflectiveObjectObjectType SREFLECTIVE_OBJECT_TYPE = new SReflectiveObjectObjectType();
   
   protected static final Shape SREFLECTIVE_OBJECT_SHAPE = 
-      SOBJECT_SHAPE.createSeparateShape(SOBJECT_SHAPE.getData())
+      INIT_NIL_SHAPE.createSeparateShape(INIT_NIL_SHAPE.getSharedData())
       .changeType(SREFLECTIVE_OBJECT_TYPE)
       .defineProperty(ENVIRONMENT, Nil.nilObject, 0);
       
-  private static final DynamicObjectFactory SREFLECTIVE_OBJECT_FACTORY = SREFLECTIVE_OBJECT_SHAPE.createFactory();
+  public static final DynamicObjectFactory SREFLECTIVE_OBJECT_FACTORY = SREFLECTIVE_OBJECT_SHAPE.createFactory();
   
-  public static DynamicObject create(final DynamicObject instanceClass) {
-    return SREFLECTIVE_OBJECT_FACTORY.newInstance(instanceClass, Nil.nilObject);
-  }
-
-  public static DynamicObject create(final int numFields) {
-    return SREFLECTIVE_OBJECT_FACTORY.newInstance(Nil.nilObject, Nil.nilObject);
+  public static final Shape createObjectShapeForClass(final DynamicObject clazz) {
+    return SREFLECTIVE_OBJECT_SHAPE.createSeparateShape(clazz);
   }
   
+  //Todo: Is this method optimizable by caching the location? 
   public static final DynamicObject getEnvironment(final DynamicObject obj) {
     CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
-    return (DynamicObject) obj.get(ENVIRONMENT);
+    return (DynamicObject) obj.get(ENVIRONMENT, Nil.nilObject);
   }
 
   public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
@@ -68,6 +65,7 @@ public class SReflectiveObject extends SObject {
       return "SReflectiveObject";
     }
   }
+  
   public static boolean isSReflectiveObject(final DynamicObject obj) {
     return obj.getShape().getObjectType() == SREFLECTIVE_OBJECT_TYPE;
   }

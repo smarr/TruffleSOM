@@ -1,23 +1,19 @@
 package som.vmobjects;
 
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.DynamicObjectFactory;
-import com.oracle.truffle.api.object.ObjectType;
-import com.oracle.truffle.api.object.Shape;
-
 import som.vm.MateSemanticsException;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 
 public class SMateEnvironment extends SObject {
-  private static final SMateEnvironmentObjectType SMATE_ENVIRONMENT_TYPE = new SMateEnvironmentObjectType();
+  //private static final SMateEnvironmentObjectType SMATE_ENVIRONMENT_TYPE = new SMateEnvironmentObjectType();
   
   public static final int Semantics_IDX = 0;
   public static final int Layout_IDX = 1;
   public static final int Message_IDX = 2;
   
-  protected static final SSymbol SEMANTICS = Universe.current().symbolFor("semantics");
+  /*
   protected static final SSymbol LAYOUT = Universe.current().symbolFor("layout");
   protected static final SSymbol MESSAGE = Universe.current().symbolFor("message");
   
@@ -40,6 +36,7 @@ public class SMateEnvironment extends SObject {
       return "SMateEnvironment";
     }
   }
+  */
   
   //Todo: Finish the SMateEnvironment type with primitives for seting it fields
   public static SInvokable methodImplementing(final DynamicObject obj, ReflectiveOp operation){

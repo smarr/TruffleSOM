@@ -7,6 +7,8 @@ import static som.vm.constants.MateClasses.ShapeClass;
 import static som.vm.constants.Classes.objectClass;
 
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.Shape;
 
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
@@ -32,6 +34,7 @@ public class MateUniverse extends Universe {
       initializeSystemClass(operationalSemanticsMO, objectClass, "OperationalSemanticsMO");
       initializeSystemClass(messageMO, objectClass, "MessageMO");
       initializeSystemClass(ShapeClass, objectClass, "Shape");
+      //SObject.internalSetNilClass(nilObject, nilClass);
       
       // Load methods and fields into the Mate MOP.
       loadSystemClass(environmentMO);
@@ -93,6 +96,16 @@ public class MateUniverse extends Universe {
     } catch (IllegalStateException e) {
       errorExit(e.getMessage());
     }
+  }
+  
+  @Override
+  public DynamicObjectFactory getInstancesFactory(){
+    return SReflectiveObject.SREFLECTIVE_OBJECT_FACTORY;
+  }
+  
+  @Override
+  public Shape createObjectShapeForClass(DynamicObject clazz){
+    return SReflectiveObject.createObjectShapeForClass(clazz);
   }
   
   public static MateUniverse current() {

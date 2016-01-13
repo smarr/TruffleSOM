@@ -1,28 +1,29 @@
 package som.vmobjects;
 
+import som.vm.constants.MateClasses;
+import som.vm.constants.Nil;
+
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
 
-import som.vm.constants.MateClasses;
-
 public class SShape extends SAbstractObject {
 
-  private DynamicObject mockObject;
+  private Shape mockShape;
 
   @Override
   public DynamicObject getSOMClass() {
     return MateClasses.ShapeClass;
   }
   
-  public SShape(){
-    mockObject = SReflectiveObject.create(0); 
-  }
-  
   public SShape(int fieldsCount){
-    mockObject = SReflectiveObject.create(fieldsCount);
+    Shape newShape = SObject.INIT_NIL_SHAPE.createSeparateShape(null);
+    for (int i = 1; i < fieldsCount; i ++){
+      newShape.defineProperty(i, Nil.nilObject, 0);
+    }
+    mockShape = newShape; 
   }
   
   public Shape getShape(){
-    return mockObject.getShape();
+    return mockShape;
   }
 }
