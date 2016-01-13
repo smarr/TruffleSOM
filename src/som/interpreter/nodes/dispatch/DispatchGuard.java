@@ -79,15 +79,14 @@ public abstract class DispatchGuard {
       this.expected = expected;
     }
 
-    @Override
-    public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      if (!expected.isValid()) {
-        CompilerDirectives.transferToInterpreter();
-        throw new InvalidAssumptionException();
-      }
-      return obj instanceof DynamicObject && ((DynamicObject) obj).getShape() == expected;
-      /*return obj instanceof SObject &&
-           ((SObject) obj).getSOMClass() == clazz;*/
+  @Override
+  public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
+    if (!expected.isValid()) {
+      CompilerDirectives.transferToInterpreter();
+      throw new InvalidAssumptionException();
+    }
+    return obj instanceof DynamicObject &&
+        ((DynamicObject) obj).getShape() == expected;
     }
   }
 }
