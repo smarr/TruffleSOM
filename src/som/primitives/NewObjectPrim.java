@@ -1,6 +1,7 @@
 package som.primitives;
 
 import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.vm.constants.Nil;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
@@ -19,11 +20,12 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
   public final DynamicObject cachedClass(final DynamicObject receiver,
       @Cached("receiver") final DynamicObject cachedClass,
       @Cached("getFactory(cachedClass)") final DynamicObjectFactory factory) {
-    return factory.newInstance();
+    //The parameter is only valid for SReflectiveObjects
+    return factory.newInstance(Nil.nilObject);
   }
 
   @Specialization(contains = "cachedClass")
-  public final DynamicObject uncached(final DynamicObject receiver) {
+  public DynamicObject uncached(final DynamicObject receiver) {
     return SObject.create(receiver);
   }
 }
