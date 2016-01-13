@@ -76,9 +76,6 @@ public final class SObject {
    * classes end up with the same shape, which would mean shapes could not be
    * used as guards for message sends, because it would not be guaranteed that
    * the right message is send/method is activated.
-   *
-   * Note, the SClasses store their class as a property, to avoid having
-   * multiple shapes for each basic classes.
    */
   private static final class SObjectObjectType extends ObjectType {
     @Override
