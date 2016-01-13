@@ -26,6 +26,7 @@ package som.vmobjects;
 
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
+import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -43,11 +44,11 @@ public class SObject {
 
   // Object shape with property for a class
   protected static final Shape INIT_NIL_SHAPE = LAYOUT.createShape(SOBJECT_TYPE);
-  protected static final DynamicObjectFactory NIL_DUMMY_FACTORY = INIT_NIL_SHAPE.createFactory();
+  public static final DynamicObjectFactory NIL_DUMMY_FACTORY = INIT_NIL_SHAPE.createFactory();
 
   protected SObject() { } // this class cannot be instantiated, it provides only static helpers
 
-  public static final Shape createObjectShapeForClass(final DynamicObject clazz) {
+  public static Shape createObjectShapeForClass(final DynamicObject clazz) {
     return LAYOUT.createShape(SOBJECT_TYPE, clazz);
   }
 
@@ -55,9 +56,10 @@ public class SObject {
     CompilerAsserts.neverPartOfCompilation("Basic create without factory caching");
     DynamicObjectFactory factory = SClass.getFactory(instanceClass);
     assert factory != NIL_DUMMY_FACTORY;
-    return factory.newInstance(instanceClass);
+    //The parameter is only valid for SReflectiveObjects
+    return factory.newInstance(Nil.nilObject);
   }
-
+  
   public static DynamicObject createNil() {
     // TODO: this is work in progress, the class should go as shared data into the shape
     // TODO: ideally, nil is like in SOMns an SObjectWithoutFields

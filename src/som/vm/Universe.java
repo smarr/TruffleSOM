@@ -66,6 +66,8 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.Shape;
 
 public class Universe {
 
@@ -434,7 +436,7 @@ public class Universe {
 
   @TruffleBoundary
   public static DynamicObject newSystemClass() {
-    return SClass.create(metaclassClass);
+    return SClass.create(SClass.create(metaclassClass));
   }
 
   protected void initializeSystemClass(final DynamicObject systemClass,
@@ -692,6 +694,14 @@ public class Universe {
     current = universe;
   }
 
+  public DynamicObjectFactory getInstancesFactory(){
+    return SObject.NIL_DUMMY_FACTORY;
+  }
+  
+  public Shape createObjectShapeForClass(DynamicObject clazz){
+    return SObject.createObjectShapeForClass(clazz);
+  }
+  
   public static Universe current() {
     if (current == null) {
       current = new Universe();

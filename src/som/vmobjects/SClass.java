@@ -63,7 +63,7 @@ public final class SClass {
     return SObject.LAYOUT.createShape(SCLASS_TYPE, clazz).
         defineProperty(SUPERCLASS,          Nil.nilObject, 0).
         defineProperty(INVOKABLES_TABLE,    new HashMap<SSymbol, SInvokable>(), 0).
-        defineProperty(OBJECT_FACTORY,      SObject.NIL_DUMMY_FACTORY, 0);
+        defineProperty(OBJECT_FACTORY,      Universe.current().getInstancesFactory(), 0);
   }
   
   public static DynamicObject createWithoutClass() {
@@ -71,7 +71,7 @@ public final class SClass {
     DynamicObject clazz =  INIT_CLASS_FACTORY.newInstance(
         Nil.nilObject,                       // SUPERCLASS
         new HashMap<SSymbol, SInvokable>(),  // INVOKABLES_TABLE
-        SObject.NIL_DUMMY_FACTORY);          // OBJECT_FACTORY, temporary value
+        Universe.current().getInstancesFactory());          // OBJECT_FACTORY, temporary value
     return clazz;
   }
   
@@ -83,11 +83,11 @@ public final class SClass {
     internalSetObjectFactory(clazzClazz, clazzFactory);
 
     DynamicObject clazz = clazzFactory.newInstance(
-        Nil.nilObject,                       // SUPERCLASS
-        new HashMap<SSymbol, SInvokable>(),  // INVOKABLES_TABLE
-        SObject.NIL_DUMMY_FACTORY);          // OBJECT_FACTORY, temporary value
+        Nil.nilObject,                              // SUPERCLASS
+        new HashMap<SSymbol, SInvokable>(),         // INVOKABLES_TABLE
+        Universe.current().getInstancesFactory());  // OBJECT_FACTORY, temporary value
 
-    Shape objectShape = SObject.createObjectShapeForClass(clazz);
+    Shape objectShape = Universe.current().createObjectShapeForClass(clazz);
     internalSetObjectFactory(clazz, objectShape.createFactory());
 
     return clazz;
