@@ -12,14 +12,6 @@ import com.oracle.truffle.api.object.DynamicObject;
 
 public final class MatePrims {
   @GenerateNodeFactory
-  public abstract static class MateNewObjectPrim extends UnaryExpressionNode {
-    @Specialization
-    public final DynamicObject doSClass(final DynamicObject receiver) {
-      return MateUniverse.newInstance(receiver);
-    }
-  }
-
-  @GenerateNodeFactory
   public abstract static class MateNewEnvironmentPrim extends UnaryExpressionNode {
     @Specialization
     public final DynamicObject doSClass(final DynamicObject receiver) {
