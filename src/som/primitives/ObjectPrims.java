@@ -83,10 +83,7 @@ public final class ObjectPrims {
     @Specialization
     public final Object doSObject(final DynamicObject receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation("InstVarNamedPrim");
-      Object value = receiver.get(SObject.getFieldIndex(receiver, fieldName));
-      //With the new change fields may not have been initialized.
-      if (value == null) return Nil.nilObject;
-      return value;    
+      return receiver.get(SObject.getFieldIndex(receiver, fieldName), Nil.nilObject);
     }
   }
 

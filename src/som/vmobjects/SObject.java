@@ -26,7 +26,6 @@ package som.vmobjects;
 
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
-import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -38,26 +37,45 @@ import com.oracle.truffle.api.object.Shape;
 
 public class SObject {
 
-  protected static final SSymbol CLASS = Universe.current().symbolFor("class");
   private static final SObjectObjectType SOBJECT_TYPE = new SObjectObjectType();
 
   protected static final Layout LAYOUT = Layout.createLayout();
 
   // Object shape with property for a class
-  protected static final Shape SOBJECT_SHAPE = LAYOUT.
-      createShape(SOBJECT_TYPE).defineProperty(CLASS, Nil.nilObject, 0);
-  private static final DynamicObjectFactory SOBJECT_FACTORY = SOBJECT_SHAPE.createFactory();
+  protected static final Shape INIT_NIL_SHAPE = LAYOUT.createShape(SOBJECT_TYPE);
+  protected static final DynamicObjectFactory NIL_DUMMY_FACTORY = INIT_NIL_SHAPE.createFactory();
 
   protected SObject() { } // this class cannot be instantiated, it provides only static helpers
 
+  public static final Shape createObjectShapeForClass(final DynamicObject clazz) {
+    return LAYOUT.createShape(SOBJECT_TYPE, clazz);
+  }
+
   public static DynamicObject create(final DynamicObject instanceClass) {
-    return SOBJECT_FACTORY.newInstance(instanceClass);
+    CompilerAsserts.neverPartOfCompilation("Basic create without factory caching");
+    DynamicObjectFactory factory = SClass.getFactory(instanceClass);
+    assert factory != NIL_DUMMY_FACTORY;
+    return factory.newInstance(instanceClass);
   }
 
-  public static DynamicObject create(final int numFields) {
-    return SOBJECT_FACTORY.newInstance(Nil.nilObject);
+  public static DynamicObject createNil() {
+    // TODO: this is work in progress, the class should go as shared data into the shape
+    // TODO: ideally, nil is like in SOMns an SObjectWithoutFields
+    return NIL_DUMMY_FACTORY.newInstance(new Object[] { null });
   }
-
+  
+  /**
+   * For SObjects, we store the class in the shape's shared data.
+   * This makes sure that each class has a separate shape tree and the shapes
+   * can be used for field accesses as well as message sends as guards.
+   * Without the separation, it could well be that objects from two different
+   * classes end up with the same shape, which would mean shapes could not be
+   * used as guards for message sends, because it would not be guaranteed that
+   * the right message is send/method is activated.
+   *
+   * Note, the SClasses store their class as a property, to avoid having
+   * multiple shapes for each basic classes.
+   */
   public static boolean isSObject(final DynamicObject obj) {
     return obj.getShape().getObjectType() == SOBJECT_TYPE;
   }
@@ -71,16 +89,21 @@ public class SObject {
 
   public static DynamicObject getSOMClass(final DynamicObject obj) {
     CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
-    return (DynamicObject) obj.get(CLASS);
+    return (DynamicObject) obj.getShape().getSharedData();
   }
 
-  public static final void setClass(final DynamicObject obj, final DynamicObject value) {
+  public static final void internalSetNilClass(final DynamicObject obj, final DynamicObject value) {
+    assert obj.getShape().getObjectType() == SOBJECT_TYPE;
     CompilerAsserts.neverPartOfCompilation("SObject.setClass");
     assert obj != null;
     assert value != null;
 
     assert !Universe.current().objectSystemInitialized : "This should really only be used during initialization of object system";
-    SOBJECT_SHAPE.getProperty(CLASS).setInternal(obj, value);
+
+    Shape withoutClass = obj.getShape();
+    Shape withClass = withoutClass.createSeparateShape(value);
+
+    obj.setShapeAndGrow(withoutClass, withClass);
   }
 
   public static final int getFieldIndex(final DynamicObject obj, final SSymbol fieldName) {

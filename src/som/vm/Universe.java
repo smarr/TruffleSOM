@@ -318,7 +318,7 @@ public class Universe {
     DynamicObject nilObject = Nil.nilObject;
 
     // Setup the class reference for the nil object
-    SObject.setClass(nilObject, nilClass);
+    SObject.internalSetNilClass(nilObject, nilClass);
 
     // Initialize the system classes.
     initializeSystemClass(objectClass,            null, "Object");
@@ -360,12 +360,12 @@ public class Universe {
     blockClasses[0] = loadClass(symbolFor("Block"));
 
     // Setup the true and false objects
-    trueObject  = newInstance(trueClass);
-    falseObject = newInstance(falseClass);
+    trueObject  = SObject.create(trueClass);
+    falseObject = SObject.create(falseClass);
 
     // Load the system class and create an instance of it
     systemClass  = loadClass(symbolFor("System"));
-    systemObject = newInstance(systemClass);
+    systemObject = SObject.create(systemClass);
 
     // Put special objects into the dictionary of globals
     setGlobal("nil",    nilObject);
@@ -419,18 +419,10 @@ public class Universe {
     }
   }
 
-  public static DynamicObject newInstance(final DynamicObject instanceClass) {
-    return SObject.create(instanceClass);
-  }
-
   @TruffleBoundary
   public static DynamicObject newMetaclassClass() {
-    // Allocate the metaclass classes
-    DynamicObject result = SClass.create(0);
-    SObject.setClass(result, SClass.create(0));
-
-    // Setup the metaclass hierarchy
-    SObject.setClass(SObject.getSOMClass(result), result);
+    DynamicObject result = SClass.createWithoutClass();
+    SClass.internalSetClass(result, SClass.create(result));
     return result;
   }
 
@@ -442,15 +434,7 @@ public class Universe {
 
   @TruffleBoundary
   public static DynamicObject newSystemClass() {
-    // Allocate the new system class
-    DynamicObject systemClass = SClass.create(0);
-
-    // Setup the metaclass hierarchy
-    SObject.setClass(systemClass, SClass.create(0));
-    SObject.setClass(SObject.getSOMClass(systemClass), metaclassClass);
-
-    // Return the freshly allocated system class
-    return systemClass;
+    return SClass.create(metaclassClass);
   }
 
   protected void initializeSystemClass(final DynamicObject systemClass,

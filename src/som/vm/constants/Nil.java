@@ -9,6 +9,6 @@ public final class Nil {
   public static final DynamicObject nilObject;
 
   static {
-    nilObject = SObject.create(0);
+    nilObject = SObject.createNil();
   }
 }

@@ -2,7 +2,6 @@ package som.interpreter;
 
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SArray;
-import som.vmobjects.SMateEnvironment;
 
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -58,7 +57,7 @@ public final class SArguments {
   
   public static Object[] createSArguments(final DynamicObject environment,
       final ExecutionLevel exLevel, final Object[] arguments) {
-    assert SMateEnvironment.isSMateEnvironment(environment);
+    //assert SMateEnvironment.isSMateEnvironment(environment);
     Object[] args = new Object[arguments.length + ARGUMENT_OFFSET];
     args[ENVIRONMENT_IDX]     = environment;
     args[EXECUTION_LEVEL_IDX] = exLevel;
