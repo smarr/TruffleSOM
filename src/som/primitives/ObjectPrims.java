@@ -6,6 +6,7 @@ import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
+import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
@@ -81,7 +82,7 @@ public final class ObjectPrims {
     @Specialization
     public final Object doSObject(final DynamicObject receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation();
-      return receiver.get(SObject.getFieldIndex(receiver, fieldName));
+      return receiver.get(SObject.getFieldIndex(receiver, fieldName), Nil.nilObject);
     }
   }
 
