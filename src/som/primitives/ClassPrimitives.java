@@ -29,9 +29,6 @@ import som.primitives.ClassPrimsFactory.InstanceFieldsPrimFactory;
 import som.primitives.ClassPrimsFactory.InstanceInvokablesPrimFactory;
 import som.primitives.ClassPrimsFactory.NamePrimFactory;
 import som.primitives.ClassPrimsFactory.SuperClassPrimFactory;
-import som.primitives.MatePrimsFactory.MateNewObjectPrimFactory;
-import som.vm.MateUniverse;
-import som.vm.Universe;
 
 
 public final class ClassPrimitives extends Primitives {
@@ -39,10 +36,7 @@ public final class ClassPrimitives extends Primitives {
 
   @Override
   public void installPrimitives() {
-    if (Universe.current() instanceof MateUniverse)
-      installInstancePrimitive("basicNew",        MateNewObjectPrimFactory.getInstance());
-    else
-      installInstancePrimitive("basicNew",        NewObjectPrimFactory.getInstance());
+    installInstancePrimitive("basicNew",        NewObjectPrimFactory.getInstance());
     installInstancePrimitive("name",       NamePrimFactory.getInstance());
     installInstancePrimitive("superclass", SuperClassPrimFactory.getInstance());
     installInstancePrimitive("methods",    InstanceInvokablesPrimFactory.getInstance());
