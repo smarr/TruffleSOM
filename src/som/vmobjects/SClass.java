@@ -243,7 +243,7 @@ public final class SClass {
 
     // Traverse the super class chain by calling lookup on the super class
     if (hasSuperClass(classObj)) {
-      invokable = lookupInvokable((DynamicObject) getSuperClass(classObj), selector);
+      invokable = lookupInvokable(getSuperClass(classObj), selector);
       if (invokable != null) {
         invokablesTable.put(selector, invokable);
         return invokable;
