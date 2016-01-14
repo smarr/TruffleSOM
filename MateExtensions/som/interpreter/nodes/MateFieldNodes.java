@@ -27,7 +27,8 @@ public abstract class MateFieldNodes {
     }
     
     //Todo: Check a better option for removing the silly guard
-    @Specialization(guards="1==1", insertBefore="executeEvaluated")
+    @Override
+    @Specialization
     public Object executeEvaluated(final VirtualFrame frame, final DynamicObject obj) {
       try {
          return this.doMateSemantics(frame, new Object[] {obj, (long) this.read.getFieldIndex()});
@@ -93,8 +94,9 @@ public abstract class MateFieldNodes {
       reflectiveDispatch = node;
     }
     
-    @Specialization(guards="1==1", insertBefore="executeEvaluated")
-    public final Object doEvaluated(final VirtualFrame frame,
+    @Override
+    @Specialization
+    public final Object executeEvaluated(final VirtualFrame frame,
         final DynamicObject self, final Object value) {
       try {
          return this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value});
