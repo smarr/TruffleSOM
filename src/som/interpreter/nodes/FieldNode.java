@@ -31,6 +31,7 @@ import som.vm.constants.ReflectiveOp;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -53,7 +54,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Specialization
-    public final Object executeEvaluated(final DynamicObject obj) {
+    public Object executeEvaluated(VirtualFrame frame, final DynamicObject obj) {
       return read.executeRead(obj);
     }
 
@@ -88,7 +89,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Specialization
-    public final Object executeEvaluated(final DynamicObject self, final Object value) {
+    public Object executeEvaluated(VirtualFrame frame, final DynamicObject self, final Object value) {
       return write.executeWrite(self, value);
     }
 
