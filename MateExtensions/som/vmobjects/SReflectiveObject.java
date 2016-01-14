@@ -27,7 +27,7 @@ package som.vmobjects;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.vm.Universe;
 import som.vm.constants.Nil;
-import com.oracle.truffle.api.CompilerAsserts;
+
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
@@ -50,7 +50,7 @@ public class SReflectiveObject extends SObject {
   
   //Todo: Is this method optimizable by caching the location? 
   public static final DynamicObject getEnvironment(final DynamicObject obj) {
-    CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
+    //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
     return (DynamicObject) obj.get(ENVIRONMENT, Nil.nilObject);
   }
 
