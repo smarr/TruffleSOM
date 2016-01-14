@@ -30,8 +30,11 @@ import som.vm.constants.Nil;
 
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.Location;
+import com.oracle.truffle.api.object.ObjectLocation;
 import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.Locations.DualLocation;
 
 public class SReflectiveObject extends SObject {
   protected static final SSymbol ENVIRONMENT = Universe.current().symbolFor("environment");
@@ -44,6 +47,9 @@ public class SReflectiveObject extends SObject {
       
   public static final DynamicObjectFactory SREFLECTIVE_OBJECT_FACTORY = SREFLECTIVE_OBJECT_SHAPE.createFactory();
   
+  public static final DualLocation ENV_LOCATION = (DualLocation) SREFLECTIVE_OBJECT_SHAPE.getProperty(ENVIRONMENT).getLocation();
+  public static final ObjectLocation ENVIRONMENT_LOCATION = ENV_LOCATION.getObjectLocation();
+      
   public static final Shape createObjectShapeForClass(final DynamicObject clazz) {
     return SREFLECTIVE_OBJECT_SHAPE.createSeparateShape(clazz);
   }
@@ -51,7 +57,8 @@ public class SReflectiveObject extends SObject {
   //Todo: Is this method optimizable by caching the location? 
   public static final DynamicObject getEnvironment(final DynamicObject obj) {
     //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
-    return (DynamicObject) obj.get(ENVIRONMENT, Nil.nilObject);
+    //return (DynamicObject) obj.get(ENVIRONMENT, Nil.nilObject);
+    return (DynamicObject) ENVIRONMENT_LOCATION.get(obj, false);
   }
 
   public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
