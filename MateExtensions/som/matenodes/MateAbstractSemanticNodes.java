@@ -5,6 +5,7 @@ import som.matenodes.MateAbstractSemanticNodesFactory.MateEnvironmentSemanticChe
 import som.matenodes.MateAbstractSemanticNodesFactory.MateObjectSemanticCheckNodeGen;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateSemanticCheckNodeGen;
 import som.vm.MateSemanticsException;
+import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
@@ -17,7 +18,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.ObjectType;
+import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.object.Locations.ConstantLocation;
+import com.oracle.truffle.object.Locations.ValueLocation;
 
 public abstract class MateAbstractSemanticNodes {
 
@@ -66,36 +71,42 @@ public abstract class MateAbstractSemanticNodes {
     public abstract SInvokable executeGeneric(VirtualFrame frame,
         Object receiver);
 
-    @Specialization(guards = "environmentIsNil(receiver)")
-    public SInvokable doStandardSOMBehavior(final VirtualFrame frame,
+    @Specialization(guards = "!isSReflectiveObject(receiver)")
+    public SInvokable doStandardSOMForPrimitives(final VirtualFrame frame,
         final DynamicObject receiver) {
-      return this.doSObject(frame, receiver);
+      throw new MateSemanticsException();
+    }
+    
+    @Specialization(guards = {"receiver.getShape() == cachedShape", "environmentIsNil(receiver, cachedLocation)"},
+        limit = "5")
+    public SInvokable doStandardSOMNoMetaobject(final VirtualFrame frame,
+        final DynamicObject receiver,
+        @Cached("receiver.getShape()") final Shape cachedShape,
+        @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation) {
+      throw new MateSemanticsException();
     }
 
-        
-    @Specialization(guards = {"cachedEnvironment == getEnvironment(receiver)" , 
-        "method != null"})
+    @Specialization(guards = {"receiver.getShape() == cachedShape"},
+        limit = "5")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
         final DynamicObject receiver,
-        @Cached("getEnvironment(receiver)") final DynamicObject cachedEnvironment,
+        @Cached("receiver.getShape()") final Shape cachedShape,
+        @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation,
+        @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObject cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
-      return method;
+      if(method != null) return method;
+      throw new MateSemanticsException();
     }
 
-    @Specialization(guards = "cachedEnvironment == getEnvironment(receiver)")
+    /*@Specialization(guards = "cachedEnvironment == getEnvironment(receiver)")
     public SInvokable doMetaObjectWithoutOperation(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("getEnvironment(receiver)") final DynamicObject cachedEnvironment) {
         throw new MateSemanticsException();
-    }
+    }*/
     
-    @Specialization
-    public SInvokable doSObject(final VirtualFrame frame, final Object receiver) {
-      throw new MateSemanticsException();
-    }
-
     protected static SInvokable environmentReflectiveMethod(
         DynamicObject environment, ReflectiveOp operation) {
       try{
@@ -105,13 +116,20 @@ public abstract class MateAbstractSemanticNodes {
       }
     }
     
-    public static DynamicObject getEnvironment(DynamicObject receiver){
-      return SReflectiveObject.getEnvironment(receiver);
+    public static DynamicObject getEnvironment(DynamicObject receiver, ConstantLocation location){
+      return (DynamicObject)location.get(receiver);
     }
     
-    public static boolean environmentIsNil(DynamicObject receiver){
-      return !SReflectiveObject.isSReflectiveObject(receiver) ||
-          SReflectiveObject.getEnvironment(receiver) == Nil.nilObject;
+    public static ConstantLocation getEnvironmentLocationOf(Shape shape){
+      return (ConstantLocation) shape.getProperty(SReflectiveObject.ENVIRONMENT).getLocation();
+    }
+    
+    public static boolean environmentIsNil(DynamicObject receiver, ConstantLocation location){
+          return getEnvironment(receiver,location) == Nil.nilObject;
+    }
+    
+    public static boolean isSReflectiveObject(DynamicObject object){
+      return SReflectiveObject.isSReflectiveObject(object);
     }
   }
 
