@@ -5,10 +5,9 @@ import som.primitives.BlockPrims.ValuePrimitiveNode;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
-import som.vmobjects.SMateEnvironment;
-
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class UninitializedValuePrimDispatchNode
@@ -32,7 +31,8 @@ public final class UninitializedValuePrimDispatchNode
       assert method != null;
 
       UninitializedValuePrimDispatchNode uninitialized = new UninitializedValuePrimDispatchNode();
-      CachedBlockDispatchNode node = new CachedBlockDispatchNode(method, uninitialized);
+      CachedDispatchNode node = new CachedDispatchNode(
+          DispatchGuard.createForBlock(rcvr), method.getCallTarget(), uninitialized);
       return replace(node);
     } else {
       GenericBlockDispatchNode generic = new GenericBlockDispatchNode();
@@ -42,7 +42,7 @@ public final class UninitializedValuePrimDispatchNode
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final SMateEnvironment environment, final ExecutionLevel exLevel, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
     return specialize((SBlock) arguments[0]).
         executeDispatch(frame, environment, exLevel, arguments);
   }

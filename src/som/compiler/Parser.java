@@ -90,8 +90,10 @@ import som.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable.SMethod;
+import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -260,14 +262,14 @@ public class Parser {
 
     // Load the super class, if it is not nil (break the dependency cycle)
     if (!superName.getString().equals("nil")) {
-      SClass superClass = universe.loadClass(superName);
+      DynamicObject superClass = universe.loadClass(superName);
       if (superClass == null) {
         throw new ParseError("Super class " + superName.getString() +
             " could not be loaded", NONE, this);
       }
 
-      cgenc.setInstanceFieldsOfSuper(superClass.getInstanceFields());
-      cgenc.setClassFieldsOfSuper(superClass.getSOMClass().getInstanceFields());
+      cgenc.setInstanceFieldsOfSuper(SClass.getInstanceFields(superClass));
+      cgenc.setClassFieldsOfSuper(SClass.getInstanceFields(SObject.getSOMClass(superClass)));
     }
   }
 

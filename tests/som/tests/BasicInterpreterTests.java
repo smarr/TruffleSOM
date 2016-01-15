@@ -35,6 +35,8 @@ import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.object.DynamicObject;
+
 @RunWith(Parameterized.class)
 public class BasicInterpreterTests {
 
@@ -129,7 +131,7 @@ public class BasicInterpreterTests {
 
     if (resultType == SClass.class) {
       String expected = (String) expectedResult;
-      String actual   = ((SClass) actualResult).getName().getString();
+      String actual   = SClass.getName((DynamicObject) actualResult).getString();
       assertEquals(expected, actual);
       return;
     }

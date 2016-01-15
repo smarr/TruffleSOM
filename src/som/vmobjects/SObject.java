@@ -24,123 +24,96 @@
 
 package som.vmobjects;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-
-import java.util.List;
-
-import som.interpreter.objectstorage.MateLocationFactory;
+import som.vm.NotYetImplementedException;
+import som.vm.Universe;
 import som.vm.constants.Nil;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.Layout;
+import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Shape;
-import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
-public class SObject extends SAbstractObject {
 
-  @CompilationFinal protected SClass clazz;
-  @CompilationFinal private DynamicObject dynamicObject;
+public class SObject {
 
-  public static final Layout LAYOUT = Layout.createLayout();
+  private static final SObjectObjectType SOBJECT_TYPE = new SObjectObjectType();
 
-  protected SObject(final SClass instanceClass) {
-    clazz          = instanceClass;
-    dynamicObject  = new DynamicObjectBasic(instanceClass.getLayoutForInstances());
-    this.initializeFields();
+  protected static final Layout LAYOUT = Layout.createLayout();
+
+  // Object shape with property for a class
+  protected static final Shape INIT_NIL_SHAPE = LAYOUT.createShape(SOBJECT_TYPE);
+  public static final DynamicObjectFactory NIL_DUMMY_FACTORY = INIT_NIL_SHAPE.createFactory();
+
+  protected SObject() { } // this class cannot be instantiated, it provides only static helpers
+
+  public static Shape createObjectShapeForClass(final DynamicObject clazz) {
+    return LAYOUT.createShape(SOBJECT_TYPE, clazz);
   }
 
-  protected SObject(final int numFields) {
-    dynamicObject = new DynamicObjectBasic(LAYOUT.createShape(new MateObjectType()));
-    for (int i = 0; i < numFields; i++) {
-       this.getDynamicObject().define(i, Nil.nilObject , 0, new MateLocationFactory());
-    }
+  public static DynamicObject create(final DynamicObject instanceClass) {
+    CompilerAsserts.neverPartOfCompilation("Basic create without factory caching");
+    DynamicObjectFactory factory = SClass.getFactory(instanceClass);
+    assert factory != NIL_DUMMY_FACTORY;
+    //The parameter is only valid for SReflectiveObjects
+    return factory.newInstance(Nil.nilObject);
   }
-
-  public final int getNumberOfFields() {
-    return dynamicObject.size();
+  
+  public static DynamicObject createNil() {
+    // TODO: this is work in progress, the class should go as shared data into the shape
+    // TODO: ideally, nil is like in SOMns an SObjectWithoutFields
+    return NIL_DUMMY_FACTORY.newInstance(new Object[] { null });
   }
-
-  public DynamicObject getDynamicObject() {
-    return this.dynamicObject;
-  }
-
-  public final Shape getObjectLayout() {
-    // TODO: should I really remove it, or should I update the layout?
-    return this.dynamicObject.getShape();
-  }
-
-  public final void setClass(final SClass value) {
-    transferToInterpreterAndInvalidate("SObject.setClass");
-    assert value != null;
-    // Set the class of this object by writing to the field with class index
-    clazz = value;
-  }
-
-  // @ExplodeLoop
-  // TODO: make sure we have a compilation constant for the number of fields
-  //        and reenable @ExplodeLoop, or better, avoid preinitializing fields completely.
-  private void initializeFields() {
-    for (int i = 0; i < this.getNumberOfFields(); i++) {
-      this.getDynamicObject().define(i, Nil.nilObject , 0, new MateLocationFactory());
-    }
-  }
-
-  @ExplodeLoop
-  private void setAllFields(final List<Object> fieldValues) {
-    assert fieldValues.size() == this.getNumberOfFields();
-    for (int i = 0; i < this.getNumberOfFields(); i++) {
-      if (fieldValues.get(i) != null) {
-        this.getDynamicObject().set(i, fieldValues.get(i));
-      } else {
-        this.getDynamicObject().set(i, Nil.nilObject);
-      }
-    }
-  }
-
-  public final boolean updateLayoutToMatchClass() {
-    Shape layoutAtClass = clazz.getLayoutForInstances();
-    assert layoutAtClass.getPropertyCount() == this.dynamicObject.size();
-
-    if (this.dynamicObject.getShape() != layoutAtClass) {
-      //setLayoutAndTransferFields(layoutAtClass);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  @Override
-  public final SClass getSOMClass() {
-    return clazz;
-  }
-
-  public final int getFieldIndex(final SSymbol fieldName) {
-    return clazz.lookupFieldIndex(fieldName);
-  }
-
-  public static SObject create(final SClass instanceClass) {
-    return new SObject(instanceClass);
-  }
-
-  public static SObject create(final int numFields) {
-    return new SObject(numFields);
-  }
-
-  public final Object getField(final int index) {
-    return this.dynamicObject.get(index, Nil.nilObject);
-  }
-
-  public final void setField(final int index, final Object value) {
-    this.dynamicObject.set(index, value);
-  }
-
-  /*
-    Todo: Implement interop
+  
+  /**
+   * For SObjects, we store the class in the shape's shared data.
+   * This makes sure that each class has a separate shape tree and the shapes
+   * can be used for field accesses as well as message sends as guards.
+   * Without the separation, it could well be that objects from two different
+   * classes end up with the same shape, which would mean shapes could not be
+   * used as guards for message sends, because it would not be guaranteed that
+   * the right message is send/method is activated.
    *
-  @Override
-  public ForeignAccess getForeignAccess() {
-    return new ForeignAccess(getContext());
-  }*/
- }
+   * Note, the SClasses store their class as a property, to avoid having
+   * multiple shapes for each basic classes.
+   */
+  public static boolean isSObject(final DynamicObject obj) {
+    return obj.getShape().getObjectType() == SOBJECT_TYPE;
+  }
+
+  private static final class SObjectObjectType extends ObjectType {
+    @Override
+    public String toString() {
+      return "SObject";
+    }
+  }
+
+  public static DynamicObject getSOMClass(final DynamicObject obj) {
+    //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
+    return (DynamicObject) obj.getShape().getSharedData();
+  }
+
+  public static final void internalSetNilClass(final DynamicObject obj, final DynamicObject value) {
+    assert obj.getShape().getObjectType() == SOBJECT_TYPE;
+    CompilerAsserts.neverPartOfCompilation("SObject.setClass");
+    assert obj != null;
+    assert value != null;
+
+    assert !Universe.current().objectSystemInitialized : "This should really only be used during initialization of object system";
+
+    Shape withoutClass = obj.getShape();
+    Shape withClass = withoutClass.createSeparateShape(value);
+
+    obj.setShapeAndGrow(withoutClass, withClass);
+  }
+
+  public static final int getFieldIndex(final DynamicObject obj, final SSymbol fieldName) {
+    return SClass.lookupFieldIndex(getSOMClass(obj), fieldName);
+  }
+
+  public static final int getNumberOfFields(final DynamicObject obj) {
+    throw new NotYetImplementedException();
+  }
+}
+

@@ -12,7 +12,7 @@ GRAAL_LOCATIONS = ['/home/smarr/Projects/SOM/graal/jvmci',
                    '/Users/guidochari/Documents/Projects/graal-compiler/jvmci',
                    BASE_DIR + '/../graal/jvmci',
                    BASE_DIR + '/../GraalVM/jvmci']
-JDK_VERSIONS = ['jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_40', 'jdk1.8.0_25']
+JDK_VERSIONS = ['jdk1.8.0_65', 'jdk1.8.0_60', 'jdk1.8.0_45', 'jdk1.8.0_45-internal', 'jdk1.8.0_40', 'jdk1.8.0_25']
 
 parser = argparse.ArgumentParser(
     description='Helper script to run TruffleMate with/without Graal')
@@ -23,8 +23,14 @@ parser.add_argument('-i', '--igv', help='dump compilation details to IGV',
                     dest='igv', action='store_true', default=False)
 parser.add_argument('-l', '--low-level', help='enable low-level optimization output',
                     dest='low_level', action='store_true', default=False)
+
 parser.add_argument('-p', '--profile', help='enable profiling after warmup',
                     dest='profile', action='store_true', default=False)
+parser.add_argument('-a', '--profile-allocations', help='enable profiling after warmup, and profile allocations',
+                    dest='profile_allocations', action='store_true', default=False)
+parser.add_argument('-pt', '--profile-times', help='enable profiling after certain time intervals',
+                    dest='profile_timed', action='store_true', default=False)
+
 parser.add_argument('-w', '--perf-warnings', help='enable performance warnings',
                     dest='perf_warnings', action='store_true', default=False)
 
@@ -43,6 +49,8 @@ parser.add_argument('-C', '--no-compilation', help='disable Truffle compilation'
                     dest='no_compilation', action='store_true', default=False)
 parser.add_argument('-G', '--interpreter', help='run without Graal',
                     dest='interpreter', action='store_true', default=False)
+parser.add_argument('-X', '--java-interpreter', help='run without Graal, and only the Java interpreter',
+                    dest='java_interpreter', action='store_true', default=False)
 parser.add_argument('-T', '--no-trace', help='do not print truffle compilation info',
                     dest='no_trace', action='store_false', default=True)
 parser.add_argument('--no-graph-pe', help='disable Graph PE',
@@ -63,6 +71,9 @@ args, unknown = parser.parse_known_args()
 
 JAVA_BIN  = '/product/bin/java'
 JAVA_ARGS = ['-d64']
+
+if args.java_interpreter:
+    args.interpreter = True
 
 if args.interpreter:
     java_bin = "java"
@@ -96,7 +107,9 @@ if args.mate:
 else:
   mainClass = "som.vm.Universe"
 
-SOM_ARGS = ['-Xbootclasspath/a:build/classes:libs/truffle/mxbuild/dists/truffle-api.jar',
+SOM_ARGS = ['-Xbootclasspath/a:'
+             + BASE_DIR + '/build/classes:'
+             + BASE_DIR + '/libs/truffle/mxbuild/dists/truffle-api.jar',
             mainClass]
 
 # == Hotspot -XX:CompileCommand=print,*::callRoot
@@ -105,10 +118,9 @@ SOM_ARGS = ['-Xbootclasspath/a:build/classes:libs/truffle/mxbuild/dists/truffle-
 # -G:+TruffleSplittingNew
 
 # == Compiler Settings
-TWEAK_INLINING = ['-Djvmci.option.TruffleCompilationThreshold=191',
-                  '-Djvmci.option.TruffleInliningMaxCallerSize=10000',
-                  '-Djvmci.option.TruffleSplittingMaxCalleeSize=100000']
-
+TWEAK_INLINING = ['-Dgraal.option.TruffleCompilationThreshold=191',
+                  '-Dgraal.option.TruffleInliningMaxCallerSize=10000',
+                  '-Dgraal.option.TruffleSplittingMaxCalleeSize=100000']
 if GRAAL_FLAGS:
     flags = [GRAAL_FLAGS]
 else:
@@ -126,21 +138,27 @@ if args.debug:
     flags += ['-Xdebug',
               '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000']
 if not args.interpreter and args.igv:
-    flags += ['-Djvmci.option.Dump=Truffle,TruffleTree']
+    flags += ['-Dgraal.option.Dump=Truffle,TruffleTree']
 if args.low_level:
     flags += ['-XX:+UnlockDiagnosticVMOptions', '-XX:+LogCompilation',
               '-XX:+TraceDeoptimization']
-if not args.interpreter and args.profile:
-    flags += ['-XX:JVMCICounterSize=5000', '-Djvmci.option.ProfileCompiledMethods=true',
-              '-Djvmci.option.BenchmarkDynamicCounters=out,warmup,total']
+if not args.interpreter and (args.profile or args.profile_allocations or args.profile_timed):
+    flags += ['-XX:JVMCICounterSize=5000', '-Dgraal.option.ProfileCompiledMethods=true',
+              '-DProfileCompiledMethodsPhase.WITH_SECTION_HEADER=true']
+    if args.profile_allocations:
+        flags += ['-Dgraal.option.ProfileAllocations=true']
+    if args.profile_timed:
+        flags += ['-Dgraal.option.TimedDynamicCounters=1000']
+    if args.profile:
+        flags += ['-Dgraal.option.BenchmarkDynamicCounters=out,completed,total']
 if not args.interpreter and args.perf_warnings:
-    flags += ['-Djvmci.option.TruffleCompilationExceptionsAreFatal=true',
-              '-Djvmci.option.TraceTrufflePerformanceWarnings=true',
-              '-Djvmci.option.TraceTruffleCompilation=true',
-              '-Djvmci.option.TraceTruffleCompilationDetails=true',
-              '-Djvmci.option.TraceTruffleExpansionSource=true']
+    flags += ['-Dgraal.option.TruffleCompilationExceptionsAreFatal=true',
+              '-Dgraal.option.TraceTrufflePerformanceWarnings=true',
+              '-Dgraal.option.TraceTruffleCompilation=true',
+              '-Dgraal.option.TraceTruffleCompilationDetails=true',
+              '-Dgraal.option.TraceTruffleExpansionSource=true']
 if not args.interpreter and args.only_compile:
-    flags.append("-Djvmci.option.TruffleCompileOnly=%s" % only_compile)
+    flags.append("-Dgraal.option.TruffleCompileOnly=%s" % only_compile)
 if args.visual_vm:
     flags += ['-agentpath:/Users/smarr/Downloads/visualvm_138/profiler/lib/deployed/jdk16/mac/libprofilerinterface.jnilib=/Users/smarr/Downloads/visualvm_138/profiler/lib,5140']
 if args.assert_:
@@ -148,16 +166,17 @@ if args.assert_:
 else:
     flags += ['-dsa', '-da']
 if not args.interpreter and not args.background_compilation:
-    flags += ['-Djvmci.option.TruffleBackgroundCompilation=false']
+    flags += ['-Dgraal.option.TruffleBackgroundCompilation=false']
 if not args.interpreter and args.no_compilation:
-    flags.append('-Djvmci.option.TruffleCompileOnly=__FAKE_METHOD_NON_EXISTING__')
+    flags.append('-Dgraal.option.TruffleCompileOnly=__FAKE_METHOD_NON_EXISTING__')
 if not args.interpreter and args.no_trace and not args.perf_warnings:
-    flags += ['-Djvmci.option.TraceTruffleInlining=false', '-Djvmci.option.TraceTruffleCompilation=false']
+    flags += ['-Dgraal.option.TraceTruffleInlining=false', '-Dgraal.option.TraceTruffleCompilation=false']
 if not args.interpreter and not args.graph_pe:
-    flags += ['-Djvmci.option.GraphPE=false']
+    flags += ['-Dgraal.option.GraphPE=false']
 if args.threads:
     flags += ['-Dsom.threads=%s' % args.threads ]
-
+if args.java_interpreter:
+    flags += ['-Xint']
 all_args = JAVA_ARGS + flags + SOM_ARGS + unknown + args.args
 
 if args.verbose:

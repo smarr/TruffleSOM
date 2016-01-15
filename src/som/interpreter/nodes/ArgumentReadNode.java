@@ -7,6 +7,7 @@ import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ArgumentReadNode {
@@ -37,9 +38,9 @@ public abstract class ArgumentReadNode {
     }
     
     @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateLocalArgumentReadNode(this));
-    } 
+    public Node asMateNode() {
+      return new MateArgumentReadNode.MateLocalArgumentReadNode(this);
+    }
   }
 
   public static class NonLocalArgumentReadNode extends ContextualNode {
@@ -100,8 +101,8 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateNonLocalArgumentReadNode(this));
+    public Node asMateNode() {
+      return new MateArgumentReadNode.MateNonLocalArgumentReadNode(this);
     }
   }
 
@@ -131,9 +132,10 @@ public abstract class ArgumentReadNode {
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorLocalSuperArg;
     }
+    
     @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateLocalSuperReadNode(this));
+    public Node asMateNode() {
+      return new MateArgumentReadNode.MateLocalSuperReadNode(this);
     }
   }
 
@@ -177,8 +179,8 @@ public abstract class ArgumentReadNode {
     }
     
     @Override
-    public void wrapIntoMateNode() {
-      replace(new MateArgumentReadNode.MateNonLocalSuperReadNode(this));
+    public Node asMateNode() {
+      return new MateArgumentReadNode.MateNonLocalSuperReadNode(this);
     }
   }
 }

@@ -16,6 +16,7 @@ import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNo
 
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -101,8 +102,8 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     }
     
     @Override
-    public void wrapIntoMateNode() {
-      replace(new MateUninitializedVariableNode.MateUninitializedVariableReadNode(this));
+    public Node asMateNode() {
+      return new MateUninitializedVariableNode.MateUninitializedVariableReadNode(this);
     }
   }
 
@@ -189,8 +190,8 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     }
     
     @Override
-    public void wrapIntoMateNode() {
-        replace(new MateUninitializedVariableNode.MateUninitializedVariableWriteNode(this));
+    public Node asMateNode() {
+      return new MateUninitializedVariableNode.MateUninitializedVariableWriteNode(this);
     }
   }
 }

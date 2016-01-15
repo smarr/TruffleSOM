@@ -1,32 +1,33 @@
 package som.interpreter.objectstorage;
 
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
-import som.vmobjects.SObject;
+import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
-public class MateLayoutFieldWriteNode extends AbstractWriteFieldNode implements MateBehavior {
+public final class MateLayoutFieldWriteNode extends WriteFieldNode implements MateBehavior {
   @Child private MateSemanticCheckNode          semanticCheck;
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
-  @Child private AbstractWriteFieldNode         write;
+  @Child private WriteFieldNode                 write;
   
-  public MateLayoutFieldWriteNode(final AbstractWriteFieldNode node) {
+  public MateLayoutFieldWriteNode(final WriteFieldNode node) {
     super(node.getFieldIndex());
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
     this.initializeMateDispatchForFieldAccess(this.getSourceSection());
     write = node;
   }
 
-  public Object write(final VirtualFrame frame, final SObject receiver, final Object value) {
+  public Object write(final VirtualFrame frame, final DynamicObject receiver, final Object value) {
    try {
       return this.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex(), value});
    } catch (MateSemanticsException e){
-     return write.write(receiver, value);
+     return write.executeWrite(receiver, value);
    }
   }
 
@@ -51,12 +52,10 @@ public class MateLayoutFieldWriteNode extends AbstractWriteFieldNode implements 
   }
 
   @Override
-  public Object write(SObject obj, Object value) {
-    return write.write(obj, value);
-  }
-  
-  @Override
-  public int lengthOfDispatchChain() {
-    return 0;
+  public Object executeWrite(DynamicObject obj, Object value) {
+    /*Should never enter here*/
+    assert(false);
+    Universe.errorExit("Mate enters an unexpected method");
+    return value;
   }
 }

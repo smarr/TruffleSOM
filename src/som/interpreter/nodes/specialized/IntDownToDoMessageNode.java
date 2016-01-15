@@ -90,6 +90,7 @@ public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
     }
   }
   
+  @Override
   public void wrapIntoMateNode(){
     super.wrapIntoMateNode();
     MateUniverse.current().mateifyMethod(blockMethod);

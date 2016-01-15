@@ -24,36 +24,63 @@
 
 package som.vmobjects;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import som.vm.Universe;
+import som.vm.constants.Nil;
 
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.ObjectType;
+import com.oracle.truffle.api.object.Property;
+import com.oracle.truffle.api.object.Shape;
 
 public class SReflectiveObject extends SObject {
-
-  @CompilationFinal protected SMateEnvironment environment;
+  public static final SSymbol ENVIRONMENT = Universe.current().symbolFor("environment");
+  public static final SReflectiveObjectObjectType SREFLECTIVE_OBJECT_TYPE = new SReflectiveObjectObjectType();
   
-  protected SReflectiveObject(final SClass instanceClass) {
-    super(instanceClass);
-  }
-
-  protected SReflectiveObject(final int numFields) {
-    super(numFields);
+  protected static final Shape SREFLECTIVE_OBJECT_TEMP_SHAPE = 
+      INIT_NIL_SHAPE.createSeparateShape(INIT_NIL_SHAPE.getSharedData())
+      .changeType(SREFLECTIVE_OBJECT_TYPE);
+      //.defineProperty(ENVIRONMENT, Nil.nilObject, 0);
+  
+  //protected static final Shape SREFLECTIVE_OBJECT_SHAPE = SREFLECTIVE_OBJECT_TEMP_SHAPE.defineProperty(ENVIRONMENT, Nil.nilObject, 0);    
+  protected static final Shape SREFLECTIVE_OBJECT_SHAPE = 
+      SREFLECTIVE_OBJECT_TEMP_SHAPE.addProperty(Property.create(ENVIRONMENT, SREFLECTIVE_OBJECT_TEMP_SHAPE.allocator().constantLocation(Nil.nilObject), 0));
+      
+  public static final DynamicObjectFactory SREFLECTIVE_OBJECT_FACTORY = SREFLECTIVE_OBJECT_SHAPE.createFactory();
+  
+  //public static final ConstantLocation ENVIRONMENT_LOCATION = (ConstantLocation) SREFLECTIVE_OBJECT_SHAPE.getProperty(ENVIRONMENT).getLocation();
+      
+  public static final Shape createObjectShapeForClass(final DynamicObject clazz) {
+    return SREFLECTIVE_OBJECT_SHAPE.createSeparateShape(clazz);
   }
   
-  public static SReflectiveObject create(final SClass instanceClass) {
-    return new SReflectiveObject(instanceClass);
+  //Todo: Is this method optimizable by caching the location? 
+  public static final DynamicObject getEnvironment(final DynamicObject obj) {
+    //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
+    return (DynamicObject) obj.get(ENVIRONMENT, Nil.nilObject);
+    //return (DynamicObject) ENVIRONMENT_LOCATION.get(obj, true);
   }
 
-  public static SReflectiveObject create(final int numFields) {
-    return new SReflectiveObject(numFields);
+  public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
+    Shape oldShape = obj.getShape();
+    Shape newShape = oldShape.replaceProperty(obj.getShape().getProperty(ENVIRONMENT), 
+        Property.create(ENVIRONMENT, oldShape.allocator().constantLocation(value), 0));
+    obj.setShapeAndGrow(oldShape, newShape);
   }
   
-  public final SMateEnvironment getEnvironment() {
-    return environment;
+  private static final class SReflectiveObjectObjectType extends ObjectType {
+    @Override
+    public String toString() {
+      return "SReflectiveObject";
+    }
   }
-
-  public final void setEnvironment(final SMateEnvironment value) {
-    transferToInterpreterAndInvalidate("SReflectiveObject.setEnvironment");
-    environment = value;
+  
+  public static boolean isSReflectiveObject(final DynamicObject obj) {
+    //return false;
+    return obj.getShape().getObjectType() == SREFLECTIVE_OBJECT_TYPE;
+  }
+  
+  public static boolean isSReflectiveObject(ObjectType type) {
+    return type == SREFLECTIVE_OBJECT_TYPE;
   }
 }

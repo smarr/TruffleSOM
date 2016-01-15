@@ -45,9 +45,6 @@ public abstract class MateLocalVariableNode {
     }
     
     @Override
-    public void wrapIntoMateNode() {}
-  
-    @Override
     public Object executeGeneric(VirtualFrame frame) {
       try {
         return this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
@@ -89,9 +86,6 @@ public abstract class MateLocalVariableNode {
     public void setMateDispatch(MateAbstractStandardDispatch node) {
       reflectiveDispatch = node;
     }
-    
-    @Override
-    public void wrapIntoMateNode() {}
     
     @Override
     public Object executeGeneric(VirtualFrame frame) {

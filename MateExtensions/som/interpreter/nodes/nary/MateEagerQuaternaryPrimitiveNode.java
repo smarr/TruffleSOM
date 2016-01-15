@@ -3,7 +3,6 @@ package som.interpreter.nodes.nary;
 import som.interpreter.nodes.ExpressionNode;
 import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
-import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchMessageLookupNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;

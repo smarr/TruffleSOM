@@ -1,8 +1,8 @@
 package som.interpreter.nodes;
 
 import som.interpreter.SArguments;
-import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
+import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
@@ -11,9 +11,8 @@ import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory.AndBoolMessageNodeFactory;
-import som.interpreter.nodes.specialized.IfFalseMessageNodeGen;
+import som.interpreter.nodes.specialized.IfMessageNodeGen;
 import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeGen;
-import som.interpreter.nodes.specialized.IfTrueMessageNodeGen;
 import som.interpreter.nodes.specialized.IntDownToDoMessageNodeGen;
 import som.interpreter.nodes.specialized.IntToByDoMessageNodeGen;
 import som.interpreter.nodes.specialized.IntToDoMessageNodeGen;
@@ -66,6 +65,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -86,10 +86,10 @@ public final class MessageSendNode {
     return new GenericMessageSendNode(selector, argumentNodes,
       new UninitializedDispatchNode(selector), source);
   }
-  
+
   public abstract static class AbstractMessageSendNode extends ExpressionWithReceiverNode
       implements PreevaluatedExpression {
-    
+
     public static AbstractMessageSpecializationsFactory specializationFactory = new AbstractMessageSpecializationsFactory.SOMMessageSpecializationsFactory();
     @Children protected final ExpressionNode[] argumentNodes;
 
@@ -108,12 +108,12 @@ public final class MessageSendNode {
       Object[] arguments = evaluateArguments(frame);
       return doPreEvaluated(frame, arguments);
     }
-    
+
     @Override
     public ExpressionNode getReceiver() {
       return argumentNodes[0];
     }
-    
+
     @ExplodeLoop
     public Object[] evaluateArguments(final VirtualFrame frame) {
       Object[] arguments = new Object[argumentNodes.length];
@@ -123,9 +123,10 @@ public final class MessageSendNode {
       }
       return arguments;
     }
-    
+
     public abstract SSymbol getSelector();
-    
+
+    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.MessageLookup;
     }
@@ -279,7 +280,7 @@ public final class MessageSendNode {
             BlockNode argBlockNode = (BlockNode) argumentNodes[1];
             SBlock    argBlock     = (SBlock)    arguments[1];
             return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
-                argumentNodes[1], 
+                argumentNodes[1],
                 new WhileFalseStaticBlocksNode(
                     (BlockNode) argumentNodes[0], argBlockNode,
                     (SBlock) arguments[0], argBlock, getSourceSection())));
@@ -330,14 +331,12 @@ public final class MessageSendNode {
         case "ifTrue:":
           return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
-              IfTrueMessageNodeGen.create(arguments[0],
-                  arguments[1], getSourceSection(),
+              IfMessageNodeGen.create(true, getSourceSection(),
                   argumentNodes[0], argumentNodes[1])));
         case "ifFalse:":
           return replace(AbstractMessageSendNode.specializationFactory.binaryPrimitiveFor(selector, argumentNodes[0],
               argumentNodes[1],
-              IfFalseMessageNodeGen.create(arguments[0],
-                  arguments[1], getSourceSection(),
+              IfMessageNodeGen.create(false, getSourceSection(),
                   argumentNodes[0], argumentNodes[1])));
         case "to:":
           if (arguments[0] instanceof Long) {
@@ -499,7 +498,8 @@ public final class MessageSendNode {
       }
       return makeGenericSend();
     }
-    
+
+    @Override
     public SSymbol getSelector(){
       return this.selector;
     }
@@ -522,9 +522,10 @@ public final class MessageSendNode {
             argumentNode), getSourceSection());
       return replace(node);
     }
-    
-    public void wrapIntoMateNode() {
-      replace(new MateUninitializedMessageSendNode(this));
+
+    @Override
+    public Node asMateNode() {
+      return new MateUninitializedMessageSendNode(this);
     }
   }
 
@@ -595,19 +596,14 @@ public final class MessageSendNode {
       return dispatchNode.executeDispatch(frame, MateClasses.STANDARD_ENVIRONMENT, SArguments.getExecutionLevel(frame), arguments);
     }
 
-    public AbstractDispatchNode getDispatchListHead() {
-      return dispatchNode;
-    }
-
-    public void adoptNewDispatchListHead(final AbstractDispatchNode newHead) {
-      CompilerAsserts.neverPartOfCompilation();
-      dispatchNode = insert(newHead);
-    }
-
     public void replaceDispatchListHead(
         final GenericDispatchNode replacement) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("GenericMessageSendNode.replaceDispatchListHead");
       dispatchNode.replace(replacement);
+    }
+
+    public AbstractDispatchNode getDispatchListHead() {
+      return dispatchNode;
     }
 
     @Override
@@ -619,13 +615,15 @@ public final class MessageSendNode {
     public NodeCost getCost() {
       return Cost.getCost(dispatchNode);
     }
-    
+
+    @Override
     public SSymbol getSelector(){
       return this.selector;
     }
-    
-    public void wrapIntoMateNode() {
-      replace(new MateGenericMessageSendNode(this));
+
+    @Override
+    public ExpressionNode asMateNode() {
+      return new MateGenericMessageSendNode(this);
     }
   }
 }

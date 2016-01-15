@@ -1,19 +1,19 @@
 package som.vm.constants;
 
 import som.vm.Universe;
-import som.vmobjects.SClass;
-import som.vmobjects.SObject;
+
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 
 public final class Globals {
-  public static final SObject trueObject;
-  public static final SObject falseObject;
-  public static final SObject systemObject;
+  public static final DynamicObject trueObject;
+  public static final DynamicObject falseObject;
+  public static final DynamicObject systemObject;
 
-  public static final SClass  trueClass;
-  public static final SClass  falseClass;
-  public static final SClass  systemClass;
+  public static final DynamicObject trueClass;
+  public static final DynamicObject falseClass;
+  public static final DynamicObject systemClass;
 
  static {
     trueObject   = Universe.current().getTrueObject();

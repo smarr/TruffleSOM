@@ -5,11 +5,11 @@ import som.interpreter.nodes.SOMNode;
 import som.primitives.SystemPrims.BinarySystemNode;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
-import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 @ImportStatic(SystemPrims.class)
 public abstract class HasGlobalPrim extends BinarySystemNode {
@@ -22,7 +22,7 @@ public abstract class HasGlobalPrim extends BinarySystemNode {
   }
 
   @Specialization(guards = "receiverIsSystemObject(receiver)")
-  public final boolean doSObject(final SObject receiver, final SSymbol argument) {
+  public final boolean doSObject(final DynamicObject receiver, final SSymbol argument) {
     return hasGlobal.hasGlobal(argument);
   }
 
@@ -35,11 +35,6 @@ public abstract class HasGlobalPrim extends BinarySystemNode {
     @Override
     public ExpressionNode getFirstMethodBodyNode() {
       throw new NotYetImplementedException();
-    }
-
-    @Override
-    public void wrapIntoMateNode() {
-      // do nothing, don't want to do the same as for other nodes with receiver
     }
   }
 

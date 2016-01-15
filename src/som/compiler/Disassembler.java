@@ -30,16 +30,17 @@ import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.object.DynamicObject;
 
 public final class Disassembler {
 
   @TruffleBoundary
-  public static void dump(final SClass cl) {
-    for (int i = 0; i < cl.getNumberOfInstanceInvokables(); i++) {
-      SInvokable inv = cl.getInstanceInvokable(i);
+  public static void dump(final DynamicObject cl) {
+    for (int i = 0; i < SClass.getNumberOfInstanceInvokables(cl); i++) {
+      SInvokable inv = SClass.getInstanceInvokable(cl, i);
 
       // output header and skip if the Invokable is a Primitive
-      Universe.errorPrint(cl.getName().toString() + ">>"
+      Universe.errorPrint(SClass.getName(cl).toString() + ">>"
           + inv.getSignature().toString() + " = ");
 
       // output actual method

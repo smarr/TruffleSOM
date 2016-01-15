@@ -3,9 +3,9 @@ package som.interpreter.nodes.specialized.whileloops;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.vmobjects.SBlock;
-import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 
@@ -34,7 +34,7 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
   }
 
   @Override
-  protected final SObject doWhileConditionally(final VirtualFrame frame,
+  protected final DynamicObject doWhileConditionally(final VirtualFrame frame,
       final SBlock loopCondition,
       final SBlock loopBody) {
     return doWhileUnconditionally(frame, loopCondition, loopBody);

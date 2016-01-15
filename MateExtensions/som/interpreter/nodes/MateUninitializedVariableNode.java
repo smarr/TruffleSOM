@@ -25,8 +25,6 @@ public abstract class MateUninitializedVariableNode extends UninitializedVariabl
     protected LocalVariableReadNode specializedNode(){
       return new MateLocalVariableNode.MateLocalVariableReadNode(LocalVariableReadNodeGen.create(variable, getSourceSection()));
     }
-    
-    public void wrapIntoMateNode() {}
   }
   
   public static final class MateUninitializedVariableWriteNode extends UninitializedVariableWriteNode {
@@ -39,7 +37,5 @@ public abstract class MateUninitializedVariableNode extends UninitializedVariabl
       return new MateLocalVariableNode.MateLocalVariableWriteNode(
           LocalVariableWriteNodeGen.create(variable, getSourceSection(), exp)); 
     }
-    
-    public void wrapIntoMateNode() {}
   }
 }

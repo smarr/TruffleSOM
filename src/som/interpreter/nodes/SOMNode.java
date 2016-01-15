@@ -89,10 +89,15 @@ public abstract class SOMNode extends Node implements MateNode {
    * @return body of a node that just wraps the actual method body.
    */
   public abstract ExpressionNode getFirstMethodBodyNode();
-
-  @Override
-  public void wrapIntoMateNode() {
-    // do nothing!
-    // only a small subset of nodes needs to implement this method.
+  
+  public void wrapIntoMateNode(){
+    Node replacement = this.asMateNode();
+    if (replacement != null){
+      try{
+        this.replace(replacement);
+      } catch (Exception e){
+        int i = 1;
+      }
+    }
   }
 }

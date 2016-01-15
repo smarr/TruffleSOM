@@ -30,7 +30,12 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
   
   protected void initializeMateNodes(){
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    if (this.isSuperSend()){
+      ISuperReadNode superNode = (ISuperReadNode)this.argumentNodes[0];
+      this.initializeMateDispatchForSuperMessages(this.getSourceSection(), this.getSelector(), superNode);
+    } else {
+      this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    }
   }
 
   @Override

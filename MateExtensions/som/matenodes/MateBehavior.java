@@ -1,7 +1,9 @@
 package som.matenodes;
 
+import som.interpreter.nodes.ISuperReadNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchMessageLookupNodeGen;
+import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchSuperMessageLookupNodeGen;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.constants.ReflectiveOp;
@@ -34,5 +36,9 @@ public interface MateBehavior {
   public default void initializeMateDispatchForMessages(SourceSection source, SSymbol selector){
     this.setMateDispatch(MateCachedDispatchMessageLookupNodeGen.create(source, selector));
     //MateDispatchMessageLookupNodeGen.create(this.getSourceSection(), this.getSelector());
+  }
+  
+  public default void initializeMateDispatchForSuperMessages(SourceSection source, SSymbol selector, ISuperReadNode node){
+    this.setMateDispatch(MateCachedDispatchSuperMessageLookupNodeGen.create(source, selector, node));
   }
 }

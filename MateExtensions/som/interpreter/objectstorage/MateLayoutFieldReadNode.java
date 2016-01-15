@@ -1,32 +1,32 @@
 package som.interpreter.objectstorage;
 
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
 import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.MateSemanticsException;
-import som.vmobjects.SObject;
-
+import som.vm.Universe;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
-public class MateLayoutFieldReadNode extends AbstractReadFieldNode implements MateBehavior {
+public final class MateLayoutFieldReadNode extends ReadFieldNode implements MateBehavior {
   @Child private MateSemanticCheckNode          semanticCheck;
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
-  @Child private AbstractReadFieldNode          read;
+  @Child private ReadFieldNode                  read;
 
-  public MateLayoutFieldReadNode(final AbstractReadFieldNode node) {
+  public MateLayoutFieldReadNode(final ReadFieldNode node) {
     super(node.getFieldIndex());
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
     this.initializeMateDispatchForFieldAccess(this.getSourceSection());
     read = node;
   }
 
-  public Object read(final VirtualFrame frame, final SObject receiver) {
+  public Object read(final VirtualFrame frame, final DynamicObject receiver) {
     try {
       return this.doMateSemantics(frame, new Object[] {receiver, (long)this.getFieldIndex()});
    } catch (MateSemanticsException e){
-     return read.read(receiver);
+     return read.executeRead(receiver);
    }
   }
 
@@ -49,14 +49,12 @@ public class MateLayoutFieldReadNode extends AbstractReadFieldNode implements Ma
   public void setMateDispatch(MateAbstractStandardDispatch node) {
     reflectiveDispatch = node;
   }
-  
+
   @Override
-  public Object read(SObject obj) {
-    return read.read(obj);
-  }
-  
-  @Override
-  public int lengthOfDispatchChain() {
-    return 0;
+  public Object executeRead(DynamicObject obj) {
+    /*Should never enter here*/
+    assert(false);
+    Universe.errorExit("Mate enters an unexpected method");
+    return null;
   }
 }

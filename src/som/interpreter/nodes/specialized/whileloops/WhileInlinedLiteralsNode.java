@@ -92,6 +92,7 @@ public final class WhileInlinedLiteralsNode extends ExpressionWithReceiverNode {
   }
   
   public void wrapIntoMateNode() {
+    super.wrapIntoMateNode();
     MateifyVisitor visitor = new MateifyVisitor();
     conditionActualNode.accept(visitor);
     bodyActualNode.accept(visitor);

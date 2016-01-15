@@ -6,18 +6,16 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.Universe;
 import som.vm.constants.Globals;
 import som.vm.constants.Nil;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SClass;
-import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.object.DynamicObject;
 
 
 public final class SystemPrims {
-  public static final boolean receiverIsSystemObject(final SAbstractObject receiver) {
+  public static final boolean receiverIsSystemObject(final DynamicObject receiver) {
     return receiver == Globals.systemObject;
   }
 
@@ -30,8 +28,8 @@ public final class SystemPrims {
   @ImportStatic(SystemPrims.class)
   public abstract static class LoadPrim extends BinarySystemNode {
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final Object doSObject(final SObject receiver, final SSymbol argument) {
-      SClass result = universe.loadClass(argument);
+    public final Object doSObject(final DynamicObject receiver, final SSymbol argument) {
+      DynamicObject result = universe.loadClass(argument);
       return result != null ? result : Nil.nilObject;
     }
   }
@@ -39,7 +37,7 @@ public final class SystemPrims {
   @ImportStatic(SystemPrims.class)
   public abstract static class ExitPrim extends BinarySystemNode {
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final Object doSObject(final SObject receiver, final long error) {
+    public final Object doSObject(final DynamicObject receiver, final long error) {
       universe.exit((int) error);
       return receiver;
     }
@@ -52,7 +50,7 @@ public final class SystemPrims {
     public GlobalPutPrim()  { this.universe = Universe.current(); }
 
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final Object doSObject(final SObject receiver, final SSymbol global,
+    public final Object doSObject(final DynamicObject receiver, final SSymbol global,
         final Object value) {
       universe.setGlobal(global, value);
       return value;
@@ -62,13 +60,13 @@ public final class SystemPrims {
   @ImportStatic(SystemPrims.class)
   public abstract static class PrintStringPrim extends BinarySystemNode {
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final Object doSObject(final SObject receiver, final String argument) {
+    public final Object doSObject(final DynamicObject receiver, final String argument) {
       Universe.print(argument);
       return receiver;
     }
 
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+    public final Object doSObject(final DynamicObject receiver, final SSymbol argument) {
       return doSObject(receiver, argument.getString());
     }
   }
@@ -77,7 +75,7 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class PrintNewlinePrim extends UnaryExpressionNode {
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final Object doSObject(final SObject receiver) {
+    public final Object doSObject(final DynamicObject receiver) {
       Universe.println();
       return receiver;
     }
@@ -87,7 +85,7 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class FullGCPrim extends UnaryExpressionNode {
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final Object doSObject(final SObject receiver) {
+    public final Object doSObject(final DynamicObject receiver) {
       System.gc();
       return true;
     }
@@ -97,7 +95,7 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class TimePrim extends UnaryExpressionNode {
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final long doSObject(final SObject receiver) {
+    public final long doSObject(final DynamicObject receiver) {
       return System.currentTimeMillis() - startTime;
     }
   }
@@ -106,7 +104,7 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class TicksPrim extends UnaryExpressionNode {
     @Specialization(guards = "receiverIsSystemObject(receiver)")
-    public final long doSObject(final SObject receiver) {
+    public final long doSObject(final DynamicObject receiver) {
       return System.nanoTime() / 1000L - startMicroTime;
     }
   }

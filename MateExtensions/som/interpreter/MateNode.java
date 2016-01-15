@@ -1,5 +1,6 @@
 package som.interpreter;
 
+import com.oracle.truffle.api.nodes.Node;
 
 public interface MateNode {
   /**
@@ -7,5 +8,11 @@ public interface MateNode {
    * the wrapping node.
    * @return 
    */
-  default void wrapIntoMateNode(){};
+  public abstract void wrapIntoMateNode();
+  
+  default public Node asMateNode() {
+    // do nothing!
+    // only a small subset of nodes needs to implement this method.
+    return null;
+  }
 }

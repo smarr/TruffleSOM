@@ -9,7 +9,7 @@ import som.vmobjects.SArray.PartiallyEmptyArray;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.utilities.ValueProfile;
+import com.oracle.truffle.api.profiles.ValueProfile;
 
 
 @GenerateNodeFactory

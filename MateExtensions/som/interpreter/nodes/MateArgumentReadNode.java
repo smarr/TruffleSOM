@@ -58,9 +58,6 @@ public abstract class MateArgumentReadNode {
     public void setMateDispatch(MateAbstractStandardDispatch node) {
       reflectiveDispatch = node;
     }
-    
-    @Override
-    public void wrapIntoMateNode() {}
   }
   
   public static class MateNonLocalArgumentReadNode extends NonLocalArgumentReadNode implements
@@ -107,9 +104,6 @@ public abstract class MateArgumentReadNode {
         return super.executeGeneric(frame);
       }
     }
-    
-    @Override
-    public void wrapIntoMateNode() {}
   }
   
   public static final class MateLocalSuperReadNode extends LocalSuperReadNode implements 
@@ -156,9 +150,6 @@ public abstract class MateArgumentReadNode {
         return super.executeGeneric(frame);
       }
     }
-    
-    @Override
-    public void wrapIntoMateNode() {}
   }
   
   public static final class MateNonLocalSuperReadNode extends NonLocalSuperReadNode implements 
@@ -206,8 +197,5 @@ public abstract class MateArgumentReadNode {
         return super.executeGeneric(frame);
       }
     }
-    
-    @Override
-    public void wrapIntoMateNode() {}
-  }
+  }  
 }

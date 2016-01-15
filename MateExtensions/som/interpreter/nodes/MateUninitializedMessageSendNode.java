@@ -9,16 +9,22 @@ import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 
 public class MateUninitializedMessageSendNode extends
     UninitializedMessageSendNode implements MateBehavior {
-  @Child MateSemanticCheckNode                   semanticCheck;
+  @Child MateSemanticCheckNode            semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
 
   public MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getSourceSection());
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
-    this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    if (this.isSuperSend()){
+      ISuperReadNode superNode = (ISuperReadNode)this.argumentNodes[0];
+      this.initializeMateDispatchForSuperMessages(this.getSourceSection(), this.getSelector(), superNode);
+    } else {
+      this.initializeMateDispatchForMessages(this.getSourceSection(), this.getSelector());
+    }
   }
   
   @Override
@@ -60,5 +66,8 @@ public class MateUninitializedMessageSendNode extends
     return replace(send);
   }
   
-  public void wrapIntoMateNode() {}
+  @Override
+  public Node asMateNode(){
+    return null;
+  }
 }
