@@ -24,7 +24,6 @@
 
 package som.vmobjects;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 
