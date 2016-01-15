@@ -63,8 +63,10 @@ public class SReflectiveObject extends SObject {
   }
 
   public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
-    transferToInterpreterAndInvalidate("SReflectiveObject.setEnvironment");
-    obj.set(ENVIRONMENT, value);
+    Shape oldShape = obj.getShape();
+    Shape newShape = oldShape.replaceProperty(obj.getShape().getProperty(ENVIRONMENT), 
+        Property.create(ENVIRONMENT, oldShape.allocator().constantLocation(value), 0));
+    obj.setShapeAndGrow(oldShape, newShape);
   }
   
   private static final class SReflectiveObjectObjectType extends ObjectType {

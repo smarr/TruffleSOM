@@ -74,14 +74,14 @@ public abstract class MateAbstractSemanticNodes {
       throw new MateSemanticsException();
     }
     
-    @Specialization(guards = {"receiver.getShape() == cachedShape", "environmentIsNil(receiver, cachedLocation)"},
+    /*@Specialization(guards = {"receiver.getShape() == cachedShape", "environmentIsNil(receiver, cachedLocation)"},
         limit = "5")
     public SInvokable doStandardSOMNoMetaobject(final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape()") final Shape cachedShape,
         @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation) {
       throw new MateSemanticsException();
-    }
+    }*/
     
     /*@Specialization(guards = {"receiver.getShape() == cachedShape", "environmentIsNil(receiver, cachedLocation)"},
         contains = "doStandardSOMNoMetaobject")
@@ -92,8 +92,7 @@ public abstract class MateAbstractSemanticNodes {
       throw new MateSemanticsException();
     }*/
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"},
-        limit = "5")
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "12")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
         final DynamicObject receiver,
@@ -105,7 +104,7 @@ public abstract class MateAbstractSemanticNodes {
       throw new MateSemanticsException();
     }
     
-    @Specialization(contains= {"doSReflectiveObject","doStandardSOMNoMetaobject","doStandardSOMForPrimitives"})
+    @Specialization()
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
         final DynamicObject receiver) {
