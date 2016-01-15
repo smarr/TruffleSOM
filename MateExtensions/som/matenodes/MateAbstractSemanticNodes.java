@@ -5,7 +5,6 @@ import som.matenodes.MateAbstractSemanticNodesFactory.MateEnvironmentSemanticChe
 import som.matenodes.MateAbstractSemanticNodesFactory.MateObjectSemanticCheckNodeGen;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateSemanticCheckNodeGen;
 import som.vm.MateSemanticsException;
-import som.vm.Universe;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
@@ -18,11 +17,9 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.object.Locations.ConstantLocation;
-import com.oracle.truffle.object.Locations.ValueLocation;
 
 public abstract class MateAbstractSemanticNodes {
 
@@ -85,6 +82,15 @@ public abstract class MateAbstractSemanticNodes {
         @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation) {
       throw new MateSemanticsException();
     }
+    
+    /*@Specialization(guards = {"receiver.getShape() == cachedShape", "environmentIsNil(receiver, cachedLocation)"},
+        contains = "doStandardSOMNoMetaobject")
+    public SInvokable doStandardSOMMegamorphic(final VirtualFrame frame,
+        final DynamicObject receiver,
+        @Cached("receiver.getShape()") final Shape cachedShape,
+        @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation) {
+      throw new MateSemanticsException();
+    }*/
 
     @Specialization(guards = {"receiver.getShape() == cachedShape"},
         limit = "5")
@@ -98,17 +104,23 @@ public abstract class MateAbstractSemanticNodes {
       if(method != null) return method;
       throw new MateSemanticsException();
     }
-
-    /*@Specialization(guards = "cachedEnvironment == getEnvironment(receiver)")
-    public SInvokable doMetaObjectWithoutOperation(
+    
+    @Specialization(contains= {"doSReflectiveObject","doStandardSOMNoMetaobject","doStandardSOMForPrimitives"})
+    public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("getEnvironment(receiver)") final DynamicObject cachedEnvironment) {
+        final DynamicObject receiver) {
+      SInvokable method = environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
+      if (method == null){
         throw new MateSemanticsException();
-    }*/
+      }
+      return method;
+    }
     
     protected static SInvokable environmentReflectiveMethod(
         DynamicObject environment, ReflectiveOp operation) {
+      if (environment == Nil.nilObject){
+        return null;
+      }
       try{
         return SMateEnvironment.methodImplementing(environment, operation);
       } catch (MateSemanticsException e){
@@ -125,7 +137,8 @@ public abstract class MateAbstractSemanticNodes {
     }
     
     public static boolean environmentIsNil(DynamicObject receiver, ConstantLocation location){
-          return getEnvironment(receiver,location) == Nil.nilObject;
+      //location.    
+      return getEnvironment(receiver,location) == Nil.nilObject;
     }
     
     public static boolean isSReflectiveObject(DynamicObject object){
