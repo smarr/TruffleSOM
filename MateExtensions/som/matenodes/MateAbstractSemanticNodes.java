@@ -92,7 +92,7 @@ public abstract class MateAbstractSemanticNodes {
       throw new MateSemanticsException();
     }*/
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "12")
+    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "15")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
         final DynamicObject receiver,
@@ -104,8 +104,8 @@ public abstract class MateAbstractSemanticNodes {
       throw new MateSemanticsException();
     }
     
-    @Specialization()
-    public SInvokable doSReflectiveObject(
+    @Specialization(contains={"doSReflectiveObject", "doStandardSOMForPrimitives"})
+    public SInvokable doMegamorphicReceiver(
         final VirtualFrame frame,
         final DynamicObject receiver) {
       SInvokable method = environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
