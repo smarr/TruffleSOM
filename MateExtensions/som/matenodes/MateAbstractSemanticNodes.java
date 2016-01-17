@@ -92,12 +92,24 @@ public abstract class MateAbstractSemanticNodes {
       throw new MateSemanticsException();
     }*/
 
-    @Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "15")
+    /*@Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "10")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
         final DynamicObject receiver,
         @Cached("receiver.getShape()") final Shape cachedShape,
-        @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation,
+        @Cached("getEnvironmentLocationOf(receiver.getShape())") final ConstantLocation cachedLocation,
+        @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObject cachedEnvironment,
+        @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
+      if(method != null) return method;
+      throw new MateSemanticsException();
+    }*/
+    
+    @Specialization(guards = {"receiver.getShape().getRoot() == rootShape"}, limit = "10")
+    public SInvokable doSReflectiveObject(
+        final VirtualFrame frame,
+        final DynamicObject receiver,
+        @Cached("receiver.getShape().getRoot()") final Shape rootShape,
+        @Cached("getEnvironmentLocationOf(receiver.getShape())") final ConstantLocation cachedLocation,
         @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObject cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
       if(method != null) return method;
