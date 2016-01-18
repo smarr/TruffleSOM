@@ -19,7 +19,7 @@ public class ClassPrims {
   public abstract static class NamePrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
     public final SAbstractObject doSClass(final DynamicObject receiver) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("Class>>NamePrim");
       return SClass.getName(receiver);
     }
   }
@@ -29,7 +29,7 @@ public class ClassPrims {
   public abstract static class SuperClassPrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
     public final Object doSClass(final DynamicObject receiver) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("Class>>SuperClassPrim");
       return SClass.getSuperClass(receiver);
     }
   }
@@ -39,7 +39,7 @@ public class ClassPrims {
   public abstract static class InstanceInvokablesPrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
     public final SArray doSClass(final DynamicObject receiver) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("Class>>InstanceInvokablesPrim");
       return SClass.getInstanceInvokables(receiver);
     }
   }
@@ -49,7 +49,7 @@ public class ClassPrims {
   public abstract static class InstanceFieldsPrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
     public final SArray doSClass(final DynamicObject receiver) {
-      CompilerAsserts.neverPartOfCompilation();
+      CompilerAsserts.neverPartOfCompilation("Class>>instanceFields");
       return SClass.getInstanceFields(receiver);
     }
   }
