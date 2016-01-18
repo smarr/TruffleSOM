@@ -128,7 +128,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       super(source, sel);
     }
     
-    @Specialization(guards = {"cachedMethod==method", "classOfReceiver(arguments) == cachedClass"}, insertBefore="doMateNode")
+    @Specialization(guards = {"cachedMethod==method", "classOfReceiver(arguments) == cachedClass"}, insertBefore="doMateNode", limit = "10")
     public Object doMateNodeCached(final VirtualFrame frame, final SInvokable method,
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
@@ -136,6 +136,14 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         @Cached("lookupResult(frame, method, arguments)") SInvokable lookupResult) {
       // The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       return activationNode.doActivation(frame, lookupResult, arguments);
+    }
+    
+    @Specialization(guards = {"cachedMethod==method"}, contains = {"doMateNodeCached"}, insertBefore="doMateNode")
+    public Object doMegaMorphic(final VirtualFrame frame, final SInvokable method,
+        final Object[] arguments,
+        @Cached("method") final SInvokable cachedMethod,
+        @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
+      return super.doMateNode(frame, method, arguments, cachedMethod, reflectiveMethod);
     }
     
     public SInvokable lookupResult(final VirtualFrame frame, final SInvokable method,

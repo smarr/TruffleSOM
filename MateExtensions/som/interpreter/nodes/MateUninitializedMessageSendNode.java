@@ -57,6 +57,11 @@ public class MateUninitializedMessageSendNode extends
   }
   
   @Override
+  public ExpressionNode asMateNode() {
+    return null;
+  }
+  
+  @Override
   protected GenericMessageSendNode makeGenericSend() {
     GenericMessageSendNode send = new MateGenericMessageSendNode(selector,
         argumentNodes,
@@ -64,6 +69,4 @@ public class MateUninitializedMessageSendNode extends
         getSourceSection());
     return replace(send);
   }
-  
-  public void wrapIntoMateNode() {}
 }
