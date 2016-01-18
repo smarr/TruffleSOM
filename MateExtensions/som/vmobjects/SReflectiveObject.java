@@ -75,9 +75,9 @@ public class SReflectiveObject extends SObject {
 
   public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
     //Shape aanewShape = SREFLECTIVE_OBJECT_TEMP_SHAPE.addProperty(Property.create(ENVIRONMENT, SREFLECTIVE_OBJECT_TEMP_SHAPE.allocator().constantLocation(value), 0));
-    Shape oldShape = obj.getShape().createSeparateShape(obj.getShape().getSharedData());
-    Shape newShape = oldShape.replaceProperty(obj.getShape().getProperty(ENVIRONMENT), 
-        Property.create(ENVIRONMENT, oldShape.allocator().constantLocation(value), 0));
+    Shape oldShape = obj.getShape();
+    Shape newShape = oldShape.createSeparateShape(obj.getShape().getSharedData()).
+        replaceProperty(oldShape.getProperty(ENVIRONMENT), Property.create(ENVIRONMENT, oldShape.allocator().constantLocation(value), 0));
     obj.setShapeAndGrow(oldShape, newShape);
   }
   
