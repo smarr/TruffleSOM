@@ -10,16 +10,20 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class MateAbstractReflectiveDispatch extends Node {
 
+  protected final static int INLINE_CACHE_SIZE = 6;
+  
   public MateAbstractReflectiveDispatch(final SourceSection source) {
     super(source);
   }
@@ -98,6 +102,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       return (SInvokable) reflectiveMethod.call(frame, args);
     }
     
+    @TruffleBoundary
     protected DynamicObject lookupSinceFor(DynamicObject receiver){
       return SObject.getSOMClass(receiver);
     }
@@ -128,7 +133,8 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       super(source, sel);
     }
     
-    @Specialization(guards = {"cachedMethod==method", "classOfReceiver(arguments) == cachedClass"}, insertBefore="doMateNode", limit = "10")
+    @Specialization(guards = {"cachedMethod==method", "classOfReceiver(arguments) == cachedClass"}, 
+        insertBefore="doMateNode", limit = "INLINE_CACHE_SIZE")
     public Object doMateNodeCached(final VirtualFrame frame, final SInvokable method,
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
@@ -151,6 +157,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       return this.reflectiveLookup(frame, this.createDispatch(method), arguments);
     }
     
+    @TruffleBoundary
     protected DynamicObject classOfReceiver(Object[] arguments){
       return SObject.getSOMClass((DynamicObject) arguments[0]);
     }
@@ -181,7 +188,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
     public abstract Object executeDispatch(final VirtualFrame frame,
         SInvokable method, SInvokable methodToActivate, Object[] arguments);
 
-    @Specialization(guards = {"cachedMethod==method","methodToActivate == cachedMethodToActivate"})
+    @Specialization(guards = {"cachedMethod==method","methodToActivate == cachedMethodToActivate"}, limit = "INLINE_CACHE_SIZE")
     public Object doMetaLevel(final VirtualFrame frame,
         final SInvokable method, final SInvokable methodToActivate,
         final Object[] arguments,
@@ -195,9 +202,26 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       SArray realArguments = (SArray)reflectiveMethod.call(frame, args);
       return callNode.call(frame, realArguments.toJavaArray());
     }
+    
+    @Specialization(guards = {"cachedMethod==method"}, contains = "doMetaLevel")
+    public Object doMegamorphicMetaLevel(final VirtualFrame frame,
+        final SInvokable method, final SInvokable methodToActivate,
+        final Object[] arguments,
+        @Cached("method") final SInvokable cachedMethod,
+        @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod,
+        @Cached("createIndirectCall()") IndirectCallNode callNode){
+      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (DynamicObject) arguments[0], methodToActivate, 
+          SArray.create(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments))};
+      SArray realArguments = (SArray)reflectiveMethod.call(frame, args);
+      return callNode.call(frame, methodToActivate.getCallTarget(), realArguments.toJavaArray());
+    }
   }
   
   public static DirectCallNode createDirectCall(SInvokable methodToActivate){
     return DirectCallNode.create(methodToActivate.getCallTarget());
+  }
+  
+  public static IndirectCallNode createIndirectCall(){
+    return IndirectCallNode.create();
   }
 }
