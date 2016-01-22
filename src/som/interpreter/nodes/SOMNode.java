@@ -93,7 +93,7 @@ public abstract class SOMNode extends Node implements MateNode {
   public void wrapIntoMateNode(){
     Node replacement = this.asMateNode();
     if (replacement != null){
-        this.replace(replacement);
+      this.replace(replacement);
     }
   }
 }
