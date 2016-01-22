@@ -38,7 +38,7 @@ public class SMateEnvironment extends SObject {
   }
   */
   
-  //Todo: Finish the SMateEnvironment type with primitives for seting it fields
+  //Todo: Finish the SMateEnvironment type with primitives for setting it fields
   public static SInvokable methodImplementing(final DynamicObject obj, ReflectiveOp operation){
     int field;
     switch (operation){
@@ -57,7 +57,7 @@ public class SMateEnvironment extends SObject {
         throw new MateSemanticsException();
     }
     DynamicObject metaobject = (DynamicObject) obj.get(field);
-    if (metaobject == Nil.nilObject) throw new MateSemanticsException();
+    if (metaobject == Nil.nilObject) return null;
     return methodForOperation(metaobject, operation);
   }
   
@@ -86,8 +86,6 @@ public class SMateEnvironment extends SObject {
       default:
         selector = null;
     }
-    SInvokable method = SClass.lookupInvokable(SObject.getSOMClass(metaobject), selector);
-    if (method == null) throw new MateSemanticsException();
-    return method;
+    return SClass.lookupInvokable(SObject.getSOMClass(metaobject), selector);
   }
 }

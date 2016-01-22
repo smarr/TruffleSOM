@@ -34,6 +34,9 @@ import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.Layout;
 import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.ShapeImpl;
+import com.oracle.truffle.object.Transition;
+import com.oracle.truffle.object.basic.ShapeBasic;
 
 
 public class SObject {
@@ -49,7 +52,15 @@ public class SObject {
   protected SObject() { } // this class cannot be instantiated, it provides only static helpers
 
   public static Shape createObjectShapeForClass(final DynamicObject clazz) {
-    return LAYOUT.createShape(SOBJECT_TYPE, clazz);
+   //return LAYOUT.createShape(SOBJECT_TYPE, clazz);
+   return new ShapeBasic(INIT_NIL_SHAPE.getLayout(), 
+        clazz, 
+        (ShapeImpl) INIT_NIL_SHAPE, 
+        INIT_NIL_SHAPE.getObjectType(), 
+        ((ShapeImpl) INIT_NIL_SHAPE).getPropertyMap(),
+        new Transition.ObjectTypeTransition(INIT_NIL_SHAPE.getObjectType()), 
+        LAYOUT.createAllocator(), 
+        INIT_NIL_SHAPE.getId());
   }
 
   public static DynamicObject create(final DynamicObject instanceClass) {
@@ -90,7 +101,7 @@ public class SObject {
   }
 
   public static DynamicObject getSOMClass(final DynamicObject obj) {
-    //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
+    CompilerAsserts.neverPartOfCompilation("SObject>>getSOMClass");
     return (DynamicObject) obj.getShape().getSharedData();
   }
 

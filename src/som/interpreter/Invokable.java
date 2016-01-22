@@ -3,6 +3,9 @@ package som.interpreter;
 import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
+import som.vm.MateUniverse;
+import som.vm.Universe;
+
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -56,7 +59,7 @@ public abstract class Invokable extends RootNode implements MateNode{
   }
   
   private ExpressionNode mateifyUninitializedNode(ExpressionNode uninitialized){
-    if (uninitialized.asMateNode() == null) {
+    if (!(Universe.current() instanceof MateUniverse) || uninitialized.asMateNode() == null) {
         return uninitialized;
     } else {
       return (ExpressionNode)uninitialized.asMateNode();

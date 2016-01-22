@@ -36,7 +36,7 @@ public final class ClassPrimitives extends Primitives {
 
   @Override
   public void installPrimitives() {
-    installInstancePrimitive("basicNew",        NewObjectPrimFactory.getInstance());
+    installInstancePrimitive("basicNew",   NewObjectPrimFactory.getInstance());
     installInstancePrimitive("name",       NamePrimFactory.getInstance());
     installInstancePrimitive("superclass", SuperClassPrimFactory.getInstance());
     installInstancePrimitive("methods",    InstanceInvokablesPrimFactory.getInstance());

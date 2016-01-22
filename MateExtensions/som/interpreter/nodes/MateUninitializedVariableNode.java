@@ -37,5 +37,10 @@ public abstract class MateUninitializedVariableNode extends UninitializedVariabl
       return new MateLocalVariableNode.MateLocalVariableWriteNode(
           LocalVariableWriteNodeGen.create(variable, getSourceSection(), exp)); 
     }
+    
+    @Override
+    public ExpressionNode asMateNode() {
+      return null;
+    }
   }
 }

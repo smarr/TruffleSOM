@@ -26,7 +26,6 @@ public abstract class MateFieldNodes {
       read = new MateLayoutFieldReadNode(read);
     }
     
-    //Todo: Check a better option for removing the silly guard
     @Override
     @Specialization
     public Object executeEvaluated(final VirtualFrame frame, final DynamicObject obj) {

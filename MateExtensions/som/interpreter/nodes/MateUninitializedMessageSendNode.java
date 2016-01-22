@@ -9,7 +9,6 @@ import som.matenodes.MateBehavior;
 import som.vm.MateSemanticsException;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
 
 public class MateUninitializedMessageSendNode extends
     UninitializedMessageSendNode implements MateBehavior {
@@ -58,16 +57,16 @@ public class MateUninitializedMessageSendNode extends
   }
   
   @Override
+  public ExpressionNode asMateNode() {
+    return null;
+  }
+  
+  @Override
   protected GenericMessageSendNode makeGenericSend() {
     GenericMessageSendNode send = new MateGenericMessageSendNode(selector,
         argumentNodes,
         new UninitializedDispatchNode(selector),
         getSourceSection());
     return replace(send);
-  }
-  
-  @Override
-  public Node asMateNode(){
-    return null;
   }
 }

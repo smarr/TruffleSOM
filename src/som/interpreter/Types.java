@@ -35,6 +35,7 @@ import som.vmobjects.SShape;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.TypeSystem;
 import com.oracle.truffle.api.object.DynamicObject;
 
@@ -54,6 +55,7 @@ import com.oracle.truffle.api.object.DynamicObject;
                Object[].class}) // Object[] is only for argument passing
 public class Types {
 
+  @TruffleBoundary
   public static DynamicObject getClassOf(final Object obj) {
     CompilerAsserts.neverPartOfCompilation("Types.getClassOf");
     assert obj != null;

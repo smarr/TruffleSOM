@@ -32,6 +32,9 @@ import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.ShapeImpl;
+import com.oracle.truffle.object.Transition;
+import com.oracle.truffle.object.basic.ShapeBasic;
 
 public class SReflectiveObject extends SObject {
   public static final SSymbol ENVIRONMENT = Universe.current().symbolFor("environment");
@@ -51,7 +54,16 @@ public class SReflectiveObject extends SObject {
   //public static final ConstantLocation ENVIRONMENT_LOCATION = (ConstantLocation) SREFLECTIVE_OBJECT_SHAPE.getProperty(ENVIRONMENT).getLocation();
       
   public static final Shape createObjectShapeForClass(final DynamicObject clazz) {
-    return SREFLECTIVE_OBJECT_SHAPE.createSeparateShape(clazz);
+    return new ShapeBasic(SREFLECTIVE_OBJECT_SHAPE.getLayout(), 
+        clazz, 
+        (ShapeImpl) SREFLECTIVE_OBJECT_SHAPE, 
+        SREFLECTIVE_OBJECT_SHAPE.getObjectType(), 
+        ((ShapeImpl) SREFLECTIVE_OBJECT_SHAPE).getPropertyMap(),
+        new Transition.ObjectTypeTransition(SREFLECTIVE_OBJECT_SHAPE.getObjectType()), 
+        SREFLECTIVE_OBJECT_SHAPE.allocator(), 
+        SREFLECTIVE_OBJECT_SHAPE.getId());
+    //return new ShapeBasic(this, clazz, operations, id);
+    //return SREFLECTIVE_OBJECT_SHAPE.createSeparateShape(clazz);
   }
   
   //Todo: Is this method optimizable by caching the location? 
@@ -62,9 +74,10 @@ public class SReflectiveObject extends SObject {
   }
 
   public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
+    //Shape aanewShape = SREFLECTIVE_OBJECT_TEMP_SHAPE.addProperty(Property.create(ENVIRONMENT, SREFLECTIVE_OBJECT_TEMP_SHAPE.allocator().constantLocation(value), 0));
     Shape oldShape = obj.getShape();
-    Shape newShape = oldShape.replaceProperty(obj.getShape().getProperty(ENVIRONMENT), 
-        Property.create(ENVIRONMENT, oldShape.allocator().constantLocation(value), 0));
+    Shape newShape = oldShape.createSeparateShape(obj.getShape().getSharedData()).
+        replaceProperty(oldShape.getProperty(ENVIRONMENT), Property.create(ENVIRONMENT, oldShape.allocator().constantLocation(value), 0));
     obj.setShapeAndGrow(oldShape, newShape);
   }
   

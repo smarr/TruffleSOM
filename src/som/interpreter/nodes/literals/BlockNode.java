@@ -8,6 +8,7 @@ import som.interpreter.Invokable;
 import som.interpreter.Method;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
+import som.vm.MateUniverse;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable.SMethod;
@@ -26,6 +27,9 @@ public class BlockNode extends LiteralNode {
   public BlockNode(final SMethod blockMethod,
       final SourceSection source) {
     super(source);
+    if ((Universe.current() instanceof MateUniverse)){
+      MateUniverse.current().mateifyMethod(blockMethod);
+    }
     this.blockMethod = blockMethod;
   }
 

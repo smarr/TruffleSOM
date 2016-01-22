@@ -21,8 +21,12 @@ parser.add_argument('-d', '--debug', help='wait for debugger to attach',
                     dest='debug', action='store_true', default=False)
 parser.add_argument('-i', '--igv', help='dump compilation details to IGV',
                     dest='igv', action='store_true', default=False)
+parser.add_argument('-if', '--igv-to-file', help='dump compilation details to file to be loaded by IGV',
+                    dest='igv_to_file', action='store_true', default=False)
 parser.add_argument('-l', '--low-level', help='enable low-level optimization output',
                     dest='low_level', action='store_true', default=False)
+parser.add_argument('-ti', '--trace-invalidation', help='trace assumption invalidation and transfers to interpreter',
+                    dest='trace_invalidation', action='store_true', default=False)
 
 parser.add_argument('-p', '--profile', help='enable profiling after warmup',
                     dest='profile', action='store_true', default=False)
@@ -118,9 +122,10 @@ SOM_ARGS = ['-Xbootclasspath/a:'
 # -G:+TruffleSplittingNew
 
 # == Compiler Settings
-TWEAK_INLINING = ['-Dgraal.option.TruffleCompilationThreshold=191',
-                  '-Dgraal.option.TruffleInliningMaxCallerSize=10000',
-                  '-Dgraal.option.TruffleSplittingMaxCalleeSize=100000']
+#'-Dgraal.option.TruffleCompilationThreshold=191',
+TWEAK_INLINING = [
+                  '-Dgraal.option.TruffleInliningMaxCallerSize=100000',
+                  '-Dgraal.option.TruffleSplittingMaxCalleeSize=1000000']
 if GRAAL_FLAGS:
     flags = [GRAAL_FLAGS]
 else:
@@ -137,8 +142,10 @@ if sys.argv[0].endswith('debug'):
 if args.debug:
     flags += ['-Xdebug',
               '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000']
-if not args.interpreter and args.igv:
+if not args.interpreter and (args.igv or args.igv_to_file):
     flags += ['-Dgraal.option.Dump=Truffle,TruffleTree']
+if not args.interpreter and args.igv_to_file:
+    flags += ['-Dgraal.option.PrintIdealGraphFile=true']
 if args.low_level:
     flags += ['-XX:+UnlockDiagnosticVMOptions', '-XX:+LogCompilation',
               '-XX:+TraceDeoptimization']
@@ -157,6 +164,9 @@ if not args.interpreter and args.perf_warnings:
               '-Dgraal.option.TraceTruffleCompilation=true',
               '-Dgraal.option.TraceTruffleCompilationDetails=true',
               '-Dgraal.option.TraceTruffleExpansionSource=true']
+if not args.interpreter and args.trace_invalidation:
+    flags += ['-Dgraal.option.TraceTruffleTransferToInterpreter=true',
+              '-Dgraal.option.TraceTruffleAssumptions=true']    
 if not args.interpreter and args.only_compile:
     flags.append("-Dgraal.option.TruffleCompileOnly=%s" % only_compile)
 if args.visual_vm:
