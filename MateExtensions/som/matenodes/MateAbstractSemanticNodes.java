@@ -34,17 +34,17 @@ public abstract class MateAbstractSemanticNodes {
     public abstract SInvokable executeGeneric(VirtualFrame frame);
 
     
-    @Specialization(guards = {"getEnvironment(frame) != null", 
-                  "getEnvironment(frame) == environment"})
-    public SInvokable doSemanticsInFrame(final VirtualFrame frame,
-        @Cached("getEnvironment(frame)") final DynamicObject environment,
-        @Cached("methodImplementingOperationOn(environment)") final SInvokable reflectiveMethod) {
-        return reflectiveMethod;
-    }
-    
     @Specialization(guards = "getEnvironment(frame) == null")
     public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
       throw new MateSemanticsException();
+    }
+    
+    @Specialization(guards = {"getEnvironment(frame) == environment"})
+    public SInvokable doSemanticsInFrame(final VirtualFrame frame,
+        @Cached("getEnvironment(frame)") final DynamicObject environment,
+        @Cached("methodImplementingOperationOn(environment)") final SInvokable reflectiveMethod) {
+        if (reflectiveMethod == null) throw new MateSemanticsException();
+        return reflectiveMethod;
     }
     
     public static DynamicObject getEnvironment(VirtualFrame frame){
@@ -74,36 +74,6 @@ public abstract class MateAbstractSemanticNodes {
       throw new MateSemanticsException();
     }
     
-    /*@Specialization(guards = {"receiver.getShape() == cachedShape", "environmentIsNil(receiver, cachedLocation)"},
-        limit = "5")
-    public SInvokable doStandardSOMNoMetaobject(final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("receiver.getShape()") final Shape cachedShape,
-        @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation) {
-      throw new MateSemanticsException();
-    }*/
-    
-    /*@Specialization(guards = {"receiver.getShape() == cachedShape", "environmentIsNil(receiver, cachedLocation)"},
-        contains = "doStandardSOMNoMetaobject")
-    public SInvokable doStandardSOMMegamorphic(final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("receiver.getShape()") final Shape cachedShape,
-        @Cached("getEnvironmentLocationOf(cachedShape)") final ConstantLocation cachedLocation) {
-      throw new MateSemanticsException();
-    }*/
-
-    /*@Specialization(guards = {"receiver.getShape() == cachedShape"}, limit = "10")
-    public SInvokable doSReflectiveObject(
-        final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("receiver.getShape()") final Shape cachedShape,
-        @Cached("getEnvironmentLocationOf(receiver.getShape())") final ConstantLocation cachedLocation,
-        @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObject cachedEnvironment,
-        @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
-      if(method != null) return method;
-      throw new MateSemanticsException();
-    }*/
-    
     @Specialization(guards = {"receiver.getShape().getRoot() == rootShape"}, limit = "10")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
@@ -112,7 +82,9 @@ public abstract class MateAbstractSemanticNodes {
         @Cached("getEnvironmentLocationOf(receiver.getShape())") final ConstantLocation cachedLocation,
         @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObject cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
-      if(method != null) return method;
+      if(method != null) {
+        return method;
+      }
       throw new MateSemanticsException();
     }
     
@@ -121,9 +93,7 @@ public abstract class MateAbstractSemanticNodes {
         final VirtualFrame frame,
         final DynamicObject receiver) {
       SInvokable method = environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
-      if (method == null){
-        throw new MateSemanticsException();
-      }
+      if (method == null) throw new MateSemanticsException();
       return method;
     }
     
@@ -132,11 +102,7 @@ public abstract class MateAbstractSemanticNodes {
       if (environment == Nil.nilObject){
         return null;
       }
-      try{
-        return SMateEnvironment.methodImplementing(environment, operation);
-      } catch (MateSemanticsException e){
-        return null;
-      }
+      return SMateEnvironment.methodImplementing(environment, operation);
     }
     
     public static DynamicObject getEnvironment(DynamicObject receiver, ConstantLocation location){
@@ -145,11 +111,6 @@ public abstract class MateAbstractSemanticNodes {
     
     public static ConstantLocation getEnvironmentLocationOf(Shape shape){
       return (ConstantLocation) shape.getProperty(SReflectiveObject.ENVIRONMENT).getLocation();
-    }
-    
-    public static boolean environmentIsNil(DynamicObject receiver, ConstantLocation location){
-      //location.    
-      return getEnvironment(receiver,location) == Nil.nilObject;
     }
     
     public static boolean isSReflectiveObject(DynamicObject object){
