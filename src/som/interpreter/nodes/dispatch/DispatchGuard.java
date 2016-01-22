@@ -86,7 +86,7 @@ public abstract class DispatchGuard {
       throw new InvalidAssumptionException();
     }
     return obj instanceof DynamicObject &&
-        ((DynamicObject) obj).getShape() == expected;
+        ((DynamicObject) obj).getShape().getSharedData() == expected.getSharedData();
     }
   }
 }
