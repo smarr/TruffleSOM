@@ -101,7 +101,7 @@ public class SObject {
   }
 
   public static DynamicObject getSOMClass(final DynamicObject obj) {
-    //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
+    CompilerAsserts.neverPartOfCompilation("SObject>>getSOMClass");
     return (DynamicObject) obj.getShape().getSharedData();
   }
 

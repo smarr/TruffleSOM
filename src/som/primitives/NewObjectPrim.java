@@ -5,6 +5,7 @@ import som.vm.constants.Nil;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -24,6 +25,7 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
     return factory.newInstance(Nil.nilObject);
   }
 
+  @TruffleBoundary
   @Specialization(contains = "cachedClass")
   public DynamicObject uncached(final DynamicObject receiver) {
     return SObject.create(receiver);
