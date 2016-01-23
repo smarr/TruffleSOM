@@ -30,7 +30,7 @@ parser.add_argument('-ti', '--trace-invalidation', help='trace assumption invali
 
 parser.add_argument('-p', '--profile', help='enable profiling after warmup',
                     dest='profile', action='store_true', default=False)
-parser.add_argument('-a', '--profile-allocations', help='enable profiling after warmup, and profile allocations',
+parser.add_argument('-pa', '--profile-allocations', help='enable profiling after warmup, and profile allocations',
                     dest='profile_allocations', action='store_true', default=False)
 parser.add_argument('-pt', '--profile-times', help='enable profiling after certain time intervals',
                     dest='profile_timed', action='store_true', default=False)

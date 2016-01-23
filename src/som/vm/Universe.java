@@ -170,6 +170,8 @@ public class Universe {
         gotClasspath = true;
       } else if (arguments[i].equals("-d")) {
         printAST = true;
+      } else if (arguments[i].equals("-activateMate")) {
+        this.activatedMate();
       } else {
         remainingArgs[cnt++] = arguments[i];
       }
@@ -708,4 +710,6 @@ public class Universe {
     }
     return current;
   }
+  
+  public void activatedMate(){};
 }
