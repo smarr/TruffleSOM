@@ -1,15 +1,10 @@
 package som.vm;
 
-import static som.vm.constants.MateClasses.environmentMO;
-import static som.vm.constants.MateClasses.operationalSemanticsMO;
-import static som.vm.constants.MateClasses.messageMO;
-import static som.vm.constants.MateClasses.ShapeClass;
 import static som.vm.constants.Classes.objectClass;
-
-import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.DynamicObjectFactory;
-import com.oracle.truffle.api.object.Shape;
-
+import static som.vm.constants.MateClasses.ShapeClass;
+import static som.vm.constants.MateClasses.environmentMO;
+import static som.vm.constants.MateClasses.messageMO;
+import static som.vm.constants.MateClasses.operationalSemanticsMO;
 import som.interpreter.Invokable;
 import som.interpreter.MateifyVisitor;
 import som.interpreter.nodes.MateMessageSpecializationsFactory;
@@ -21,8 +16,21 @@ import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.Shape;
+
 public class MateUniverse extends Universe {
+  private Assumption mateActivated;
+  private Assumption mateDeactivated;
   
+  public MateUniverse() {
+    super();
+    mateDeactivated = this.getTruffleRuntime().createAssumption();
+    mateActivated = null;
+  }
+
   protected void initializeObjectSystem() {
     if (alreadyInitialized) {
       return;
@@ -106,6 +114,29 @@ public class MateUniverse extends Universe {
   @Override
   public Shape createObjectShapeForClass(DynamicObject clazz){
     return SReflectiveObject.createObjectShapeForClass(clazz);
+  }
+  
+  public Assumption getMateDeactivatedAssumption(){
+    return this.mateDeactivated;
+  }
+  
+  public Assumption getMateActivatedAssumption(){
+    return this.mateActivated;
+  }
+  
+  @Override
+  public void activatedMate(){
+    if (this.getMateDeactivatedAssumption().isValid()){
+      this.getMateDeactivatedAssumption().invalidate();
+    }
+    this.mateActivated = this.getTruffleRuntime().createAssumption();
+  }
+  
+  public void deactivateMate(){
+    if (this.getMateActivatedAssumption().isValid()){
+      this.getMateActivatedAssumption().invalidate();
+    }
+    this.mateDeactivated = this.getTruffleRuntime().createAssumption();
   }
   
   public static MateUniverse current() {

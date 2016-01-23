@@ -5,6 +5,7 @@ import som.matenodes.MateAbstractSemanticNodesFactory.MateEnvironmentSemanticChe
 import som.matenodes.MateAbstractSemanticNodesFactory.MateObjectSemanticCheckNodeGen;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateSemanticCheckNodeGen;
 import som.vm.MateSemanticsException;
+import som.vm.MateUniverse;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
@@ -12,6 +13,7 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
 import som.vmobjects.SReflectiveObject;
 
+import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -145,12 +147,19 @@ public abstract class MateAbstractSemanticNodes {
           MateObjectSemanticCheckNodeGen.create(operation));
     }
 
-    @Specialization(guards = "!executeBase(frame)")
+    @Specialization(assumptions = "getMateDeactivatedAssumption()")
+    protected SInvokable mateDeactivated(final VirtualFrame frame, Object[] arguments) {
+      throw new MateSemanticsException();
+    }
+    
+    @Specialization(guards = "!executeBase(frame)" , 
+        assumptions = "getMateActivatedAssumption()")
     protected SInvokable executeSOM(final VirtualFrame frame, Object[] arguments) {
       throw new MateSemanticsException();
     }
 
-    @Specialization(guards = "executeBase(frame)")
+    @Specialization(guards = "executeBase(frame)",
+        assumptions = "getMateActivatedAssumption()")
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
         Object[] arguments) {
       if (arguments[0] instanceof DynamicObject){
@@ -172,6 +181,14 @@ public abstract class MateAbstractSemanticNodes {
 
     public static boolean executeBase(VirtualFrame frame) {
       return SArguments.getExecutionLevel(frame) == ExecutionLevel.Base;
+    }
+    
+    public static Assumption getMateDeactivatedAssumption() {
+      return MateUniverse.current().getMateDeactivatedAssumption();
+    }
+    
+    public static Assumption getMateActivatedAssumption() {
+      return MateUniverse.current().getMateActivatedAssumption();
     }
   }
 }
