@@ -4,7 +4,6 @@ import som.interpreter.objectstorage.FieldAccessorNode.WriteFieldNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
-import som.vm.MateSemanticsException;
 import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -24,11 +23,11 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode implements Ma
   }
 
   public Object write(final VirtualFrame frame, final DynamicObject receiver, final Object value) {
-   try {
-      return this.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex(), value});
-   } catch (MateSemanticsException e){
-     return write.executeWrite(receiver, value);
-   }
+    Object val = this.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex(), value});
+    if (val == null){
+     val = write.executeWrite(receiver, value);
+    }
+    return val;
   }
 
   @Override

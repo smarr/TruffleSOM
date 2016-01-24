@@ -4,7 +4,6 @@ import som.interpreter.nodes.ExpressionNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
-import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -24,11 +23,11 @@ public class MateEagerUnaryPrimitiveNode extends EagerUnaryPrimitiveNode impleme
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
     Object rcvr = this.getReceiver().executeGeneric(frame);
-    try{
-      return this.doMateSemantics(frame, new Object[] {rcvr});
-    } catch(MateSemanticsException e){
-      return executeEvaluated(frame, rcvr);
+    Object value = this.doMateSemantics(frame, new Object[] {rcvr});
+    if (value == null){
+     value = executeEvaluated(frame, rcvr);
     }
+    return value;
   }
 
   @Override

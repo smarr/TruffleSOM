@@ -7,10 +7,10 @@ import som.interpreter.nodes.dispatch.UninitializedMethodDispatchNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateActivationDispatch;
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateActivationDispatchNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
-import som.vm.MateSemanticsException;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SInvokable;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -28,11 +28,11 @@ public class MateMethodActivationNode extends Node {
   }
   
   public Object doActivation(final VirtualFrame frame, SInvokable method, Object[] arguments) {
-    try{
-      return this.getMateDispatch().executeDispatch(frame, this.getMateNode().execute(frame, arguments), method, arguments);
-    } catch(MateSemanticsException e){
-      return methodDispatch.executeDispatch(frame, SArguments.getEnvironment(frame), ExecutionLevel.Base, method, arguments);
+    Object value = this.getMateDispatch().executeDispatch(frame, this.getMateNode().execute(frame, arguments), method, arguments);
+    if (value == null){
+     value = methodDispatch.executeDispatch(frame, SArguments.getEnvironment(frame), ExecutionLevel.Base, method, arguments);
     }
+    return value;
   }
 
   public MateSemanticCheckNode getMateNode() {

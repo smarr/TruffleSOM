@@ -119,7 +119,6 @@ public final class ObjectPrims {
   public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
     @Specialization
     public final Object doSObject(final DynamicObject receiver, final DynamicObject environment) {
-      //CompilerAsserts.neverPartOfCompilation("Install Environment primitive");
       SReflectiveObject.setEnvironment(receiver, environment);
       return receiver;
     }

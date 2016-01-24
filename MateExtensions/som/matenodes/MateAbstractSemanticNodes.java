@@ -4,7 +4,6 @@ import som.interpreter.SArguments;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateEnvironmentSemanticCheckNodeGen;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateObjectSemanticCheckNodeGen;
 import som.matenodes.MateAbstractSemanticNodesFactory.MateSemanticCheckNodeGen;
-import som.vm.MateSemanticsException;
 import som.vm.MateUniverse;
 import som.vm.constants.ExecutionLevel;
 import som.vm.constants.Nil;
@@ -38,14 +37,13 @@ public abstract class MateAbstractSemanticNodes {
     
     @Specialization(guards = "getEnvironment(frame) == null")
     public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
-      throw new MateSemanticsException();
+      return null;
     }
     
     @Specialization(guards = {"getEnvironment(frame) == environment"})
     public SInvokable doSemanticsInFrame(final VirtualFrame frame,
         @Cached("getEnvironment(frame)") final DynamicObject environment,
         @Cached("methodImplementingOperationOn(environment)") final SInvokable reflectiveMethod) {
-        if (reflectiveMethod == null) throw new MateSemanticsException();
         return reflectiveMethod;
     }
     
@@ -73,7 +71,7 @@ public abstract class MateAbstractSemanticNodes {
     @Specialization(guards = "!isSReflectiveObject(receiver)")
     public SInvokable doStandardSOMForPrimitives(final VirtualFrame frame,
         final DynamicObject receiver) {
-      throw new MateSemanticsException();
+      return null;
     }
     
     @Specialization(guards = {"receiver.getShape().getRoot() == rootShape"}, limit = "10")
@@ -84,19 +82,14 @@ public abstract class MateAbstractSemanticNodes {
         @Cached("getEnvironmentLocationOf(receiver.getShape())") final ConstantLocation cachedLocation,
         @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObject cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
-      if(method != null) {
-        return method;
-      }
-      throw new MateSemanticsException();
+      return method;
     }
     
     @Specialization(contains={"doSReflectiveObject", "doStandardSOMForPrimitives"})
     public SInvokable doMegamorphicReceiver(
         final VirtualFrame frame,
         final DynamicObject receiver) {
-      SInvokable method = environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
-      if (method == null) throw new MateSemanticsException();
-      return method;
+      return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
     }
     
     protected static SInvokable environmentReflectiveMethod(
@@ -128,11 +121,6 @@ public abstract class MateAbstractSemanticNodes {
     public abstract SInvokable execute(final VirtualFrame frame,
         Object[] arguments);
 
-    protected Object doMateDispatchNode(final VirtualFrame frame,
-        final SInvokable environment, final SReflectiveObject receiver) {
-      throw new MateSemanticsException();
-    }
-
     public MateSemanticCheckNode(MateEnvironmentSemanticCheckNode env,
         MateObjectSemanticCheckNode obj) {
       super();
@@ -149,13 +137,13 @@ public abstract class MateAbstractSemanticNodes {
 
     @Specialization(assumptions = "getMateDeactivatedAssumption()")
     protected SInvokable mateDeactivated(final VirtualFrame frame, Object[] arguments) {
-      throw new MateSemanticsException();
+      return null;
     }
     
     @Specialization(guards = "!executeBase(frame)" , 
         assumptions = "getMateActivatedAssumption()")
     protected SInvokable executeSOM(final VirtualFrame frame, Object[] arguments) {
-      throw new MateSemanticsException();
+      return null;
     }
 
     @Specialization(guards = "executeBase(frame)",
@@ -163,13 +151,13 @@ public abstract class MateAbstractSemanticNodes {
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
         Object[] arguments) {
       if (arguments[0] instanceof DynamicObject){
-        try{
-          return environment.executeGeneric(frame);
-        } catch (MateSemanticsException e) {
-          return object.executeGeneric(frame, arguments[0]);
+        SInvokable value = environment.executeGeneric(frame);
+        if (value == null){  
+          value = object.executeGeneric(frame, arguments[0]);
         }
+        return value;
       }
-      throw new MateSemanticsException(); 
+      return null;
     }
 
     public MateSemanticCheckNode(final SourceSection source,

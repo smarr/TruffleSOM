@@ -4,7 +4,6 @@ import som.interpreter.nodes.ExpressionNode;
 import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
-import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -26,12 +25,11 @@ public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNo
     Object arg1 = this.getFirstArg().executeGeneric(frame);
     Object arg2 = this.getSecondArg().executeGeneric(frame);
     Object arg3 = this.getThirdArg().executeGeneric(frame);
-    
-    try{
-      return this.doMateSemantics(frame, new Object[] {rcvr, arg1, arg2, arg3});
-    } catch(MateSemanticsException e){
-      return executeEvaluated(frame, rcvr, arg1, arg2, arg3);
+    Object value = this.doMateSemantics(frame, new Object[] {rcvr, arg1, arg2, arg3});
+    if (value == null){
+     value = executeEvaluated(frame, rcvr, arg1, arg2, arg3);
     }
+    return value;
   }
 
   @Override

@@ -8,7 +8,6 @@ import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
-import som.vm.MateSemanticsException;
 
 public abstract class MateLocalVariableNode {
   public static class MateLocalVariableReadNode extends LocalVariableReadNode implements
@@ -46,11 +45,11 @@ public abstract class MateLocalVariableNode {
     
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-      try {
-        return this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
-      } catch (MateSemanticsException e){
-        return local.executeGeneric(frame);
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      if (value == null){
+       value = local.executeGeneric(frame);
       }
+      return value;
     }
   }
   
@@ -89,11 +88,11 @@ public abstract class MateLocalVariableNode {
     
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-      try {
-        return this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
-      } catch (MateSemanticsException e){
-        return local.executeGeneric(frame);
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      if (value == null){
+       value = local.executeGeneric(frame);
       }
+      return value;
     }
 
     @Override

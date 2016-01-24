@@ -7,7 +7,6 @@ import som.interpreter.objectstorage.MateLayoutFieldWriteNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
-import som.vm.MateSemanticsException;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -29,11 +28,11 @@ public abstract class MateFieldNodes {
     @Override
     @Specialization
     public Object executeEvaluated(final VirtualFrame frame, final DynamicObject obj) {
-      try {
-         return this.doMateSemantics(frame, new Object[] {obj, (long) this.read.getFieldIndex()});
-      } catch (MateSemanticsException e){
-        return ((MateLayoutFieldReadNode)read).read(frame, obj);
+      Object value = this.doMateSemantics(frame, new Object[] {obj, (long) this.read.getFieldIndex()});
+      if (value == null){
+       value = ((MateLayoutFieldReadNode)read).read(frame, obj);
       }
+      return value;
     }
     
     @Override
@@ -97,11 +96,11 @@ public abstract class MateFieldNodes {
     @Specialization
     public final Object executeEvaluated(final VirtualFrame frame,
         final DynamicObject self, final Object value) {
-      try {
-         return this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value});
-      } catch (MateSemanticsException e){
-        return ((MateLayoutFieldWriteNode)write).write(frame, self, value);
+      Object val = this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value});
+      if (val == null){
+       val = ((MateLayoutFieldWriteNode)write).write(frame, self, value);
       }
+      return val;
     }
     
     @Override

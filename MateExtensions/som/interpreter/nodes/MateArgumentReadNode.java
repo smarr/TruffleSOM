@@ -11,7 +11,6 @@ import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
-import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;
 
 public abstract class MateArgumentReadNode {
@@ -32,11 +31,11 @@ public abstract class MateArgumentReadNode {
   
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      try {
-        return this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
-      } catch (MateSemanticsException e){
-        return super.executeGeneric(frame);
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      if (value == null){
+       value = super.executeGeneric(frame);
       }
+      return value;
     }
     
     @Override
@@ -103,11 +102,11 @@ public abstract class MateArgumentReadNode {
     
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      try {
-        return this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
-      } catch (MateSemanticsException e){
-        return super.executeGeneric(frame);
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      if (value == null){
+       value = super.executeGeneric(frame);
       }
+      return value;
     }
     
     @Override
@@ -154,11 +153,11 @@ public abstract class MateArgumentReadNode {
     
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      try {
-        return this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
-      } catch (MateSemanticsException e){
-        return super.executeGeneric(frame);
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      if (value == null){
+       value = super.executeGeneric(frame);
       }
+      return value;
     }
     
     @Override
@@ -206,11 +205,11 @@ public abstract class MateArgumentReadNode {
     
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      try {
-        return this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
-      } catch (MateSemanticsException e){
-        return super.executeGeneric(frame);
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      if (value == null){
+       value = super.executeGeneric(frame);
       }
+      return value;
     }
     
     @Override

@@ -12,7 +12,7 @@ public class MateSOMTests extends SomTests {
   
   @Override
   protected String[] getArguments(){
-    String[] args = {"-cp", "Smalltalk:Smalltalk/Mate:Smalltalk/Mate/MOP:", "TestSuite/TestHarness.som", testName};
+    String[] args = {"-activateMate", "-cp", "Smalltalk:Smalltalk/Mate:Smalltalk/Mate/MOP:", "TestSuite/TestHarness.som", testName};
     return args;
   }
   

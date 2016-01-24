@@ -46,5 +46,6 @@ public class MateBasicInterpreterTests extends BasicInterpreterTests{
       Universe.setCurrent(new MateUniverse());
     }
     MateBasicInterpreterTests.u = Universe.current();
+    Universe.current().activatedMate();
   }
 }

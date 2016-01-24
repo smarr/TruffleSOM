@@ -5,7 +5,6 @@ import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
-import som.vm.MateSemanticsException;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -41,11 +40,11 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
   @Override
   public final Object executeGeneric(final VirtualFrame frame) {
     Object[] arguments = evaluateArguments(frame);
-    try {
-      return this.doMateSemantics(frame, arguments);
-    } catch (MateSemanticsException e){
-      return doPreEvaluated(frame, arguments);
+    Object value = this.doMateSemantics(frame, arguments);
+    if (value == null){
+     value = doPreEvaluated(frame, arguments);
     }
+    return value;
   }
   
   @Override
