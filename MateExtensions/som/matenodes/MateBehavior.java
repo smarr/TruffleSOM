@@ -7,6 +7,7 @@ import som.matenodes.MateAbstractReflectiveDispatchFactory.MateCachedDispatchSup
 import som.matenodes.MateAbstractReflectiveDispatchFactory.MateDispatchFieldAccessNodeGen;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vm.constants.ReflectiveOp;
+import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -21,8 +22,9 @@ public interface MateBehavior {
 
   public default Object doMateSemantics(final VirtualFrame frame,
       final Object[] arguments) {
-    return this.getMateDispatch().executeDispatch(frame,
-        this.getMateNode().execute(frame, arguments), arguments);
+    SInvokable method = this.getMateNode().execute(frame, arguments);
+    if (method == null) return null;
+    return this.getMateDispatch().executeDispatch(frame, method, arguments);
   }
   
   public default void initializeMateSemantics(SourceSection source, ReflectiveOp operation){

@@ -4,8 +4,8 @@ import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
 import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
-import som.vm.MateSemanticsException;
 import som.vm.Universe;
+
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
 
@@ -23,11 +23,11 @@ public final class MateLayoutFieldReadNode extends ReadFieldNode implements Mate
   }
 
   public Object read(final VirtualFrame frame, final DynamicObject receiver) {
-    try {
-      return this.doMateSemantics(frame, new Object[] {receiver, (long)this.getFieldIndex()});
-   } catch (MateSemanticsException e){
-     return read.executeRead(receiver);
-   }
+    Object value = this.doMateSemantics(frame, new Object[] {receiver, (long)this.getFieldIndex()});
+    if (value == null){
+     value = read.executeRead(receiver);
+    }
+    return value;
   }
 
   @Override

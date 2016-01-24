@@ -1,7 +1,6 @@
 package som.vmobjects;
 
 import com.oracle.truffle.api.object.DynamicObject;
-import som.vm.MateSemanticsException;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
@@ -43,7 +42,7 @@ public class SMateEnvironment extends SObject {
     int field;
     switch (operation){
       case None: 
-        throw new MateSemanticsException();
+        return null;
       case MessageLookup: case MessageActivation: 
         field = Message_IDX;
         break;
@@ -54,7 +53,7 @@ public class SMateEnvironment extends SObject {
         field = Layout_IDX;
         break;
       default:
-        throw new MateSemanticsException();
+        return null;
     }
     DynamicObject metaobject = (DynamicObject) obj.get(field);
     if (metaobject == Nil.nilObject) return null;

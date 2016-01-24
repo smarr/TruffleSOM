@@ -101,7 +101,6 @@ public class SObject {
   }
 
   public static DynamicObject getSOMClass(final DynamicObject obj) {
-    CompilerAsserts.neverPartOfCompilation("SObject>>getSOMClass");
     return (DynamicObject) obj.getShape().getSharedData();
   }
 
