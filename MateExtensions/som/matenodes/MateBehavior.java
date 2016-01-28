@@ -11,20 +11,25 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
 public interface MateBehavior {
-
   public abstract MateSemanticCheckNode getMateNode();
   public abstract MateAbstractStandardDispatch getMateDispatch();
   public abstract void setMateNode(MateSemanticCheckNode node);
   public abstract void setMateDispatch(MateAbstractStandardDispatch node);
 
   public default Object doMateSemantics(final VirtualFrame frame,
-      final Object[] arguments) {
+      final Object[] arguments, BranchProfile semanticsRedefined) {
     SInvokable method = this.getMateNode().execute(frame, arguments);
-    if (method == null) return null;
-    return this.getMateDispatch().executeDispatch(frame, method, arguments);
+    if (method == null){
+      return null;
+    } else {
+      semanticsRedefined.enter();
+      return this.getMateDispatch().executeDispatch(frame, method, arguments);
+    }  
   }
   
   public default void initializeMateSemantics(SourceSection source, ReflectiveOp operation){
@@ -42,5 +47,9 @@ public interface MateBehavior {
   
   public default void initializeMateDispatchForSuperMessages(SourceSection source, SSymbol selector, ISuperReadNode node){
     this.setMateDispatch(MateCachedDispatchSuperMessageLookupNodeGen.create(source, selector, node));
+  }
+  
+  public default NodeCost getCost() {
+    return NodeCost.NONE;
   }
 }

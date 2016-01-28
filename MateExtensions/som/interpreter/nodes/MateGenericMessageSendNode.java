@@ -8,13 +8,15 @@ import som.matenodes.MateBehavior;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
 
 public class MateGenericMessageSendNode extends GenericMessageSendNode implements MateBehavior {
   @Child MateSemanticCheckNode            semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
-
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  
   protected MateGenericMessageSendNode(final SSymbol selector,
       final ExpressionNode[] arguments,
       final AbstractDispatchNode dispatchNode, final SourceSection source) {
@@ -40,7 +42,7 @@ public class MateGenericMessageSendNode extends GenericMessageSendNode implement
   @Override
   public final Object executeGeneric(final VirtualFrame frame) {
     Object[] arguments = evaluateArguments(frame);
-    Object value = this.doMateSemantics(frame, arguments);
+    Object value = this.doMateSemantics(frame, arguments, semanticsRedefined);
     if (value == null){
      value = doPreEvaluated(frame, arguments);
     }

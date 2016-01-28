@@ -2,6 +2,7 @@ package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 import som.interpreter.SArguments;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
@@ -18,6 +19,7 @@ public abstract class MateArgumentReadNode {
       MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateLocalArgumentReadNode(int argumentIndex, SourceSection source) {
       super(argumentIndex, source);
@@ -31,7 +33,7 @@ public abstract class MateArgumentReadNode {
   
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)}, semanticsRedefined);
       if (value == null){
        value = super.executeGeneric(frame);
       }
@@ -68,6 +70,7 @@ public abstract class MateArgumentReadNode {
       MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateNonLocalArgumentReadNode(int argumentIndex, int contextLevel,
         SourceSection source) {
@@ -102,7 +105,7 @@ public abstract class MateArgumentReadNode {
     
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)}, semanticsRedefined);
       if (value == null){
        value = super.executeGeneric(frame);
       }
@@ -119,6 +122,7 @@ public abstract class MateArgumentReadNode {
       ISuperReadNode, MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateLocalSuperReadNode(SSymbol holderClass, boolean classSide,
         SourceSection source) {
@@ -153,7 +157,7 @@ public abstract class MateArgumentReadNode {
     
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)}, semanticsRedefined);
       if (value == null){
        value = super.executeGeneric(frame);
       }
@@ -171,6 +175,7 @@ public abstract class MateArgumentReadNode {
 
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateNonLocalSuperReadNode(int contextLevel, SSymbol holderClass,
         boolean classSide, SourceSection source) {
@@ -205,7 +210,7 @@ public abstract class MateArgumentReadNode {
     
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)}, semanticsRedefined);
       if (value == null){
        value = super.executeGeneric(frame);
       }

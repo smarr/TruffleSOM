@@ -1,6 +1,7 @@
 package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 import som.interpreter.SArguments;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
@@ -22,6 +23,7 @@ public abstract class MateLocalVariableNode {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     @Child LocalVariableNode                local;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     @Override
     public MateSemanticCheckNode getMateNode() {
@@ -45,7 +47,7 @@ public abstract class MateLocalVariableNode {
     
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)}, semanticsRedefined);
       if (value == null){
        value = local.executeGeneric(frame);
       }
@@ -59,6 +61,7 @@ public abstract class MateLocalVariableNode {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     @Child LocalVariableWriteNode           local;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateLocalVariableWriteNode(LocalVariableWriteNode node) {
       super(node);
@@ -88,7 +91,7 @@ public abstract class MateLocalVariableNode {
     
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)});
+      Object value = this.doMateSemantics(frame, new Object[] {SArguments.rcvr(frame)}, semanticsRedefined);
       if (value == null){
        value = local.executeGeneric(frame);
       }
