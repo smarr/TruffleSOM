@@ -17,6 +17,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.source.SourceSection;
@@ -53,6 +54,11 @@ public abstract class MateAbstractSemanticNodes {
     
     public SInvokable methodImplementingOperationOn(final DynamicObject environment){
       return SMateEnvironment.methodImplementing(environment, this.reflectiveOperation);
+    }
+    
+    @Override
+    public NodeCost getCost() {
+      return NodeCost.NONE;
     }
   }
 
@@ -110,6 +116,11 @@ public abstract class MateAbstractSemanticNodes {
     
     public static boolean isSReflectiveObject(DynamicObject object){
       return SReflectiveObject.isSReflectiveObject(object);
+    }
+    
+    @Override
+    public NodeCost getCost() {
+      return NodeCost.NONE;
     }
   }
 
@@ -177,6 +188,11 @@ public abstract class MateAbstractSemanticNodes {
     
     public static Assumption getMateActivatedAssumption() {
       return MateUniverse.current().getMateActivatedAssumption();
+    }
+    
+    @Override
+    public NodeCost getCost() {
+      return NodeCost.NONE;
     }
   }
 }

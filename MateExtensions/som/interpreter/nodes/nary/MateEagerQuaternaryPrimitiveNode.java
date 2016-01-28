@@ -7,10 +7,12 @@ import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
   
   public MateEagerQuaternaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument1, ExpressionNode argument2,
       ExpressionNode argument3, QuaternaryExpressionNode primitive) {
@@ -25,7 +27,7 @@ public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNo
     Object arg1 = this.getFirstArg().executeGeneric(frame);
     Object arg2 = this.getSecondArg().executeGeneric(frame);
     Object arg3 = this.getThirdArg().executeGeneric(frame);
-    Object value = this.doMateSemantics(frame, new Object[] {rcvr, arg1, arg2, arg3});
+    Object value = this.doMateSemantics(frame, new Object[] {rcvr, arg1, arg2, arg3}, semanticsRedefined);
     if (value == null){
      value = executeEvaluated(frame, rcvr, arg1, arg2, arg3);
     }

@@ -6,13 +6,16 @@ import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
+
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 public class MateUninitializedMessageSendNode extends
     UninitializedMessageSendNode implements MateBehavior {
   @Child MateSemanticCheckNode            semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
-
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  
   public MateUninitializedMessageSendNode(UninitializedMessageSendNode somNode) {
     super(somNode.getSelector(), somNode.argumentNodes, somNode.getSourceSection());
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
@@ -27,7 +30,7 @@ public class MateUninitializedMessageSendNode extends
   @Override
   public final Object executeGeneric(final VirtualFrame frame) {
     Object[] arguments = evaluateArguments(frame);
-    Object value = this.doMateSemantics(frame, arguments);
+    Object value = this.doMateSemantics(frame, arguments, semanticsRedefined);
     if (value == null){
      value = doPreEvaluated(frame, arguments);
     }

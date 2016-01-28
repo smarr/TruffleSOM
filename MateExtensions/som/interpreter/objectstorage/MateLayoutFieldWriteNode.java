@@ -8,12 +8,14 @@ import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public final class MateLayoutFieldWriteNode extends WriteFieldNode implements MateBehavior {
   @Child private MateSemanticCheckNode          semanticCheck;
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
   @Child private WriteFieldNode                 write;
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
   
   public MateLayoutFieldWriteNode(final WriteFieldNode node) {
     super(node.getFieldIndex());
@@ -23,7 +25,7 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode implements Ma
   }
 
   public Object write(final VirtualFrame frame, final DynamicObject receiver, final Object value) {
-    Object val = this.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex(), value});
+    Object val = this.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex(), value}, semanticsRedefined);
     if (val == null){
      val = write.executeWrite(receiver, value);
     }

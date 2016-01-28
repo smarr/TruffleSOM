@@ -7,11 +7,13 @@ import som.matenodes.MateBehavior;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public class MateEagerBinaryPrimitiveNode extends EagerBinaryPrimitiveNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
   
   public MateEagerBinaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument,
       BinaryExpressionNode primitive) {
@@ -24,7 +26,7 @@ public class MateEagerBinaryPrimitiveNode extends EagerBinaryPrimitiveNode imple
   public Object executeGeneric(final VirtualFrame frame) {
     Object rcvr = this.getReceiver().executeGeneric(frame);
     Object arg  = this.getArgument().executeGeneric(frame);
-    Object value = this.doMateSemantics(frame, new Object[] {rcvr, arg});
+    Object value = this.doMateSemantics(frame, new Object[] {rcvr, arg}, semanticsRedefined);
     if (value == null){
      value = executeEvaluated(frame, rcvr, arg);
     }

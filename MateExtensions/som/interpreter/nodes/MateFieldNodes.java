@@ -11,12 +11,14 @@ import som.matenodes.MateBehavior;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public abstract class MateFieldNodes {
   public static abstract class MateFieldReadNode extends FieldReadNode implements MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateFieldReadNode(FieldReadNode node) {
       super(node.read.getFieldIndex(), node.getSourceSection());
@@ -28,7 +30,7 @@ public abstract class MateFieldNodes {
     @Override
     @Specialization
     public Object executeEvaluated(final VirtualFrame frame, final DynamicObject obj) {
-      Object value = this.doMateSemantics(frame, new Object[] {obj, (long) this.read.getFieldIndex()});
+      Object value = this.doMateSemantics(frame, new Object[] {obj, (long) this.read.getFieldIndex()}, semanticsRedefined);
       if (value == null){
        value = ((MateLayoutFieldReadNode)read).read(frame, obj);
       }
@@ -64,6 +66,7 @@ public abstract class MateFieldNodes {
   public static abstract class MateFieldWriteNode extends FieldWriteNode implements MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
+    private final BranchProfile semanticsRedefined = BranchProfile.create();
     
     public MateFieldWriteNode(FieldWriteNode node) {
       super(node.write.getFieldIndex(), node.getSourceSection());
@@ -96,7 +99,7 @@ public abstract class MateFieldNodes {
     @Specialization
     public final Object executeEvaluated(final VirtualFrame frame,
         final DynamicObject self, final Object value) {
-      Object val = this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value});
+      Object val = this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value}, semanticsRedefined);
       if (val == null){
        val = ((MateLayoutFieldWriteNode)write).write(frame, self, value);
       }

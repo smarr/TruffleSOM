@@ -8,13 +8,15 @@ import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public final class MateLayoutFieldReadNode extends ReadFieldNode implements MateBehavior {
   @Child private MateSemanticCheckNode          semanticCheck;
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
   @Child private ReadFieldNode                  read;
-
+  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  
   public MateLayoutFieldReadNode(final ReadFieldNode node) {
     super(node.getFieldIndex());
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
@@ -23,7 +25,7 @@ public final class MateLayoutFieldReadNode extends ReadFieldNode implements Mate
   }
 
   public Object read(final VirtualFrame frame, final DynamicObject receiver) {
-    Object value = this.doMateSemantics(frame, new Object[] {receiver, (long)this.getFieldIndex()});
+    Object value = this.doMateSemantics(frame, new Object[] {receiver, (long)this.getFieldIndex()}, semanticsRedefined);
     if (value == null){
      value = read.executeRead(receiver);
     }

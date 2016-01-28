@@ -17,6 +17,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -44,7 +45,12 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       super(source);
     }
   }
-
+  
+  @Override
+  public NodeCost getCost() {
+    return NodeCost.NONE;
+  }
+  
   public abstract static class MateAbstractStandardDispatch extends
       MateAbstractReflectiveDispatch {
 
