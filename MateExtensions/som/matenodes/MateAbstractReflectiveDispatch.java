@@ -10,7 +10,6 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -108,7 +107,6 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       return (SInvokable) reflectiveMethod.call(frame, args);
     }
     
-    @TruffleBoundary
     protected DynamicObject lookupSinceFor(DynamicObject receiver){
       return SObject.getSOMClass(receiver);
     }
@@ -163,7 +161,6 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
       return this.reflectiveLookup(frame, this.createDispatch(method), arguments);
     }
     
-    @TruffleBoundary
     protected DynamicObject classOfReceiver(Object[] arguments){
       return SObject.getSOMClass((DynamicObject) arguments[0]);
     }
