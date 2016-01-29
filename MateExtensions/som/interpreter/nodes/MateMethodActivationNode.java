@@ -14,12 +14,15 @@ import som.vmobjects.SInvokable;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 
 public class MateMethodActivationNode extends Node {
   @Child MateSemanticCheckNode  semanticCheck;
   @Child MateActivationDispatch reflectiveDispatch;
   @Child AbstractMethodDispatchNode methodDispatch;
+  private BranchProfile semanticsRedefined = BranchProfile.create();
   
   public MateMethodActivationNode(){
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), ReflectiveOp.MessageActivation);
@@ -28,11 +31,13 @@ public class MateMethodActivationNode extends Node {
   }
   
   public Object doActivation(final VirtualFrame frame, SInvokable method, Object[] arguments) {
-    Object value = this.getMateDispatch().executeDispatch(frame, this.getMateNode().execute(frame, arguments), method, arguments);
-    if (value == null){
-     value = methodDispatch.executeDispatch(frame, SArguments.getEnvironment(frame), ExecutionLevel.Base, method, arguments);
+    SInvokable mateMethod = this.getMateNode().execute(frame, arguments);
+    if (mateMethod != null){
+      semanticsRedefined.enter();
+      return this.getMateDispatch().executeDispatch(frame, mateMethod, method, arguments);
+    } else {
+      return methodDispatch.executeDispatch(frame, SArguments.getEnvironment(frame), ExecutionLevel.Base, method, arguments);
     }
-    return value;
   }
 
   public MateSemanticCheckNode getMateNode() {
@@ -58,4 +63,8 @@ public class MateMethodActivationNode extends Node {
     methodDispatch.replace(replacement);
   }
 
+  @Override
+  public NodeCost getCost() {
+    return NodeCost.NONE;
+  }  
 }
