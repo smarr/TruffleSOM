@@ -3,8 +3,10 @@ package som.interpreter;
 import som.vm.constants.ExecutionLevel;
 import som.vmobjects.SArray;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.profiles.ValueProfile;
 
 public final class SArguments {
 
@@ -35,7 +37,15 @@ public final class SArguments {
   }
   
   public static ExecutionLevel getExecutionLevel(final Frame frame) {
-    return (ExecutionLevel)args(frame)[EXECUTION_LEVEL_IDX];
+    Object execLevel = args(frame)[EXECUTION_LEVEL_IDX];
+    if (execLevel.getClass() == ExecutionLevel.class) {
+      // Graal can't know that only this branch is ever taken, so, we need to help it a little
+      return (ExecutionLevel) execLevel;
+    } else {
+      // this should never happen
+      CompilerDirectives.transferToInterpreter();
+      return (ExecutionLevel) execLevel;
+    }
   }
 
   /**
