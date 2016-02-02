@@ -8,14 +8,14 @@ import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 
 public final class MateLayoutFieldWriteNode extends WriteFieldNode implements MateBehavior {
   @Child private MateSemanticCheckNode          semanticCheck;
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
   @Child private WriteFieldNode                 write;
-  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
   
   public MateLayoutFieldWriteNode(final WriteFieldNode node) {
     super(node.getFieldIndex());

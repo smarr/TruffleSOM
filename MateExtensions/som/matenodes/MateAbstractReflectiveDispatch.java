@@ -143,7 +143,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("classOfReceiver(arguments)") final DynamicObject cachedClass,
-        @Cached("lookupResult(frame, method, arguments)") SInvokable lookupResult) {
+        @Cached("lookupResult(frame, method, arguments)") final SInvokable lookupResult){
       // The MOP receives the class where the lookup must start (find: aSelector since: aClass)
       return activationNode.doActivation(frame, lookupResult, arguments);
     }
@@ -197,7 +197,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("methodToActivate") final SInvokable cachedMethodToActivate,
-        @Cached("createDirectCall(methodToActivate)") DirectCallNode callNode,
+        @Cached("createDirectCall(methodToActivate)") final DirectCallNode callNode,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
       // The MOP receives the standard ST message Send stack (rcvr, method, arguments) and returns its own
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (DynamicObject) arguments[0], methodToActivate, 
@@ -212,7 +212,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod,
-        @Cached("createIndirectCall()") IndirectCallNode callNode){
+        @Cached("createIndirectCall()") final IndirectCallNode callNode){
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (DynamicObject) arguments[0], methodToActivate, 
           SArray.create(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments))};
       SArray realArguments = (SArray)reflectiveMethod.call(frame, args);

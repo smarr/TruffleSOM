@@ -1,25 +1,25 @@
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.profiles.BranchProfile;
-
 import som.interpreter.SArguments;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
-import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.source.SourceSection;
+
 public abstract class MateArgumentReadNode {
   public static class MateLocalArgumentReadNode extends LocalArgumentReadNode implements
       MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     public MateLocalArgumentReadNode(int argumentIndex, SourceSection source) {
       super(argumentIndex, source);
@@ -70,7 +70,7 @@ public abstract class MateArgumentReadNode {
       MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     public MateNonLocalArgumentReadNode(int argumentIndex, int contextLevel,
         SourceSection source) {
@@ -122,7 +122,7 @@ public abstract class MateArgumentReadNode {
       ISuperReadNode, MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     public MateLocalSuperReadNode(SSymbol holderClass, boolean classSide,
         SourceSection source) {
@@ -175,7 +175,7 @@ public abstract class MateArgumentReadNode {
 
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     public MateNonLocalSuperReadNode(int contextLevel, SSymbol holderClass,
         boolean classSide, SourceSection source) {

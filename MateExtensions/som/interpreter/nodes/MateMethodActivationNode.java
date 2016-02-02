@@ -15,14 +15,14 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 
 public class MateMethodActivationNode extends Node {
   @Child MateSemanticCheckNode  semanticCheck;
   @Child MateActivationDispatch reflectiveDispatch;
   @Child AbstractMethodDispatchNode methodDispatch;
-  private BranchProfile semanticsRedefined = BranchProfile.create();
+  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
   
   public MateMethodActivationNode(){
     semanticCheck = MateSemanticCheckNode.createForFullCheck(this.getSourceSection(), ReflectiveOp.MessageActivation);
@@ -32,8 +32,7 @@ public class MateMethodActivationNode extends Node {
   
   public Object doActivation(final VirtualFrame frame, SInvokable method, Object[] arguments) {
     SInvokable mateMethod = this.getMateNode().execute(frame, arguments);
-    if (mateMethod != null){
-      semanticsRedefined.enter();
+    if (semanticsRedefined.profile(mateMethod != null)){
       return this.getMateDispatch().executeDispatch(frame, mateMethod, method, arguments);
     } else {
       return methodDispatch.executeDispatch(frame, SArguments.getEnvironment(frame), ExecutionLevel.Base, method, arguments);

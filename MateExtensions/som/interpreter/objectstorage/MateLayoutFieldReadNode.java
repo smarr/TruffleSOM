@@ -1,21 +1,21 @@
 package som.interpreter.objectstorage;
 
 import som.interpreter.objectstorage.FieldAccessorNode.ReadFieldNode;
-import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateBehavior;
 import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 
 public final class MateLayoutFieldReadNode extends ReadFieldNode implements MateBehavior {
   @Child private MateSemanticCheckNode          semanticCheck;
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
   @Child private ReadFieldNode                  read;
-  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
   
   public MateLayoutFieldReadNode(final ReadFieldNode node) {
     super(node.getFieldIndex());

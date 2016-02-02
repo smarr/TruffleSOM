@@ -8,14 +8,14 @@ import som.matenodes.MateBehavior;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
 
 public class MateGenericMessageSendNode extends GenericMessageSendNode implements MateBehavior {
   @Child MateSemanticCheckNode            semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
-  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
   
   protected MateGenericMessageSendNode(final SSymbol selector,
       final ExpressionNode[] arguments,

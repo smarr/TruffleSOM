@@ -1,18 +1,18 @@
 package som.interpreter.nodes.nary;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.matenodes.MateBehavior;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
+import som.matenodes.MateBehavior;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 public class MateEagerQuaternaryPrimitiveNode extends EagerQuaternaryPrimitiveNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
-  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
   
   public MateEagerQuaternaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument1, ExpressionNode argument2,
       ExpressionNode argument3, QuaternaryExpressionNode primitive) {

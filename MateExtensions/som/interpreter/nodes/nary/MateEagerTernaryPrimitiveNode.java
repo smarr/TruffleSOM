@@ -7,13 +7,13 @@ import som.matenodes.MateBehavior;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 
 public class MateEagerTernaryPrimitiveNode extends EagerTernaryPrimitiveNode implements MateBehavior {
   @Child MateSemanticCheckNode                   semanticCheck;
   @Child MateAbstractStandardDispatch     reflectiveDispatch;
-  private final BranchProfile semanticsRedefined = BranchProfile.create();
+  private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
   
   public MateEagerTernaryPrimitiveNode(SSymbol selector, ExpressionNode receiver, ExpressionNode argument1, ExpressionNode argument2,
       TernaryExpressionNode primitive) {

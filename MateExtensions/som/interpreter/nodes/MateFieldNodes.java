@@ -11,14 +11,14 @@ import som.matenodes.MateBehavior;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 
 public abstract class MateFieldNodes {
   public static abstract class MateFieldReadNode extends FieldReadNode implements MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     public MateFieldReadNode(FieldReadNode node) {
       super(node.read.getFieldIndex(), node.getSourceSection());
@@ -66,7 +66,7 @@ public abstract class MateFieldNodes {
   public static abstract class MateFieldWriteNode extends FieldWriteNode implements MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     public MateFieldWriteNode(FieldWriteNode node) {
       super(node.write.getFieldIndex(), node.getSourceSection());

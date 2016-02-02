@@ -1,14 +1,14 @@
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.BranchProfile;
-
 import som.interpreter.SArguments;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import som.matenodes.MateAbstractReflectiveDispatch.MateAbstractStandardDispatch;
 import som.matenodes.MateAbstractSemanticNodes.MateSemanticCheckNode;
 import som.matenodes.MateBehavior;
+
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 public abstract class MateLocalVariableNode {
   public static class MateLocalVariableReadNode extends LocalVariableReadNode implements
@@ -23,7 +23,7 @@ public abstract class MateLocalVariableNode {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     @Child LocalVariableNode                local;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     @Override
     public MateSemanticCheckNode getMateNode() {
@@ -61,7 +61,7 @@ public abstract class MateLocalVariableNode {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     @Child LocalVariableWriteNode           local;
-    private final BranchProfile semanticsRedefined = BranchProfile.create();
+    private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
     
     public MateLocalVariableWriteNode(LocalVariableWriteNode node) {
       super(node);
