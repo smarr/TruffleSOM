@@ -70,13 +70,13 @@ public class SObject {
     //The parameter is only valid for SReflectiveObjects
     return factory.newInstance(Nil.nilObject);
   }
-  
+
   public static DynamicObject createNil() {
     // TODO: this is work in progress, the class should go as shared data into the shape
     // TODO: ideally, nil is like in SOMns an SObjectWithoutFields
     return NIL_DUMMY_FACTORY.newInstance(new Object[] { null });
   }
-  
+
   /**
    * For SObjects, we store the class in the shape's shared data.
    * This makes sure that each class has a separate shape tree and the shapes

@@ -6,7 +6,7 @@ import som.vmobjects.SArray;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.profiles.ValueProfile;
+
 
 public final class SArguments {
 
@@ -14,10 +14,10 @@ public final class SArguments {
   private static final int EXECUTION_LEVEL_IDX = 1;
   public static final int RCVR_IDX = 2;
   //Offset of the receiver considering all arguments in the stack including Mate behavior arguments.
-  
+
   public static final int RCVR_ARGUMENTS_OFFSET = 0;
   //Offset of the receiver when just considering the standard arguments of a method (for example for the parser)
-  
+
   private static final int ARGUMENT_OFFSET = RCVR_IDX;
 
   private static Object[] args(final Frame frame) {
@@ -31,11 +31,11 @@ public final class SArguments {
   public static Object rcvr(final Frame frame) {
     return args(frame)[RCVR_IDX];
   }
-  
+
   public static DynamicObject getEnvironment(final Frame frame) {
     return (DynamicObject)args(frame)[ENVIRONMENT_IDX];
   }
-  
+
   public static ExecutionLevel getExecutionLevel(final Frame frame) {
     Object execLevel = args(frame)[EXECUTION_LEVEL_IDX];
     if (execLevel.getClass() == ExecutionLevel.class) {
@@ -64,7 +64,7 @@ public final class SArguments {
     System.arraycopy(arguments, 1, argsArr, 0, argsArr.length);
     return SArray.create(argsArr);
   }
-  
+
   public static Object[] createSArguments(final DynamicObject environment,
       final ExecutionLevel exLevel, final Object[] arguments) {
     //assert SMateEnvironment.isSMateEnvironment(environment);

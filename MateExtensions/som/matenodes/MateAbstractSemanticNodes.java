@@ -10,6 +10,7 @@ import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SMateEnvironment;
+import som.vmobjects.SObject;
 import som.vmobjects.SReflectiveObject;
 
 import com.oracle.truffle.api.Assumption;
@@ -28,34 +29,34 @@ public abstract class MateAbstractSemanticNodes {
   public static abstract class MateEnvironmentSemanticCheckNode extends Node {
     private final ReflectiveOp reflectiveOperation;
 
-    protected MateEnvironmentSemanticCheckNode(ReflectiveOp operation) {
+    protected MateEnvironmentSemanticCheckNode(final ReflectiveOp operation) {
       super();
       reflectiveOperation = operation;
     }
 
     public abstract SInvokable executeGeneric(VirtualFrame frame);
 
-    
+
     @Specialization(guards = "getEnvironment(frame) == null")
     public SInvokable doNoSemanticsInFrame(final VirtualFrame frame) {
       return null;
     }
-    
+
     @Specialization(guards = {"getEnvironment(frame) == environment"})
     public SInvokable doSemanticsInFrame(final VirtualFrame frame,
         @Cached("getEnvironment(frame)") final DynamicObject environment,
         @Cached("methodImplementingOperationOn(environment)") final SInvokable reflectiveMethod) {
         return reflectiveMethod;
     }
-    
-    public static DynamicObject getEnvironment(VirtualFrame frame){
+
+    public static DynamicObject getEnvironment(final VirtualFrame frame){
       return SArguments.getEnvironment(frame);
     }
-    
+
     public SInvokable methodImplementingOperationOn(final DynamicObject environment){
       return SMateEnvironment.methodImplementing(environment, this.reflectiveOperation);
     }
-    
+
     @Override
     public NodeCost getCost() {
       return NodeCost.NONE;
@@ -66,7 +67,7 @@ public abstract class MateAbstractSemanticNodes {
 
     protected final ReflectiveOp reflectiveOperation;
 
-    protected MateObjectSemanticCheckNode(ReflectiveOp operation) {
+    protected MateObjectSemanticCheckNode(final ReflectiveOp operation) {
       super();
       reflectiveOperation = operation;
     }
@@ -79,7 +80,7 @@ public abstract class MateAbstractSemanticNodes {
         final DynamicObject receiver) {
       return null;
     }
-    
+
     @Specialization(guards = {"receiver.getShape().getRoot() == rootShape"}, limit = "10")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
@@ -90,34 +91,34 @@ public abstract class MateAbstractSemanticNodes {
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
       return method;
     }
-    
+
     @Specialization(contains={"doSReflectiveObject", "doStandardSOMForPrimitives"})
     public SInvokable doMegamorphicReceiver(
         final VirtualFrame frame,
         final DynamicObject receiver) {
       return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
     }
-    
+
     protected static SInvokable environmentReflectiveMethod(
-        DynamicObject environment, ReflectiveOp operation) {
+        final DynamicObject environment, final ReflectiveOp operation) {
       if (environment == Nil.nilObject){
         return null;
       }
       return SMateEnvironment.methodImplementing(environment, operation);
     }
-    
-    public static DynamicObject getEnvironment(DynamicObject receiver, ConstantLocation location){
+
       return (DynamicObject)location.get(receiver);
+    public static DynamicObject getEnvironment(final DynamicObject receiver, final ConstantLocation location){
     }
-    
-    public static ConstantLocation getEnvironmentLocationOf(Shape shape){
+
+    public static ConstantLocation getEnvironmentLocationOf(final Shape shape){
       return (ConstantLocation) shape.getProperty(SReflectiveObject.ENVIRONMENT).getLocation();
     }
-    
-    public static boolean isSReflectiveObject(DynamicObject object){
+
+    public static boolean isSReflectiveObject(final DynamicObject object){
       return SReflectiveObject.isSReflectiveObject(object);
     }
-    
+
     @Override
     public NodeCost getCost() {
       return NodeCost.NONE;
@@ -132,38 +133,38 @@ public abstract class MateAbstractSemanticNodes {
     public abstract SInvokable execute(final VirtualFrame frame,
         Object[] arguments);
 
-    public MateSemanticCheckNode(MateEnvironmentSemanticCheckNode env,
-        MateObjectSemanticCheckNode obj) {
+    public MateSemanticCheckNode(final MateEnvironmentSemanticCheckNode env,
+        final MateObjectSemanticCheckNode obj) {
       super();
       environment = env;
       object = obj;
     }
 
     public static MateSemanticCheckNode createForFullCheck(
-        SourceSection source, ReflectiveOp operation) {
+        final SourceSection source, final ReflectiveOp operation) {
       return MateSemanticCheckNodeGen.create(
           MateEnvironmentSemanticCheckNodeGen.create(operation),
           MateObjectSemanticCheckNodeGen.create(operation));
     }
 
     @Specialization(assumptions = "getMateDeactivatedAssumption()")
-    protected SInvokable mateDeactivated(final VirtualFrame frame, Object[] arguments) {
+    protected SInvokable mateDeactivated(final VirtualFrame frame, final Object[] arguments) {
       return null;
     }
-    
-    @Specialization(guards = "!executeBase(frame)" , 
+
+    @Specialization(guards = "!executeBase(frame)" ,
         assumptions = "getMateActivatedAssumption()")
-    protected SInvokable executeSOM(final VirtualFrame frame, Object[] arguments) {
+    protected SInvokable executeSOM(final VirtualFrame frame, final Object[] arguments) {
       return null;
     }
 
     @Specialization(guards = "executeBase(frame)",
         assumptions = "getMateActivatedAssumption()")
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
-        Object[] arguments) {
+        final Object[] arguments) {
       if (arguments[0] instanceof DynamicObject){
         SInvokable value = environment.executeGeneric(frame);
-        if (value == null){  
+        if (value == null){
           value = object.executeGeneric(frame, arguments[0]);
         }
         return value;
@@ -172,24 +173,24 @@ public abstract class MateAbstractSemanticNodes {
     }
 
     public MateSemanticCheckNode(final SourceSection source,
-        ReflectiveOp operation) {
+        final ReflectiveOp operation) {
       super(source);
       environment = MateEnvironmentSemanticCheckNodeGen.create(operation);
       object = MateObjectSemanticCheckNodeGen.create(operation);
     }
 
-    public static boolean executeBase(VirtualFrame frame) {
+    public static boolean executeBase(final VirtualFrame frame) {
       return SArguments.getExecutionLevel(frame) == ExecutionLevel.Base;
     }
-    
+
     public static Assumption getMateDeactivatedAssumption() {
       return MateUniverse.current().getMateDeactivatedAssumption();
     }
-    
+
     public static Assumption getMateActivatedAssumption() {
       return MateUniverse.current().getMateActivatedAssumption();
     }
-    
+
     @Override
     public NodeCost getCost() {
       return NodeCost.NONE;
