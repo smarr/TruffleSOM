@@ -103,7 +103,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
 
     public SInvokable reflectiveLookup(final VirtualFrame frame, final DirectCallNode reflectiveMethod,
         final Object[] arguments) {
-      DynamicObject receiver = (DynamicObject) arguments[0];
+      DynamicObject receiver = SObject.castDynObj(arguments[0]);
       Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, receiver, this.getSelector(), this.lookupSinceFor(receiver)};
       return (SInvokable) reflectiveMethod.call(frame, args);
     }
@@ -161,9 +161,9 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments){
       return this.reflectiveLookup(frame, this.createDispatch(method), arguments);
     }
-      return SObject.getSOMClass((DynamicObject) arguments[0]);
 
     protected DynamicObject classOfReceiver(final Object[] arguments){
+      return SObject.getSOMClass(SObject.castDynObj(arguments[0]));
     }
 
   }
@@ -202,7 +202,7 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         @Cached("createDirectCall(methodToActivate)") final DirectCallNode callNode,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod) {
       // The MOP receives the standard ST message Send stack (rcvr, method, arguments) and returns its own
-      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (DynamicObject) arguments[0], methodToActivate, 
+      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, SObject.castDynObj(arguments[0]), methodToActivate,
           SArray.create(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments))};
       SArray realArguments = (SArray) reflectiveMethod.call(frame, args);
       return callNode.call(frame, realArguments.toJavaArray());
@@ -214,8 +214,10 @@ public abstract class MateAbstractReflectiveDispatch extends Node {
         final Object[] arguments,
         @Cached("method") final SInvokable cachedMethod,
         @Cached("createDispatch(method)") final DirectCallNode reflectiveMethod,
-      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, (DynamicObject) arguments[0], methodToActivate, 
         @Cached("createIndirectCall()") final IndirectCallNode callNode) {
+      /// THIS Change does nothing on NBody...
+
+      Object[] args = { SArguments.getEnvironment(frame), ExecutionLevel.Meta, SObject.castDynObj(arguments[0]), methodToActivate,
           SArray.create(SArguments.createSArguments(SArguments.getEnvironment(frame), ExecutionLevel.Base, arguments))};
       SArray realArguments = (SArray) reflectiveMethod.call(frame, args);
       return callNode.call(frame, methodToActivate.getCallTarget(), realArguments.toJavaArray());

@@ -56,7 +56,7 @@ public class SMateEnvironment extends SObject {
       default:
         return null;
     }
-    DynamicObject metaobject = (DynamicObject) obj.get(field);
+    DynamicObject metaobject = SObject.castDynObj(obj.get(field));
     if (metaobject == Nil.nilObject) {
       return null;
     }

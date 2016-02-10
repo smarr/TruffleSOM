@@ -69,7 +69,7 @@ public class SReflectiveObject extends SObject {
   //Todo: Is this method optimizable by caching the location?
   public static final DynamicObject getEnvironment(final DynamicObject obj) {
     //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
-    return (DynamicObject) obj.get(ENVIRONMENT, Nil.nilObject);
+    return SObject.castDynObj(obj.get(ENVIRONMENT, Nil.nilObject));
     //return (DynamicObject) ENVIRONMENT_LOCATION.get(obj, true);
   }
 

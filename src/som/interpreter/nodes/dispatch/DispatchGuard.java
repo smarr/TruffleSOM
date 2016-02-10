@@ -2,6 +2,8 @@ package som.interpreter.nodes.dispatch;
 
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
+import som.vmobjects.SObject;
+
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.object.DynamicObject;
@@ -85,8 +87,8 @@ public abstract class DispatchGuard {
       CompilerDirectives.transferToInterpreter();
       throw new InvalidAssumptionException();
     }
-    return obj instanceof DynamicObject &&
-        ((DynamicObject) obj).getShape().getSharedData() == expected.getSharedData();
+    return SObject.isDynObj(obj) &&
+        SObject.castDynObj(obj).getShape().getSharedData() == expected.getSharedData();
     }
   }
 }

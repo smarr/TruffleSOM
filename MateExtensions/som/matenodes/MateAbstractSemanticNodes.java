@@ -107,8 +107,8 @@ public abstract class MateAbstractSemanticNodes {
       return SMateEnvironment.methodImplementing(environment, operation);
     }
 
-      return (DynamicObject)location.get(receiver);
     public static DynamicObject getEnvironment(final DynamicObject receiver, final ConstantLocation location){
+      return SObject.castDynObj(location.get(receiver));
     }
 
     public static ConstantLocation getEnvironmentLocationOf(final Shape shape){
