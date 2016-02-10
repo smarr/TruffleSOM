@@ -37,7 +37,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.TypeSystem;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 @TypeSystem({   boolean.class,
                    long.class,
@@ -51,12 +51,12 @@ import com.oracle.truffle.api.object.DynamicObject;
                  SArray.class,
                  SShape.class,
         SAbstractObject.class,
-          DynamicObject.class,
+        DynamicObjectBasic.class,
                Object[].class}) // Object[] is only for argument passing
 public class Types {
 
   @TruffleBoundary
-  public static DynamicObject getClassOf(final Object obj) {
+  public static DynamicObjectBasic getClassOf(final Object obj) {
     CompilerAsserts.neverPartOfCompilation("Types.getClassOf");
     assert obj != null;
 
@@ -74,8 +74,8 @@ public class Types {
       return Classes.stringClass;
     } else if (obj instanceof Double) {
       return Classes.doubleClass;
-    } else if (obj instanceof DynamicObject) {
-      return SObject.getSOMClass((DynamicObject) obj);
+    } else if (obj instanceof DynamicObjectBasic) {
+      return SObject.getSOMClass((DynamicObjectBasic) obj);
     }
 
     TruffleCompiler.transferToInterpreter("Should not be reachable");

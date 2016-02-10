@@ -4,7 +4,7 @@ import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vm.constants.ReflectiveOp;
 
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public class SMateEnvironment extends SObject {
   //private static final SMateEnvironmentObjectType SMATE_ENVIRONMENT_TYPE = new SMateEnvironmentObjectType();
@@ -39,7 +39,7 @@ public class SMateEnvironment extends SObject {
   */
 
   //Todo: Finish the SMateEnvironment type with primitives for setting it fields
-  public static SInvokable methodImplementing(final DynamicObject obj, final ReflectiveOp operation){
+  public static SInvokable methodImplementing(final DynamicObjectBasic obj, final ReflectiveOp operation){
     int field;
     switch (operation){
       case None:
@@ -56,7 +56,7 @@ public class SMateEnvironment extends SObject {
       default:
         return null;
     }
-    DynamicObject metaobject = SObject.castDynObj(obj.get(field));
+    DynamicObjectBasic metaobject = SObject.castDynObj(obj.get(field));
     if (metaobject == Nil.nilObject) {
       return null;
     }
@@ -64,7 +64,7 @@ public class SMateEnvironment extends SObject {
   }
 
   /*Optimize this method. It can have the definition of the symbols in a static ahead of time  way*/
-  private static SInvokable methodForOperation(final DynamicObject metaobject, final ReflectiveOp operation){
+  private static SInvokable methodForOperation(final DynamicObjectBasic metaobject, final ReflectiveOp operation){
     SSymbol selector;
     switch (operation){
       case MessageLookup:

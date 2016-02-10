@@ -35,14 +35,14 @@ import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public final class SourcecodeCompiler {
 
   @TruffleBoundary
-  public static DynamicObject compileClass(final String path, final String file,
-      final DynamicObject systemClass, final Universe universe)
+  public static DynamicObjectBasic compileClass(final String path, final String file,
+      final DynamicObjectBasic systemClass, final Universe universe)
       throws IOException {
     String fname = path + File.separator + file + ".som";
     FileReader stream = new FileReader(fname);
@@ -50,7 +50,7 @@ public final class SourcecodeCompiler {
     Source source = Source.fromFileName(fname);
     Parser parser = new Parser(stream, new File(fname).length(), source, universe);
 
-    DynamicObject result = compile(parser, systemClass, universe);
+    DynamicObjectBasic result = compile(parser, systemClass, universe);
 
     SSymbol cname = SClass.getName(result);
     String cnameC = cname.getString();
@@ -64,19 +64,19 @@ public final class SourcecodeCompiler {
   }
 
   @TruffleBoundary
-  public static DynamicObject compileClass(final String stmt,
-      final DynamicObject systemClass, final Universe universe) {
+  public static DynamicObjectBasic compileClass(final String stmt,
+      final DynamicObjectBasic systemClass, final Universe universe) {
     Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, universe);
 
-    DynamicObject result = compile(parser, systemClass, universe);
+    DynamicObjectBasic result = compile(parser, systemClass, universe);
     return result;
   }
 
-  private static DynamicObject compile(final Parser parser,
-      final DynamicObject systemClass, final Universe universe) {
+  private static DynamicObjectBasic compile(final Parser parser,
+      final DynamicObjectBasic systemClass, final Universe universe) {
     ClassGenerationContext cgc = new ClassGenerationContext(universe);
 
-    DynamicObject result = systemClass;
+    DynamicObjectBasic result = systemClass;
     try {
       parser.classdef(cgc);
     } catch (ParseError pe) {

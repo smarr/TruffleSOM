@@ -19,10 +19,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.object.Locations.ConstantLocation;
+import com.oracle.truffle.object.ShapeImpl;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public abstract class MateAbstractSemanticNodes {
 
@@ -44,16 +45,16 @@ public abstract class MateAbstractSemanticNodes {
 
     @Specialization(guards = {"getEnvironment(frame) == environment"})
     public SInvokable doSemanticsInFrame(final VirtualFrame frame,
-        @Cached("getEnvironment(frame)") final DynamicObject environment,
+        @Cached("getEnvironment(frame)") final DynamicObjectBasic environment,
         @Cached("methodImplementingOperationOn(environment)") final SInvokable reflectiveMethod) {
         return reflectiveMethod;
     }
 
-    public static DynamicObject getEnvironment(final VirtualFrame frame){
+    public static DynamicObjectBasic getEnvironment(final VirtualFrame frame){
       return SArguments.getEnvironment(frame);
     }
 
-    public SInvokable methodImplementingOperationOn(final DynamicObject environment){
+    public SInvokable methodImplementingOperationOn(final DynamicObjectBasic environment){
       return SMateEnvironment.methodImplementing(environment, this.reflectiveOperation);
     }
 
@@ -77,17 +78,17 @@ public abstract class MateAbstractSemanticNodes {
 
     @Specialization(guards = "!isSReflectiveObject(receiver)")
     public SInvokable doStandardSOMForPrimitives(final VirtualFrame frame,
-        final DynamicObject receiver) {
+        final DynamicObjectBasic receiver) {
       return null;
     }
 
     @Specialization(guards = {"receiver.getShape().getRoot() == rootShape"}, limit = "10")
     public SInvokable doSReflectiveObject(
         final VirtualFrame frame,
-        final DynamicObject receiver,
-        @Cached("receiver.getShape().getRoot()") final Shape rootShape,
+        final DynamicObjectBasic receiver,
+        @Cached("receiver.getShape().getRoot()") final ShapeImpl rootShape,
         @Cached("getEnvironmentLocationOf(receiver.getShape())") final ConstantLocation cachedLocation,
-        @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObject cachedEnvironment,
+        @Cached("getEnvironment(receiver, cachedLocation)") final DynamicObjectBasic cachedEnvironment,
         @Cached("environmentReflectiveMethod(cachedEnvironment, reflectiveOperation)") final SInvokable method) {
       return method;
     }
@@ -95,19 +96,19 @@ public abstract class MateAbstractSemanticNodes {
     @Specialization(contains={"doSReflectiveObject", "doStandardSOMForPrimitives"})
     public SInvokable doMegamorphicReceiver(
         final VirtualFrame frame,
-        final DynamicObject receiver) {
+        final DynamicObjectBasic receiver) {
       return environmentReflectiveMethod(SReflectiveObject.getEnvironment(receiver), this.reflectiveOperation);
     }
 
     protected static SInvokable environmentReflectiveMethod(
-        final DynamicObject environment, final ReflectiveOp operation) {
+        final DynamicObjectBasic environment, final ReflectiveOp operation) {
       if (environment == Nil.nilObject){
         return null;
       }
       return SMateEnvironment.methodImplementing(environment, operation);
     }
 
-    public static DynamicObject getEnvironment(final DynamicObject receiver, final ConstantLocation location){
+    public static DynamicObjectBasic getEnvironment(final DynamicObjectBasic receiver, final ConstantLocation location){
       return SObject.castDynObj(location.get(receiver));
     }
 
@@ -115,7 +116,7 @@ public abstract class MateAbstractSemanticNodes {
       return (ConstantLocation) shape.getProperty(SReflectiveObject.ENVIRONMENT).getLocation();
     }
 
-    public static boolean isSReflectiveObject(final DynamicObject object){
+    public static boolean isSReflectiveObject(final DynamicObjectBasic object){
       return SReflectiveObject.isSReflectiveObject(object);
     }
 
@@ -162,7 +163,7 @@ public abstract class MateAbstractSemanticNodes {
         assumptions = "getMateActivatedAssumption()")
     protected SInvokable executeSemanticChecks(final VirtualFrame frame,
         final Object[] arguments) {
-      if (arguments[0] instanceof DynamicObject){
+      if (arguments[0] instanceof DynamicObjectBasic){
         SInvokable value = environment.executeGeneric(frame);
         if (value == null){
           value = object.executeGeneric(frame, arguments[0]);

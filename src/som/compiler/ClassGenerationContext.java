@@ -36,8 +36,8 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ValueProfile;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public final class ClassGenerationContext {
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
@@ -116,15 +116,15 @@ public final class ClassGenerationContext {
   }
 
   @TruffleBoundary
-  public DynamicObject assemble() {
+  public DynamicObjectBasic assemble() {
     // build class class name
     String ccname = name.getString() + " class";
 
     // Load the super class
-    DynamicObject superClass = universe.loadClass(superName);
+    DynamicObjectBasic superClass = universe.loadClass(superName);
 
     // Allocate the class of the resulting class
-    DynamicObject resultClass = universe.newClass(Classes.metaclassClass);
+    DynamicObjectBasic resultClass = universe.newClass(Classes.metaclassClass);
 
     // Initialize the class of the resulting class
     SClass.setInstanceFields(resultClass,
@@ -133,11 +133,11 @@ public final class ClassGenerationContext {
         SArray.create(classMethods.toArray(new Object[0])));
     SClass.setName(resultClass, universe.symbolFor(ccname));
 
-    DynamicObject superMClass = SObject.getSOMClass(superClass);
+    DynamicObjectBasic superMClass = SObject.getSOMClass(superClass);
     SClass.setSuperClass(resultClass, superMClass);
 
     // Allocate the resulting class
-    DynamicObject result = universe.newClass(resultClass);
+    DynamicObjectBasic result = universe.newClass(resultClass);
 
     // Initialize the resulting class
     SClass.setName(result, name);
@@ -151,13 +151,13 @@ public final class ClassGenerationContext {
   }
 
   @TruffleBoundary
-  public void assembleSystemClass(final DynamicObject systemClass) {
+  public void assembleSystemClass(final DynamicObjectBasic systemClass) {
     SClass.setInstanceInvokables(systemClass,
         SArray.create(instanceMethods.toArray(new Object[0])));
     SClass.setInstanceFields(systemClass,
         SArray.create(instanceFields.toArray(new Object[0])));
     // class-bound == class-instance-bound
-    DynamicObject superMClass = SObject.getSOMClass(systemClass);
+    DynamicObjectBasic superMClass = SObject.getSOMClass(systemClass);
     SClass.setInstanceInvokables(superMClass,
         SArray.create(classMethods.toArray(new Object[0])));
     SClass.setInstanceFields(superMClass,

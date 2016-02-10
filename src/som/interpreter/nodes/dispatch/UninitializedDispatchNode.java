@@ -11,7 +11,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public final class UninitializedDispatchNode extends AbstractDispatchNode {
@@ -33,15 +33,15 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     Object rcvr = arguments[0];
     assert rcvr != null;
 
-    /*if (rcvr instanceof DynamicObject) {
-      DynamicObject r = (DynamicObject) rcvr;
+    /*if (rcvr instanceof DynamicObjectBasic) {
+      DynamicObjectBasic r = (DynamicObjectBasic) rcvr;
       if (r.updateShape() && first != this) { // if first is this, short cut and directly continue...
         return first;
       }
     }*/
-    
+
     if (chainDepth < INLINE_CACHE_SIZE) {
-      DynamicObject rcvrClass = Types.getClassOf(rcvr);
+      DynamicObjectBasic rcvrClass = Types.getClassOf(rcvr);
       SInvokable method = SClass.lookupInvokable(rcvrClass, selector);
       CallTarget callTarget;
       if (method != null) {
@@ -71,8 +71,8 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, 
-      final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame,
+      final DynamicObjectBasic environment, final ExecutionLevel exLevel, final Object[] arguments) {
     transferToInterpreterAndInvalidate("Initialize a dispatch node.");
     return specialize(arguments).
     executeDispatch(frame, environment, exLevel, arguments);

@@ -26,7 +26,7 @@ package som.vmobjects;
 
 import som.vm.constants.Classes;
 
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public final class SSymbol extends SAbstractObject {
   private final String string;
@@ -39,7 +39,7 @@ public final class SSymbol extends SAbstractObject {
   }
 
   @Override
-  public DynamicObject getSOMClass() {
+  public DynamicObjectBasic getSOMClass() {
     assert Classes.symbolClass != null;
     return Classes.symbolClass;
   }

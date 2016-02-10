@@ -6,17 +6,17 @@ import som.vm.constants.ExecutionLevel;
 import som.vm.constants.MateClasses;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public abstract class SAbstractObject {
 
-  public abstract DynamicObject getSOMClass();
+  public abstract DynamicObjectBasic getSOMClass();
 
   @Override
   public String toString() {
     CompilerAsserts.neverPartOfCompilation();
-    DynamicObject clazz = getSOMClass();
+    DynamicObjectBasic clazz = getSOMClass();
     if (clazz == null) {
       return "an Object(clazz==null)";
     }
@@ -26,7 +26,7 @@ public abstract class SAbstractObject {
   public static final Object send(
       final String selectorString,
       final Object[] arguments,
-      final DynamicObject environment,
+      final DynamicObjectBasic environment,
       final ExecutionLevel exLevel) {
     CompilerAsserts.neverPartOfCompilation("SAbstractObject.send()");
     SSymbol selector = Universe.current().symbolFor(selectorString);
@@ -38,7 +38,7 @@ public abstract class SAbstractObject {
   }
 
   public static final Object sendUnknownGlobal(final Object receiver,
-      final SSymbol globalName, final DynamicObject environment, final ExecutionLevel exLevel) {
+      final SSymbol globalName, final DynamicObjectBasic environment, final ExecutionLevel exLevel) {
     Object[] arguments = {receiver, globalName};
     return send("unknownGlobal:", arguments, environment, exLevel);
   }

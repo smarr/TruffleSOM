@@ -33,7 +33,7 @@ import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public class Shell {
 
@@ -47,8 +47,8 @@ public class Shell {
     BufferedReader in;
     String stmt;
     int counter;
-    DynamicObject myClass;
-    DynamicObject myObject;
+    DynamicObjectBasic myClass;
+    DynamicObjectBasic myObject;
     Object it;
 
     counter = 0;

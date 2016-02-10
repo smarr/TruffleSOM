@@ -18,9 +18,9 @@ import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public class MateUniverse extends Universe {
   private Assumption mateActivated;
@@ -56,21 +56,21 @@ public class MateUniverse extends Universe {
     }
   }
 
-  public static DynamicObject newInstance(final DynamicObject instanceClass) {
+  public static DynamicObjectBasic newInstance(final DynamicObjectBasic instanceClass) {
     return SReflectiveObject.create(instanceClass);
   }
 
-  public static DynamicObject newEnvironment(final DynamicObject instanceClass) {
+  public static DynamicObjectBasic newEnvironment(final DynamicObjectBasic instanceClass) {
     return SMateEnvironment.create(instanceClass);
   }
 
   @Override
-  public DynamicObject loadClass(final SSymbol name) {
+  public DynamicObjectBasic loadClass(final SSymbol name) {
     CompilerAsserts.neverPartOfCompilation("loadClass");
-    if ((DynamicObject) getGlobal(name) != null){
+    if ((DynamicObjectBasic) getGlobal(name) != null){
       return super.loadClass(name);
     } else {
-      DynamicObject result = super.loadClass(name);
+      DynamicObjectBasic result = super.loadClass(name);
       mateify(result);
       mateify(SObject.getSOMClass(result));
       return result;
@@ -78,13 +78,13 @@ public class MateUniverse extends Universe {
   }
 
   @Override
-  protected void loadSystemClass(final DynamicObject systemClass) {
+  protected void loadSystemClass(final DynamicObjectBasic systemClass) {
     super.loadSystemClass(systemClass);
     mateify(systemClass);
     mateify(SObject.getSOMClass(systemClass));
   }
 
-  public void mateify(final DynamicObject clazz) {
+  public void mateify(final DynamicObjectBasic clazz) {
     int countOfInvokables = SClass.getNumberOfInstanceInvokables(clazz);
     MateifyVisitor visitor = new MateifyVisitor();
     for (int i = 0; i < countOfInvokables; i++){
@@ -116,7 +116,7 @@ public class MateUniverse extends Universe {
   }
 
   @Override
-  public Shape createObjectShapeForClass(final DynamicObject clazz){
+  public Shape createObjectShapeForClass(final DynamicObjectBasic clazz){
     return SReflectiveObject.createObjectShapeForClass(clazz);
   }
 

@@ -33,8 +33,8 @@ import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public abstract class ExpressionNode extends SOMNode {
 
@@ -43,7 +43,7 @@ public abstract class ExpressionNode extends SOMNode {
   }
 
   public abstract Object executeGeneric(final VirtualFrame frame);
-  
+
   @Override
   public ExpressionNode getFirstMethodBodyNode() { return this; }
 
@@ -75,8 +75,8 @@ public abstract class ExpressionNode extends SOMNode {
     return TypesGen.expectSBlock(executeGeneric(frame));
   }
 
-  public DynamicObject executeDynamicObject(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectDynamicObject(executeGeneric(frame));
+  public DynamicObjectBasic executeDynamicObject(final VirtualFrame frame) throws UnexpectedResultException {
+    return TypesGen.expectDynamicObjectBasic(executeGeneric(frame));
   }
 
   public SInvokable executeSInvokable(final VirtualFrame frame) throws UnexpectedResultException {
@@ -94,7 +94,7 @@ public abstract class ExpressionNode extends SOMNode {
   public Object[] executeArgumentArray(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectObjectArray(executeGeneric(frame));
   }
-  
+
   public ReflectiveOp reflectiveOperation(){
     return ReflectiveOp.None;
   }

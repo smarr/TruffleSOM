@@ -12,7 +12,7 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public final class GenericDispatchNode extends AbstractDispatchNode {
   @Child private IndirectCallNode call;
@@ -24,10 +24,10 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, 
-      final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
+  public Object executeDispatch(final VirtualFrame frame,
+      final DynamicObjectBasic environment, final ExecutionLevel exLevel, final Object[] arguments) {
     Object rcvr = arguments[0];
-    DynamicObject rcvrClass = Types.getClassOf(rcvr);
+    DynamicObjectBasic rcvrClass = Types.getClassOf(rcvr);
     SInvokable method = SClass.lookupInvokable(rcvrClass, selector);
 
     CallTarget target;

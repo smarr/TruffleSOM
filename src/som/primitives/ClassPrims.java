@@ -10,7 +10,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public class ClassPrims {
@@ -19,7 +19,7 @@ public class ClassPrims {
   @ImportStatic(SClass.class)
   public abstract static class NamePrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
-    public final SAbstractObject doSClass(final DynamicObject receiver) {
+    public final SAbstractObject doSClass(final DynamicObjectBasic receiver) {
       CompilerAsserts.neverPartOfCompilation("Class>>NamePrim");
       return SClass.getName(receiver);
     }
@@ -29,19 +29,19 @@ public class ClassPrims {
   @ImportStatic(SClass.class)
   public abstract static class SuperClassPrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
-    public final Object doSClass(final DynamicObject receiver) {
+    public final Object doSClass(final DynamicObjectBasic receiver) {
       CompilerAsserts.neverPartOfCompilation("Class>>SuperClassPrim");
       return SClass.getSuperClass(receiver);
     }
   }
 
-  
+
   @GenerateNodeFactory
   @ImportStatic(SClass.class)
   public abstract static class InstanceInvokablesPrim extends UnaryExpressionNode {
     @TruffleBoundary
     @Specialization(guards = "isSClass(receiver)")
-    public final SArray doSClass(final DynamicObject receiver) {
+    public final SArray doSClass(final DynamicObjectBasic receiver) {
       CompilerAsserts.neverPartOfCompilation("Class>>InstanceInvokablesPrim");
       return SClass.getInstanceInvokables(receiver);
     }
@@ -51,7 +51,7 @@ public class ClassPrims {
   @ImportStatic(SClass.class)
   public abstract static class InstanceFieldsPrim extends UnaryExpressionNode {
     @Specialization(guards = "isSClass(receiver)")
-    public final SArray doSClass(final DynamicObject receiver) {
+    public final SArray doSClass(final DynamicObjectBasic receiver) {
       CompilerAsserts.neverPartOfCompilation("Class>>instanceFields");
       return SClass.getInstanceFields(receiver);
     }

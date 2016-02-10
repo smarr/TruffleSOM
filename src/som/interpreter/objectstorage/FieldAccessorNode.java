@@ -2,10 +2,10 @@ package som.interpreter.objectstorage;
 
 
 import som.interpreter.MateNode;
-import som.vm.constants.Nil;
-import som.vm.constants.ReflectiveOp;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.ReadFieldNodeGen;
 import som.interpreter.objectstorage.FieldAccessorNodeFactory.WriteFieldNodeGen;
+import som.vm.constants.Nil;
+import som.vm.constants.ReflectiveOp;
 
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
@@ -16,9 +16,9 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.object.FinalLocationException;
 import com.oracle.truffle.api.object.IncompatibleLocationException;
 import com.oracle.truffle.api.object.Location;
-import com.oracle.truffle.api.object.Shape;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Property;
+import com.oracle.truffle.object.ShapeImpl;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public abstract class FieldAccessorNode extends Node implements MateNode {
@@ -42,8 +42,8 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   }
 
   public abstract ReflectiveOp reflectiveOperation();
-  
-  protected Location getLocation(final DynamicObject obj) {
+
+  protected Location getLocation(final DynamicObjectBasic obj) {
     Property property = obj.getShape().getProperty(fieldIndex);
     if (property != null) {
       return property.getLocation();
@@ -52,7 +52,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     }
   }
 
-  protected Location getLocation(final DynamicObject obj, final Object value) {
+  protected Location getLocation(final DynamicObjectBasic obj, final Object value) {
     Location location = getLocation(obj);
     if (location != null && location.canSet(obj, value)) {
       return location;
@@ -64,7 +64,8 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
   protected static final Assumption createAssumption() {
     return Truffle.getRuntime().createAssumption();
   }
-  
+
+  @Override
   public void wrapIntoMateNode(){
     Node replacement = this.asMateNode();
     if (replacement != null){
@@ -77,13 +78,13 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       super(fieldIndex);
     }
 
-    public abstract Object executeRead(DynamicObject obj);
+    public abstract Object executeRead(DynamicObjectBasic obj);
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
         assumptions = "cachedShape.getValidAssumption()",
         limit = "LIMIT")
-    protected final Object readSetField(final DynamicObject self,
-        @Cached("self.getShape()") final Shape cachedShape,
+    protected final Object readSetField(final DynamicObjectBasic self,
+        @Cached("self.getShape()") final ShapeImpl cachedShape,
         @Cached("getLocation(self)") final Location location) {
       return location.get(self, cachedShape);
     }
@@ -91,20 +92,20 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
     @Specialization(guards = {"self.getShape() == cachedShape", "location == null"},
         assumptions = "cachedShape.getValidAssumption()",
         limit = "LIMIT")
-    protected final Object readUnsetField(final DynamicObject self,
-        @Cached("self.getShape()") final Shape cachedShape,
+    protected final Object readUnsetField(final DynamicObjectBasic self,
+        @Cached("self.getShape()") final ShapeImpl cachedShape,
         @Cached("getLocation(self)") final Location location) {
       return Nil.nilObject;
     }
-    
+
     @Specialization(guards = "self.updateShape()")
-    public final Object updateShapeAndRead(final DynamicObject self) {
+    public final Object updateShapeAndRead(final DynamicObjectBasic self) {
       return executeRead(self); // restart execution of the whole node
     }
-      
+
     //@TruffleBoundary
     @Specialization(contains = {"readSetField", "readUnsetField", "updateShapeAndRead"})
-    public final Object readFieldUncached(final DynamicObject receiver) {
+    public final Object readFieldUncached(final DynamicObjectBasic receiver) {
       CompilerAsserts.neverPartOfCompilation("readFieldUncached");
       return receiver.get(fieldIndex, Nil.nilObject);
     }
@@ -120,14 +121,14 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       super(fieldIndex);
     }
 
-    public abstract Object executeWrite(DynamicObject obj, Object value);
+    public abstract Object executeWrite(DynamicObjectBasic obj, Object value);
 
     @Specialization(guards = {"self.getShape() == cachedShape", "location != null"},
         assumptions = {"locationAssignable", "cachedShape.getValidAssumption()"},
         limit = "LIMIT")
-    public final Object writeFieldCached(final DynamicObject self,
+    public final Object writeFieldCached(final DynamicObjectBasic self,
         final Object value,
-        @Cached("self.getShape()") final Shape cachedShape,
+        @Cached("self.getShape()") final ShapeImpl cachedShape,
         @Cached("getLocation(self, value)") final Location location,
         @Cached("createAssumption()") final Assumption locationAssignable) {
       try {
@@ -139,15 +140,15 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       }
       return value;
     }
-    
+
     @Specialization(guards = {"self.getShape() == oldShape", "oldLocation == null"},
         assumptions = {"locationAssignable", "oldShape.getValidAssumption()", "newShape.getValidAssumption()"},
         limit = "LIMIT")
-    public final Object writeUnwrittenField(final DynamicObject self,
+    public final Object writeUnwrittenField(final DynamicObjectBasic self,
         final Object value,
-        @Cached("self.getShape()") final Shape oldShape,
+        @Cached("self.getShape()") final ShapeImpl oldShape,
         @Cached("getLocation(self, value)") final Location oldLocation,
-        @Cached("oldShape.defineProperty(fieldIndex, value, 0)") final Shape newShape,
+        @Cached("oldShape.defineProperty(fieldIndex, value, 0)") final ShapeImpl newShape,
         @Cached("newShape.getProperty(fieldIndex).getLocation()") final Location newLocation,
         @Cached("createAssumption()") final Assumption locationAssignable) {
       try {
@@ -159,7 +160,7 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
       }
       return value;
     }
-    
+
     @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.LayoutWriteField;
@@ -167,12 +168,12 @@ public abstract class FieldAccessorNode extends Node implements MateNode {
 
     @Specialization(guards = "self.updateShape()")
     public final Object updateObjectShapeAndRespecialize(
-        final DynamicObject self, final Object value) {
+        final DynamicObjectBasic self, final Object value) {
       return executeWrite(self, value);
     }
 
     @Specialization(contains = {"writeFieldCached", "writeUnwrittenField", "updateObjectShapeAndRespecialize"})
-    public final Object writeUncached(final DynamicObject self, final Object value) {
+    public final Object writeUncached(final DynamicObjectBasic self, final Object value) {
       self.define(fieldIndex, value);
       return value;
     }

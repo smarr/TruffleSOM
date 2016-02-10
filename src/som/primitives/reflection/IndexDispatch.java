@@ -10,7 +10,7 @@ import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public abstract class IndexDispatch extends Node implements DispatchChain {
@@ -26,8 +26,8 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     this.depth = depth;
   }
 
-  public abstract Object executeDispatch(DynamicObject obj, int index);
-  public abstract Object executeDispatch(DynamicObject obj, int index, Object value);
+  public abstract Object executeDispatch(DynamicObjectBasic obj, int index);
+  public abstract Object executeDispatch(DynamicObjectBasic obj, int index, Object value);
 
   private static final class UninitializedDispatchNode extends IndexDispatch {
 
@@ -35,7 +35,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       super(depth);
     }
 
-    private IndexDispatch specialize(final DynamicObject clazz, final int index, final boolean read) {
+    private IndexDispatch specialize(final DynamicObjectBasic clazz, final int index, final boolean read) {
       transferToInterpreterAndInvalidate("Initialize a dispatch node.");
 
       if (depth < INLINE_CACHE_SIZE) {
@@ -55,13 +55,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index) {
       return specialize(SObject.getSOMClass(obj), index, true).
           executeDispatch(obj, index);
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index, final Object value) {
       return specialize(SObject.getSOMClass(obj), index, false).
           executeDispatch(obj, index, value);
     }
@@ -83,12 +83,12 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   private static final class CachedReadDispatchNode extends IndexDispatch {
     private final int index;
-    private final DynamicObject clazz;
+    private final DynamicObjectBasic clazz;
     @Child private ReadFieldNode access;
     // TODO: have a second cached class for the writing...
     @Child private IndexDispatch next;
 
-    public CachedReadDispatchNode(final DynamicObject clazz, final int index,
+    public CachedReadDispatchNode(final DynamicObjectBasic clazz, final int index,
         final IndexDispatch next, final int depth) {
       super(depth);
       assert SClass.isSClass(clazz);
@@ -99,7 +99,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index) {
       if (this.index == index && this.clazz == SObject.getSOMClass(obj)) {
         return access.executeRead(obj);
       } else {
@@ -108,7 +108,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index, final Object value) {
       CompilerAsserts.neverPartOfCompilation("CachedReadDispatchNode");
       throw new RuntimeException("This should be never reached.");
     }
@@ -121,11 +121,11 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   private static final class CachedWriteDispatchNode extends IndexDispatch {
     private final int index;
-    private final DynamicObject clazz;
+    private final DynamicObjectBasic clazz;
     @Child private WriteFieldNode access;
     @Child private IndexDispatch next;
 
-    public CachedWriteDispatchNode(final DynamicObject clazz, final int index,
+    public CachedWriteDispatchNode(final DynamicObjectBasic clazz, final int index,
         final IndexDispatch next, final int depth) {
       super(depth);
       assert SClass.isSClass(clazz);
@@ -136,13 +136,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index) {
       CompilerAsserts.neverPartOfCompilation("CachedWriteDispatchNode");
       throw new RuntimeException("This should be never reached.");
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index, final Object value) {
       if (this.index == index && this.clazz == SObject.getSOMClass(obj)) {
         return access.executeWrite(obj, value);
       } else {
@@ -163,12 +163,12 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index) {
       return obj.get(index);
     }
 
     @Override
-    public Object executeDispatch(final DynamicObject obj, final int index, final Object value) {
+    public Object executeDispatch(final DynamicObjectBasic obj, final int index, final Object value) {
       obj.set(index, value);
       return value;
     }

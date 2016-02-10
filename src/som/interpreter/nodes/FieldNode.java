@@ -32,29 +32,29 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public abstract class FieldNode extends ExpressionNode {
   protected FieldNode(final SourceSection source) {
     super(source);
   }
-  
+
   public abstract ExpressionNode getSelf();
-  
+
   @NodeChild(value = "self", type = ExpressionNode.class)
   public abstract static class FieldReadNode extends FieldNode {
 
     @Child protected ReadFieldNode read;
 
     protected FieldReadNode(final int fieldIndex, final SourceSection source) {
-//    implements PreevaluatedExpression {       
+//    implements PreevaluatedExpression {
       super(source);
       read = FieldAccessorNode.createRead(fieldIndex);
     }
 
     @Specialization
-    public Object executeEvaluated(VirtualFrame frame, final DynamicObject obj) {
+    public Object executeEvaluated(final VirtualFrame frame, final DynamicObjectBasic obj) {
       return read.executeRead(obj);
     }
 
@@ -63,7 +63,8 @@ public abstract class FieldNode extends ExpressionNode {
         final Object[] arguments) {
       return executeEvaluated((DynamicObject) arguments[0]);
     }*/
-    
+
+    @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorReadField;
     }
@@ -82,14 +83,14 @@ public abstract class FieldNode extends ExpressionNode {
     @Child protected WriteFieldNode write;
 
     public abstract ExpressionNode getValue();
-    
+
     public FieldWriteNode(final int fieldIndex, final SourceSection source) {
       super(source);
       write = FieldAccessorNode.createWrite(fieldIndex);
     }
 
     @Specialization
-    public Object executeEvaluated(VirtualFrame frame, final DynamicObject self, final Object value) {
+    public Object executeEvaluated(final VirtualFrame frame, final DynamicObjectBasic self, final Object value) {
       return write.executeWrite(self, value);
     }
 
@@ -98,12 +99,12 @@ public abstract class FieldNode extends ExpressionNode {
         final Object[] arguments) {
       return executeEvaluated((DynamicObject) arguments[0], arguments[1]);
     }*/
-    
+
     @Override
     public ReflectiveOp reflectiveOperation(){
       return ReflectiveOp.ExecutorWriteField;
     }
-    
+
     @Override
     public ExpressionNode asMateNode() {
       return MateFieldWriteNodeGen.create(this, this.getSelf(), this.getValue());

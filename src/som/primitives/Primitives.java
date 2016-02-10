@@ -41,12 +41,12 @@ import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public abstract class Primitives {
 
   protected final Universe universe;
-  protected DynamicObject  holder;
+  protected DynamicObjectBasic  holder;
   protected final boolean displayWarning;
 
   public Primitives(final boolean displayWarning) {
@@ -54,7 +54,7 @@ public abstract class Primitives {
     this.displayWarning = displayWarning;
   }
 
-  public final void installPrimitivesIn(final DynamicObject value) {
+  public final void installPrimitivesIn(final DynamicObjectBasic value) {
     holder = value;
 
     // Install the primitives from this primitives class
@@ -65,7 +65,7 @@ public abstract class Primitives {
 
   public static SInvokable constructPrimitive(final SSymbol signature,
       final NodeFactory<? extends ExpressionNode> nodeFactory,
-      final Universe universe, final DynamicObject holder) {
+      final Universe universe, final DynamicObjectBasic holder) {
     CompilerAsserts.neverPartOfCompilation("constructPrimitive");
     int numArgs = signature.getNumberOfSignatureArguments();
 

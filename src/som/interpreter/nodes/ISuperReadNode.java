@@ -21,19 +21,19 @@
  */
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.object.DynamicObject;
-
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
+
 public interface ISuperReadNode {
   SSymbol getHolderClass();
   boolean isClassSide();
-  
-  public default DynamicObject getLexicalSuperClass() {
-    DynamicObject clazz = (DynamicObject) Universe.current().getGlobal(this.getHolderClass());
+
+  public default DynamicObjectBasic getLexicalSuperClass() {
+    DynamicObjectBasic clazz = (DynamicObjectBasic) Universe.current().getGlobal(this.getHolderClass());
     if (this.isClassSide()) {
       clazz = SObject.getSOMClass(clazz);
     }

@@ -8,14 +8,14 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public abstract class AbstractMethodDispatchNode extends Node implements DispatchChain {
   public static final int INLINE_CACHE_SIZE = 6;
 
   public abstract Object executeDispatch(
-      final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final SInvokable method, final Object[] arguments);
-  
+      final VirtualFrame frame, final DynamicObjectBasic environment, final ExecutionLevel exLevel, final SInvokable method, final Object[] arguments);
+
   public abstract static class AbstractMethodCachedDispatchNode
     extends AbstractMethodDispatchNode {
     @Child protected DirectCallNode       cachedMethod;

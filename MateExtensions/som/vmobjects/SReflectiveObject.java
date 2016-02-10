@@ -27,13 +27,13 @@ package som.vmobjects;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.object.ShapeImpl;
 import com.oracle.truffle.object.Transition;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 import com.oracle.truffle.object.basic.ShapeBasic;
 
 public class SReflectiveObject extends SObject {
@@ -53,7 +53,7 @@ public class SReflectiveObject extends SObject {
 
   //public static final ConstantLocation ENVIRONMENT_LOCATION = (ConstantLocation) SREFLECTIVE_OBJECT_SHAPE.getProperty(ENVIRONMENT).getLocation();
 
-  public static final Shape createObjectShapeForClass(final DynamicObject clazz) {
+  public static final Shape createObjectShapeForClass(final DynamicObjectBasic clazz) {
     return new ShapeBasic(SREFLECTIVE_OBJECT_SHAPE.getLayout(),
         clazz,
         (ShapeImpl) SREFLECTIVE_OBJECT_SHAPE,
@@ -67,13 +67,13 @@ public class SReflectiveObject extends SObject {
   }
 
   //Todo: Is this method optimizable by caching the location?
-  public static final DynamicObject getEnvironment(final DynamicObject obj) {
+  public static final DynamicObjectBasic getEnvironment(final DynamicObjectBasic obj) {
     //CompilerAsserts.neverPartOfCompilation("Caller needs to be optimized");
     return SObject.castDynObj(obj.get(ENVIRONMENT, Nil.nilObject));
     //return (DynamicObject) ENVIRONMENT_LOCATION.get(obj, true);
   }
 
-  public static final void setEnvironment(final DynamicObject obj, final DynamicObject value) {
+  public static final void setEnvironment(final DynamicObjectBasic obj, final DynamicObjectBasic value) {
     //Shape aanewShape = SREFLECTIVE_OBJECT_TEMP_SHAPE.addProperty(Property.create(ENVIRONMENT, SREFLECTIVE_OBJECT_TEMP_SHAPE.allocator().constantLocation(value), 0));
     Shape oldShape = obj.getShape();
     Shape newShape = oldShape.createSeparateShape(obj.getShape().getSharedData()).
@@ -88,7 +88,7 @@ public class SReflectiveObject extends SObject {
     }
   }
 
-  public static boolean isSReflectiveObject(final DynamicObject obj) {
+  public static boolean isSReflectiveObject(final DynamicObjectBasic obj) {
     //return false;
     return obj.getShape().getObjectType() == SREFLECTIVE_OBJECT_TYPE;
   }

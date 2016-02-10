@@ -35,7 +35,7 @@ import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 @RunWith(Parameterized.class)
 public class BasicInterpreterTests {
@@ -100,7 +100,7 @@ public class BasicInterpreterTests {
         {"BlockInlining", "testDeepDeepNestedFalse",                 43, Long.class },
 
         {"BlockInlining", "testToDoNestDoNestIfTrue",                 2, Long.class },
-        
+
         {"ObjectFieldAccess", "test", 4, Long.class }
 
     });
@@ -131,7 +131,7 @@ public class BasicInterpreterTests {
 
     if (resultType == SClass.class) {
       String expected = (String) expectedResult;
-      String actual   = SClass.getName((DynamicObject) actualResult).getString();
+      String actual   = SClass.getName((DynamicObjectBasic) actualResult).getString();
       assertEquals(expected, actual);
       return;
     }
@@ -150,7 +150,7 @@ public class BasicInterpreterTests {
   }
 
   protected static Universe u = Universe.current();
-  
+
   @Test
   public void testBasicInterpreterBehavior() {
     u.setAvoidExit(true);

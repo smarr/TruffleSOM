@@ -16,7 +16,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public final class ObjectPrims {
@@ -33,17 +33,17 @@ public final class ObjectPrims {
     public InstVarAtPrim(final InstVarAtPrim node) { this(); }
 
     @Specialization
-    public final Object doSObject(final DynamicObject receiver, final long idx) {
+    public final Object doSObject(final DynamicObjectBasic receiver, final long idx) {
       return dispatch.executeDispatch(receiver, (int) idx - 1);
     }
 
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
       final Object receiver, final Object firstArg) {
-      assert receiver instanceof DynamicObject;
+      assert receiver instanceof DynamicObjectBasic;
       assert firstArg instanceof Long;
 
-      DynamicObject rcvr = (DynamicObject) receiver;
+      DynamicObjectBasic rcvr = (DynamicObjectBasic) receiver;
       long idx     = (long) firstArg;
       return doSObject(rcvr, idx);
     }
@@ -60,7 +60,7 @@ public final class ObjectPrims {
     public InstVarAtPutPrim(final InstVarAtPutPrim node) { this(); }
 
     @Specialization
-    public final Object doSObject(final DynamicObject receiver, final long idx, final Object val) {
+    public final Object doSObject(final DynamicObjectBasic receiver, final long idx, final Object val) {
       dispatch.executeDispatch(receiver, (int) idx - 1, val);
       return val;
     }
@@ -68,11 +68,11 @@ public final class ObjectPrims {
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
       final Object receiver, final Object firstArg, final Object secondArg) {
-      assert receiver instanceof DynamicObject;
+      assert receiver instanceof DynamicObjectBasic;
       assert firstArg instanceof Long;
       assert secondArg != null;
 
-      DynamicObject rcvr = (DynamicObject) receiver;
+      DynamicObjectBasic rcvr = (DynamicObjectBasic) receiver;
       long idx     = (long) firstArg;
       return doSObject(rcvr, idx, secondArg);
     }
@@ -81,7 +81,7 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final DynamicObject receiver, final SSymbol fieldName) {
+    public final Object doSObject(final DynamicObjectBasic receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation("InstVarNamedPrim");
       return receiver.get(SObject.getFieldIndex(receiver, fieldName), Nil.nilObject);
     }
@@ -100,17 +100,17 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class ClassPrim extends UnaryExpressionNode {
     @Specialization
-    public final DynamicObject doSAbstractObject(final SAbstractObject receiver) {
+    public final DynamicObjectBasic doSAbstractObject(final SAbstractObject receiver) {
       return receiver.getSOMClass();
     }
 
     @Specialization
-    public final DynamicObject doDynamicObject(final DynamicObject receiver) {
+    public final DynamicObjectBasic doDynamicObjectBasic(final DynamicObjectBasic receiver) {
       return SObject.getSOMClass(receiver);
     }
 
     @Specialization
-    public final DynamicObject doObject(final Object receiver) {
+    public final DynamicObjectBasic doObject(final Object receiver) {
       return Types.getClassOf(receiver);
     }
   }
@@ -118,7 +118,7 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class installEnvironmentPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final DynamicObject receiver, final DynamicObject environment) {
+    public final Object doSObject(final DynamicObjectBasic receiver, final DynamicObjectBasic environment) {
       SReflectiveObject.setEnvironment(receiver, environment);
       return receiver;
     }

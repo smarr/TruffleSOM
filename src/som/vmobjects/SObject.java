@@ -36,6 +36,7 @@ import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.object.ShapeImpl;
 import com.oracle.truffle.object.Transition;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 import com.oracle.truffle.object.basic.ShapeBasic;
 
 
@@ -48,9 +49,9 @@ public abstract class SObject {
   // Object shape with property for a class
   protected static final Shape INIT_NIL_SHAPE = LAYOUT.createShape(SOBJECT_TYPE);
   public static final DynamicObjectFactory NIL_DUMMY_FACTORY = INIT_NIL_SHAPE.createFactory();
-  private final static Class<? extends DynamicObject> dynObjImplClass = createNil().getClass();
+  private final static Class<DynamicObjectBasic> dynObjImplClass = (Class<DynamicObjectBasic>) createNil().getClass();
 
-  public static DynamicObject castDynObj(final Object o) {
+  public static DynamicObjectBasic castDynObj(final Object o) {
     return dynObjImplClass.cast(o);
   }
 
@@ -72,18 +73,18 @@ public abstract class SObject {
         INIT_NIL_SHAPE.getId());
   }
 
-  public static DynamicObject create(final DynamicObject instanceClass) {
+  public static DynamicObjectBasic create(final DynamicObjectBasic instanceClass) {
     CompilerAsserts.neverPartOfCompilation("Basic create without factory caching");
     DynamicObjectFactory factory = SClass.getFactory(instanceClass);
     assert factory != NIL_DUMMY_FACTORY;
     //The parameter is only valid for SReflectiveObjects
-    return factory.newInstance(Nil.nilObject);
+    return (DynamicObjectBasic) factory.newInstance(Nil.nilObject);
   }
 
-  public static DynamicObject createNil() {
+  public static DynamicObjectBasic createNil() {
     // TODO: this is work in progress, the class should go as shared data into the shape
     // TODO: ideally, nil is like in SOMns an SObjectWithoutFields
-    return NIL_DUMMY_FACTORY.newInstance(new Object[] { null });
+    return (DynamicObjectBasic) NIL_DUMMY_FACTORY.newInstance(new Object[] { null });
   }
 
   /**
@@ -98,7 +99,7 @@ public abstract class SObject {
    * Note, the SClasses store their class as a property, to avoid having
    * multiple shapes for each basic classes.
    */
-  public static boolean isSObject(final DynamicObject obj) {
+  public static boolean isSObject(final DynamicObjectBasic obj) {
     return obj.getShape().getObjectType() == SOBJECT_TYPE;
   }
 
@@ -109,11 +110,11 @@ public abstract class SObject {
     }
   }
 
-  public static DynamicObject getSOMClass(final DynamicObject obj) {
-    return (DynamicObject) obj.getShape().getSharedData();
+  public static DynamicObjectBasic getSOMClass(final DynamicObjectBasic obj) {
+    return (DynamicObjectBasic) obj.getShape().getSharedData();
   }
 
-  public static final void internalSetNilClass(final DynamicObject obj, final DynamicObject value) {
+  public static final void internalSetNilClass(final DynamicObjectBasic obj, final DynamicObjectBasic value) {
     assert obj.getShape().getObjectType() == SOBJECT_TYPE;
     CompilerAsserts.neverPartOfCompilation("SObject.setClass");
     assert obj != null;
@@ -127,11 +128,11 @@ public abstract class SObject {
     obj.setShapeAndGrow(withoutClass, withClass);
   }
 
-  public static final int getFieldIndex(final DynamicObject obj, final SSymbol fieldName) {
+  public static final int getFieldIndex(final DynamicObjectBasic obj, final SSymbol fieldName) {
     return SClass.lookupFieldIndex(getSOMClass(obj), fieldName);
   }
 
-  public static final int getNumberOfFields(final DynamicObject obj) {
+  public static final int getNumberOfFields(final DynamicObjectBasic obj) {
     throw new NotYetImplementedException();
   }
 }

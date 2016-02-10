@@ -9,7 +9,7 @@ import com.oracle.truffle.api.ExactMath;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 @GenerateNodeFactory
@@ -72,7 +72,7 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   }
 
   @Specialization(guards = "isSClass(right)")
-  public final String doString(final String left, final DynamicObject right) {
+  public final String doString(final String left, final DynamicObjectBasic right) {
     return left + SClass.getName(right).getString();
   }
 

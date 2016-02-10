@@ -30,12 +30,12 @@ import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public final class Disassembler {
 
   @TruffleBoundary
-  public static void dump(final DynamicObject cl) {
+  public static void dump(final DynamicObjectBasic cl) {
     for (int i = 0; i < SClass.getNumberOfInstanceInvokables(cl); i++) {
       SInvokable inv = SClass.getInstanceInvokable(cl, i);
 

@@ -34,12 +34,12 @@ import som.vmobjects.SInvokable.SPrimitive;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.DynamicObjectFactory;
+import com.oracle.truffle.api.object.ObjectType;
 import com.oracle.truffle.api.object.Property;
 import com.oracle.truffle.api.object.Shape;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.object.DynamicObjectFactory;
-import com.oracle.truffle.api.object.ObjectType;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public final class SClass {
 
@@ -54,35 +54,35 @@ public final class SClass {
 
   private static final Object INVOKABLES_TABLE = new Object();
   private static final Object OBJECT_FACTORY   = new Object();
-  
+
   //class which get's its own class set only later (to break up cyclic dependencies)
   private static final Shape INIT_CLASS_SHAPE = createClassShape(null);
   private static final DynamicObjectFactory INIT_CLASS_FACTORY = INIT_CLASS_SHAPE.createFactory();
 
-  private static Shape createClassShape(final DynamicObject clazz) {
+  private static Shape createClassShape(final DynamicObjectBasic clazz) {
     return SObject.LAYOUT.createShape(SCLASS_TYPE, clazz).
         defineProperty(SUPERCLASS,          Nil.nilObject, 0).
         defineProperty(INVOKABLES_TABLE,    new HashMap<SSymbol, SInvokable>(), 0).
         defineProperty(OBJECT_FACTORY,      Universe.current().getInstancesFactory(), 0);
   }
-  
-  public static DynamicObject createWithoutClass() {
+
+  public static DynamicObjectBasic createWithoutClass() {
     CompilerAsserts.neverPartOfCompilation("Class creation");
-    DynamicObject clazz =  INIT_CLASS_FACTORY.newInstance(
+    DynamicObjectBasic clazz = (DynamicObjectBasic) INIT_CLASS_FACTORY.newInstance(
         Nil.nilObject,                       // SUPERCLASS
         new HashMap<SSymbol, SInvokable>(),  // INVOKABLES_TABLE
         Universe.current().getInstancesFactory());          // OBJECT_FACTORY, temporary value
     return clazz;
   }
-  
-  public static DynamicObject create(final DynamicObject clazzClazz) {
+
+  public static DynamicObjectBasic create(final DynamicObjectBasic clazzClazz) {
     CompilerAsserts.neverPartOfCompilation("Class creation");
     Shape clazzShape = createClassShape(clazzClazz);
     DynamicObjectFactory clazzFactory = clazzShape.createFactory();
 
     internalSetObjectFactory(clazzClazz, clazzFactory);
 
-    DynamicObject clazz = clazzFactory.newInstance(
+    DynamicObjectBasic clazz = (DynamicObjectBasic) clazzFactory.newInstance(
         Nil.nilObject,                              // SUPERCLASS
         new HashMap<SSymbol, SInvokable>(),         // INVOKABLES_TABLE
         Universe.current().getInstancesFactory());  // OBJECT_FACTORY, temporary value
@@ -92,15 +92,15 @@ public final class SClass {
 
     return clazz;
   }
-  
-  private static void internalSetObjectFactory(final DynamicObject clazz, final DynamicObjectFactory factory) {
+
+  private static void internalSetObjectFactory(final DynamicObjectBasic clazz, final DynamicObjectFactory factory) {
     Shape shape = clazz.getShape();
     Property property = shape.getProperty(OBJECT_FACTORY);
     property.setInternal(clazz, factory);
     assert shape == clazz.getShape();
   }
-  
-  public static final void internalSetClass(final DynamicObject obj, final DynamicObject clazzClazz) {
+
+  public static final void internalSetClass(final DynamicObjectBasic obj, final DynamicObjectBasic clazzClazz) {
     assert obj.getShape().getObjectType() == SCLASS_TYPE;
     CompilerAsserts.neverPartOfCompilation("SObject.setClass");
     assert obj != null;
@@ -115,13 +115,13 @@ public final class SClass {
     DynamicObjectFactory clazzFactory = withClass.createFactory();
     internalSetObjectFactory(clazzClazz, clazzFactory);
   }
-  
-  public static final DynamicObjectFactory getFactory(final DynamicObject clazz) {
+
+  public static final DynamicObjectFactory getFactory(final DynamicObjectBasic clazz) {
     assert clazz.getShape().getObjectType() == SCLASS_TYPE;
     return (DynamicObjectFactory) clazz.get(OBJECT_FACTORY);
   }
-  
-  public static boolean isSClass(final DynamicObject obj) {
+
+  public static boolean isSClass(final DynamicObjectBasic obj) {
     return obj.getShape().getObjectType() == SCLASS_TYPE;
   }
 
@@ -138,47 +138,47 @@ public final class SClass {
 
 // TODO: combine setters that are only used for initialization
 
-  public static DynamicObject getSuperClass(final DynamicObject classObj) {
+  public static DynamicObjectBasic getSuperClass(final DynamicObjectBasic classObj) {
     CompilerAsserts.neverPartOfCompilation("optimize caller");
-    return (DynamicObject) classObj.get(SUPERCLASS);
+    return (DynamicObjectBasic) classObj.get(SUPERCLASS);
   }
 
-  public static void setSuperClass(final DynamicObject classObj, final DynamicObject value) {
+  public static void setSuperClass(final DynamicObjectBasic classObj, final DynamicObjectBasic value) {
     CompilerAsserts.neverPartOfCompilation("should only be used during class initialization");
 //    classObj.set(SUPERCLASS, value);
     classObj.define(SUPERCLASS, value);
   }
 
-  public static boolean hasSuperClass(final DynamicObject classObj) {
+  public static boolean hasSuperClass(final DynamicObjectBasic classObj) {
     return getSuperClass(classObj) != Nil.nilObject;
   }
 
-  public static SSymbol getName(final DynamicObject classObj) {
+  public static SSymbol getName(final DynamicObjectBasic classObj) {
     CompilerAsserts.neverPartOfCompilation("optimize caller");
     return (SSymbol) classObj.get(NAME);
   }
 
-  public static void setName(final DynamicObject classObj, final SSymbol value) {
+  public static void setName(final DynamicObjectBasic classObj, final SSymbol value) {
     CompilerAsserts.neverPartOfCompilation("should only be used during class initialization");
 //    classObj.set(NAME, value);
     classObj.define(NAME, value);
   }
 
-  public static SArray getInstanceFields(final DynamicObject classObj) {
+  public static SArray getInstanceFields(final DynamicObjectBasic classObj) {
     return (SArray) classObj.get(INSTANCE_FIELDS);
   }
 
-  public static void setInstanceFields(final DynamicObject classObj, final SArray fields) {
+  public static void setInstanceFields(final DynamicObjectBasic classObj, final SArray fields) {
     CompilerAsserts.neverPartOfCompilation("should only be used during class initialization");
     //classObj.set(INSTANCE_FIELDS, fields);
     classObj.define(INSTANCE_FIELDS, fields);
   }
 
-  public static SArray getInstanceInvokables(final DynamicObject classObj) {
+  public static SArray getInstanceInvokables(final DynamicObjectBasic classObj) {
     return (SArray) classObj.get(INSTANCE_INVOKABLES);
   }
 
-  public static void setInstanceInvokables(final DynamicObject classObj, final SArray value) {
+  public static void setInstanceInvokables(final DynamicObjectBasic classObj, final SArray value) {
     CompilerAsserts.neverPartOfCompilation("should only be used during class initialization");
     //classObj.set(INSTANCE_INVOKABLES, value);
     classObj.define(INSTANCE_INVOKABLES, value);
@@ -191,16 +191,16 @@ public final class SClass {
 
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
 
-  public static int getNumberOfInstanceInvokables(final DynamicObject classObj) {
+  public static int getNumberOfInstanceInvokables(final DynamicObjectBasic classObj) {
     // Return the number of instance invokables in this class
     return getInstanceInvokables(classObj).getObjectStorage(storageType).length;
   }
 
-  public static SInvokable getInstanceInvokable(final DynamicObject classObj, final int index) {
+  public static SInvokable getInstanceInvokable(final DynamicObjectBasic classObj, final int index) {
     return (SInvokable) getInstanceInvokables(classObj).getObjectStorage(storageType)[index];
   }
 
-  public static void setInstanceInvokable(final DynamicObject classObj, final int index, final SInvokable value) {
+  public static void setInstanceInvokable(final DynamicObjectBasic classObj, final int index, final SInvokable value) {
   CompilerAsserts.neverPartOfCompilation("setInstanceInvokable");
     // Set this class as the holder of the given invokable
     value.setHolder(classObj);
@@ -216,12 +216,12 @@ public final class SClass {
 
   @SuppressWarnings("unchecked")
   private static HashMap<SSymbol, SInvokable> getInvokablesTable(
-      final DynamicObject classObj) {
+      final DynamicObjectBasic classObj) {
     return (HashMap<SSymbol, SInvokable>) classObj.get(INVOKABLES_TABLE);
   }
 
   @TruffleBoundary
-  public static SInvokable lookupInvokable(final DynamicObject classObj, final SSymbol selector) {
+  public static SInvokable lookupInvokable(final DynamicObjectBasic classObj, final SSymbol selector) {
     SInvokable invokable;
     HashMap<SSymbol, SInvokable> invokablesTable = getInvokablesTable(classObj);
 
@@ -254,7 +254,7 @@ public final class SClass {
     return null;
   }
 
-  public static int lookupFieldIndex(final DynamicObject classObj, final SSymbol fieldName) {
+  public static int lookupFieldIndex(final DynamicObjectBasic classObj, final SSymbol fieldName) {
     // Lookup field with given name in array of instance fields
     for (int i = getNumberOfInstanceFields(classObj) - 1; i >= 0; i--) {
       // Return the current index if the name matches
@@ -265,7 +265,7 @@ public final class SClass {
     return -1;
   }
 
-  private static boolean addInstanceInvokable(final DynamicObject classObj,
+  private static boolean addInstanceInvokable(final DynamicObjectBasic classObj,
       final SInvokable value) {
     CompilerAsserts.neverPartOfCompilation("SClass.addInstanceInvokable(.)");
 
@@ -287,7 +287,7 @@ public final class SClass {
     return true;
   }
 
-  public static void addInstancePrimitive(final DynamicObject classObj,
+  public static void addInstancePrimitive(final DynamicObjectBasic classObj,
       final SInvokable value, final boolean displayWarning) {
     if (addInstanceInvokable(classObj, value) && displayWarning) {
       Universe.print("Warning: Primitive " + value.getSignature().getString());
@@ -296,15 +296,15 @@ public final class SClass {
     }
   }
 
-  public static SSymbol getInstanceFieldName(final DynamicObject classObj, final int index) {
+  public static SSymbol getInstanceFieldName(final DynamicObjectBasic classObj, final int index) {
     return (SSymbol) getInstanceFields(classObj).getObjectStorage(storageType)[index];
   }
 
-  public static int getNumberOfInstanceFields(final DynamicObject classObj) {
+  public static int getNumberOfInstanceFields(final DynamicObjectBasic classObj) {
     return getInstanceFields(classObj).getObjectStorage(storageType).length;
   }
 
-  private static boolean includesPrimitives(final DynamicObject clazz) {
+  private static boolean includesPrimitives(final DynamicObjectBasic clazz) {
     CompilerAsserts.neverPartOfCompilation("SClass.includesPrimitives(.)");
     // Lookup invokable with given signature in array of instance invokables
     for (int i = 0; i < getNumberOfInstanceInvokables(clazz); i++) {
@@ -316,11 +316,11 @@ public final class SClass {
     return false;
   }
 
-  public static boolean hasPrimitives(final DynamicObject classObj) {
+  public static boolean hasPrimitives(final DynamicObjectBasic classObj) {
     return includesPrimitives(classObj) || includesPrimitives(SObject.getSOMClass(classObj));
   }
 
-  public static void loadPrimitives(final DynamicObject classObj, final boolean displayWarning) {
+  public static void loadPrimitives(final DynamicObjectBasic classObj, final boolean displayWarning) {
     CompilerAsserts.neverPartOfCompilation("loadPrimitives");
     // Compute the class name of the Java(TM) class containing the
     // primitives

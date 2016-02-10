@@ -7,8 +7,8 @@ import som.matenodes.MateBehavior;
 import som.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public final class MateLayoutFieldWriteNode extends WriteFieldNode implements MateBehavior {
@@ -16,7 +16,7 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode implements Ma
   @Child private MateAbstractStandardDispatch   reflectiveDispatch;
   @Child private WriteFieldNode                 write;
   private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
-  
+
   public MateLayoutFieldWriteNode(final WriteFieldNode node) {
     super(node.getFieldIndex());
     this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
@@ -24,7 +24,7 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode implements Ma
     write = node;
   }
 
-  public Object write(final VirtualFrame frame, final DynamicObject receiver, final Object value) {
+  public Object write(final VirtualFrame frame, final DynamicObjectBasic receiver, final Object value) {
     Object val = this.doMateSemantics(frame, new Object[] {receiver, (long) this.getFieldIndex(), value}, semanticsRedefined);
     if (val == null){
      val = write.executeWrite(receiver, value);
@@ -41,19 +41,19 @@ public final class MateLayoutFieldWriteNode extends WriteFieldNode implements Ma
   public MateAbstractStandardDispatch getMateDispatch() {
     return reflectiveDispatch;
   }
-  
+
   @Override
-  public void setMateNode(MateSemanticCheckNode node) {
+  public void setMateNode(final MateSemanticCheckNode node) {
     semanticCheck = node;
   }
 
   @Override
-  public void setMateDispatch(MateAbstractStandardDispatch node) {
+  public void setMateDispatch(final MateAbstractStandardDispatch node) {
     reflectiveDispatch = node;
   }
 
   @Override
-  public Object executeWrite(DynamicObject obj, Object value) {
+  public Object executeWrite(final DynamicObjectBasic obj, final Object value) {
     /*Should never enter here*/
     assert(false);
     Universe.errorExit("Mate enters an unexpected method");

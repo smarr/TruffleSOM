@@ -16,13 +16,13 @@ import som.vmobjects.SInvokable.SMethod;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public class BlockNode extends LiteralNode {
 
   protected final SMethod blockMethod;
-  @CompilationFinal protected DynamicObject blockClass;
+  @CompilationFinal protected DynamicObjectBasic blockClass;
 
   public BlockNode(final SMethod blockMethod,
       final SourceSection source) {

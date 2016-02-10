@@ -10,8 +10,8 @@ import som.matenodes.MateBehavior;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public abstract class MateFieldNodes {
@@ -19,24 +19,24 @@ public abstract class MateFieldNodes {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
-    
-    public MateFieldReadNode(FieldReadNode node) {
+
+    public MateFieldReadNode(final FieldReadNode node) {
       super(node.read.getFieldIndex(), node.getSourceSection());
       this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
       this.initializeMateDispatchForFieldAccess(this.getSourceSection());
       read = new MateLayoutFieldReadNode(read);
     }
-    
+
     @Override
     @Specialization
-    public Object executeEvaluated(final VirtualFrame frame, final DynamicObject obj) {
+    public Object executeEvaluated(final VirtualFrame frame, final DynamicObjectBasic obj) {
       Object value = this.doMateSemantics(frame, new Object[] {obj, (long) this.read.getFieldIndex()}, semanticsRedefined);
       if (value == null){
        value = ((MateLayoutFieldReadNode)read).read(frame, obj);
       }
       return value;
     }
-    
+
     @Override
     public MateSemanticCheckNode getMateNode() {
       return semanticCheck;
@@ -46,29 +46,29 @@ public abstract class MateFieldNodes {
     public MateAbstractStandardDispatch getMateDispatch() {
       return reflectiveDispatch;
     }
-    
+
     @Override
-    public void setMateNode(MateSemanticCheckNode node) {
+    public void setMateNode(final MateSemanticCheckNode node) {
       semanticCheck = node;
     }
 
     @Override
-    public void setMateDispatch(MateAbstractStandardDispatch node) {
+    public void setMateDispatch(final MateAbstractStandardDispatch node) {
       reflectiveDispatch = node;
     }
-    
+
     @Override
     public ExpressionNode asMateNode() {
       return null;
     }
   }
-  
+
   public static abstract class MateFieldWriteNode extends FieldWriteNode implements MateBehavior {
     @Child MateSemanticCheckNode            semanticCheck;
     @Child MateAbstractStandardDispatch     reflectiveDispatch;
     private final ConditionProfile semanticsRedefined = ConditionProfile.createBinaryProfile();
-    
-    public MateFieldWriteNode(FieldWriteNode node) {
+
+    public MateFieldWriteNode(final FieldWriteNode node) {
       super(node.write.getFieldIndex(), node.getSourceSection());
       this.initializeMateSemantics(this.getSourceSection(), this.reflectiveOperation());
       this.initializeMateDispatchForFieldAccess(this.getSourceSection());
@@ -84,28 +84,28 @@ public abstract class MateFieldNodes {
     public MateAbstractStandardDispatch getMateDispatch() {
       return reflectiveDispatch;
     }
-    
+
     @Override
-    public void setMateNode(MateSemanticCheckNode node) {
+    public void setMateNode(final MateSemanticCheckNode node) {
       semanticCheck = node;
     }
 
     @Override
-    public void setMateDispatch(MateAbstractStandardDispatch node) {
+    public void setMateDispatch(final MateAbstractStandardDispatch node) {
       reflectiveDispatch = node;
     }
-    
+
     @Override
     @Specialization
     public final Object executeEvaluated(final VirtualFrame frame,
-        final DynamicObject self, final Object value) {
+        final DynamicObjectBasic self, final Object value) {
       Object val = this.doMateSemantics(frame, new Object[] {self, (long) this.write.getFieldIndex(), value}, semanticsRedefined);
       if (val == null){
        val = ((MateLayoutFieldWriteNode)write).write(frame, self, value);
       }
       return val;
     }
-    
+
     @Override
     public ExpressionNode asMateNode() {
       return null;

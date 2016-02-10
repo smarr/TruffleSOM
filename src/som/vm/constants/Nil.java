@@ -2,11 +2,11 @@ package som.vm.constants;
 
 import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public final class Nil {
-  public static final DynamicObject nilObject;
+  public static final DynamicObjectBasic nilObject;
 
   static {
     nilObject = SObject.createNil();

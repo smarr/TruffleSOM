@@ -1,19 +1,20 @@
 package som.interpreter.nodes.dispatch;
 
 import som.vm.constants.ExecutionLevel;
+
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 public abstract class AbstractDispatchNode extends Node implements DispatchChain {
   public static final int INLINE_CACHE_SIZE = 6;
 
   public abstract Object executeDispatch(
-      final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments);
+      final VirtualFrame frame, final DynamicObjectBasic environment, final ExecutionLevel exLevel, final Object[] arguments);
 
   public abstract static class AbstractCachedDispatchNode
       extends AbstractDispatchNode {

@@ -65,9 +65,9 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.Shape;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 public class Universe {
 
@@ -125,7 +125,7 @@ public class Universe {
     this.alreadyInitialized = false;
     this.lastExitCode = 0;
 
-    this.blockClasses = new DynamicObject[4];
+    this.blockClasses = new DynamicObjectBasic[4];
   }
 
   public TruffleRuntime getTruffleRuntime() {
@@ -286,7 +286,7 @@ public class Universe {
   public Object interpret(final String className, final String selector) {
     initializeObjectSystem();
 
-    DynamicObject clazz = loadClass(symbolFor(className));
+    DynamicObjectBasic clazz = loadClass(symbolFor(className));
 
     // Lookup the initialize invokable on the system class
     SInvokable initialize = SClass.lookupInvokable(SObject.getSOMClass(clazz),
@@ -319,7 +319,7 @@ public class Universe {
     }
 
     // Allocate the nil object
-    DynamicObject nilObject = Nil.nilObject;
+    DynamicObjectBasic nilObject = Nil.nilObject;
 
     // Setup the class reference for the nil object
     SObject.internalSetNilClass(nilObject, nilClass);
@@ -403,12 +403,12 @@ public class Universe {
   }
 
   public static SBlock newBlock(final SMethod method,
-      final DynamicObject blockClass, final MaterializedFrame context) {
+      final DynamicObjectBasic blockClass, final MaterializedFrame context) {
     return new SBlock(method, blockClass, context);
   }
 
   @TruffleBoundary
-  public DynamicObject newClass(final DynamicObject classClass) {
+  public DynamicObjectBasic newClass(final DynamicObjectBasic classClass) {
     return SClass.create(classClass);
   }
 
@@ -424,8 +424,8 @@ public class Universe {
   }
 
   @TruffleBoundary
-  public static DynamicObject newMetaclassClass() {
-    DynamicObject result = SClass.createWithoutClass();
+  public static DynamicObjectBasic newMetaclassClass() {
+    DynamicObjectBasic result = SClass.createWithoutClass();
     SClass.internalSetClass(result, SClass.create(result));
     return result;
   }
@@ -437,12 +437,12 @@ public class Universe {
   }
 
   @TruffleBoundary
-  public static DynamicObject newSystemClass() {
+  public static DynamicObjectBasic newSystemClass() {
     return SClass.create(SClass.create(metaclassClass));
   }
 
-  protected void initializeSystemClass(final DynamicObject systemClass,
-      final DynamicObject superClass, final String name) {
+  protected void initializeSystemClass(final DynamicObjectBasic systemClass,
+      final DynamicObjectBasic superClass, final String name) {
     // Initialize the superclass hierarchy
     if (superClass != null) {
       SClass.setSuperClass(systemClass, superClass);
@@ -501,8 +501,8 @@ public class Universe {
     }
   }
 
-  public DynamicObject getBlockClass(final int numberOfArguments) {
-    DynamicObject result = blockClasses[numberOfArguments];
+  public DynamicObjectBasic getBlockClass(final int numberOfArguments) {
+    DynamicObjectBasic result = blockClasses[numberOfArguments];
     assert result != null || numberOfArguments == 0;
     return result;
   }
@@ -515,7 +515,7 @@ public class Universe {
     assert getGlobal(name) == null;
 
     // Get the block class for blocks with the given number of arguments
-    DynamicObject result = loadClass(name, null);
+    DynamicObjectBasic result = loadClass(name, null);
 
     // Add the appropriate value primitive to the block class
     SClass.addInstancePrimitive(result, SBlock.getEvaluationPrimitive(
@@ -528,9 +528,9 @@ public class Universe {
   }
 
   @TruffleBoundary
-  public DynamicObject loadClass(final SSymbol name) {
+  public DynamicObjectBasic loadClass(final SSymbol name) {
     // Check if the requested class is already in the dictionary of globals
-    DynamicObject result = (DynamicObject) getGlobal(name);
+    DynamicObjectBasic result = (DynamicObjectBasic) getGlobal(name);
     if (result != null) { return result; }
 
     result = loadClass(name, null);
@@ -541,7 +541,7 @@ public class Universe {
     return result;
   }
 
-  private void loadPrimitives(final DynamicObject result, final boolean isSystemClass) {
+  private void loadPrimitives(final DynamicObjectBasic result, final boolean isSystemClass) {
     if (result == null) { return; }
 
     // Load primitives if class defines them, or try to load optional
@@ -552,9 +552,9 @@ public class Universe {
   }
 
   @TruffleBoundary
-  protected void loadSystemClass(final DynamicObject systemClass) {
+  protected void loadSystemClass(final DynamicObjectBasic systemClass) {
     // Load the system class
-    DynamicObject result = loadClass(SClass.getName(systemClass), systemClass);
+    DynamicObjectBasic result = loadClass(SClass.getName(systemClass), systemClass);
 
     if (result == null) {
       throw new IllegalStateException(SClass.getName(systemClass).getString()
@@ -568,12 +568,12 @@ public class Universe {
   }
 
   @TruffleBoundary
-  private DynamicObject loadClass(final SSymbol name, final DynamicObject systemClass) {
+  private DynamicObjectBasic loadClass(final SSymbol name, final DynamicObjectBasic systemClass) {
     // Try loading the class from all different paths
     for (String cpEntry : classPath) {
       try {
         // Load the class from a file and return the loaded class
-        DynamicObject result = som.compiler.SourcecodeCompiler.compileClass(cpEntry,
+        DynamicObjectBasic result = som.compiler.SourcecodeCompiler.compileClass(cpEntry,
             name.getString(), systemClass, this);
         if (printAST) {
           Disassembler.dump(SObject.getSOMClass(result));
@@ -590,9 +590,9 @@ public class Universe {
   }
 
   @TruffleBoundary
-  public DynamicObject loadShellClass(final String stmt) throws IOException {
+  public DynamicObjectBasic loadShellClass(final String stmt) throws IOException {
     // Load the class from a stream and return the loaded class
-    DynamicObject result = som.compiler.SourcecodeCompiler.compileClass(stmt,
+    DynamicObjectBasic result = som.compiler.SourcecodeCompiler.compileClass(stmt,
         null, this);
     if (printAST) { Disassembler.dump(result); }
     return result;
@@ -644,21 +644,21 @@ public class Universe {
     // Checkstyle: resume
   }
 
-  public DynamicObject getTrueObject()   { return trueObject; }
-  public DynamicObject getFalseObject()  { return falseObject; }
-  public DynamicObject getSystemObject() { return systemObject; }
+  public DynamicObjectBasic getTrueObject()   { return trueObject; }
+  public DynamicObjectBasic getFalseObject()  { return falseObject; }
+  public DynamicObjectBasic getSystemObject() { return systemObject; }
 
-  public DynamicObject getTrueClass()   { return trueClass; }
-  public DynamicObject getFalseClass()  { return falseClass; }
-  public DynamicObject getSystemClass() { return systemClass; }
+  public DynamicObjectBasic getTrueClass()   { return trueClass; }
+  public DynamicObjectBasic getFalseClass()  { return falseClass; }
+  public DynamicObjectBasic getSystemClass() { return systemClass; }
 
-  @CompilationFinal private DynamicObject trueObject;
-  @CompilationFinal private DynamicObject falseObject;
-  @CompilationFinal private DynamicObject systemObject;
+  @CompilationFinal private DynamicObjectBasic trueObject;
+  @CompilationFinal private DynamicObjectBasic falseObject;
+  @CompilationFinal private DynamicObjectBasic systemObject;
 
-  @CompilationFinal private DynamicObject trueClass;
-  @CompilationFinal private DynamicObject falseClass;
-  @CompilationFinal private DynamicObject systemClass;
+  @CompilationFinal private DynamicObjectBasic trueClass;
+  @CompilationFinal private DynamicObjectBasic falseClass;
+  @CompilationFinal private DynamicObjectBasic systemClass;
 
   private final HashMap<SSymbol, Association>   globals;
 
@@ -675,7 +675,7 @@ public class Universe {
   private int                                   lastExitCode;
 
   // Optimizations
-  private final DynamicObject[] blockClasses;
+  private final DynamicObjectBasic[] blockClasses;
 
   // Latest instance
   // WARNING: this is problematic with multiple interpreters in the same VM...
@@ -699,17 +699,17 @@ public class Universe {
   public DynamicObjectFactory getInstancesFactory(){
     return SObject.NIL_DUMMY_FACTORY;
   }
-  
-  public Shape createObjectShapeForClass(DynamicObject clazz){
+
+  public Shape createObjectShapeForClass(final DynamicObjectBasic clazz){
     return SObject.createObjectShapeForClass(clazz);
   }
-  
+
   public static Universe current() {
     if (current == null) {
       current = new Universe();
     }
     return current;
   }
-  
+
   public void activatedMate(){};
 }

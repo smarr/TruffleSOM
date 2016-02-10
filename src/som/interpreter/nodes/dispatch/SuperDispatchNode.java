@@ -11,7 +11,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 /**
  * Super sends are special, they lead to a lexically defined receiver class.
@@ -52,7 +52,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
 
     @Override
     public Object executeDispatch(
-        final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
+        final VirtualFrame frame, final DynamicObjectBasic environment, final ExecutionLevel exLevel, final Object[] arguments) {
       return specialize().
           executeDispatch(frame, environment, exLevel, arguments);
     }
@@ -77,7 +77,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
 
     @Override
     public Object executeDispatch(
-        final VirtualFrame frame, final DynamicObject environment, final ExecutionLevel exLevel, final Object[] arguments) {
+        final VirtualFrame frame, final DynamicObjectBasic environment, final ExecutionLevel exLevel, final Object[] arguments) {
       return cachedSuperMethod.call(frame, SArguments.createSArguments(environment, exLevel, arguments));
     }
   }

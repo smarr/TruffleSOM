@@ -6,7 +6,7 @@ import som.vmobjects.SObject;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.object.basic.DynamicObjectBasic;
 
 
 @GenerateNodeFactory
@@ -20,7 +20,7 @@ public abstract class ObjectSizePrim extends UnaryExpressionNode {
   }
 
   @Specialization // (guards = "isSObject(receiver)")
-  public final long doSObject(final DynamicObject receiver) {
+  public final long doSObject(final DynamicObjectBasic receiver) {
     int size = 0;
     size += SObject.getNumberOfFields(receiver);
     return size;
