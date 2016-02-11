@@ -67,12 +67,16 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.compiler.Lexer.SourceCoordinate;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import som.interpreter.nodes.literals.ArrayLiteralNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
@@ -88,12 +92,10 @@ import som.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
 import som.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeGen;
 import som.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 import som.vm.Universe;
+import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.source.SourceSection;
 
 public final class Parser {
 
@@ -728,76 +730,75 @@ public final class Parser {
   }
 
   private LiteralNode literal() throws ParseError {
-    switch (sym) {
-      case Pound:     return literalSymbol();
-      case STString:  return literalString();
-      default:        return literalNumber();
-    }
-  }
-
-  private LiteralNode literalNumber() throws ParseError {
     SourceCoordinate coord = getCoordinate();
+    switch (sym) {
+      case Pound: {
+        try {
+          peekForNextSymbolFromLexer();
+        } catch (IllegalStateException e) {
+          /* Come from a trace that already peeked */
+        }
+        if (nextSym == NewTerm){
+          return new ArrayLiteralNode(literalArray(), getSource(coord));
+        } else {
+          return new SymbolLiteralNode(literalSymbol(), getSource(coord));
+        }
+      }
+      case STString:
+        return new StringLiteralNode(literalString(), getSource(coord));
+      default:
+        boolean isNegative = isNegativeNumber();
+        if (sym == Integer) {
+          long value = literalInteger(isNegative);
+          if (value < Long.MIN_VALUE || value > Long.MAX_VALUE) {
+            return new BigIntegerLiteralNode(BigInteger.valueOf(value), getSource(coord));
+          } else {
+            return new IntegerLiteralNode(value, getSource(coord));
+          }
+        } else {
+          assert sym == Double;
+          return new DoubleLiteralNode(literalDouble(isNegative), getSource(coord));
+        }
+    }
+  }
 
+  private boolean isNegativeNumber() throws ParseError {
+    boolean isNegative = false;
     if (sym == Minus) {
-      return negativeDecimal(coord);
-    } else {
-      return literalDecimal(false, coord);
+      expect(Minus);
+      isNegative = true;
     }
+    return isNegative;
   }
-
-  private LiteralNode literalDecimal(final boolean isNegative, final SourceCoordinate coord) throws ParseError {
-    if (sym == Integer) {
-      return literalInteger(isNegative, coord);
-    } else {
-      assert sym == Double;
-      return literalDouble(isNegative, coord);
-    }
-  }
-
-  private LiteralNode negativeDecimal(final SourceCoordinate coord) throws ParseError {
-    expect(Minus);
-    return literalDecimal(true, coord);
-  }
-
-  private LiteralNode literalInteger(final boolean isNegative,
-      final SourceCoordinate coord) throws ParseError {
+  private long literalInteger(final boolean isNegative) throws ParseError {
     try {
        long i = Long.parseLong(text);
        if (isNegative) {
          i = 0 - i;
        }
        expect(Integer);
-
-       SourceSection source = getSource(coord);
-       if (i < Long.MIN_VALUE || i > Long.MAX_VALUE) {
-         return new BigIntegerLiteralNode(BigInteger.valueOf(i), source);
-       } else {
-         return new IntegerLiteralNode(i, source);
-       }
+       return i;
     } catch (NumberFormatException e) {
       throw new ParseError("Could not parse integer. Expected a number but " +
                            "got '" + text + "'", NONE, this);
     }
   }
 
-  private LiteralNode literalDouble(final boolean isNegative, final SourceCoordinate coord) throws ParseError {
+  private double literalDouble(final boolean isNegative) throws ParseError {
     try {
       double d = java.lang.Double.parseDouble(text);
       if (isNegative) {
         d = 0.0 - d;
       }
       expect(Double);
-      SourceSection source = getSource(coord);
-      return new DoubleLiteralNode(d, source);
+      return d;
     } catch (NumberFormatException e) {
       throw new ParseError("Could not parse double. Expected a number but " +
           "got '" + text + "'", NONE, this);
     }
   }
 
-  private LiteralNode literalSymbol() throws ParseError {
-    SourceCoordinate coord = getCoordinate();
-
+  private SSymbol literalSymbol() throws ParseError {
     SSymbol symb;
     expect(Pound);
     if (sym == STString) {
@@ -806,15 +807,49 @@ public final class Parser {
     } else {
       symb = selector();
     }
-
-    return new SymbolLiteralNode(symb, getSource(coord));
+    return symb;
   }
 
-  private LiteralNode literalString() throws ParseError {
-    SourceCoordinate coord = getCoordinate();
-    String s = string();
+  private SArray literalArray() throws ParseError {
+    List<Object> literals = new ArrayList<Object>();
+    expect(Pound);
+    expect(NewTerm);
+    while (sym != EndTerm) {
+      literals.add(getObjectForCurrentLiteral());
+    }
+    expect(EndTerm);
+    return SArray.create(literals.toArray());
+  }
 
-    return new StringLiteralNode(s, getSource(coord));
+  private Object getObjectForCurrentLiteral() throws ParseError {
+    switch (sym) {
+      case Pound:
+        try {
+          peekForNextSymbolFromLexer();
+        } catch (IllegalStateException e) {
+          /* Come from a trace that already peeked */
+        }
+        if (nextSym == NewTerm){
+          return literalArray();
+        } else {
+          return literalSymbol();
+        }
+      case STString:
+        return literalString();
+      case Integer:
+        return literalInteger(isNegativeNumber());
+      case Double:
+        return literalDouble(isNegativeNumber());
+      case Identifier:
+        expect(Identifier);
+        return universe.getGlobal(universe.symbolFor(new String(text)));
+      default:
+        throw new ParseError("Could not parse literal array value", NONE, this);
+    }
+  }
+
+  private String literalString() throws ParseError {
+    return string();
   }
 
   private SSymbol selector() throws ParseError {
