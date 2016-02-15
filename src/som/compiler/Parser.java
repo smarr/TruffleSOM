@@ -89,6 +89,7 @@ import som.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
 import som.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeGen;
 import som.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 import som.vm.Universe;
+import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SObject;
@@ -734,7 +735,7 @@ public final class Parser {
     SourceCoordinate coord = getCoordinate();
     switch (sym) {
       case Pound:
-        try{this.peekForNextSymbolFromLexer();} catch (IllegalStateException e){/*Come from a trace that already peeked*/}
+        try{peekForNextSymbolFromLexer();} catch (IllegalStateException e){/*Come from a trace that already peeked*/}
         if (nextSym == NewTerm){
           return new ArrayLiteralNode(this.literalArray(), getSource(coord));
         } else {
@@ -805,7 +806,7 @@ public final class Parser {
     return symb;
   }
   
-  private List<Object> literalArray() throws ParseError {
+  private SArray literalArray() throws ParseError {
     List<Object> literals = new ArrayList<Object>();
     expect(Pound);
     expect(NewTerm);
@@ -813,7 +814,7 @@ public final class Parser {
       literals.add(this.getObjectForCurrentLiteral());
     }
     expect(EndTerm);
-    return literals;
+    return SArray.create(literals.toArray());
   }
   
   private Object getObjectForCurrentLiteral() throws ParseError {
