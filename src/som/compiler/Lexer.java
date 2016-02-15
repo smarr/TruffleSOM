@@ -183,8 +183,7 @@ public final class Lexer {
         }
         state.sym = Symbol.Separator;
       } else {
-        state.bufp++;
-        state.set(Symbol.Minus, '-', "-");
+        lexOperator();
       }
     } else if (isOperator(currentChar())) {
       lexOperator();
@@ -307,6 +306,8 @@ public final class Lexer {
       match(Symbol.At);
     } else if (currentChar() == '%') {
       match(Symbol.Per);
+    } else if (currentChar() == '-') {
+      match(Symbol.Minus);
     }
   }
 
@@ -412,7 +413,7 @@ public final class Lexer {
   private boolean isOperator(final char c) {
     return c == '~' || c == '&' || c == '|' || c == '*' || c == '/'
         || c == '\\' || c == '+' || c == '=' || c == '>' || c == '<'
-        || c == ',' || c == '@' || c == '%';
+        || c == ',' || c == '@' || c == '%' || c == '-';
   }
 
   private void match(final Symbol s) {
