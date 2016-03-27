@@ -39,11 +39,11 @@ Then, TruffleSOM can be build with Ant:
 
 Afterwards, the tests can be executed with:
 
-    ./som.sh -cp Smalltalk TestSuite/TestHarness.som
+    ./som -cp Smalltalk TestSuite/TestHarness.som
    
 A simple Hello World program is executed with:
 
-    ./som.sh -cp Smalltalk Examples/Hello.som
+    ./som -cp Smalltalk Examples/Hello.som
 
 When working on TruffleSOM, for instance in Eclipse, it is helpful to download
 the source files for Truffle as well:
