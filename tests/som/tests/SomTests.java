@@ -60,6 +60,7 @@ public class SomTests {
         {"Super"         },
 
         {"Set"           },
+        {"SpecialSelectorsTest"},
         {"String"        },
         {"Symbol"        },
         {"System"        },
