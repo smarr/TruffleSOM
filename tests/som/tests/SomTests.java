@@ -57,6 +57,7 @@ public class SomTests {
         {"Preliminary"   },
         {"Reflection"    },
         {"SelfBlock"     },
+        {"SpecialSelectorsTest"},
         {"Super"         },
 
         {"Set"           },
