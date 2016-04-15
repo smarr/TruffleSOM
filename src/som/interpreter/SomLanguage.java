@@ -2,15 +2,13 @@ package som.interpreter;
 
 import java.io.IOException;
 
-import som.vm.NotYetImplementedException;
-
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.instrument.Visualizer;
-import com.oracle.truffle.api.instrument.WrapperNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
+
+import som.vm.NotYetImplementedException;
 
 
 @TruffleLanguage.Registration(name = "SOM", version = "0.1.0", mimeType = SomLanguage.MIME_TYPE)
@@ -44,21 +42,6 @@ public class SomLanguage extends TruffleLanguage<Object> {
 
   @Override
   protected boolean isObjectOfLanguage(final Object object) {
-    throw new NotYetImplementedException();
-  }
-
-  @Override
-  protected Visualizer getVisualizer() {
-    throw new NotYetImplementedException();
-  }
-
-  @Override
-  protected boolean isInstrumentable(final Node node) {
-    throw new NotYetImplementedException();
-  }
-
-  @Override
-  protected WrapperNode createWrapperNode(final Node node) {
     throw new NotYetImplementedException();
   }
 
