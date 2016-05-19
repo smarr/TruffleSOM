@@ -5,6 +5,7 @@ import os
 import shlex
 
 BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
+JVMCI_BIN   = os.getenv('JVMCI_BIN',  None)
 GRAAL_HOME  = os.getenv('GRAAL_HOME',  None)
 GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 
@@ -76,6 +77,9 @@ if args.java_interpreter:
 
 if args.interpreter:
     java_bin = "java"
+elif JVMCI_BIN:
+    java_bin = JVMCI_BIN
+    JAVA_ARGS += ['-server']
 else:
     # determine graal binary
     if GRAAL_HOME:
