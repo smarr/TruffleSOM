@@ -1,15 +1,15 @@
 package som.interpreter;
 
-import som.interpreter.nodes.ExpressionNode;
-
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
+
+import som.interpreter.nodes.ExpressionNode;
 
 
 public final class NodeVisitorUtil {
 
   private static class DummyParent extends Node {
-    private DummyParent() { super(null); }
+    private DummyParent() { super(); }
     @Child private ExpressionNode child;
 
     private void adopt(final ExpressionNode child) {

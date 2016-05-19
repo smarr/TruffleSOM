@@ -33,8 +33,16 @@ import com.oracle.truffle.api.source.SourceSection;
 @TypeSystemReference(Types.class)
 public abstract class SOMNode extends Node {
 
+  protected final SourceSection sourceSection;
+
   public SOMNode(final SourceSection sourceSection) {
-    super(sourceSection);
+    super();
+    this.sourceSection = sourceSection;
+  }
+
+  @Override
+  public SourceSection getSourceSection() {
+    return sourceSection;
   }
 
   /**
