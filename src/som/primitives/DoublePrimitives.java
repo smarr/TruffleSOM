@@ -28,12 +28,14 @@ package som.primitives;
 import som.primitives.DoublePrimsFactory.PositiveInfinityPrimFactory;
 import som.primitives.DoublePrimsFactory.RoundPrimFactory;
 import som.primitives.arithmetic.AdditionPrimFactory;
+import som.primitives.arithmetic.CosPrimFactory;
 import som.primitives.arithmetic.DoubleDivPrimFactory;
 import som.primitives.arithmetic.GreaterThanPrimFactory;
 import som.primitives.arithmetic.LessThanOrEqualPrimFactory;
 import som.primitives.arithmetic.LessThanPrimFactory;
 import som.primitives.arithmetic.ModuloPrimFactory;
 import som.primitives.arithmetic.MultiplicationPrimFactory;
+import som.primitives.arithmetic.SinPrimFactory;
 import som.primitives.arithmetic.SqrtPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
 
@@ -57,6 +59,8 @@ public final class DoublePrimitives extends Primitives {
     installInstancePrimitive("<>",    UnequalsPrimFactory.getInstance());
     installInstancePrimitive("~=",    UnequalsPrimFactory.getInstance());
     installInstancePrimitive("round", RoundPrimFactory.getInstance());
+    installInstancePrimitive("cos",   CosPrimFactory.getInstance());
+    installInstancePrimitive("sin",   SinPrimFactory.getInstance());
 
     installClassPrimitive("PositiveInfinity", PositiveInfinityPrimFactory.getInstance());
   }
