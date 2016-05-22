@@ -756,7 +756,10 @@ public final class Parser {
             return new IntegerLiteralNode(value, getSource(coord));
           }
         } else {
-          assert sym == Double;
+          if (sym != Double) {
+            throw new ParseError("Unexpected symbol. Expected %(expected)s, but found "
+                + "%(found)s", sym, this);
+          }
           return new DoubleLiteralNode(literalDouble(isNegative), getSource(coord));
         }
     }
