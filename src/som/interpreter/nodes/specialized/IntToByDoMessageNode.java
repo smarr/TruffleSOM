@@ -1,12 +1,5 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
-import som.interpreter.nodes.nary.QuaternaryExpressionNode;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
@@ -14,6 +7,13 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+
+import som.interpreter.Invokable;
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.PreevaluatedExpression;
+import som.interpreter.nodes.nary.QuaternaryExpressionNode;
+import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable;
 
 
 public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
@@ -57,7 +57,7 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
       if (receiver <= limit) {
         valueSend.call(frame, new Object[] {block, receiver});
       }
-      for (long i = receiver + 1; i <= limit; i += step) {
+      for (long i = receiver + step; i <= limit; i += step) {
         valueSend.call(frame, new Object[] {block, i});
       }
     } finally {
@@ -74,7 +74,7 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
       if (receiver <= limit) {
         valueSend.call(frame, new Object[] {block, receiver});
       }
-      for (long i = receiver + 1; i <= limit; i += step) {
+      for (long i = receiver + step; i <= limit; i += step) {
         valueSend.call(frame, new Object[] {block, i});
       }
     } finally {
