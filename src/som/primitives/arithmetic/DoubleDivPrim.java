@@ -2,12 +2,12 @@ package som.primitives.arithmetic;
 
 import java.math.BigInteger;
 
-import som.vm.NotYetImplementedException;
-import som.vmobjects.SAbstractObject;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+
+import som.vm.NotYetImplementedException;
+import som.vmobjects.SAbstractObject;
 
 
 @GenerateNodeFactory
@@ -34,8 +34,7 @@ public abstract class DoubleDivPrim extends ArithmeticPrim {
   }
 
   @Specialization
-  public final SAbstractObject doLong(final long left, final double right) {
-    CompilerAsserts.neverPartOfCompilation("DoubleDiv101");
-    throw new NotYetImplementedException(); // TODO: need to implement the "/" case here directly... : return resendAsDouble("/", left, (SDouble) rightObj, frame.pack());
+  public final double doLong(final long left, final double right) {
+    return left / right;
   }
 }
