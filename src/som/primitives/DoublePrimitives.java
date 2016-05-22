@@ -25,6 +25,7 @@
 
 package som.primitives;
 
+import som.primitives.DoublePrimsFactory.AsIntegerPrimFactory;
 import som.primitives.DoublePrimsFactory.PositiveInfinityPrimFactory;
 import som.primitives.DoublePrimsFactory.RoundPrimFactory;
 import som.primitives.arithmetic.AdditionPrimFactory;
@@ -59,6 +60,7 @@ public final class DoublePrimitives extends Primitives {
     installInstancePrimitive("<>",    UnequalsPrimFactory.getInstance());
     installInstancePrimitive("~=",    UnequalsPrimFactory.getInstance());
     installInstancePrimitive("round", RoundPrimFactory.getInstance());
+    installInstancePrimitive("asInteger", AsIntegerPrimFactory.getInstance());
     installInstancePrimitive("cos",   CosPrimFactory.getInstance());
     installInstancePrimitive("sin",   SinPrimFactory.getInstance());
 

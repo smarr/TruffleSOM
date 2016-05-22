@@ -1,11 +1,11 @@
 package som.primitives;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.Specialization;
+
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.constants.Classes;
 import som.vmobjects.SClass;
-
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.Specialization;
 
 
 public abstract class DoublePrims  {
@@ -15,6 +15,14 @@ public abstract class DoublePrims  {
     @Specialization
     public final long doDouble(final double receiver) {
       return Math.round(receiver);
+    }
+  }
+
+  @GenerateNodeFactory
+  public abstract static class AsIntegerPrim extends UnaryExpressionNode {
+    @Specialization
+    public final long doDouble(final double receiver) {
+      return (long) receiver;
     }
   }
 
