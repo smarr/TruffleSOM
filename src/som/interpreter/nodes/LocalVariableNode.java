@@ -66,22 +66,22 @@ public abstract class LocalVariableNode extends ExpressionNode {
       return frame.isObject(slot);
     }
 
-    @Specialization(guards = {"isInitialized(frame)", "isBoolean(frame)"}, rewriteOn = {FrameSlotTypeException.class})
+    @Specialization(guards = {"isBoolean(frame)"}, rewriteOn = {FrameSlotTypeException.class})
     public final boolean doBoolean(final VirtualFrame frame) throws FrameSlotTypeException {
       return frame.getBoolean(slot);
     }
 
-    @Specialization(guards = {"isInitialized(frame)", "isLong(frame)"}, rewriteOn = {FrameSlotTypeException.class})
+    @Specialization(guards = {"isLong(frame)"}, rewriteOn = {FrameSlotTypeException.class})
     public final long doLong(final VirtualFrame frame) throws FrameSlotTypeException {
       return frame.getLong(slot);
     }
 
-    @Specialization(guards = {"isInitialized(frame)", "isDouble(frame)"}, rewriteOn = {FrameSlotTypeException.class})
+    @Specialization(guards = {"isDouble(frame)"}, rewriteOn = {FrameSlotTypeException.class})
     public final double doDouble(final VirtualFrame frame) throws FrameSlotTypeException {
       return frame.getDouble(slot);
     }
 
-    @Specialization(guards = {"isInitialized(frame)", "isObject(frame)"}, rewriteOn = {FrameSlotTypeException.class})
+    @Specialization(guards = {"isObject(frame)"}, rewriteOn = {FrameSlotTypeException.class})
     public final Object doObject(final VirtualFrame frame) throws FrameSlotTypeException {
       return frame.getObject(slot);
     }
@@ -91,11 +91,6 @@ public abstract class LocalVariableNode extends ExpressionNode {
 //      assert isInitialized();
 //      return FrameUtil.getObjectSafe(frame, slot);
 //    }
-
-    protected final boolean isInitialized(final VirtualFrame frame) {
-      return slot.getKind() != FrameSlotKind.Illegal;
-    }
-
     protected final boolean isUninitialized(final VirtualFrame frame) {
       return slot.getKind() == FrameSlotKind.Illegal;
     }
