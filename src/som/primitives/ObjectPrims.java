@@ -1,20 +1,21 @@
 package som.primitives;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.Types;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
+import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public final class ObjectPrims {
@@ -105,6 +106,20 @@ public final class ObjectPrims {
     @Specialization
     public final SClass doObject(final Object receiver) {
       return Types.getClassOf(receiver);
+    }
+  }
+
+  public abstract static class IsNilNode extends UnaryExpressionNode {
+    @Specialization
+    public final boolean isNil(final Object receiver) {
+      return receiver == Nil.nilObject;
+    }
+  }
+
+  public abstract static class NotNilNode extends UnaryExpressionNode {
+    @Specialization
+    public final boolean isNil(final Object receiver) {
+      return receiver != Nil.nilObject;
     }
   }
 }

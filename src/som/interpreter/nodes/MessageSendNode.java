@@ -1,5 +1,11 @@
 package som.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
@@ -36,6 +42,8 @@ import som.primitives.LengthPrimFactory;
 import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPrimFactory;
 import som.primitives.ObjectPrimsFactory.InstVarAtPutPrimFactory;
+import som.primitives.ObjectPrimsFactory.IsNilNodeGen;
+import som.primitives.ObjectPrimsFactory.NotNilNodeGen;
 import som.primitives.UnequalsPrimFactory;
 import som.primitives.arithmetic.AdditionPrimFactory;
 import som.primitives.arithmetic.BitXorPrimFactory;
@@ -61,12 +69,6 @@ import som.vm.constants.Classes;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.source.SourceSection;
 
 
 public final class MessageSendNode {
@@ -203,6 +205,11 @@ public final class MessageSendNode {
             return replace(new EagerUnaryPrimitiveNode(selector,
                 argumentNodes[0], AbsPrimFactory.create(null)));
           }
+          break;
+        case "isNil":
+          return replace(IsNilNodeGen.create(argumentNodes[0]));
+        case "notNil":
+          return replace(NotNilNodeGen.create(argumentNodes[0]));
       }
       return makeGenericSend();
     }
