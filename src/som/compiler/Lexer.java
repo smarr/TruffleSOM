@@ -311,6 +311,10 @@ public final class Lexer {
     }
   }
 
+  protected boolean getPeekDone() {
+    return peekDone;
+  }
+
   protected Symbol peek() {
     LexerState old = new LexerState(state);
     if (peekDone) {
