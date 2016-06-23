@@ -454,8 +454,13 @@ public final class Parser {
     SourceCoordinate coord = getCoordinate();
     List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
+    boolean sawPeriod = true;
+
     while (true) {
       if (accept(Exit)) {
+        if (!sawPeriod) {
+          expect(Period);
+        }
         expressions.add(result(mgenc));
         return createSequenceNode(coord, expressions);
       } else if (sym == EndBlock) {
@@ -468,8 +473,12 @@ public final class Parser {
         return createSequenceNode(coord, expressions);
       }
 
+      if (!sawPeriod) {
+        expect(Period);
+      }
+
       expressions.add(expression(mgenc));
-      accept(Period);
+      sawPeriod = accept(Period);
     }
   }
 
