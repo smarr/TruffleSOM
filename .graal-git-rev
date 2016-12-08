@@ -3,7 +3,7 @@
 #  https://github.com/smarr/GraalBasic.git
 
 SCRIPT=`head -n 6 .graal-git-rev; echo ''; echo '# current revision'; echo ' '`
-echo "${SCRIPT}GIT-REV="`git --git-dir ../graal/.git rev-parse HEAD` > .graal-git-rev; exit 0
+echo "${SCRIPT}GIT-REV="`git --git-dir ../graal/graal-core/.git rev-parse HEAD` > .graal-git-rev; exit 0
 
 # current revision
- GIT-REV=5e5d500f2a91d465df42ce7fcf409eefb95811ad
+ GIT-REV=ca165d0f0de274911d1b36b0113e3fd4c6952787
