@@ -5,6 +5,7 @@ stages:
 variables:
   PYTHONUNBUFFERED: "true"
   JVMCI_BIN: /home/gitlab-runner/.local/graal-core/bin/java
+  JVMCI_VERSION_CHECK: ignore
 
 build_and_test_job:
   stage: build-and-test
