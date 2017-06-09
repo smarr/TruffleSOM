@@ -1,5 +1,9 @@
 package som.primitives;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Specialization;
+
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
@@ -11,20 +15,20 @@ import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.ImportStatic;
-import com.oracle.truffle.api.dsl.Specialization;
-
 
 public final class SystemPrims {
-  public static final boolean receiverIsSystemObject(final SAbstractObject receiver) {
+  public static boolean receiverIsSystemObject(final SAbstractObject receiver) {
     return receiver == Globals.systemObject;
   }
 
   @GenerateNodeFactory
   public abstract static class BinarySystemNode extends BinaryExpressionNode {
     protected final Universe universe;
-    protected BinarySystemNode() { super(null); this.universe = Universe.current(); }
+
+    protected BinarySystemNode() {
+      super(null);
+      this.universe = Universe.current();
+    }
   }
 
   @ImportStatic(SystemPrims.class)
@@ -49,7 +53,10 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class GlobalPutPrim extends TernaryExpressionNode {
     private final Universe universe;
-    public GlobalPutPrim()  { this.universe = Universe.current(); }
+
+    public GlobalPutPrim() {
+      this.universe = Universe.current();
+    }
 
     @Specialization(guards = "receiverIsSystemObject(receiver)")
     public final Object doSObject(final SObject receiver, final SSymbol global,

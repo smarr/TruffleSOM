@@ -1,5 +1,11 @@
 package som.primitives;
 
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.NodeCost;
+
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -9,22 +15,18 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SBlock;
 
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.NodeCost;
-
 
 public abstract class BlockPrims {
 
   public interface ValuePrimitiveNode {
-    void adoptNewDispatchListHead(final AbstractDispatchNode node);
+    void adoptNewDispatchListHead(AbstractDispatchNode node);
   }
 
   @GenerateNodeFactory
   public abstract static class RestartPrim extends UnaryExpressionNode {
-    public RestartPrim() { super(null); }
+    public RestartPrim() {
+      super(null);
+    }
 
     @Specialization
     public SAbstractObject doSBlock(final SBlock receiver) {
@@ -78,7 +80,7 @@ public abstract class BlockPrims {
 
   @GenerateNodeFactory
   public abstract static class ValueOnePrim extends BinaryExpressionNode
-      implements ValuePrimitiveNode  {
+      implements ValuePrimitiveNode {
     @Child private AbstractDispatchNode dispatchNode;
 
     public ValueOnePrim() {
@@ -150,13 +152,17 @@ public abstract class BlockPrims {
 
   @GenerateNodeFactory
   public abstract static class ValueMorePrim extends QuaternaryExpressionNode {
-    public ValueMorePrim() { super(null); }
+    public ValueMorePrim() {
+      super(null);
+    }
+
     @Specialization
     public final Object doSBlock(final VirtualFrame frame,
         final SBlock receiver, final Object firstArg, final Object secondArg,
         final Object thirdArg) {
       CompilerDirectives.transferToInterpreter();
-      throw new RuntimeException("This should never be called, because SOM Blocks have max. 2 arguments.");
+      throw new RuntimeException(
+          "This should never be called, because SOM Blocks have max. 2 arguments.");
     }
   }
 }

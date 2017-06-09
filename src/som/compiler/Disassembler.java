@@ -31,6 +31,7 @@ import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
+
 public final class Disassembler {
 
   @TruffleBoundary
@@ -55,4 +56,3 @@ public final class Disassembler {
   }
 
 }
-

@@ -24,8 +24,8 @@ public abstract class EqualsEqualsPrim extends BinaryExpressionNode {
 
   @Specialization
   public final boolean doBoolean(final boolean left, final SObject right) {
-    return (left && Globals.trueObject  == right) ||
-          (!left && Globals.falseObject == right);
+    return (left && Globals.trueObject == right) ||
+        (!left && Globals.falseObject == right);
   }
 
   @Specialization

@@ -1,15 +1,15 @@
 package som.primitives.arrays;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.profiles.ValueProfile;
+
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
 import som.vmobjects.SArray.PartiallyEmptyArray;
-
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.ImportStatic;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 
 @GenerateNodeFactory
@@ -18,28 +18,27 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
 
   private final ValueProfile storageType = ValueProfile.createClassProfile();
 
-  protected final static boolean valueIsNil(final Object value) {
+  protected static final boolean valueIsNil(final Object value) {
     return value == Nil.nilObject;
   }
 
-  protected final static boolean valueIsNotNil(final Object value) {
+  protected static final boolean valueIsNotNil(final Object value) {
     return value != Nil.nilObject;
   }
 
-  protected final static boolean valueIsNotLong(final Object value) {
+  protected static final boolean valueIsNotLong(final Object value) {
     return !(value instanceof Long);
   }
 
-  protected final static boolean valueIsNotDouble(final Object value) {
+  protected static final boolean valueIsNotDouble(final Object value) {
     return !(value instanceof Double);
   }
 
-  protected final static boolean valueIsNotBoolean(final Object value) {
+  protected static final boolean valueIsNotBoolean(final Object value) {
     return !(value instanceof Boolean);
   }
 
-
-  protected final static boolean valueNotLongDoubleBoolean(final Object value) {
+  protected static final boolean valueNotLongDoubleBoolean(final Object value) {
     return !(value instanceof Long) &&
         !(value instanceof Double) &&
         !(value instanceof Boolean);
@@ -78,7 +77,8 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = {"isEmptyType(receiver)", "valueIsNotNil(value)", "valueNotLongDoubleBoolean(value)"})
+  @Specialization(guards = {"isEmptyType(receiver)", "valueIsNotNil(value)",
+      "valueNotLongDoubleBoolean(value)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final Object value) {
     long idx = index - 1;

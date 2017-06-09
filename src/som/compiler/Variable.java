@@ -5,12 +5,14 @@ import static som.interpreter.SNodeFactory.createLocalVarRead;
 import static som.interpreter.SNodeFactory.createSuperRead;
 import static som.interpreter.SNodeFactory.createVariableWrite;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import som.interpreter.nodes.ExpressionNode;
-import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.ExpressionNode;
+import som.vmobjects.SSymbol;
+
 
 public abstract class Variable {
   public final String name;
@@ -19,8 +21,8 @@ public abstract class Variable {
   @CompilationFinal protected boolean isReadOutOfContext;
 
   Variable(final String name) {
-    this.name      = name;
-    this.isRead    = false;
+    this.name = name;
+    this.isRead = false;
     this.isReadOutOfContext = false;
   }
 
@@ -37,8 +39,7 @@ public abstract class Variable {
     return isReadOutOfContext;
   }
 
-  public abstract ExpressionNode getReadNode(final int contextLevel,
-      final SourceSection source);
+  public abstract ExpressionNode getReadNode(int contextLevel, SourceSection source);
 
   public final ExpressionNode getSuperReadNode(final int contextLevel,
       final SSymbol holderClass, final boolean classSide,
@@ -75,14 +76,14 @@ public abstract class Variable {
   }
 
   public static final class Local extends Variable {
-    private final FrameSlot slot;
+    private final FrameSlot           slot;
     @CompilationFinal private boolean isWritten;
     @CompilationFinal private boolean isWrittenOutOfContext;
 
     Local(final String name, final FrameSlot slot) {
       super(name);
       this.isWritten = false;
-      this.slot      = slot;
+      this.slot = slot;
       this.isWrittenOutOfContext = false;
     }
 

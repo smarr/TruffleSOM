@@ -179,9 +179,11 @@ public abstract class LocalVariableNode extends ExpressionNode {
     }
 
     @Override
-    public final void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
+    public final void replaceWithIndependentCopyForInlining(
+        final SplitterForLexicallyEmbeddedCode inliner) {
       CompilerAsserts.neverPartOfCompilation("replaceWithIndependentCopyForInlining");
-      throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+      throw new RuntimeException(
+          "Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
     }
   }
 }

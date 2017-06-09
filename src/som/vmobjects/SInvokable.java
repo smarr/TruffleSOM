@@ -34,13 +34,14 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
+
 public abstract class SInvokable extends SAbstractObject {
 
   public SInvokable(final SSymbol signature, final Invokable invokable) {
     this.signature = signature;
 
-    this.invokable   = invokable;
-    this.callTarget  = invokable.createCallTarget();
+    this.invokable = invokable;
+    this.callTarget = invokable.createCallTarget();
   }
 
   public static final class SMethod extends SInvokable {
@@ -112,7 +113,8 @@ public abstract class SInvokable extends SAbstractObject {
     return callTarget.call(arguments);
   }
 
-  public final Object invoke(final VirtualFrame frame, final IndirectCallNode node, final Object... arguments) {
+  public final Object invoke(final VirtualFrame frame, final IndirectCallNode node,
+      final Object... arguments) {
     return node.call(frame, callTarget, arguments);
   }
 
@@ -123,12 +125,13 @@ public abstract class SInvokable extends SAbstractObject {
       return "Method(nil>>" + getSignature().toString() + ")";
     }
 
-    return "Method(" + getHolder().getName().getString() + ">>" + getSignature().toString() + ")";
+    return "Method(" + getHolder().getName().getString() + ">>" + getSignature().toString()
+        + ")";
   }
 
   // Private variable holding Truffle runtime information
-  private final Invokable              invokable;
-  private final RootCallTarget         callTarget;
-  private final SSymbol                signature;
-  @CompilationFinal private SClass     holder;
+  private final Invokable          invokable;
+  private final RootCallTarget     callTarget;
+  private final SSymbol            signature;
+  @CompilationFinal private SClass holder;
 }

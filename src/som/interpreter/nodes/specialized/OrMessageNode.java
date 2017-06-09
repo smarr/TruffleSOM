@@ -12,7 +12,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 
 public abstract class OrMessageNode extends BinaryExpressionNode {
-  private final SInvokable blockMethod;
+  private final SInvokable      blockMethod;
   @Child private DirectCallNode blockValueSend;
 
   public OrMessageNode(final SBlock arg, final SourceSection source) {
@@ -43,7 +43,10 @@ public abstract class OrMessageNode extends BinaryExpressionNode {
   }
 
   public abstract static class OrBoolMessageNode extends BinaryExpressionNode {
-    public OrBoolMessageNode(final SourceSection source) { super(source); }
+    public OrBoolMessageNode(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final boolean doOr(final VirtualFrame frame, final boolean receiver,
         final boolean argument) {

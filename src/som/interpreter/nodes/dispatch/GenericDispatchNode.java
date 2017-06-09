@@ -12,9 +12,10 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
+
 public final class GenericDispatchNode extends AbstractDispatchNode {
   @Child private IndirectCallNode call;
-  protected final SSymbol selector;
+  protected final SSymbol         selector;
 
   public GenericDispatchNode(final SSymbol selector) {
     this.selector = selector;

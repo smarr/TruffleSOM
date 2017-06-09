@@ -15,7 +15,7 @@ import com.oracle.truffle.api.source.SourceSection;
 @GenerateNodeFactory
 public abstract class AndMessageNode extends BinaryExpressionNode {
 
-  private final SInvokable blockMethod;
+  private final SInvokable      blockMethod;
   @Child private DirectCallNode blockValueSend;
 
   public AndMessageNode(final SBlock arg, final SourceSection source) {
@@ -27,7 +27,7 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
 
   public AndMessageNode(final AndMessageNode copy) {
     super(copy.getSourceSection());
-    blockMethod    = copy.blockMethod;
+    blockMethod = copy.blockMethod;
     blockValueSend = copy.blockValueSend;
   }
 
@@ -53,7 +53,8 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     }
 
     @Specialization
-    public final boolean doAnd(final VirtualFrame frame, final boolean receiver, final boolean argument) {
+    public final boolean doAnd(final VirtualFrame frame, final boolean receiver,
+        final boolean argument) {
       return receiver && argument;
     }
   }

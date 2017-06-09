@@ -49,14 +49,17 @@ public abstract class UninitializedVariableNode extends ContextualNode {
             contextLevel, variable.getSlot(), getSourceSection());
         return replace(node).executeGeneric(frame);
       } else {
-        // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) == variable.getSlot();
-        LocalVariableReadNode node = LocalVariableReadNodeGen.create(variable, getSourceSection());
+        // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) ==
+        // variable.getSlot();
+        LocalVariableReadNode node =
+            LocalVariableReadNodeGen.create(variable, getSourceSection());
         return replace(node).executeGeneric(frame);
       }
     }
 
     @Override
-    public void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
+    public void replaceWithIndependentCopyForInlining(
+        final SplitterForLexicallyEmbeddedCode inliner) {
       FrameSlot varSlot = inliner.getFrameSlot(this, variable.getSlotIdentifier());
       assert varSlot != null;
       replace(new UninitializedVariableReadNode(this, varSlot));
@@ -124,7 +127,8 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         return replace(node).executeGeneric(frame);
       } else {
         // not sure about removing this assertion :(((
-        // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) == variable.getSlot();
+        // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) ==
+        // variable.getSlot();
         LocalVariableWriteNode node = LocalVariableWriteNodeGen.create(
             variable, getSourceSection(), exp);
         return replace(node).executeGeneric(frame);
@@ -132,7 +136,8 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     }
 
     @Override
-    public void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
+    public void replaceWithIndependentCopyForInlining(
+        final SplitterForLexicallyEmbeddedCode inliner) {
       FrameSlot varSlot = inliner.getFrameSlot(this, variable.getSlotIdentifier());
       assert varSlot != null;
       replace(new UninitializedVariableWriteNode(this, varSlot));

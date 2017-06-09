@@ -19,7 +19,7 @@ import som.vmobjects.SInvokable;
 public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
     implements PreevaluatedExpression {
 
-  private final SInvokable blockMethod;
+  private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;
 
   public IntToByDoMessageNode(final ExpressionNode orignialNode,
@@ -27,19 +27,19 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
     super(orignialNode.getSourceSection());
     blockMethod = block.getMethod();
     valueSend = Truffle.getRuntime().createDirectCallNode(
-                    blockMethod.getCallTarget());
+        blockMethod.getCallTarget());
   }
 
   public IntToByDoMessageNode(final IntToByDoMessageNode node) {
     super(node.getSourceSection());
     this.blockMethod = node.blockMethod;
-    this.valueSend   = node.valueSend;
+    this.valueSend = node.valueSend;
   }
 
   @Override
   public final Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
-    return executeEvaluated(frame, arguments[0], arguments[1],  arguments[2],
+    return executeEvaluated(frame, arguments[0], arguments[1], arguments[2],
         arguments[3]);
   }
 
@@ -52,7 +52,8 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
   }
 
   @Specialization(guards = "isSameBlockLong(block)")
-  public final long doIntToByDo(final VirtualFrame frame, final long receiver, final long limit, final long step, final SBlock block) {
+  public final long doIntToByDo(final VirtualFrame frame, final long receiver,
+      final long limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
         valueSend.call(frame, new Object[] {block, receiver});
@@ -69,7 +70,8 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
   }
 
   @Specialization(guards = "isSameBlockDouble(block)")
-  public final long doIntToByDo(final VirtualFrame frame, final long receiver, final double limit, final long step, final SBlock block) {
+  public final long doIntToByDo(final VirtualFrame frame, final long receiver,
+      final double limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
         valueSend.call(frame, new Object[] {block, receiver});

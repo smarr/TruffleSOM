@@ -18,7 +18,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
 
-  private final SInvokable blockMethod;
+  private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;
 
   public IntToDoMessageNode(final ExpressionNode orignialNode,
@@ -26,13 +26,13 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
     super(orignialNode.getSourceSection());
     blockMethod = block.getMethod();
     valueSend = Truffle.getRuntime().createDirectCallNode(
-                    blockMethod.getCallTarget());
+        blockMethod.getCallTarget());
   }
 
   public IntToDoMessageNode(final IntToDoMessageNode node) {
     super(node.getSourceSection());
     this.blockMethod = node.blockMethod;
-    this.valueSend   = node.valueSend;
+    this.valueSend = node.valueSend;
   }
 
   protected final boolean isSameBlockLong(final SBlock block) {
@@ -40,7 +40,8 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(guards = "isSameBlockLong(block)")
-  public final long doIntToDo(final VirtualFrame frame, final long receiver, final long limit, final SBlock block) {
+  public final long doIntToDo(final VirtualFrame frame, final long receiver, final long limit,
+      final SBlock block) {
     try {
       doLooping(frame, receiver, limit, block);
     } finally {
@@ -56,7 +57,8 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(guards = "isSameBlockDouble(block)")
-  public final long doIntToDo(final VirtualFrame frame, final long receiver, final double dLimit, final SBlock block) {
+  public final long doIntToDo(final VirtualFrame frame, final long receiver,
+      final double dLimit, final SBlock block) {
     long limit = (long) dLimit;
     try {
       doLooping(frame, receiver, limit, block);

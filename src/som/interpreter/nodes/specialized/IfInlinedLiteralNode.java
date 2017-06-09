@@ -31,8 +31,8 @@ public final class IfInlinedLiteralNode extends ExpressionNode {
       final SourceSection sourceSection) {
     super(sourceSection);
     this.conditionNode = conditionNode;
-    this.expectedBool  = expectedBool;
-    this.bodyNode      = inlinedBodyNode;
+    this.expectedBool = expectedBool;
+    this.bodyNode = inlinedBodyNode;
     this.bodyActualNode = originalBodyNode;
   }
 

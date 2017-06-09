@@ -1,5 +1,9 @@
 package som.primitives;
 
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadWithoutErrorNode;
@@ -11,24 +15,23 @@ import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.dsl.ImportStatic;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-
 
 @ImportStatic(SystemPrims.class)
 public abstract class GlobalPrim extends BinarySystemNode {
   @Child private GetGlobalNode getGlobal = new UninitializedGetGlobal(0);
 
   @Specialization(guards = "receiverIsSystemObject(receiver)")
-  public final Object doSObject(final VirtualFrame frame, final SObject receiver, final SSymbol argument) {
+  public final Object doSObject(final VirtualFrame frame, final SObject receiver,
+      final SSymbol argument) {
     return getGlobal.getGlobal(frame, argument);
   }
 
   private abstract static class GetGlobalNode extends SOMNode {
     protected static final int INLINE_CACHE_SIZE = 6;
 
-    private GetGlobalNode() { super(null); }
+    private GetGlobalNode() {
+      super(null);
+    }
 
     public abstract Object getGlobal(VirtualFrame frame, SSymbol argument);
 
@@ -41,14 +44,13 @@ public abstract class GlobalPrim extends BinarySystemNode {
   private static final class UninitializedGetGlobal extends GetGlobalNode {
     private final int depth;
 
-    public UninitializedGetGlobal(final int depth) {
+    UninitializedGetGlobal(final int depth) {
       this.depth = depth;
     }
 
     @Override
     public Object getGlobal(final VirtualFrame frame, final SSymbol argument) {
-      return specialize(argument).
-          getGlobal(frame, argument);
+      return specialize(argument).getGlobal(frame, argument);
     }
 
     private GetGlobalNode specialize(final SSymbol argument) {
@@ -65,14 +67,14 @@ public abstract class GlobalPrim extends BinarySystemNode {
   }
 
   private static final class CachedGetGlobal extends GetGlobalNode {
-    private final int depth;
-    private final SSymbol name;
-    @Child private GlobalNode getGlobal;
+    private final int            depth;
+    private final SSymbol        name;
+    @Child private GlobalNode    getGlobal;
     @Child private GetGlobalNode next;
 
-    public CachedGetGlobal(final SSymbol name, final int depth) {
+    CachedGetGlobal(final SSymbol name, final int depth) {
       this.depth = depth;
-      this.name  = name;
+      this.name = name;
       getGlobal = new UninitializedGlobalReadWithoutErrorNode(name, null);
       next = new UninitializedGetGlobal(this.depth + 1);
     }
@@ -91,7 +93,7 @@ public abstract class GlobalPrim extends BinarySystemNode {
 
     private final Universe universe;
 
-    public GetGlobalFallback() {
+    GetGlobalFallback() {
       this.universe = Universe.current();
     }
 

@@ -41,11 +41,12 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
 
+
 public abstract class Primitives {
 
   protected final Universe universe;
-  protected SClass holder;
-  protected final boolean displayWarning;
+  protected SClass         holder;
+  protected final boolean  displayWarning;
 
   public Primitives(final boolean displayWarning) {
     this.universe = Universe.current();
@@ -103,8 +104,9 @@ public abstract class Primitives {
         throw new RuntimeException("Not supported by SOM.");
     }
 
-    Primitive primMethodNode = new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-        (ExpressionNode) primNode.deepCopy());
+    Primitive primMethodNode =
+        new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
+            (ExpressionNode) primNode.deepCopy());
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
     return prim;
   }
@@ -114,8 +116,9 @@ public abstract class Primitives {
     MethodGenerationContext mgen = new MethodGenerationContext(null);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));
-    Primitive primMethodNode = new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-        (ExpressionNode) primNode.deepCopy());
+    Primitive primMethodNode =
+        new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
+            (ExpressionNode) primNode.deepCopy());
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
     return prim;
   }

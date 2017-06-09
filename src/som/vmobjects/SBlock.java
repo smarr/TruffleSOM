@@ -24,6 +24,9 @@
 
 package som.vmobjects;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.frame.MaterializedFrame;
+
 import som.interpreter.SArguments;
 import som.primitives.BlockPrimsFactory.ValueMorePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
@@ -32,22 +35,21 @@ import som.primitives.BlockPrimsFactory.ValueTwoPrimFactory;
 import som.primitives.Primitives;
 import som.vm.Universe;
 
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 
 public final class SBlock extends SAbstractObject {
 
-  public SBlock(final SInvokable blockMethod, final SClass blockClass, final MaterializedFrame context) {
-    this.method  = blockMethod;
+  public SBlock(final SInvokable blockMethod, final SClass blockClass,
+      final MaterializedFrame context) {
+    this.method = blockMethod;
     this.context = context;
     this.blockClass = blockClass;
   }
 
-  public final SInvokable getMethod() {
+  public SInvokable getMethod() {
     return method;
   }
 
-  public final MaterializedFrame getContext() {
+  public MaterializedFrame getContext() {
     assert context != null;
     return context;
   }
@@ -57,7 +59,7 @@ public final class SBlock extends SAbstractObject {
     return blockClass;
   }
 
-  public final Object getOuterSelf() {
+  public Object getOuterSelf() {
     return SArguments.rcvr(getContext());
   }
 
@@ -67,23 +69,30 @@ public final class SBlock extends SAbstractObject {
     SSymbol sig = universe.symbolFor(computeSignatureString(numberOfArguments));
 
     switch (numberOfArguments) {
-      case 1: return Primitives.constructPrimitive(sig,
-          ValueNonePrimFactory.getInstance(), universe, rcvrClass);
-      case 2: return Primitives.constructPrimitive(sig,
-          ValueOnePrimFactory.getInstance(), universe, rcvrClass);
-      case 3: return Primitives.constructPrimitive(sig,
-          ValueTwoPrimFactory.getInstance(), universe, rcvrClass);
-      case 4: return Primitives.constructPrimitive(sig,
-          ValueMorePrimFactory.getInstance(), universe, rcvrClass);
+      case 1:
+        return Primitives.constructPrimitive(sig,
+            ValueNonePrimFactory.getInstance(), universe, rcvrClass);
+      case 2:
+        return Primitives.constructPrimitive(sig,
+            ValueOnePrimFactory.getInstance(), universe, rcvrClass);
+      case 3:
+        return Primitives.constructPrimitive(sig,
+            ValueTwoPrimFactory.getInstance(), universe, rcvrClass);
+      case 4:
+        return Primitives.constructPrimitive(sig,
+            ValueMorePrimFactory.getInstance(), universe, rcvrClass);
       default:
-        throw new RuntimeException("Should not reach here. SOM only has blocks with up to 2 arguments.");
+        throw new RuntimeException(
+            "Should not reach here. SOM only has blocks with up to 2 arguments.");
     }
   }
 
   private static String computeSignatureString(final int numberOfArguments) {
     // Compute the signature string
     String signatureString = "value";
-    if (numberOfArguments > 1) { signatureString += ":"; }
+    if (numberOfArguments > 1) {
+      signatureString += ":";
+    }
 
     // Add extra value: selector elements if necessary
     for (int i = 2; i < numberOfArguments; i++) {

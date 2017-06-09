@@ -64,7 +64,7 @@ public abstract class IntegerPrims {
 
     @Specialization(rewriteOn = ArithmeticException.class)
     public final long doLong(final long receiver, final long right) {
-      assert right >= 0;  // currently not defined for negative values of right
+      assert right >= 0; // currently not defined for negative values of right
 
       if (Long.SIZE - Long.numberOfLeadingZeros(receiver) + right > Long.SIZE - 1) {
         overflow.enter();
@@ -75,7 +75,7 @@ public abstract class IntegerPrims {
 
     @Specialization
     public final BigInteger doLongWithOverflow(final long receiver, final long right) {
-      assert right >= 0;  // currently not defined for negative values of right
+      assert right >= 0; // currently not defined for negative values of right
       assert right <= Integer.MAX_VALUE;
 
       return BigInteger.valueOf(receiver).shiftLeft((int) right);

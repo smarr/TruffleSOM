@@ -29,7 +29,8 @@ public final class UninitializedValuePrimDispatchNode
 
       assert method != null;
 
-      UninitializedValuePrimDispatchNode uninitialized = new UninitializedValuePrimDispatchNode();
+      UninitializedValuePrimDispatchNode uninitialized =
+          new UninitializedValuePrimDispatchNode();
       CachedDispatchNode node = new CachedDispatchNode(
           DispatchGuard.createForBlock(rcvr), method.getCallTarget(), uninitialized);
       return replace(node);
@@ -42,8 +43,7 @@ public final class UninitializedValuePrimDispatchNode
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
-    return specialize((SBlock) arguments[0]).
-        executeDispatch(frame, arguments);
+    return specialize((SBlock) arguments[0]).executeDispatch(frame, arguments);
   }
 
   @Override

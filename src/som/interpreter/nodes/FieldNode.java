@@ -34,6 +34,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
+
 public abstract class FieldNode extends ExpressionNode {
 
   protected FieldNode(final SourceSection source) {
@@ -44,7 +45,7 @@ public abstract class FieldNode extends ExpressionNode {
 
   public static final class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
-    @Child private ExpressionNode self;
+    @Child private ExpressionNode        self;
     @Child private AbstractReadFieldNode read;
 
     public FieldReadNode(final ExpressionNode self, final int fieldIndex,
@@ -64,7 +65,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     public Object executeEvaluated(final SObject obj) {
-       return read.read(obj);
+      return read.read(obj);
     }
 
     @Override
@@ -99,8 +100,8 @@ public abstract class FieldNode extends ExpressionNode {
   }
 
   @NodeChildren({
-    @NodeChild(value = "self", type = ExpressionNode.class),
-    @NodeChild(value = "value", type = ExpressionNode.class)})
+      @NodeChild(value = "self", type = ExpressionNode.class),
+      @NodeChild(value = "value", type = ExpressionNode.class)})
   public abstract static class FieldWriteNode extends FieldNode
       implements PreevaluatedExpression {
     @Child private AbstractWriteFieldNode write;

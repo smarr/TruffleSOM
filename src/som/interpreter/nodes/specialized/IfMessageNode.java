@@ -17,7 +17,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class IfMessageNode extends BinaryExpressionNode {
   protected final ConditionProfile condProf = ConditionProfile.createCountingProfile();
-  private final boolean expected;
+  private final boolean            expected;
 
   protected IfMessageNode(final boolean expected, final SourceSection source) {
     super(source);
@@ -33,7 +33,8 @@ public abstract class IfMessageNode extends BinaryExpressionNode {
   }
 
   @Specialization(guards = {"arg.getMethod() == method"})
-  public final Object cachedBlock(final VirtualFrame frame, final boolean rcvr, final SBlock arg,
+  public final Object cachedBlock(final VirtualFrame frame, final boolean rcvr,
+      final SBlock arg,
       @Cached("arg.getMethod()") final SInvokable method,
       @Cached("createDirect(method)") final DirectCallNode callTarget) {
     if (condProf.profile(rcvr == expected)) {

@@ -12,9 +12,11 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
+
 /**
  * This node implements the correct message semantics and uses sends to the
  * blocks' methods instead of inlining the code directly.
+ * 
  * @author smarr
  */
 public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
@@ -68,7 +70,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   }
 
   protected final boolean hasSameArguments(final Object firstArg, final Object secondArg) {
-    return (trueMethod  == null || ((SBlock) firstArg).getMethod()  == trueMethod)
+    return (trueMethod == null || ((SBlock) firstArg).getMethod() == trueMethod)
         && (falseMethod == null || ((SBlock) secondArg).getMethod() == falseMethod);
   }
 

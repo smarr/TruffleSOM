@@ -23,7 +23,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 public abstract class DoIndexesPrim extends BinaryExpressionNode
     implements ValuePrimitiveNode {
   @Child private AbstractDispatchNode block;
-  @Child private LengthPrim length;
+  @Child private LengthPrim           length;
 
   public DoIndexesPrim() {
     super(null);
@@ -44,7 +44,8 @@ public abstract class DoIndexesPrim extends BinaryExpressionNode
       assert SArray.FIRST_IDX == 0;
       if (SArray.FIRST_IDX < length) {
         this.block.executeDispatch(frame, new Object[] {
-            block, (long) SArray.FIRST_IDX + 1}); // +1 because it is going to the smalltalk level
+            block, (long) SArray.FIRST_IDX + 1}); // +1 because it is going to the smalltalk
+                                                  // level
       }
       for (long i = 1; i < length; i++) {
         this.block.executeDispatch(frame, new Object[] {

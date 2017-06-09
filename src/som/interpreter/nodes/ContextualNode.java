@@ -21,20 +21,21 @@
  */
 package som.interpreter.nodes;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.SArguments;
-import som.vmobjects.SBlock;
-
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
+import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import som.interpreter.SArguments;
+import som.vmobjects.SBlock;
+
+
 public abstract class ContextualNode extends ExpressionNode {
 
-  protected final int contextLevel;
+  protected final int        contextLevel;
   private final ValueProfile frameType;
 
   public ContextualNode(final int contextLevel, final SourceSection source) {
@@ -68,9 +69,9 @@ public abstract class ContextualNode extends ExpressionNode {
 
   @Override
   public abstract void replaceWithLexicallyEmbeddedNode(
-      final InlinerForLexicallyEmbeddedMethods inlinerForLexicallyEmbeddedMethods);
+      InlinerForLexicallyEmbeddedMethods inlinerForLexicallyEmbeddedMethods);
 
   @Override
   public abstract void replaceWithCopyAdaptedToEmbeddedOuterContext(
-      final InlinerAdaptToEmbeddedOuterContext inlinerAdaptToEmbeddedOuterContext);
+      InlinerAdaptToEmbeddedOuterContext inlinerAdaptToEmbeddedOuterContext);
 }

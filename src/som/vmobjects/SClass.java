@@ -41,6 +41,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+
 public final class SClass extends SObject {
 
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
@@ -91,7 +92,8 @@ public final class SClass extends SObject {
     transferToInterpreterAndInvalidate("SClass.setInstanceFields");
     instanceFields = fields;
     if (layoutForInstances == null ||
-        instanceFields.getObjectStorage(storageType).length != layoutForInstances.getNumberOfFields()) {
+        instanceFields.getObjectStorage(
+            storageType).length != layoutForInstances.getNumberOfFields()) {
       layoutForInstances = new ObjectLayout(
           fields.getObjectStorage(storageType).length, this);
     }
@@ -138,7 +140,9 @@ public final class SClass extends SObject {
 
     // Lookup invokable and return if found
     invokable = invokablesTable.get(selector);
-    if (invokable != null) { return invokable; }
+    if (invokable != null) {
+      return invokable;
+    }
 
     // Lookup invokable with given signature in array of instance invokables
     for (int i = 0; i < getNumberOfInstanceInvokables(); i++) {
@@ -169,7 +173,9 @@ public final class SClass extends SObject {
     // Lookup field with given name in array of instance fields
     for (int i = getNumberOfInstanceFields() - 1; i >= 0; i--) {
       // Return the current index if the name matches
-      if (fieldName == getInstanceFieldName(i)) { return i; }
+      if (fieldName == getInstanceFieldName(i)) {
+        return i;
+      }
     }
 
     // Field not found
@@ -256,7 +262,8 @@ public final class SClass extends SObject {
     return layoutForInstances;
   }
 
-  public ObjectLayout updateInstanceLayoutWithInitializedField(final long index, final Class<?> type) {
+  public ObjectLayout updateInstanceLayoutWithInitializedField(final long index,
+      final Class<?> type) {
     ObjectLayout updated = layoutForInstances.withInitializedField(index, type);
 
     if (updated != layoutForInstances) {
@@ -275,7 +282,6 @@ public final class SClass extends SObject {
     }
     return layoutForInstances;
   }
-
 
   @Override
   public String toString() {

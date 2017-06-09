@@ -1,19 +1,19 @@
 package som.interpreter.nodes.dispatch;
 
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+
 import som.interpreter.SArguments;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.InvalidAssumptionException;
-
 
 public final class CachedDnuNode extends AbstractCachedDispatchNode {
-  private final SSymbol selector;
+  private final SSymbol       selector;
   private final DispatchGuard guard;
 
   public CachedDnuNode(final SClass rcvrClass, final DispatchGuard guard,
@@ -34,21 +34,19 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
       }
     } catch (InvalidAssumptionException e) {
       CompilerDirectives.transferToInterpreter();
-      return replace(nextInCache).
-          executeDispatch(frame, arguments);
+      return replace(nextInCache).executeDispatch(frame, arguments);
     }
   }
 
   public static CallTarget getDnuCallTarget(final SClass rcvrClass) {
     return rcvrClass.lookupInvokable(
-          Universe.current().symbolFor("doesNotUnderstand:arguments:")).
-        getCallTarget();
+        Universe.current().symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
   }
 
-  protected final Object performDnu(final VirtualFrame frame, final Object[] arguments,
+  protected Object performDnu(final VirtualFrame frame, final Object[] arguments,
       final Object rcvr) {
     Object[] argsArr = new Object[] {
-        rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments) };
+        rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments)};
     return cachedMethod.call(frame, argsArr);
   }
 }

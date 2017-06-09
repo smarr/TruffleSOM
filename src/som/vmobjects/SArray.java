@@ -2,10 +2,11 @@ package som.vmobjects;
 
 import java.util.Arrays;
 
+import com.oracle.truffle.api.profiles.ValueProfile;
+
 import som.vm.constants.Classes;
 import som.vm.constants.Nil;
 
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 /**
  * SArrays are implemented using a Strategy-like approach.
@@ -76,6 +77,7 @@ public final class SArray extends SAbstractObject {
 
   /**
    * Creates and empty array, using the EMPTY strategy.
+   *
    * @param length
    */
   public SArray(final long length) {
@@ -104,19 +106,20 @@ public final class SArray extends SAbstractObject {
   }
 
   public SArray(final ArrayType type, final Object storage) {
-    this.type    = type;
+    this.type = type;
     this.storage = storage;
   }
 
-  private void fromEmptyToParticalWithType(final ArrayType type, final long idx, final Object val) {
+  private void fromEmptyToParticalWithType(final ArrayType type, final long idx,
+      final Object val) {
     assert this.type == ArrayType.EMPTY;
     int length = (int) storage;
-    storage   = new PartiallyEmptyArray(type, length, idx, val);
+    storage = new PartiallyEmptyArray(type, length, idx, val);
     this.type = ArrayType.PARTIAL_EMPTY;
   }
 
   /**
-   * Transition from the Empty, to the PartiallyEmpty state/strategy
+   * Transition from the Empty, to the PartiallyEmpty state/strategy.
    */
   public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final Object val) {
     fromEmptyToParticalWithType(ArrayType.OBJECT, idx, val);
@@ -175,29 +178,29 @@ public final class SArray extends SAbstractObject {
   }
 
   public enum ArrayType {
-    EMPTY, PARTIAL_EMPTY, LONG, DOUBLE, BOOLEAN,  OBJECT;
+    EMPTY, PARTIAL_EMPTY, LONG, DOUBLE, BOOLEAN, OBJECT;
 
-    public final static boolean isEmptyType(final SArray receiver) {
+    public static boolean isEmptyType(final SArray receiver) {
       return receiver.getType() == ArrayType.EMPTY;
     }
 
-    public final static boolean isPartiallyEmptyType(final SArray receiver) {
+    public static boolean isPartiallyEmptyType(final SArray receiver) {
       return receiver.getType() == ArrayType.PARTIAL_EMPTY;
     }
 
-    public final static boolean isObjectType(final SArray receiver) {
+    public static boolean isObjectType(final SArray receiver) {
       return receiver.getType() == ArrayType.OBJECT;
     }
 
-    public final static boolean isLongType(final SArray receiver) {
+    public static boolean isLongType(final SArray receiver) {
       return receiver.getType() == ArrayType.LONG;
     }
 
-    public final static boolean isDoubleType(final SArray receiver) {
+    public static boolean isDoubleType(final SArray receiver) {
       return receiver.getType() == ArrayType.DOUBLE;
     }
 
-    public final static boolean isBooleanType(final SArray receiver) {
+    public static boolean isBooleanType(final SArray receiver) {
       return receiver.getType() == BOOLEAN;
     }
 
@@ -251,8 +254,8 @@ public final class SArray extends SAbstractObject {
 
   public static final class PartiallyEmptyArray {
     private final Object[] arr;
-    private int emptyElements;
-    private ArrayType type;
+    private int            emptyElements;
+    private ArrayType      type;
 
     public PartiallyEmptyArray(final ArrayType type, final int length,
         final long idx, final Object val) {
@@ -295,9 +298,17 @@ public final class SArray extends SAbstractObject {
       arr[(int) idx] = val;
     }
 
-    public void incEmptyElements() { emptyElements++; }
-    public void decEmptyElements() { emptyElements--; }
-    public boolean isFull() { return emptyElements == 0; }
+    public void incEmptyElements() {
+      emptyElements++;
+    }
+
+    public void decEmptyElements() {
+      emptyElements--;
+    }
+
+    public boolean isFull() {
+      return emptyElements == 0;
+    }
 
     public PartiallyEmptyArray copy() {
       return new PartiallyEmptyArray(this);
@@ -309,13 +320,14 @@ public final class SArray extends SAbstractObject {
   /**
    * For internal use only, specifically, for SClass.
    * There we now, it is either empty, or of OBJECT type.
+   *
    * @param value
    * @return
    */
   public SArray copyAndExtendWith(final Object value) {
     Object[] newArr;
     if (type == ArrayType.EMPTY) {
-      newArr = new Object[] { value };
+      newArr = new Object[] {value};
     } else {
       // if this is not true, this method is used in a wrong context
       assert type == ArrayType.OBJECT;
@@ -325,7 +337,6 @@ public final class SArray extends SAbstractObject {
     }
     return new SArray(newArr);
   }
-
 
   @Override
   public SClass getSOMClass() {

@@ -2,29 +2,32 @@ package som.primitives.arrays;
 
 import java.util.Arrays;
 
-import som.interpreter.SArguments;
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SArray;
-import som.vmobjects.SArray.ArrayType;
-
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+import som.interpreter.SArguments;
+import som.interpreter.nodes.ExpressionNode;
+import som.vm.constants.Nil;
+import som.vmobjects.SArray;
+import som.vmobjects.SArray.ArrayType;
+
+
 @ImportStatic(ArrayType.class)
 @NodeChildren({
-  @NodeChild("somArray"),
-  @NodeChild("receiver")})
+    @NodeChild("somArray"),
+    @NodeChild("receiver")})
 public abstract class ToArgumentsArrayNode extends ExpressionNode {
 
   private final ValueProfile storageType = ValueProfile.createClassProfile();
 
-  public ToArgumentsArrayNode() { super(null); }
+  public ToArgumentsArrayNode() {
+    super(null);
+  }
 
-  public final static boolean isNull(final Object somArray) {
+  public static final boolean isNull(final Object somArray) {
     return somArray == null;
   }
 

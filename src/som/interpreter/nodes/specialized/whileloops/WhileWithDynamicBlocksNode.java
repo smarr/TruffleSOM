@@ -1,20 +1,20 @@
 package som.interpreter.nodes.specialized.whileloops;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.vm.NotYetImplementedException;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 
 public final class WhileWithDynamicBlocksNode extends AbstractWhileNode {
   private final SInvokable conditionMethod;
   private final SInvokable bodyMethod;
 
-  public final static WhileWithDynamicBlocksNode create(final SBlock rcvr,
+  public static WhileWithDynamicBlocksNode create(final SBlock rcvr,
       final SBlock arg, final boolean predicateBool) {
     return new WhileWithDynamicBlocksNode(rcvr, arg, predicateBool, null);
   }
@@ -37,7 +37,7 @@ public final class WhileWithDynamicBlocksNode extends AbstractWhileNode {
       final SBlock loopCondition,
       final SBlock loopBody) {
     assert loopCondition.getMethod() == conditionMethod;
-    assert loopBody.getMethod()      == bodyMethod;
+    assert loopBody.getMethod() == bodyMethod;
     return doWhileUnconditionally(frame, loopCondition, loopBody);
   }
 }

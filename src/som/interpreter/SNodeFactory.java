@@ -34,7 +34,6 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
 
-
 public final class SNodeFactory {
 
   public static CatchNonLocalReturnNode createCatchNonLocalReturn(
@@ -51,6 +50,7 @@ public final class SNodeFactory {
       final Universe universe, final SourceSection source) {
     return createGlobalRead(universe.symbolFor(name), universe, source);
   }
+
   public static GlobalNode createGlobalRead(final SSymbol name,
       final Universe universe, final SourceSection source) {
     return new UninitializedGlobalReadNode(name, source);
@@ -76,7 +76,7 @@ public final class SNodeFactory {
   }
 
   public static ExpressionNode createSuperRead(final int contextLevel,
-        final SSymbol holderClass, final boolean classSide, final SourceSection source) {
+      final SSymbol holderClass, final boolean classSide, final SourceSection source) {
     if (contextLevel == 0) {
       return new LocalSuperReadNode(holderClass, classSide, source);
     } else {
@@ -85,8 +85,8 @@ public final class SNodeFactory {
   }
 
   public static ContextualNode createVariableWrite(final Local variable,
-        final int contextLevel,
-        final ExpressionNode exp, final SourceSection source) {
+      final int contextLevel,
+      final ExpressionNode exp, final SourceSection source) {
     return new UninitializedVariableWriteNode(variable, contextLevel, exp, source);
   }
 

@@ -1,5 +1,15 @@
 package som.primitives.arrays;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
+
 import som.interpreter.Invokable;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
@@ -12,22 +22,12 @@ import som.vmobjects.SArray.ArrayType;
 import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.ImportStatic;
-import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
-
 
 @GenerateNodeFactory
 @ImportStatic(ArrayType.class)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
 public abstract class PutAllNode extends BinaryExpressionNode
-  implements ValuePrimitiveNode  {
+    implements ValuePrimitiveNode {
   @Child private AbstractDispatchNode block;
 
   public PutAllNode() {
@@ -40,15 +40,15 @@ public abstract class PutAllNode extends BinaryExpressionNode
     block = insert(node);
   }
 
-  protected final static boolean valueIsNil(final SObject value) {
+  protected static final boolean valueIsNil(final SObject value) {
     return value == Nil.nilObject;
   }
 
-  protected final static boolean valueOfNoOtherSpecialization(final Object value) {
-    return !(value instanceof Long)    &&
-           !(value instanceof Double)  &&
-           !(value instanceof Boolean) &&
-           !(value instanceof SBlock);
+  protected static final boolean valueOfNoOtherSpecialization(final Object value) {
+    return !(value instanceof Long) &&
+        !(value instanceof Double) &&
+        !(value instanceof Boolean) &&
+        !(value instanceof SBlock);
   }
 
   @Specialization(guards = {"isEmptyType(rcvr)", "valueIsNil(nil)"})
@@ -99,7 +99,8 @@ public abstract class PutAllNode extends BinaryExpressionNode
     if (length <= 0) {
       return rcvr;
     }
-// TODO: this version does not handle the case that a subsequent value is not of the expected type...
+    // TODO: this version does not handle the case that a subsequent value is not of the
+    // expected type...
     try {
       Object result = this.block.executeDispatch(frame, new Object[] {block});
       if (result instanceof Long) {

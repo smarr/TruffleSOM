@@ -25,9 +25,9 @@ import com.oracle.truffle.api.profiles.ValueProfile;
 @GenerateNodeFactory
 @ImportStatic(ArrayType.class)
 public abstract class DoPrim extends BinaryExpressionNode
-  implements ValuePrimitiveNode {
+    implements ValuePrimitiveNode {
   @Child private AbstractDispatchNode block;
-  private final ValueProfile storageType = ValueProfile.createClassProfile();
+  private final ValueProfile          storageType = ValueProfile.createClassProfile();
 
   public DoPrim() {
     super(null);

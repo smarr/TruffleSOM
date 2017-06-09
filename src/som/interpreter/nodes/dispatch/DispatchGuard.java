@@ -1,12 +1,12 @@
 package som.interpreter.nodes.dispatch;
 
+import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+
 import som.interpreter.objectstorage.ObjectLayout;
 import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
-
-import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 
 public abstract class DispatchGuard {
@@ -53,7 +53,7 @@ public abstract class DispatchGuard {
 
     private final Class<?> expected;
 
-    public CheckClass(final Class<?> expectedClass) {
+    CheckClass(final Class<?> expectedClass) {
       this.expected = expectedClass;
     }
 
@@ -81,7 +81,7 @@ public abstract class DispatchGuard {
 
     private final ObjectLayout expected;
 
-    public CheckSClass(final ObjectLayout expected) {
+    CheckSClass(final ObjectLayout expected) {
       this.expected = expected;
     }
 
@@ -97,7 +97,7 @@ public abstract class DispatchGuard {
 
     private final ObjectLayout expected;
 
-    public CheckSObject(final ObjectLayout expected) {
+    CheckSObject(final ObjectLayout expected) {
       this.expected = expected;
     }
 
