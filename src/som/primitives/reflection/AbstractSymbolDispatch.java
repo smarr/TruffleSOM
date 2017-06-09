@@ -1,5 +1,11 @@
 package som.primitives.reflection;
 
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.Node;
+
 import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
@@ -9,12 +15,6 @@ import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.nodes.Node;
 
 
 public abstract class AbstractSymbolDispatch extends Node {
@@ -55,7 +55,7 @@ public abstract class AbstractSymbolDispatch extends Node {
     return realCachedSend.doPreEvaluated(frame, arguments);
   }
 
-  @Specialization(contains = "doCachedWithoutArgArr", guards = "argsArr == null")
+  @Specialization(replaces = "doCachedWithoutArgArr", guards = "argsArr == null")
   public Object doUncached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("create()") final IndirectCallNode call) {
@@ -66,7 +66,7 @@ public abstract class AbstractSymbolDispatch extends Node {
     return call.call(frame, invokable.getCallTarget(), arguments);
   }
 
-  @Specialization(contains = "doCached")
+  @Specialization(replaces = "doCached")
   public Object doUncached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("create()") final IndirectCallNode call,

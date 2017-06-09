@@ -1,7 +1,5 @@
 package som.interpreter.nodes;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreter;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -82,7 +80,7 @@ public abstract class LocalVariableNode extends ExpressionNode {
     }
 
     @Specialization(guards = {"isObject(frame)"},
-        contains = {"doBoolean", "doLong", "doDouble"},
+        replaces = {"doBoolean", "doLong", "doDouble"},
         rewriteOn = {FrameSlotTypeException.class})
     public final Object doObject(final VirtualFrame frame) throws FrameSlotTypeException {
       return frame.getObject(slot);
@@ -110,72 +108,65 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
     public abstract ExpressionNode getExp();
 
-    @Specialization(guards = "isBoolKind(frame)")
+    @Specialization(guards = "isBoolKind(expValue)")
     public final boolean writeBoolean(final VirtualFrame frame, final boolean expValue) {
       frame.setBoolean(slot, expValue);
       return expValue;
     }
 
-    @Specialization(guards = "isLongKind(frame)")
+    @Specialization(guards = "isLongKind(expValue)")
     public final long writeLong(final VirtualFrame frame, final long expValue) {
       frame.setLong(slot, expValue);
       return expValue;
     }
 
-    @Specialization(guards = "isDoubleKind(frame)")
+    @Specialization(guards = "isDoubleKind(expValue)")
     public final double writeDouble(final VirtualFrame frame, final double expValue) {
       frame.setDouble(slot, expValue);
       return expValue;
     }
 
-    @Specialization(contains = {"writeBoolean", "writeLong", "writeDouble"})
+    @Specialization(replaces = {"writeBoolean", "writeLong", "writeDouble"})
     public final Object writeGeneric(final VirtualFrame frame, final Object expValue) {
-      ensureObjectKind();
+      slot.setKind(FrameSlotKind.Object);
       frame.setObject(slot, expValue);
       return expValue;
     }
 
-    protected final boolean isBoolKind(final VirtualFrame frame) {
-      if (frame.isBoolean(slot)) {
+    // uses expValue to make sure guard is not converted to assertion
+    protected final boolean isBoolKind(final boolean expValue) {
+      if (slot.getKind() == FrameSlotKind.Boolean) {
         return true;
       }
       if (slot.getKind() == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeBoolToUninit");
         slot.setKind(FrameSlotKind.Boolean);
         return true;
       }
       return false;
     }
 
-    protected final boolean isLongKind(final VirtualFrame frame) {
-      if (frame.isLong(slot)) {
+    // uses expValue to make sure guard is not converted to assertion
+    protected final boolean isLongKind(final long expValue) {
+      if (slot.getKind() == FrameSlotKind.Long) {
         return true;
       }
       if (slot.getKind() == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeIntToUninit");
         slot.setKind(FrameSlotKind.Long);
         return true;
       }
       return false;
     }
 
-    protected final boolean isDoubleKind(final VirtualFrame frame) {
-      if (frame.isDouble(slot)) {
+    // uses expValue to make sure guard is not converted to assertion
+    protected final boolean isDoubleKind(final double expValue) {
+      if (slot.getKind() == FrameSlotKind.Double) {
         return true;
       }
       if (slot.getKind() == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeDoubleToUninit");
         slot.setKind(FrameSlotKind.Double);
         return true;
       }
       return false;
-    }
-
-    protected final void ensureObjectKind() {
-      if (slot.getKind() != FrameSlotKind.Object) {
-        transferToInterpreter("LocalVar.writeObjectToUninit");
-        slot.setKind(FrameSlotKind.Object);
-      }
     }
 
     @Override

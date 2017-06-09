@@ -70,7 +70,7 @@ import java.util.List;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.compiler.Lexer.SourceCoordinate;
+import som.compiler.Lexer.Peek;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
@@ -96,6 +96,7 @@ import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
+import tools.SourceCoordinate;
 
 
 public final class Parser {
@@ -334,8 +335,7 @@ public final class Parser {
 
   private SourceSection getSource(final SourceCoordinate coord) {
     assert lexer.getNumberOfCharactersRead() - coord.charIndex >= 0;
-    return source.createSection("method", coord.startLine,
-        coord.startColumn, coord.charIndex,
+    return source.createSection(coord.startLine, coord.startColumn,
         lexer.getNumberOfCharactersRead() - coord.charIndex);
   }
 
@@ -984,7 +984,8 @@ public final class Parser {
   }
 
   private void peekForNextSymbolFromLexer() {
-    nextSym = lexer.peek();
+    Peek peek = lexer.peek();
+    nextSym = peek.nextSym;
   }
 
   private static boolean isIdentifier(final Symbol sym) {

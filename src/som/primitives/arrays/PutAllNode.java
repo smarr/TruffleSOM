@@ -58,7 +58,7 @@ public abstract class PutAllNode extends BinaryExpressionNode
     return rcvr;
   }
 
-  @Specialization(guards = {"valueIsNil(nil)"}, contains = {"doPutNilInEmptyArray"})
+  @Specialization(guards = {"valueIsNil(nil)"}, replaces = {"doPutNilInEmptyArray"})
   public SArray doPutNilInOtherArray(final SArray rcvr, final SObject nil,
       final long length) {
     rcvr.transitionToEmpty(length);

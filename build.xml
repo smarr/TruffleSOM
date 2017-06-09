@@ -4,13 +4,15 @@
     <property name="src_gen.dir" value="src_gen"/>
     <property name="test.dir"    value="tests"/>
     <property name="lib.dir"     value="libs" />
-    <property name="truffle.dir" value="${lib.dir}/truffle" />
+    <property name="truffle.dir" value="${lib.dir}/truffle/truffle" />
     <property name="truffle.build" value="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
 
     <property name="checkstyle.version" value="7.8.1" />
 
     <property environment="env"/>
+
+    <property name="mx.cmd" value="../../mx/mx" />
 
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
@@ -27,6 +29,12 @@
     <target name="clean" description="Remove build directories and generated code">
         <delete dir="${build.dir}"/>
         <delete dir="${src_gen.dir}"/>
+    </target>
+    
+    <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
+        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+            <arg value="clean"/>
+        </exec>
     </target>
 
     <target name="eclipseformat">
@@ -61,12 +69,6 @@
           <arg value="HEAD" />
       </exec>
     </target>
-
-    <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
-        <exec executable="../mxtool/mx" dir="${truffle.dir}">
-            <arg value="clean"/>
-        </exec>
-    </target>
     
     <target name="check-core-lib-available">
         <available file="core-lib/.git" property="core-lib.present"/>
@@ -80,12 +82,19 @@
       </exec>
     </target>
 
-    <target name="truffle-libs" >
-        <exec executable="../mxtool/mx" dir="${truffle.dir}">
+    <target name="truffle-libs" depends="core-lib">
+        <exec executable="${mx.cmd}" dir="${truffle.dir}">
             <arg value="build"/>
+            <arg value="--no-native"/>
         </exec>
     </target>
-    
+
+    <target name="ideinit" depends="core-lib">
+        <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
+            <arg value="eclipseinit"/>
+        </exec>
+    </target>
+
     <target name="libs" depends="core-lib,truffle-libs">
         <get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar"
             usetimestamp="true"
