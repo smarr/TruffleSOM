@@ -29,13 +29,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.source.Source;
+
 import som.compiler.Parser.ParseError;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.source.Source;
 
 
 public final class SourcecodeCompiler {
@@ -47,8 +47,9 @@ public final class SourcecodeCompiler {
     String fname = path + File.separator + file + ".som";
     FileReader stream = new FileReader(fname);
 
-    Source source = Source.fromFileName(fname);
-    Parser parser = new Parser(stream, new File(fname).length(), source, universe);
+    File f = new File(fname);
+    Source source = Source.newBuilder(f).build();
+    Parser parser = new Parser(stream, f.length(), source, universe);
 
     SClass result = compile(parser, systemClass, universe);
 

@@ -46,9 +46,7 @@ public final class Method extends Invokable {
 
   @Override
   public String toString() {
-    SourceSection ss = getSourceSection();
-    final String id = ss.getIdentifier();
-    return "Method " + id + "\t@" + Integer.toHexString(hashCode());
+    return "Method @" + Integer.toHexString(hashCode());
   }
 
   @Override

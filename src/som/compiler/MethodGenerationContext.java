@@ -36,6 +36,10 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.LexicalScope;
@@ -50,10 +54,6 @@ import som.vm.Universe;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.source.SourceSection;
 
 
 public final class MethodGenerationContext {
@@ -189,11 +189,8 @@ public final class MethodGenerationContext {
   }
 
   private SourceSection getSourceSectionForMethod(final SourceSection ssBody) {
-    String cls = holderGenc.isClassSide() ? "_class" : "";
-    SourceSection ssMethod = ssBody.getSource().createSection(
-        holderGenc.getName().getString() + cls + ">>" + signature.toString(),
-        ssBody.getStartLine(), ssBody.getStartColumn(),
-        ssBody.getCharIndex(), ssBody.getCharLength());
+    SourceSection ssMethod = ssBody.getSource().createSection(ssBody.getStartLine(),
+        ssBody.getStartColumn(), ssBody.getCharLength());
     return ssMethod;
   }
 
