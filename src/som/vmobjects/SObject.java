@@ -29,16 +29,16 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+
 import som.interpreter.objectstorage.ObjectLayout;
 import som.interpreter.objectstorage.StorageLocation;
 import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
 import som.vm.Universe;
 import som.vm.constants.Nil;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 
 public class SObject extends SAbstractObject {
@@ -60,8 +60,8 @@ public class SObject extends SAbstractObject {
   @SuppressWarnings("unused") private Object field4;
   @SuppressWarnings("unused") private Object field5;
 
-  @SuppressWarnings("unused") @CompilationFinal private long[]   extensionPrimFields;
-  @SuppressWarnings("unused") @CompilationFinal private Object[] extensionObjFields;
+  @CompilationFinal(dimensions = 0) private long[]   extensionPrimFields;
+  @CompilationFinal(dimensions = 0) private Object[] extensionObjFields;
 
   // we manage the layout entirely in the class, but need to keep a copy here
   // to know in case the layout changed that we can update the instances lazily
