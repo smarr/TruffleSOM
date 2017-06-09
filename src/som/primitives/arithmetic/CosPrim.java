@@ -9,7 +9,9 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 @GenerateNodeFactory
 public abstract class CosPrim extends UnaryExpressionNode {
 
-  public CosPrim() { super(null); }
+  public CosPrim() {
+    super(null);
+  }
 
   @Specialization
   public final double doCos(final double rcvr) {

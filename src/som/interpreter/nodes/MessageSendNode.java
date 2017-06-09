@@ -85,7 +85,7 @@ public final class MessageSendNode {
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
       final ExpressionNode[] argumentNodes, final SourceSection source) {
     return new GenericMessageSendNode(selector, argumentNodes,
-      new UninitializedDispatchNode(selector), source);
+        new UninitializedDispatchNode(selector), source);
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
@@ -134,8 +134,7 @@ public final class MessageSendNode {
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return specialize(arguments).
-          doPreEvaluated(frame, arguments);
+      return specialize(arguments).doPreEvaluated(frame, arguments);
     }
 
     private PreevaluatedExpression specialize(final Object[] arguments) {
@@ -150,19 +149,22 @@ public final class MessageSendNode {
       // We treat super sends separately for simplicity, might not be the
       // optimal solution, especially in cases were the knowledge of the
       // receiver class also allows us to do more specific things, but for the
-      // moment  we will leave it at this.
+      // moment we will leave it at this.
       // TODO: revisit, and also do more specific optimizations for super sends.
-
 
       // let's organize the specializations by number of arguments
       // perhaps not the best, but one simple way to just get some order into
       // the chaos.
 
       switch (argumentNodes.length) {
-        case  1: return specializeUnary(arguments);
-        case  2: return specializeBinary(arguments);
-        case  3: return specializeTernary(arguments);
-        case  4: return specializeQuaternary(arguments);
+        case 1:
+          return specializeUnary(arguments);
+        case 2:
+          return specializeBinary(arguments);
+        case 3:
+          return specializeTernary(arguments);
+        case 4:
+          return specializeQuaternary(arguments);
       }
 
       return makeGenericSend();
@@ -250,13 +252,13 @@ public final class MessageSendNode {
           break;
         case "putAll:":
           return replace(new EagerBinaryPrimitiveNode(selector,
-                argumentNodes[0], argumentNodes[1],
-                PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
+              argumentNodes[0], argumentNodes[1],
+              PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
         case "whileTrue:": {
           if (argumentNodes[1] instanceof BlockNode &&
               argumentNodes[0] instanceof BlockNode) {
             BlockNode argBlockNode = (BlockNode) argumentNodes[1];
-            SBlock    argBlock     = (SBlock)    arguments[1];
+            SBlock argBlock = (SBlock) arguments[1];
             return replace(new WhileTrueStaticBlocksNode(
                 (BlockNode) argumentNodes[0], argBlockNode,
                 (SBlock) arguments[0],
@@ -268,7 +270,7 @@ public final class MessageSendNode {
           if (argumentNodes[1] instanceof BlockNode &&
               argumentNodes[0] instanceof BlockNode) {
             BlockNode argBlockNode = (BlockNode) argumentNodes[1];
-            SBlock    argBlock     = (SBlock)    arguments[1];
+            SBlock argBlock = (SBlock) arguments[1];
             return replace(new WhileFalseStaticBlocksNode(
                 (BlockNode) argumentNodes[0], argBlockNode,
                 (SBlock) arguments[0], argBlock, getSourceSection()));
@@ -426,7 +428,8 @@ public final class MessageSendNode {
         case "to:do:":
           if (TypesGen.isLong(arguments[0]) &&
               (TypesGen.isLong(arguments[1]) ||
-                  TypesGen.isDouble(arguments[1])) &&
+                  TypesGen.isDouble(arguments[1]))
+              &&
               TypesGen.isSBlock(arguments[2])) {
             return replace(IntToDoMessageNodeGen.create(this,
                 (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
@@ -436,7 +439,8 @@ public final class MessageSendNode {
         case "downTo:do:":
           if (TypesGen.isLong(arguments[0]) &&
               (TypesGen.isLong(arguments[1]) ||
-                  TypesGen.isDouble(arguments[1])) &&
+                  TypesGen.isDouble(arguments[1]))
+              &&
               TypesGen.isSBlock(arguments[2])) {
             return replace(IntDownToDoMessageNodeGen.create(this,
                 (SBlock) arguments[2], argumentNodes[0], argumentNodes[1],
@@ -450,7 +454,7 @@ public final class MessageSendNode {
               ToArgumentsArrayNodeGen.create(null, null)));
         case "instVarAt:put:":
           return replace(InstVarAtPutPrimFactory.create(
-            argumentNodes[0], argumentNodes[1], argumentNodes[2]));
+              argumentNodes[0], argumentNodes[1], argumentNodes[2]));
       }
       return makeGenericSend();
     }
@@ -478,14 +482,15 @@ public final class MessageSendNode {
     @Override
     protected PreevaluatedExpression makeSuperSend() {
       GenericMessageSendNode node = new GenericMessageSendNode(selector,
-        argumentNodes, SuperDispatchNode.create(selector,
-              (ISuperReadNode) argumentNodes[0]), getSourceSection());
+          argumentNodes, SuperDispatchNode.create(selector,
+              (ISuperReadNode) argumentNodes[0]),
+          getSourceSection());
       return replace(node);
     }
   }
 
   private static final class UninitializedSymbolSendNode
-    extends AbstractUninitializedMessageSendNode {
+      extends AbstractUninitializedMessageSendNode {
 
     protected UninitializedSymbolSendNode(final SSymbol selector,
         final SourceSection source) {
@@ -517,7 +522,7 @@ public final class MessageSendNode {
         }
         case "whileFalse:":
           if (arguments[1] instanceof SBlock && arguments[0] instanceof SBlock) {
-            SBlock    argBlock     = (SBlock)    arguments[1];
+            SBlock argBlock = (SBlock) arguments[1];
             return replace(new WhileWithDynamicBlocksNode(
                 (SBlock) arguments[0], argBlock, false, getSourceSection()));
           }
@@ -528,7 +533,8 @@ public final class MessageSendNode {
     }
   }
 
-/// TODO: currently, we do not only specialize the given stuff above, but also what has been classified as 'value' sends in the OMOP branch. Is that a problem?
+  // TODO: currently, we do not only specialize the given stuff above, but also what has been
+  // classified as 'value' sends in the OMOP branch. Is that a problem?
 
   public static final class GenericMessageSendNode
       extends AbstractMessageSendNode {

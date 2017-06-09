@@ -9,7 +9,9 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 @GenerateNodeFactory
 public abstract class SinPrim extends UnaryExpressionNode {
 
-  public SinPrim() { super(null); }
+  public SinPrim() {
+    super(null);
+  }
 
   @Specialization
   public final double doSin(final double rcvr) {

@@ -1,15 +1,16 @@
 package som.primitives.reflection;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.nodes.Node;
+
 import som.interpreter.nodes.dispatch.DispatchChain;
 import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.nodes.Node;
 
 
 public abstract class IndexDispatch extends Node implements DispatchChain {
@@ -26,11 +27,12 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   }
 
   public abstract Object executeDispatch(SObject obj, int index);
+
   public abstract Object executeDispatch(SObject obj, int index, Object value);
 
   private static final class UninitializedDispatchNode extends IndexDispatch {
 
-    public UninitializedDispatchNode(final int depth) {
+    UninitializedDispatchNode(final int depth) {
       super(depth);
     }
 
@@ -41,7 +43,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
         IndexDispatch specialized;
         if (read) {
           specialized = new CachedReadDispatchNode(clazz, index,
-            new UninitializedDispatchNode(depth + 1), depth);
+              new UninitializedDispatchNode(depth + 1), depth);
         } else {
           specialized = new CachedWriteDispatchNode(clazz, index,
               new UninitializedDispatchNode(depth + 1), depth);
@@ -55,16 +57,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final SObject obj, final int index) {
-      return specialize(obj.getSOMClass(), index, true).
-          executeDispatch(obj, index);
+      return specialize(obj.getSOMClass(), index, true).executeDispatch(obj, index);
     }
 
     @Override
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      return specialize(obj.getSOMClass(), index, false).
-          executeDispatch(obj, index, value);
+      return specialize(obj.getSOMClass(), index, false).executeDispatch(obj, index, value);
     }
-
 
     private IndexDispatch determineChainHead() {
       Node i = this;
@@ -81,13 +80,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   }
 
   private static final class CachedReadDispatchNode extends IndexDispatch {
-    private final int index;
-    private final SClass clazz;
+    private final int                    index;
+    private final SClass                 clazz;
     @Child private AbstractReadFieldNode access;
     // TODO: have a second cached class for the writing...
     @Child private IndexDispatch next;
 
-    public CachedReadDispatchNode(final SClass clazz, final int index,
+    CachedReadDispatchNode(final SClass clazz, final int index,
         final IndexDispatch next, final int depth) {
       super(depth);
       this.index = index;
@@ -118,13 +117,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   }
 
   private static final class CachedWriteDispatchNode extends IndexDispatch {
-    private final int index;
-    private final SClass clazz;
+    private final int                     index;
+    private final SClass                  clazz;
     @Child private AbstractWriteFieldNode access;
-    @Child private IndexDispatch next;
+    @Child private IndexDispatch          next;
 
-    public CachedWriteDispatchNode(final SClass clazz, final int index,
-        final IndexDispatch next, final int depth) {
+    CachedWriteDispatchNode(final SClass clazz, final int index, final IndexDispatch next,
+        final int depth) {
       super(depth);
       this.index = index;
       this.clazz = clazz;
@@ -155,7 +154,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   private static final class GenericDispatchNode extends IndexDispatch {
 
-    public GenericDispatchNode() {
+    GenericDispatchNode() {
       super(0);
     }
 

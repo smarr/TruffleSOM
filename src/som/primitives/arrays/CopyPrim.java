@@ -23,7 +23,8 @@ public abstract class CopyPrim extends UnaryExpressionNode {
 
   @Specialization(guards = "isPartiallyEmptyType(receiver)")
   public final SArray doPartiallyEmptyArray(final SArray receiver) {
-    return new SArray(ArrayType.PARTIAL_EMPTY, receiver.getPartiallyEmptyStorage(storageType).copy());
+    return new SArray(ArrayType.PARTIAL_EMPTY,
+        receiver.getPartiallyEmptyStorage(storageType).copy());
   }
 
   @Specialization(guards = "isObjectType(receiver)")

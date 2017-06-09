@@ -12,7 +12,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
 
-  @Child private ExpressionNode receiver;
+  @Child private ExpressionNode      receiver;
   @Child private UnaryExpressionNode primitive;
 
   private final SSymbol selector;
@@ -20,7 +20,7 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
   public EagerUnaryPrimitiveNode(final SSymbol selector,
       final ExpressionNode receiver, final UnaryExpressionNode primitive) {
     super(null);
-    this.receiver  = receiver;
+    this.receiver = receiver;
     this.primitive = primitive;
     this.selector = selector;
   }
@@ -38,7 +38,8 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
     try {
       return primitive.executeEvaluated(frame, receiver);
     } catch (UnsupportedSpecializationException e) {
-      TruffleCompiler.transferToInterpreterAndInvalidate("Eager Primitive with unsupported specialization.");
+      TruffleCompiler.transferToInterpreterAndInvalidate(
+          "Eager Primitive with unsupported specialization.");
       return makeGenericSend().doPreEvaluated(frame, new Object[] {receiver});
     }
   }

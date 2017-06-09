@@ -21,7 +21,7 @@ public abstract class EqualsPrim extends BinaryExpressionNode {
   @Specialization
   public final boolean doBoolean(final boolean left, final SObject right) {
     return (left && right == Globals.trueObject) ||
-          (!left && right == Globals.falseObject);
+        (!left && right == Globals.falseObject);
   }
 
   @Specialization
@@ -74,12 +74,10 @@ public abstract class EqualsPrim extends BinaryExpressionNode {
     return receiver.equals(argument.getString());
   }
 
-
   @Specialization
   public final boolean doSSymbol(final SSymbol receiver, final String argument) {
     return receiver.getString().equals(argument);
   }
-
 
   @Specialization
   public final boolean doLong(final long left, final String right) {

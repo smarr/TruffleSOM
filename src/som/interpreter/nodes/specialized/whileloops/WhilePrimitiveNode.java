@@ -11,7 +11,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 @GenerateNodeFactory
 public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
-  final boolean predicateBool;
+  final boolean               predicateBool;
   @Child protected WhileCache whileNode;
 
   protected WhilePrimitiveNode(final boolean predicateBool) {
@@ -31,10 +31,14 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
   }
 
   public abstract static class WhileTruePrimitiveNode extends WhilePrimitiveNode {
-    public WhileTruePrimitiveNode() { super(true); }
+    public WhileTruePrimitiveNode() {
+      super(true);
+    }
   }
 
   public abstract static class WhileFalsePrimitiveNode extends WhilePrimitiveNode {
-    public WhileFalsePrimitiveNode() { super(false); }
+    public WhileFalsePrimitiveNode() {
+      super(false);
+    }
   }
 }

@@ -22,7 +22,7 @@ public abstract class UnequalsPrim extends BinaryExpressionNode {
   @Specialization
   public final boolean doBoolean(final boolean left, final SObject right) {
     return (left && right != Globals.trueObject) ||
-          (!left && right != Globals.falseObject);
+        (!left && right != Globals.falseObject);
   }
 
   @Specialization

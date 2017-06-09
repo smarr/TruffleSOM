@@ -1,16 +1,16 @@
 package som.interpreter;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.SOMNode;
-
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 import com.oracle.truffle.api.source.SourceSection;
 
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.SOMNode;
 
-public class InlinerAdaptToEmbeddedOuterContext implements NodeVisitor {
+
+public final class InlinerAdaptToEmbeddedOuterContext implements NodeVisitor {
 
   public static ExpressionNode doInline(final ExpressionNode body,
       final InlinerForLexicallyEmbeddedMethods inliner,

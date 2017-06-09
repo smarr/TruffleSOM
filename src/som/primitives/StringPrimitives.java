@@ -29,16 +29,19 @@ import som.primitives.StringPrimsFactory.AsSymbolPrimFactory;
 import som.primitives.StringPrimsFactory.ConcatPrimFactory;
 import som.primitives.StringPrimsFactory.SubstringPrimFactory;
 
+
 public final class StringPrimitives extends Primitives {
-  public StringPrimitives(final boolean displayWarning) { super(displayWarning); }
+  public StringPrimitives(final boolean displayWarning) {
+    super(displayWarning);
+  }
 
   @Override
   public void installPrimitives() {
     installInstancePrimitive("concatenate:", ConcatPrimFactory.getInstance());
-    installInstancePrimitive("asSymbol",     AsSymbolPrimFactory.getInstance());
-    installInstancePrimitive("length",       LengthPrimFactory.getInstance());
-    installInstancePrimitive("=",            EqualsPrimFactory.getInstance());
+    installInstancePrimitive("asSymbol", AsSymbolPrimFactory.getInstance());
+    installInstancePrimitive("length", LengthPrimFactory.getInstance());
+    installInstancePrimitive("=", EqualsPrimFactory.getInstance());
     installInstancePrimitive("primSubstringFrom:to:", SubstringPrimFactory.getInstance());
-    installInstancePrimitive("hashcode",     HashPrimFactory.getInstance());
+    installInstancePrimitive("hashcode", HashPrimFactory.getInstance());
   }
 }

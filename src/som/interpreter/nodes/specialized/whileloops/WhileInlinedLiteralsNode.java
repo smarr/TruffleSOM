@@ -1,9 +1,5 @@
 package som.interpreter.nodes.specialized.whileloops;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.constants.Nil;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
@@ -12,6 +8,10 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.Invokable;
+import som.interpreter.nodes.ExpressionNode;
+import som.vm.constants.Nil;
 
 
 public final class WhileInlinedLiteralsNode extends ExpressionNode {
@@ -33,12 +33,11 @@ public final class WhileInlinedLiteralsNode extends ExpressionNode {
       final SourceSection sourceSection) {
     super(sourceSection);
     this.conditionNode = inlinedConditionNode;
-    this.bodyNode      = inlinedBodyNode;
-    this.expectedBool  = expectedBool;
+    this.bodyNode = inlinedBodyNode;
+    this.expectedBool = expectedBool;
     this.conditionActualNode = originalConditionNode;
-    this.bodyActualNode      = originalBodyNode;
+    this.bodyActualNode = originalBodyNode;
   }
-
 
   private boolean evaluateCondition(final VirtualFrame frame) {
     try {
@@ -62,7 +61,9 @@ public final class WhileInlinedLiteralsNode extends ExpressionNode {
         bodyNode.executeGeneric(frame);
         loopConditionResult = evaluateCondition(frame);
 
-        if (CompilerDirectives.inInterpreter()) { iterationCount++; }
+        if (CompilerDirectives.inInterpreter()) {
+          iterationCount++;
+        }
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -72,7 +73,7 @@ public final class WhileInlinedLiteralsNode extends ExpressionNode {
     return Nil.nilObject;
   }
 
-  protected final void reportLoopCount(final long count) {
+  protected void reportLoopCount(final long count) {
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");
     Node current = getParent();
     while (current != null && !(current instanceof RootNode)) {

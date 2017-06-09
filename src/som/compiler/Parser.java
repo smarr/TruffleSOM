@@ -97,17 +97,18 @@ import som.vmobjects.SClass;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
 
+
 public final class Parser {
 
-  private final Universe            universe;
-  private final Lexer               lexer;
-  private final Source              source;
+  private final Universe universe;
+  private final Lexer    lexer;
+  private final Source   source;
 
-  private Symbol                    sym;
-  private String                    text;
-  private Symbol                    nextSym;
+  private Symbol sym;
+  private String text;
+  private Symbol nextSym;
 
-  private SourceSection             lastMethodsSourceSection;
+  private SourceSection lastMethodsSourceSection;
 
   private static final List<Symbol> singleOpSyms        = new ArrayList<Symbol>();
   private static final List<Symbol> binaryOpSyms        = new ArrayList<Symbol>();
@@ -132,26 +133,24 @@ public final class Parser {
     return "Parser(" + source.getName() + ", " + this.getCoordinate().toString() + ")";
   }
 
-
-
   public static class ParseError extends Exception {
-    private static final long serialVersionUID = 425390202979033628L;
-    private final String message;
+    private static final long      serialVersionUID = 425390202979033628L;
+    private final String           message;
     private final SourceCoordinate sourceCoordinate;
-    private final String text;
-    private final String rawBuffer;
-    private final String fileName;
-    private final Symbol expected;
-    private final Symbol found;
+    private final String           text;
+    private final String           rawBuffer;
+    private final String           fileName;
+    private final Symbol           expected;
+    private final Symbol           found;
 
     ParseError(final String message, final Symbol expected, final Parser parser) {
       this.message = message;
       this.sourceCoordinate = parser.getCoordinate();
-      this.text             = parser.text;
-      this.rawBuffer        = parser.lexer.getRawBuffer();
-      this.fileName         = parser.source.getName();
-      this.expected         = expected;
-      this.found            = parser.sym;
+      this.text = parser.text;
+      this.rawBuffer = parser.lexer.getRawBuffer();
+      this.fileName = parser.source.getName();
+      this.expected = expected;
+      this.found = parser.sym;
     }
 
     protected String expectedSymbolAsString() {
@@ -170,17 +169,18 @@ public final class Parser {
       msg += ": " + rawBuffer;
       String expectedStr = expectedSymbolAsString();
 
-      msg = msg.replace("%(file)s",     fileName);
-      msg = msg.replace("%(line)d",     java.lang.Integer.toString(sourceCoordinate.startLine));
-      msg = msg.replace("%(column)d",   java.lang.Integer.toString(sourceCoordinate.startColumn));
+      msg = msg.replace("%(file)s", fileName);
+      msg = msg.replace("%(line)d", java.lang.Integer.toString(sourceCoordinate.startLine));
+      msg =
+          msg.replace("%(column)d", java.lang.Integer.toString(sourceCoordinate.startColumn));
       msg = msg.replace("%(expected)s", expectedStr);
-      msg = msg.replace("%(found)s",    foundStr);
+      msg = msg.replace("%(found)s", foundStr);
       return msg;
     }
   }
 
   public static class ParseErrorWithSymbolList extends ParseError {
-    private static final long serialVersionUID = 561313162441723955L;
+    private static final long  serialVersionUID = 561313162441723955L;
     private final List<Symbol> expectedSymbols;
 
     ParseErrorWithSymbolList(final String message, final List<Symbol> expected,
@@ -191,21 +191,22 @@ public final class Parser {
 
     @Override
     protected String expectedSymbolAsString() {
-        StringBuilder sb = new StringBuilder();
-        String deliminator = "";
+      StringBuilder sb = new StringBuilder();
+      String deliminator = "";
 
-        for (Symbol s : expectedSymbols) {
-            sb.append(deliminator);
-            sb.append(s);
-            deliminator = ", ";
-        }
-        return sb.toString();
+      for (Symbol s : expectedSymbols) {
+        sb.append(deliminator);
+        sb.append(s);
+        deliminator = ", ";
+      }
+      return sb.toString();
     }
   }
 
-  public Parser(final Reader reader, final long fileSize, final Source source, final Universe universe) {
+  public Parser(final Reader reader, final long fileSize, final Source source,
+      final Universe universe) {
     this.universe = universe;
-    this.source   = source;
+    this.source = source;
 
     sym = NONE;
     lexer = new Lexer(reader, fileSize);
@@ -294,14 +295,18 @@ public final class Parser {
   }
 
   private boolean expect(final Symbol s) throws ParseError {
-    if (accept(s)) { return true; }
+    if (accept(s)) {
+      return true;
+    }
 
     throw new ParseError("Unexpected symbol. Expected %(expected)s, but found "
         + "%(found)s", s, this);
   }
 
   private boolean expectOneOf(final List<Symbol> ss) throws ParseError {
-    if (acceptOneOf(ss)) { return true; }
+    if (acceptOneOf(ss)) {
+      return true;
+    }
 
     throw new ParseErrorWithSymbolList("Unexpected symbol. Expected one of " +
         "%(expected)s, but found %(found)s", ss, this);
@@ -380,8 +385,7 @@ public final class Parser {
     do {
       kw.append(keyword());
       mgenc.addArgumentIfAbsent(argument());
-    }
-    while (sym == Keyword);
+    } while (sym == Keyword);
 
     mgenc.setSignature(universe.symbolFor(kw.toString()));
   }
@@ -403,7 +407,7 @@ public final class Parser {
   private SSymbol binarySelector() throws ParseError {
     String s = new String(text);
 
-    // Checkstyle: stop
+    // Checkstyle: stop @formatter:off
     if (accept(Or)) {
     } else if (accept(Comma)) {
     } else if (accept(Minus)) {
@@ -411,7 +415,7 @@ public final class Parser {
     } else if (acceptOneOf(singleOpSyms)) {
     } else if (accept(OperatorSequence)) {
     } else { expect(NONE); }
-    // Checkstyle: resume
+    // Checkstyle: resume @formatter:on
 
     return universe.symbolFor(s);
   }
@@ -524,8 +528,8 @@ public final class Parser {
 
     if (!isIdentifier(sym)) {
       throw new ParseError("Assignments should always target variables or" +
-                           " fields, but found instead a %(found)s",
-                           Symbol.Identifier, this);
+          " fields, but found instead a %(found)s",
+          Symbol.Identifier, this);
     }
     String variable = assignment();
 
@@ -625,7 +629,8 @@ public final class Parser {
     return msg;
   }
 
-  private AbstractMessageSendNode unaryMessage(final ExpressionNode receiver) throws ParseError {
+  private AbstractMessageSendNode unaryMessage(final ExpressionNode receiver)
+      throws ParseError {
     SourceCoordinate coord = getCoordinate();
     SSymbol selector = unarySelector();
     return createMessageSend(selector, new ExpressionNode[] {receiver},
@@ -647,7 +652,7 @@ public final class Parser {
 
     // a binary operand can receive unaryMessages
     // Example: 2 * 3 asString
-    //   is evaluated as 2 * (3 asString)
+    // is evaluated as 2 * (3 asString)
     while (isIdentifier(sym)) {
       operand = unaryMessage(operand);
     }
@@ -658,15 +663,14 @@ public final class Parser {
       final ExpressionNode receiver) throws ParseError {
     SourceCoordinate coord = getCoordinate();
     List<ExpressionNode> arguments = new ArrayList<ExpressionNode>();
-    StringBuffer         kw        = new StringBuffer();
+    StringBuffer kw = new StringBuffer();
 
     arguments.add(receiver);
 
     do {
       kw.append(keyword());
       arguments.add(formula(mgenc));
-    }
-    while (sym == Keyword);
+    } while (sym == Keyword);
 
     String msgStr = kw.toString();
     SSymbol msg = universe.symbolFor(msgStr);
@@ -685,26 +689,28 @@ public final class Parser {
               arguments.get(1), source);
         } else if ("whileTrue:".equals(msgStr)) {
           ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
-          ExpressionNode inlinedBody      = ((LiteralNode) arguments.get(1)).inline(mgenc);
+          ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
               true, arguments.get(0), arguments.get(1), source);
         } else if ("whileFalse:".equals(msgStr)) {
           ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
-          ExpressionNode inlinedBody      = ((LiteralNode) arguments.get(1)).inline(mgenc);
+          ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
               false, arguments.get(0), arguments.get(1), source);
         } else if ("or:".equals(msgStr) || "||".equals(msgStr)) {
           ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new OrInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1), source);
+          return new OrInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1),
+              source);
         } else if ("and:".equals(msgStr) || "&&".equals(msgStr)) {
           ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new AndInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1), source);
+          return new AndInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1),
+              source);
         }
       }
     } else if (msg.getNumberOfSignatureArguments() == 3) {
       if ("ifTrue:ifFalse:".equals(msgStr) &&
           arguments.get(1) instanceof LiteralNode && arguments.get(2) instanceof LiteralNode) {
-        ExpressionNode inlinedTrueNode  = ((LiteralNode) arguments.get(1)).inline(mgenc);
+        ExpressionNode inlinedTrueNode = ((LiteralNode) arguments.get(1)).inline(mgenc);
         ExpressionNode inlinedFalseNode = ((LiteralNode) arguments.get(2)).inline(mgenc);
         return new IfTrueIfFalseInlinedLiteralsNode(arguments.get(0),
             inlinedTrueNode, inlinedFalseNode, arguments.get(1), arguments.get(2),
@@ -743,7 +749,7 @@ public final class Parser {
     switch (sym) {
       case Pound: {
         peekForNextSymbolFromLexerIfNecessary();
-        if (nextSym == NewTerm){
+        if (nextSym == NewTerm) {
           return new ArrayLiteralNode(literalArray(), getSource(coord));
         } else {
           return new SymbolLiteralNode(literalSymbol(), getSource(coord));
@@ -778,17 +784,18 @@ public final class Parser {
     }
     return isNegative;
   }
+
   private long literalInteger(final boolean isNegative) throws ParseError {
     try {
-       long i = Long.parseLong(text);
-       if (isNegative) {
-         i = 0 - i;
-       }
-       expect(Integer);
-       return i;
+      long i = Long.parseLong(text);
+      if (isNegative) {
+        i = 0 - i;
+      }
+      expect(Integer);
+      return i;
     } catch (NumberFormatException e) {
       throw new ParseError("Could not parse integer. Expected a number but " +
-                           "got '" + text + "'", NONE, this);
+          "got '" + text + "'", NONE, this);
     }
   }
 
@@ -834,7 +841,7 @@ public final class Parser {
       case Pound:
         peekForNextSymbolFromLexerIfNecessary();
 
-        if (nextSym == NewTerm){
+        if (nextSym == NewTerm) {
           return literalArray();
         } else {
           return literalSymbol();
@@ -891,7 +898,8 @@ public final class Parser {
     }
 
     // generate Block signature
-    String blockSig = "$blockMethod@" + lexer.getCurrentLineNumber() + "@" + lexer.getCurrentColumn();
+    String blockSig =
+        "$blockMethod@" + lexer.getCurrentLineNumber() + "@" + lexer.getCurrentColumn();
     int argSize = mgenc.getNumberOfArguments();
     for (int i = 1; i < argSize; i++) {
       blockSig += ":";
@@ -917,13 +925,12 @@ public final class Parser {
     do {
       expect(Colon);
       mgenc.addArgumentIfAbsent(argument());
-    }
-    while (sym == Colon);
+    } while (sym == Colon);
   }
 
   private ExpressionNode variableRead(final MethodGenerationContext mgenc,
-                                      final String variableName,
-                                      final SourceSection source) {
+      final String variableName,
+      final SourceSection source) {
     // we need to handle super special here
     if ("super".equals(variableName)) {
       return mgenc.getSuperReadNode(source);
@@ -966,7 +973,7 @@ public final class Parser {
   }
 
   private void getSymbolFromLexer() {
-    sym  = lexer.getSym();
+    sym = lexer.getSym();
     text = lexer.getText();
   }
 

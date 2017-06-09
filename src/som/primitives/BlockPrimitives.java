@@ -33,22 +33,25 @@ import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
 import som.primitives.BlockPrimsFactory.ValueTwoPrimFactory;
 
+
 public final class BlockPrimitives extends Primitives {
-  public BlockPrimitives(final boolean displayWarning) { super(displayWarning); }
+  public BlockPrimitives(final boolean displayWarning) {
+    super(displayWarning);
+  }
 
   @Override
   public void installPrimitives() {
     if (holder == universe.getBlockClass(0) || universe.getBlockClass(0) == null) {
-      installInstancePrimitive("restart",          RestartPrimFactory.getInstance());
-      installInstancePrimitive("whileTrue:",       WhileTruePrimitiveNodeFactory.getInstance());
-      installInstancePrimitive("whileFalse:",      WhileFalsePrimitiveNodeFactory.getInstance());
+      installInstancePrimitive("restart", RestartPrimFactory.getInstance());
+      installInstancePrimitive("whileTrue:", WhileTruePrimitiveNodeFactory.getInstance());
+      installInstancePrimitive("whileFalse:", WhileFalsePrimitiveNodeFactory.getInstance());
     } else if (universe.getBlockClass(0) != null) {
       if (holder == universe.getBlockClass(1)) {
-        installInstancePrimitive("value",            ValueNonePrimFactory.getInstance());
+        installInstancePrimitive("value", ValueNonePrimFactory.getInstance());
       } else if (holder == universe.getBlockClass(2)) {
-        installInstancePrimitive("value:",           ValueOnePrimFactory.getInstance());
+        installInstancePrimitive("value:", ValueOnePrimFactory.getInstance());
       } else if (holder == universe.getBlockClass(3)) {
-        installInstancePrimitive("value:with:",      ValueTwoPrimFactory.getInstance());
+        installInstancePrimitive("value:with:", ValueTwoPrimFactory.getInstance());
       } else if (holder == universe.getBlockClass(4)) {
         installInstancePrimitive("value:with:with:", ValueMorePrimFactory.getInstance());
       }

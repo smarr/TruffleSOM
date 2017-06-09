@@ -33,6 +33,7 @@ import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 
+
 public class Shell {
 
   private final Universe universe;
@@ -78,8 +79,7 @@ public class Shell {
           myObject = Universe.newInstance(myClass);
 
           // Lookup the run: method
-          SInvokable shellMethod = myClass.
-              lookupInvokable(universe.symbolFor("run:"));
+          SInvokable shellMethod = myClass.lookupInvokable(universe.symbolFor("run:"));
 
           // Invoke the run method
           it = shellMethod.invoke(myObject, it);

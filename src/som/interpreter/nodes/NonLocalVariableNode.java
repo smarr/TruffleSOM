@@ -29,13 +29,15 @@ public abstract class NonLocalVariableNode extends ContextualNode {
   @Override
   public final void replaceWithLexicallyEmbeddedNode(
       final InlinerForLexicallyEmbeddedMethods inliner) {
-    throw new RuntimeException("Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
+    throw new RuntimeException(
+        "Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
   }
 
   @Override
   public final void replaceWithCopyAdaptedToEmbeddedOuterContext(
       final InlinerAdaptToEmbeddedOuterContext inliner) {
-    throw new RuntimeException("Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
+    throw new RuntimeException(
+        "Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
   }
 
   public abstract static class NonLocalVariableReadNode extends NonLocalVariableNode {

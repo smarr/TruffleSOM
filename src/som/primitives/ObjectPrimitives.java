@@ -35,23 +35,29 @@ import som.primitives.reflection.PerformPrimFactory;
 import som.primitives.reflection.PerformWithArgumentsInSuperclassPrimFactory;
 import som.primitives.reflection.PerformWithArgumentsPrimFactory;
 
+
 public final class ObjectPrimitives extends Primitives {
-  public ObjectPrimitives(final boolean displayWarning) { super(displayWarning); }
+  public ObjectPrimitives(final boolean displayWarning) {
+    super(displayWarning);
+  }
 
   @Override
   public void installPrimitives() {
 
-    installInstancePrimitive("==",                     EqualsEqualsPrimFactory.getInstance());
-    installInstancePrimitive("hashcode",               HashPrimFactory.getInstance());
-    installInstancePrimitive("objectSize",             ObjectSizePrimFactory.getInstance());
-    installInstancePrimitive("perform:",               PerformPrimFactory.getInstance());
-    installInstancePrimitive("perform:inSuperclass:",  PerformInSuperclassPrimFactory.getInstance());
-    installInstancePrimitive("perform:withArguments:", PerformWithArgumentsPrimFactory.getInstance());
-    installInstancePrimitive("perform:withArguments:inSuperclass:", PerformWithArgumentsInSuperclassPrimFactory.getInstance());
-    installInstancePrimitive("instVarAt:",             InstVarAtPrimFactory.getInstance());
-    installInstancePrimitive("instVarAt:put:",         InstVarAtPutPrimFactory.getInstance());
-    installInstancePrimitive("instVarNamed:",          InstVarNamedPrimFactory.getInstance());
-    installInstancePrimitive("halt",                   HaltPrimFactory.getInstance());
-    installInstancePrimitive("class",                  ClassPrimFactory.getInstance());
+    installInstancePrimitive("==", EqualsEqualsPrimFactory.getInstance());
+    installInstancePrimitive("hashcode", HashPrimFactory.getInstance());
+    installInstancePrimitive("objectSize", ObjectSizePrimFactory.getInstance());
+    installInstancePrimitive("perform:", PerformPrimFactory.getInstance());
+    installInstancePrimitive("perform:inSuperclass:",
+        PerformInSuperclassPrimFactory.getInstance());
+    installInstancePrimitive("perform:withArguments:",
+        PerformWithArgumentsPrimFactory.getInstance());
+    installInstancePrimitive("perform:withArguments:inSuperclass:",
+        PerformWithArgumentsInSuperclassPrimFactory.getInstance());
+    installInstancePrimitive("instVarAt:", InstVarAtPrimFactory.getInstance());
+    installInstancePrimitive("instVarAt:put:", InstVarAtPutPrimFactory.getInstance());
+    installInstancePrimitive("instVarNamed:", InstVarNamedPrimFactory.getInstance());
+    installInstancePrimitive("halt", HaltPrimFactory.getInstance());
+    installInstancePrimitive("class", ClassPrimFactory.getInstance());
   }
 }

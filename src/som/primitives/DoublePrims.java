@@ -8,7 +8,7 @@ import som.vm.constants.Classes;
 import som.vmobjects.SClass;
 
 
-public abstract class DoublePrims  {
+public abstract class DoublePrims {
 
   @GenerateNodeFactory
   public abstract static class RoundPrim extends UnaryExpressionNode {

@@ -1,11 +1,5 @@
 package som.interpreter.nodes.specialized.whileloops;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SBlock;
-import som.vmobjects.SObject;
-
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -15,6 +9,12 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.Invokable;
+import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.vm.constants.Nil;
+import som.vmobjects.SBlock;
+import som.vmobjects.SObject;
 
 
 public abstract class AbstractWhileNode extends BinaryExpressionNode {
@@ -58,7 +58,9 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
         loopConditionResult = (boolean) conditionValueSend.call(
             frame, new Object[] {loopCondition});
 
-        if (CompilerDirectives.inInterpreter()) { iterationCount++; }
+        if (CompilerDirectives.inInterpreter()) {
+          iterationCount++;
+        }
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -68,8 +70,8 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
     return Nil.nilObject;
   }
 
-  protected abstract SObject doWhileConditionally(final VirtualFrame frame,
-      final SBlock loopCondition, final SBlock loopBody);
+  protected abstract SObject doWhileConditionally(VirtualFrame frame, SBlock loopCondition,
+      SBlock loopBody);
 
   protected final void reportLoopCount(final long count) {
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");

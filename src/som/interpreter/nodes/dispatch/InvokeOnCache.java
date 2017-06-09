@@ -1,13 +1,14 @@
 package som.interpreter.nodes.dispatch;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+
+import som.vmobjects.SInvokable;
 
 
 public abstract class InvokeOnCache extends Node implements DispatchChain {
@@ -28,7 +29,7 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
 
   private static final class UninitializedDispatchNode extends InvokeOnCache {
 
-    public UninitializedDispatchNode(final int depth) {
+    UninitializedDispatchNode(final int depth) {
       super(depth);
     }
 
@@ -50,8 +51,7 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
     @Override
     public Object executeDispatch(final VirtualFrame frame,
         final SInvokable invokable, final Object[] arguments) {
-      return specialize(invokable).
-          executeDispatch(frame, invokable, arguments);
+      return specialize(invokable).executeDispatch(frame, invokable, arguments);
     }
 
     private InvokeOnCache determineChainHead() {
@@ -69,11 +69,11 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
   }
 
   private static final class CachedDispatchNode extends InvokeOnCache {
-    private final SInvokable invokable;
+    private final SInvokable      invokable;
     @Child private DirectCallNode callNode;
-    @Child private InvokeOnCache nextInCache;
+    @Child private InvokeOnCache  nextInCache;
 
-    public CachedDispatchNode(final SInvokable invokable,
+    CachedDispatchNode(final SInvokable invokable,
         final InvokeOnCache nextInCache, final int depth) {
       super(depth);
       this.invokable = invokable;
@@ -101,7 +101,7 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
 
     @Child private IndirectCallNode callNode;
 
-    public GenericDispatchNode() {
+    GenericDispatchNode() {
       super(0);
       callNode = Truffle.getRuntime().createIndirectCallNode();
     }

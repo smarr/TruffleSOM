@@ -11,7 +11,8 @@ import com.oracle.truffle.api.source.Source;
 import som.vm.NotYetImplementedException;
 
 
-@TruffleLanguage.Registration(name = "SOM", version = "0.1.0", mimeType = SomLanguage.MIME_TYPE)
+@TruffleLanguage.Registration(name = "SOM", version = "0.1.0",
+    mimeType = SomLanguage.MIME_TYPE)
 public class SomLanguage extends TruffleLanguage<Object> {
 
   public static final String MIME_TYPE = "application/x-newspeak-som";

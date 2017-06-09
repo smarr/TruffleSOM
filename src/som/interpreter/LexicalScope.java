@@ -6,14 +6,14 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 
 
 public final class LexicalScope {
-  private final FrameDescriptor frameDescriptor;
-  private final LexicalScope    outerScope;
+  private final FrameDescriptor    frameDescriptor;
+  private final LexicalScope       outerScope;
   @CompilationFinal private Method method;
 
   public LexicalScope(final FrameDescriptor frameDescriptor,
       final LexicalScope outerScope) {
     this.frameDescriptor = frameDescriptor;
-    this.outerScope      = outerScope;
+    this.outerScope = outerScope;
   }
 
   public FrameDescriptor getFrameDescriptor() {

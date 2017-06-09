@@ -26,6 +26,7 @@ package som.vmobjects;
 
 import som.vm.constants.Classes;
 
+
 public final class SSymbol extends SAbstractObject {
   private final String string;
   private final int    numberOfSignatureArguments;
@@ -57,7 +58,9 @@ public final class SSymbol extends SAbstractObject {
 
       // Iterate through every character in the signature string
       for (char c : string.toCharArray()) {
-        if (c == ':') { numberOfColons++; }
+        if (c == ':') {
+          numberOfColons++;
+        }
       }
 
       // The number of arguments is equal to the number of colons plus one
@@ -79,7 +82,9 @@ public final class SSymbol extends SAbstractObject {
     for (char c : string.toCharArray()) {
       if (c != '~' && c != '&' && c != '|' && c != '*' && c != '/' && c != '@'
           && c != '+' && c != '-' && c != '=' && c != '>' && c != '<'
-          && c != ',' && c != '%' && c != '\\') { return false; }
+          && c != ',' && c != '%' && c != '\\') {
+        return false;
+      }
     }
     return true;
   }

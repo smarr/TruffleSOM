@@ -80,11 +80,11 @@ public final class Universe {
    * SSymbol and a mutable value.
    */
   public static final class Association {
-    private final SSymbol    key;
-    @CompilationFinal private Object  value;
+    private final SSymbol            key;
+    @CompilationFinal private Object value;
 
     public Association(final SSymbol key, final Object value) {
-      this.key   = key;
+      this.key = key;
       this.value = value;
     }
 
@@ -123,9 +123,9 @@ public final class Universe {
 
   private Universe() {
     this.truffleRuntime = Truffle.getRuntime();
-    this.globals      = new HashMap<SSymbol, Association>();
-    this.symbolTable  = new HashMap<>();
-    this.avoidExit    = false;
+    this.globals = new HashMap<SSymbol, Association>();
+    this.symbolTable = new HashMap<>();
+    this.avoidExit = false;
     this.alreadyInitialized = false;
     this.lastExitCode = 0;
 
@@ -306,8 +306,7 @@ public final class Universe {
     }
 
     // Lookup the initialize invokable on the system class
-    SInvokable initialize = systemClass.
-        lookupInvokable(symbolFor("initialize:"));
+    SInvokable initialize = systemClass.lookupInvokable(symbolFor("initialize:"));
 
     return initialize.invoke(new Object[] {systemObject,
         SArray.create(arguments)});
@@ -328,24 +327,24 @@ public final class Universe {
     nilObject.setClass(nilClass);
 
     // Initialize the system classes.
-    initializeSystemClass(objectClass,            null, "Object");
-    initializeSystemClass(classClass,      objectClass, "Class");
-    initializeSystemClass(metaclassClass,   classClass, "Metaclass");
-    initializeSystemClass(nilClass,        objectClass, "Nil");
-    initializeSystemClass(arrayClass,      objectClass, "Array");
-    initializeSystemClass(methodClass,     objectClass, "Method");
-    initializeSystemClass(stringClass,     objectClass, "String");
-    initializeSystemClass(symbolClass,     stringClass, "Symbol");
-    initializeSystemClass(integerClass,    objectClass, "Integer");
-    initializeSystemClass(primitiveClass,  objectClass, "Primitive");
-    initializeSystemClass(doubleClass,     objectClass, "Double");
-    initializeSystemClass(booleanClass,    objectClass, "Boolean");
+    initializeSystemClass(objectClass, null, "Object");
+    initializeSystemClass(classClass, objectClass, "Class");
+    initializeSystemClass(metaclassClass, classClass, "Metaclass");
+    initializeSystemClass(nilClass, objectClass, "Nil");
+    initializeSystemClass(arrayClass, objectClass, "Array");
+    initializeSystemClass(methodClass, objectClass, "Method");
+    initializeSystemClass(stringClass, objectClass, "String");
+    initializeSystemClass(symbolClass, stringClass, "Symbol");
+    initializeSystemClass(integerClass, objectClass, "Integer");
+    initializeSystemClass(primitiveClass, objectClass, "Primitive");
+    initializeSystemClass(doubleClass, objectClass, "Double");
+    initializeSystemClass(booleanClass, objectClass, "Boolean");
 
-    trueClass  = newSystemClass();
+    trueClass = newSystemClass();
     falseClass = newSystemClass();
 
-    initializeSystemClass(trueClass,      booleanClass, "True");
-    initializeSystemClass(falseClass,     booleanClass, "False");
+    initializeSystemClass(trueClass, booleanClass, "True");
+    initializeSystemClass(falseClass, booleanClass, "False");
 
     // Load methods and fields into the system classes
     loadSystemClass(objectClass);
@@ -367,17 +366,17 @@ public final class Universe {
     blockClasses[0] = loadClass(symbolFor("Block"));
 
     // Setup the true and false objects
-    trueObject  = newInstance(trueClass);
+    trueObject = newInstance(trueClass);
     falseObject = newInstance(falseClass);
 
     // Load the system class and create an instance of it
-    systemClass  = loadClass(symbolFor("System"));
+    systemClass = loadClass(symbolFor("System"));
     systemObject = newInstance(systemClass);
 
     // Put special objects into the dictionary of globals
-    setGlobal("nil",    nilObject);
-    setGlobal("true",   trueObject);
-    setGlobal("false",  falseObject);
+    setGlobal("nil", nilObject);
+    setGlobal("true", trueObject);
+    setGlobal("false", falseObject);
     setGlobal("system", systemObject);
 
     // Load the remaining block classes
@@ -400,7 +399,9 @@ public final class Universe {
     String interned = string.intern();
     // Lookup the symbol in the symbol table
     SSymbol result = symbolTable.get(interned);
-    if (result != null) { return result; }
+    if (result != null) {
+      return result;
+    }
 
     return newSymbol(interned);
   }
@@ -550,7 +551,9 @@ public final class Universe {
   public SClass loadClass(final SSymbol name) {
     // Check if the requested class is already in the dictionary of globals
     SClass result = (SClass) getGlobal(name);
-    if (result != null) { return result; }
+    if (result != null) {
+      return result;
+    }
 
     result = loadClass(name, null);
     loadPrimitives(result, false);
@@ -561,7 +564,9 @@ public final class Universe {
   }
 
   private void loadPrimitives(final SClass result, final boolean isSystemClass) {
-    if (result == null) { return; }
+    if (result == null) {
+      return;
+    }
 
     // Load primitives if class defines them, or try to load optional
     // primitives defined for system classes.
@@ -614,7 +619,9 @@ public final class Universe {
     // Load the class from a stream and return the loaded class
     SClass result = som.compiler.SourcecodeCompiler.compileClass(stmt, null,
         this);
-    if (printAST) { Disassembler.dump(result); }
+    if (printAST) {
+      Disassembler.dump(result);
+    }
     return result;
   }
 
@@ -664,35 +671,51 @@ public final class Universe {
     // Checkstyle: resume
   }
 
-  public SObject getTrueObject()   { return trueObject; }
-  public SObject getFalseObject()  { return falseObject; }
-  public SObject getSystemObject() { return systemObject; }
+  public SObject getTrueObject() {
+    return trueObject;
+  }
 
-  public SClass getTrueClass()   { return trueClass; }
-  public SClass getFalseClass()  { return falseClass; }
-  public SClass getSystemClass() { return systemClass; }
+  public SObject getFalseObject() {
+    return falseObject;
+  }
+
+  public SObject getSystemObject() {
+    return systemObject;
+  }
+
+  public SClass getTrueClass() {
+    return trueClass;
+  }
+
+  public SClass getFalseClass() {
+    return falseClass;
+  }
+
+  public SClass getSystemClass() {
+    return systemClass;
+  }
 
   @CompilationFinal private SObject trueObject;
   @CompilationFinal private SObject falseObject;
   @CompilationFinal private SObject systemObject;
 
-  @CompilationFinal private SClass  trueClass;
-  @CompilationFinal private SClass  falseClass;
-  @CompilationFinal private SClass  systemClass;
+  @CompilationFinal private SClass trueClass;
+  @CompilationFinal private SClass falseClass;
+  @CompilationFinal private SClass systemClass;
 
-  private final HashMap<SSymbol, Association>   globals;
+  private final HashMap<SSymbol, Association> globals;
 
-  private String[]                              classPath;
-  @CompilationFinal private boolean             printAST;
+  private String[]                  classPath;
+  @CompilationFinal private boolean printAST;
 
-  private final TruffleRuntime                  truffleRuntime;
+  private final TruffleRuntime truffleRuntime;
 
-  private final HashMap<String, SSymbol>        symbolTable;
+  private final HashMap<String, SSymbol> symbolTable;
 
   // TODO: this is not how it is supposed to be... it is just a hack to cope
-  //       with the use of system.exit in SOM to enable testing
-  @CompilationFinal private boolean             avoidExit;
-  private int                                   lastExitCode;
+  // with the use of system.exit in SOM to enable testing
+  @CompilationFinal private boolean avoidExit;
+  private int                       lastExitCode;
 
   // Optimizations
   private final SClass[] blockClasses;
@@ -700,7 +723,7 @@ public final class Universe {
   // Latest instance
   // WARNING: this is problematic with multiple interpreters in the same VM...
   @CompilationFinal private static Universe current;
-  @CompilationFinal private boolean alreadyInitialized;
+  @CompilationFinal private boolean         alreadyInitialized;
 
   @CompilationFinal private boolean objectSystemInitialized = false;
 

@@ -4,6 +4,7 @@ import som.vmobjects.SArray;
 
 import com.oracle.truffle.api.frame.Frame;
 
+
 public final class SArguments {
 
   public static final int RCVR_IDX = 0;
@@ -28,7 +29,7 @@ public final class SArguments {
   public static SArray getArgumentsWithoutReceiver(final Object[] arguments) {
     // the code and magic numbers below are based on the following assumption
     assert RCVR_IDX == 0;
-    assert arguments.length >= 1;  // <- that's the receiver
+    assert arguments.length >= 1; // <- that's the receiver
     Object[] argsArr = new Object[arguments.length - 1];
     if (argsArr.length == 0) {
       return SArray.create(0);

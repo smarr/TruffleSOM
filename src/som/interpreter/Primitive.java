@@ -23,9 +23,9 @@ public final class Primitive extends Invokable {
   public Invokable cloneWithNewLexicalContext(final LexicalScope outerContext) {
     assert outerContext == null;
     FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
-    LexicalScope  inlinedContext = new LexicalScope(inlinedFrameDescriptor,
+    LexicalScope inlinedContext = new LexicalScope(inlinedFrameDescriptor,
         outerContext);
-    ExpressionNode  inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(uninitializedBody,
+    ExpressionNode inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(uninitializedBody,
         inlinedContext);
     return new Primitive(inlinedBody, inlinedFrameDescriptor, uninitializedBody);
   }
@@ -37,7 +37,8 @@ public final class Primitive extends Invokable {
 
   @Override
   public String toString() {
-    return "Primitive " + expressionOrSequence.getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+    return "Primitive " + expressionOrSequence.getClass().getSimpleName() + "@"
+        + Integer.toHexString(hashCode());
   }
 
   @Override
@@ -47,17 +48,17 @@ public final class Primitive extends Invokable {
 
   private static Method getNextMethodOnStack() {
     return Truffle.getRuntime().iterateFrames(new FrameInstanceVisitor<Method>() {
-        @Override
-        public Method visitFrame(final FrameInstance frameInstance) {
-          RootCallTarget ct = (RootCallTarget) frameInstance.getCallTarget();
-          Invokable m = (Invokable) ct.getRootNode();
-          if (m instanceof Primitive) {
-            return null;
-          } else {
-            return (Method) m;
-          }
+      @Override
+      public Method visitFrame(final FrameInstance frameInstance) {
+        RootCallTarget ct = (RootCallTarget) frameInstance.getCallTarget();
+        Invokable m = (Invokable) ct.getRootNode();
+        if (m instanceof Primitive) {
+          return null;
+        } else {
+          return (Method) m;
         }
-      });
+      }
+    });
   }
 
   public static void propagateLoopCount(final long count) {
@@ -66,7 +67,7 @@ public final class Primitive extends Invokable {
     // we need to skip the primitive and get to the method that called the primitive
     FrameInstance caller = Truffle.getRuntime().getCallerFrame();
 
-    RootCallTarget ct = (RootCallTarget) caller.getCallTarget();  // caller method
+    RootCallTarget ct = (RootCallTarget) caller.getCallTarget(); // caller method
     Invokable m = (Invokable) ct.getRootNode();
 
     if (m instanceof Primitive) {

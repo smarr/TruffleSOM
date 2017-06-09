@@ -8,6 +8,7 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
+
 public abstract class ArgumentReadNode {
 
   public static class LocalArgumentReadNode extends ExpressionNode {
@@ -74,7 +75,8 @@ public abstract class ArgumentReadNode {
       // this should be the access to a block argument
       if (inliner.appliesTo(contextLevel)) {
         assert !(this instanceof NonLocalSuperReadNode);
-        ExpressionNode node = inliner.getReplacementForBlockArgument(argumentIndex, getSourceSection());
+        ExpressionNode node =
+            inliner.getReplacementForBlockArgument(argumentIndex, getSourceSection());
         replace(node);
         return;
       } else if (inliner.needToAdjustLevel(contextLevel)) {
@@ -96,7 +98,7 @@ public abstract class ArgumentReadNode {
         final boolean classSide, final SourceSection source) {
       super(SArguments.RCVR_IDX, source);
       this.holderClass = holderClass;
-      this.classSide   = classSide;
+      this.classSide = classSide;
     }
 
     @Override
@@ -121,7 +123,7 @@ public abstract class ArgumentReadNode {
         final SourceSection source) {
       super(SArguments.RCVR_IDX, contextLevel, source);
       this.holderClass = holderClass;
-      this.classSide   = classSide;
+      this.classSide = classSide;
     }
 
     @Override

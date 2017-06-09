@@ -23,6 +23,10 @@ package som.interpreter.nodes;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.interpreter.TypesGen;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
@@ -32,9 +36,6 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class ExpressionNode extends SOMNode {
 
@@ -42,10 +43,12 @@ public abstract class ExpressionNode extends SOMNode {
     super(sourceSection);
   }
 
-  public abstract Object executeGeneric(final VirtualFrame frame);
+  public abstract Object executeGeneric(VirtualFrame frame);
 
   @Override
-  public ExpressionNode getFirstMethodBodyNode() { return this; }
+  public ExpressionNode getFirstMethodBodyNode() {
+    return this;
+  }
 
   public boolean executeBoolean(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectBoolean(executeGeneric(frame));
@@ -55,7 +58,8 @@ public abstract class ExpressionNode extends SOMNode {
     return TypesGen.expectLong(executeGeneric(frame));
   }
 
-  public BigInteger executeBigInteger(final VirtualFrame frame) throws UnexpectedResultException {
+  public BigInteger executeBigInteger(final VirtualFrame frame)
+      throws UnexpectedResultException {
     return TypesGen.expectBigInteger(executeGeneric(frame));
   }
 
@@ -79,7 +83,8 @@ public abstract class ExpressionNode extends SOMNode {
     return TypesGen.expectSClass(executeGeneric(frame));
   }
 
-  public SInvokable executeSInvokable(final VirtualFrame frame) throws UnexpectedResultException {
+  public SInvokable executeSInvokable(final VirtualFrame frame)
+      throws UnexpectedResultException {
     return TypesGen.expectSInvokable(executeGeneric(frame));
   }
 
@@ -91,11 +96,13 @@ public abstract class ExpressionNode extends SOMNode {
     return TypesGen.expectSArray(executeGeneric(frame));
   }
 
-  public SAbstractObject executeSAbstractObject(final VirtualFrame frame) throws UnexpectedResultException {
+  public SAbstractObject executeSAbstractObject(final VirtualFrame frame)
+      throws UnexpectedResultException {
     return TypesGen.expectSAbstractObject(executeGeneric(frame));
   }
 
-  public Object[] executeArgumentArray(final VirtualFrame frame) throws UnexpectedResultException {
+  public Object[] executeArgumentArray(final VirtualFrame frame)
+      throws UnexpectedResultException {
     return TypesGen.expectObjectArray(executeGeneric(frame));
   }
 }

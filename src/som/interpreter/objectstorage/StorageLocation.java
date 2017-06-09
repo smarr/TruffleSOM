@@ -2,6 +2,9 @@ package som.interpreter.objectstorage;
 
 import java.lang.reflect.Field;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
 import som.interpreter.TruffleCompiler;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -16,22 +19,19 @@ import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 import sun.misc.Unsafe;
 
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
-
 
 public abstract class StorageLocation {
   private static Unsafe loadUnsafe() {
     try {
       return Unsafe.getUnsafe();
-    } catch (SecurityException e) {
-    }
+    } catch (SecurityException e) {}
     try {
       Field theUnsafeInstance = Unsafe.class.getDeclaredField("theUnsafe");
       theUnsafeInstance.setAccessible(true);
       return (Unsafe) theUnsafeInstance.get(Unsafe.class);
     } catch (Exception e) {
-      throw new RuntimeException("exception while trying to get Unsafe.theUnsafe via reflection:", e);
+      throw new RuntimeException(
+          "exception while trying to get Unsafe.theUnsafe via reflection:", e);
     }
   }
 
@@ -42,13 +42,15 @@ public abstract class StorageLocation {
   }
 
   public interface LongStorageLocation {
-    long readLong(final SObject obj) throws UnexpectedResultException;
-    void writeLong(final SObject obj, final long value);
+    long readLong(SObject obj) throws UnexpectedResultException;
+
+    void writeLong(SObject obj, long value);
   }
 
   public interface DoubleStorageLocation {
-    double readDouble(final SObject obj) throws UnexpectedResultException;
-    void   writeDouble(final SObject obj, final double value);
+    double readDouble(SObject obj) throws UnexpectedResultException;
+
+    void writeDouble(SObject obj, double value);
   }
 
   public static StorageLocation createForLong(final ObjectLayout layout,
@@ -81,9 +83,8 @@ public abstract class StorageLocation {
     }
   }
 
-  private final ObjectLayout layout; // for debugging only
-  protected final long fieldIndex;
-
+  private final ObjectLayout layout;    // for debugging only
+  protected final long       fieldIndex;
 
   protected StorageLocation(final ObjectLayout layout, final long fieldIndex) {
     this.layout = layout;
@@ -91,11 +92,16 @@ public abstract class StorageLocation {
   }
 
   public abstract boolean isSet(SObject obj);
-  public abstract Object  read(SObject obj);
-  public abstract void    write(SObject obj, Object value);
 
-  public abstract AbstractReadFieldNode  getReadNode(int fieldIndex, ObjectLayout layout, AbstractReadFieldNode next);
-  public abstract AbstractWriteFieldNode getWriteNode(int fieldIndex, ObjectLayout layout, AbstractWriteFieldNode next);
+  public abstract Object read(SObject obj);
+
+  public abstract void write(SObject obj, Object value);
+
+  public abstract AbstractReadFieldNode getReadNode(int fieldIndex, ObjectLayout layout,
+      AbstractReadFieldNode next);
+
+  public abstract AbstractWriteFieldNode getWriteNode(int fieldIndex, ObjectLayout layout,
+      AbstractWriteFieldNode next);
 
   public static final class UnwrittenStorageLocation extends StorageLocation {
 
@@ -143,7 +149,7 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public abstract void write(final SObject obj, final Object value);
+    public abstract void write(SObject obj, Object value);
 
     @Override
     public final AbstractReadFieldNode getReadNode(final int fieldIndex,
@@ -162,6 +168,7 @@ public abstract class StorageLocation {
 
   public static final class ObjectDirectStorageLocation extends AbstractObjectStorageLocation {
     private final long fieldOffset;
+
     public ObjectDirectStorageLocation(final ObjectLayout layout, final int fieldIndex) {
       super(layout, fieldIndex);
       fieldOffset = SObject.getObjectFieldOffset(fieldIndex);
@@ -187,6 +194,7 @@ public abstract class StorageLocation {
 
   public static final class ObjectArrayStorageLocation extends AbstractObjectStorageLocation {
     private final int extensionIndex;
+
     public ObjectArrayStorageLocation(final ObjectLayout layout, final int fieldIndex) {
       super(layout, fieldIndex);
       extensionIndex = fieldIndex - SObject.NUM_OBJECT_FIELDS;
@@ -233,6 +241,7 @@ public abstract class StorageLocation {
 
   public abstract static class PrimitiveDirectStoreLocation extends PrimitiveStorageLocation {
     protected final long offset;
+
     public PrimitiveDirectStoreLocation(final ObjectLayout layout,
         final long fieldIndex, final int primField) {
       super(layout, fieldIndex, primField);
@@ -360,6 +369,7 @@ public abstract class StorageLocation {
 
   public abstract static class PrimitiveArrayStoreLocation extends PrimitiveStorageLocation {
     protected final int extensionIndex;
+
     public PrimitiveArrayStoreLocation(final ObjectLayout layout,
         final long fieldIndex, final int primField) {
       super(layout, fieldIndex, primField);
@@ -449,7 +459,8 @@ public abstract class StorageLocation {
       if (isSet(obj)) {
         long[] arr = obj.getExtendedPrimFields();
         return unsafe.getDouble(arr,
-            (long) Unsafe.ARRAY_DOUBLE_BASE_OFFSET + Unsafe.ARRAY_DOUBLE_INDEX_SCALE * extensionIndex);
+            (long) Unsafe.ARRAY_DOUBLE_BASE_OFFSET
+                + Unsafe.ARRAY_DOUBLE_INDEX_SCALE * extensionIndex);
       } else {
         TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
         throw new UnexpectedResultException(Nil.nilObject);
@@ -472,7 +483,8 @@ public abstract class StorageLocation {
     public void writeDouble(final SObject obj, final double value) {
       final long[] arr = obj.getExtendedPrimFields();
       unsafe.putDouble(arr,
-          (long) Unsafe.ARRAY_DOUBLE_BASE_OFFSET + Unsafe.ARRAY_DOUBLE_INDEX_SCALE * this.extensionIndex,
+          (long) Unsafe.ARRAY_DOUBLE_BASE_OFFSET
+              + Unsafe.ARRAY_DOUBLE_INDEX_SCALE * this.extensionIndex,
           value);
 
       markAsSet(obj);

@@ -1,5 +1,10 @@
 package som.interpreter.objectstorage;
 
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
 import som.interpreter.TruffleCompiler;
 import som.interpreter.TypesGen;
 import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
@@ -7,11 +12,6 @@ import som.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
 import som.interpreter.objectstorage.StorageLocation.LongStorageLocation;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
-
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.nodes.InvalidAssumptionException;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 
 public abstract class FieldAccessorNode extends Node {
@@ -48,7 +48,8 @@ public abstract class FieldAccessorNode extends Node {
       return TypesGen.expectDouble(read(obj));
     }
 
-    protected final Object specializeAndRead(final SObject obj, final String reason, final AbstractReadFieldNode next) {
+    protected final Object specializeAndRead(final SObject obj, final String reason,
+        final AbstractReadFieldNode next) {
       return specialize(obj, reason, next).read(obj);
     }
 
@@ -57,7 +58,7 @@ public abstract class FieldAccessorNode extends Node {
       TruffleCompiler.transferToInterpreterAndInvalidate(reason);
       obj.updateLayoutToMatchClass();
 
-      final ObjectLayout    layout   = obj.getObjectLayout();
+      final ObjectLayout layout = obj.getObjectLayout();
       final StorageLocation location = layout.getStorageLocation(fieldIndex);
 
       AbstractReadFieldNode newNode = location.getReadNode(fieldIndex, layout, next);
@@ -67,19 +68,20 @@ public abstract class FieldAccessorNode extends Node {
 
   private static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
 
-    public UninitializedReadFieldNode(final int fieldIndex) {
+    UninitializedReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
     }
 
     @Override
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      return specializeAndRead(obj, "uninitalized node", new UninitializedReadFieldNode(fieldIndex));
+      return specializeAndRead(obj, "uninitalized node",
+          new UninitializedReadFieldNode(fieldIndex));
     }
   }
 
   public abstract static class ReadSpecializedFieldNode extends AbstractReadFieldNode {
-    protected final ObjectLayout layout;
+    protected final ObjectLayout           layout;
     @Child protected AbstractReadFieldNode nextInCache;
 
     public ReadSpecializedFieldNode(final int fieldIndex,
@@ -89,7 +91,8 @@ public abstract class FieldAccessorNode extends Node {
       nextInCache = next;
     }
 
-    protected final boolean hasExpectedLayout(final SObject obj) throws InvalidAssumptionException {
+    protected final boolean hasExpectedLayout(final SObject obj)
+        throws InvalidAssumptionException {
       layout.checkIsLatest();
       return layout == obj.getObjectLayout();
     }
@@ -241,7 +244,7 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   private static final class UninitializedWriteFieldNode extends AbstractWriteFieldNode {
-    public UninitializedWriteFieldNode(final int fieldIndex) {
+    UninitializedWriteFieldNode(final int fieldIndex) {
       super(fieldIndex);
     }
 
@@ -256,17 +259,18 @@ public abstract class FieldAccessorNode extends Node {
 
   private abstract static class WriteSpecializedFieldNode extends AbstractWriteFieldNode {
 
-    protected final ObjectLayout layout;
+    protected final ObjectLayout            layout;
     @Child protected AbstractWriteFieldNode nextInCache;
 
-    public WriteSpecializedFieldNode(final int fieldIndex,
+    WriteSpecializedFieldNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractWriteFieldNode next) {
       super(fieldIndex);
       this.layout = layout;
       nextInCache = next;
     }
 
-    protected final boolean hasExpectedLayout(final SObject obj) throws InvalidAssumptionException {
+    protected final boolean hasExpectedLayout(final SObject obj)
+        throws InvalidAssumptionException {
       layout.checkIsLatest();
       return layout == obj.getObjectLayout();
     }

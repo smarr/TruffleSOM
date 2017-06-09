@@ -18,9 +18,10 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
+
 public class BlockNode extends LiteralNode {
 
-  protected final SMethod blockMethod;
+  protected final SMethod            blockMethod;
   @CompilationFinal protected SClass blockClass;
 
   public BlockNode(final SMethod blockMethod,
@@ -31,11 +32,18 @@ public class BlockNode extends LiteralNode {
 
   protected void setBlockClass() {
     switch (blockMethod.getNumberOfArguments()) {
-      case 1: blockClass = Universe.current().getBlockClass(1); break;
-      case 2: blockClass = Universe.current().getBlockClass(2); break;
-      case 3: blockClass = Universe.current().getBlockClass(3); break;
+      case 1:
+        blockClass = Universe.current().getBlockClass(1);
+        break;
+      case 2:
+        blockClass = Universe.current().getBlockClass(2);
+        break;
+      case 3:
+        blockClass = Universe.current().getBlockClass(3);
+        break;
       default:
-        throw new RuntimeException("We do currently not have support for more than 3 arguments to a block.");
+        throw new RuntimeException(
+            "We do currently not have support for more than 3 arguments to a block.");
     }
   }
 
@@ -54,25 +62,27 @@ public class BlockNode extends LiteralNode {
   }
 
   @Override
-  public void replaceWithIndependentCopyForInlining(final SplitterForLexicallyEmbeddedCode inliner) {
-    Invokable clonedInvokable = blockMethod.getInvokable().
-        cloneWithNewLexicalContext(inliner.getCurrentScope());
+  public void replaceWithIndependentCopyForInlining(
+      final SplitterForLexicallyEmbeddedCode inliner) {
+    Invokable clonedInvokable =
+        blockMethod.getInvokable().cloneWithNewLexicalContext(inliner.getCurrentScope());
     replaceAdapted(clonedInvokable);
   }
 
   @Override
   public void replaceWithLexicallyEmbeddedNode(
       final InlinerForLexicallyEmbeddedMethods inliner) {
-    Invokable adapted = ((Method) blockMethod.getInvokable()).
-        cloneAndAdaptToEmbeddedOuterContext(inliner);
+    Invokable adapted =
+        ((Method) blockMethod.getInvokable()).cloneAndAdaptToEmbeddedOuterContext(inliner);
     replaceAdapted(adapted);
   }
 
   @Override
   public void replaceWithCopyAdaptedToEmbeddedOuterContext(
       final InlinerAdaptToEmbeddedOuterContext inliner) {
-    Invokable adapted = ((Method) blockMethod.getInvokable()).
-        cloneAndAdaptToSomeOuterContextBeingEmbedded(inliner);
+    Invokable adapted =
+        ((Method) blockMethod.getInvokable()).cloneAndAdaptToSomeOuterContextBeingEmbedded(
+            inliner);
     replaceAdapted(adapted);
   }
 

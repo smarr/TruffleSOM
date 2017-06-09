@@ -1,5 +1,11 @@
 package som.primitives;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeChildren;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.interpreter.nodes.dispatch.InvokeOnCache;
@@ -8,12 +14,6 @@ import som.primitives.arrays.ToArgumentsArrayNode;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
-
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeChildren;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public final class MethodPrims {
@@ -36,23 +36,26 @@ public final class MethodPrims {
 
   @GenerateNodeFactory
   @NodeChildren({
-    @NodeChild(value = "receiver", type = ExpressionNode.class),
-    @NodeChild(value = "target",  type = ExpressionNode.class),
-    @NodeChild(value = "somArr", type = ExpressionNode.class),
-    @NodeChild(value = "argArr", type = ToArgumentsArrayNode.class,
-               executeWith = {"somArr", "target"})})
+      @NodeChild(value = "receiver", type = ExpressionNode.class),
+      @NodeChild(value = "target", type = ExpressionNode.class),
+      @NodeChild(value = "somArr", type = ExpressionNode.class),
+      @NodeChild(value = "argArr", type = ToArgumentsArrayNode.class,
+          executeWith = {"somArr", "target"})})
   public abstract static class InvokeOnPrim extends ExpressionNode
-    implements PreevaluatedExpression {
+      implements PreevaluatedExpression {
     @Child private InvokeOnCache callNode;
 
     public InvokeOnPrim() {
       super(null);
       callNode = InvokeOnCache.create();
     }
-    public InvokeOnPrim(final InvokeOnPrim node) { this(); }
 
-    public abstract Object executeEvaluated(final VirtualFrame frame,
-        final SInvokable receiver, final Object target, final SArray somArr);
+    public InvokeOnPrim(final InvokeOnPrim node) {
+      this();
+    }
+
+    public abstract Object executeEvaluated(VirtualFrame frame, SInvokable receiver,
+        Object target, SArray somArr);
 
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,

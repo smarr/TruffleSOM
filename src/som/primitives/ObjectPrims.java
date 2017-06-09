@@ -29,7 +29,10 @@ public final class ObjectPrims {
       super();
       dispatch = IndexDispatch.create();
     }
-    public InstVarAtPrim(final InstVarAtPrim node) { this(); }
+
+    public InstVarAtPrim(final InstVarAtPrim node) {
+      this();
+    }
 
     @Specialization
     public final Object doSObject(final SObject receiver, final long idx) {
@@ -38,12 +41,12 @@ public final class ObjectPrims {
 
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
-      final Object receiver, final Object firstArg) {
+        final Object receiver, final Object firstArg) {
       assert receiver instanceof SObject;
       assert firstArg instanceof Long;
 
       SObject rcvr = (SObject) receiver;
-      long idx     = (long) firstArg;
+      long idx = (long) firstArg;
       return doSObject(rcvr, idx);
     }
   }
@@ -56,7 +59,10 @@ public final class ObjectPrims {
       super();
       dispatch = IndexDispatch.create();
     }
-    public InstVarAtPutPrim(final InstVarAtPutPrim node) { this(); }
+
+    public InstVarAtPutPrim(final InstVarAtPutPrim node) {
+      this();
+    }
 
     @Specialization
     public final Object doSObject(final SObject receiver, final long idx, final Object val) {
@@ -66,13 +72,13 @@ public final class ObjectPrims {
 
     @Override
     public final Object executeEvaluated(final VirtualFrame frame,
-      final Object receiver, final Object firstArg, final Object secondArg) {
+        final Object receiver, final Object firstArg, final Object secondArg) {
       assert receiver instanceof SObject;
       assert firstArg instanceof Long;
       assert secondArg != null;
 
       SObject rcvr = (SObject) receiver;
-      long idx     = (long) firstArg;
+      long idx = (long) firstArg;
       return doSObject(rcvr, idx, secondArg);
     }
   }
@@ -88,7 +94,10 @@ public final class ObjectPrims {
 
   @GenerateNodeFactory
   public abstract static class HaltPrim extends UnaryExpressionNode {
-    public HaltPrim() { super(null); }
+    public HaltPrim() {
+      super(null);
+    }
+
     @Specialization
     public final Object doSAbstractObject(final Object receiver) {
       Universe.errorPrintln("BREAKPOINT");

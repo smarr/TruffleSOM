@@ -30,15 +30,18 @@ import som.primitives.ClassPrimsFactory.InstanceInvokablesPrimFactory;
 import som.primitives.ClassPrimsFactory.NamePrimFactory;
 import som.primitives.ClassPrimsFactory.SuperClassPrimFactory;
 
+
 public final class ClassPrimitives extends Primitives {
-  public ClassPrimitives(final boolean displayWarning) { super(displayWarning); }
+  public ClassPrimitives(final boolean displayWarning) {
+    super(displayWarning);
+  }
 
   @Override
   public void installPrimitives() {
-    installInstancePrimitive("new",        NewObjectPrimFactory.getInstance());
-    installInstancePrimitive("name",       NamePrimFactory.getInstance());
+    installInstancePrimitive("new", NewObjectPrimFactory.getInstance());
+    installInstancePrimitive("name", NamePrimFactory.getInstance());
     installInstancePrimitive("superclass", SuperClassPrimFactory.getInstance());
-    installInstancePrimitive("methods",    InstanceInvokablesPrimFactory.getInstance());
-    installInstancePrimitive("fields",     InstanceFieldsPrimFactory.getInstance());
+    installInstancePrimitive("methods", InstanceInvokablesPrimFactory.getInstance());
+    installInstancePrimitive("fields", InstanceFieldsPrimFactory.getInstance());
   }
 }

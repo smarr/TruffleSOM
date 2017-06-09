@@ -35,9 +35,9 @@ public final class Method extends Invokable {
   private final LexicalScope currentLexicalScope;
 
   public Method(final SourceSection sourceSection,
-                final ExpressionNode expressions,
-                final LexicalScope currentLexicalScope,
-                final ExpressionNode uninitialized) {
+      final ExpressionNode expressions,
+      final LexicalScope currentLexicalScope,
+      final ExpressionNode uninitialized) {
     super(sourceSection, currentLexicalScope.getFrameDescriptor(),
         expressions, uninitialized);
     this.currentLexicalScope = currentLexicalScope;
@@ -54,9 +54,9 @@ public final class Method extends Invokable {
   @Override
   public Invokable cloneWithNewLexicalContext(final LexicalScope outerScope) {
     FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
-    LexicalScope    inlinedCurrentScope = new LexicalScope(
+    LexicalScope inlinedCurrentScope = new LexicalScope(
         inlinedFrameDescriptor, outerScope);
-    ExpressionNode  inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(
+    ExpressionNode inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(
         uninitializedBody, inlinedCurrentScope);
     Method clone = new Method(getSourceSection(), inlinedBody,
         inlinedCurrentScope, uninitializedBody);

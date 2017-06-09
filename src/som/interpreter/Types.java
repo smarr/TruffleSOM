@@ -36,19 +36,20 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
-@TypeSystem({   boolean.class,
-                   long.class,
-             BigInteger.class,
-                 String.class,
-                 double.class,
-                 SClass.class,
-                SObject.class,
-                 SBlock.class,
-                SSymbol.class,
-             SInvokable.class,
-                 SArray.class,
-        SAbstractObject.class,
-               Object[].class}) // Object[] is only for argument passing
+
+@TypeSystem({boolean.class,
+    long.class,
+    BigInteger.class,
+    String.class,
+    double.class,
+    SClass.class,
+    SObject.class,
+    SBlock.class,
+    SSymbol.class,
+    SInvokable.class,
+    SArray.class,
+    SAbstractObject.class,
+    Object[].class}) // Object[] is only for argument passing
 public class Types {
 
   public static SClass getClassOf(final Object obj) {
@@ -72,6 +73,7 @@ public class Types {
     }
 
     TruffleCompiler.transferToInterpreter("Should not be reachable");
-    throw new RuntimeException("We got an object that should be covered by the above check: " + obj.toString());
+    throw new RuntimeException(
+        "We got an object that should be covered by the above check: " + obj.toString());
   }
 }

@@ -1,9 +1,5 @@
 package som.interpreter;
 
-import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
-import som.interpreter.nodes.ExpressionNode;
-
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -11,9 +7,14 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
+import som.compiler.MethodGenerationContext;
+import som.compiler.Variable.Local;
+import som.interpreter.nodes.ExpressionNode;
+
+
 public abstract class Invokable extends RootNode {
 
-  @Child protected ExpressionNode  expressionOrSequence;
+  @Child protected ExpressionNode expressionOrSequence;
 
   protected final ExpressionNode uninitializedBody;
 
@@ -22,7 +23,7 @@ public abstract class Invokable extends RootNode {
       final ExpressionNode expressionOrSequence,
       final ExpressionNode uninitialized) {
     super(SomLanguage.class, sourceSection, frameDescriptor);
-    this.uninitializedBody    = uninitialized;
+    this.uninitializedBody = uninitialized;
     this.expressionOrSequence = expressionOrSequence;
   }
 
@@ -31,7 +32,7 @@ public abstract class Invokable extends RootNode {
     return expressionOrSequence.executeGeneric(frame);
   }
 
-  public abstract Invokable cloneWithNewLexicalContext(final LexicalScope outerContext);
+  public abstract Invokable cloneWithNewLexicalContext(LexicalScope outerContext);
 
   public ExpressionNode inline(final MethodGenerationContext mgenc,
       final Local[] locals) {
@@ -48,5 +49,5 @@ public abstract class Invokable extends RootNode {
     return Truffle.getRuntime().createCallTarget(this);
   }
 
-  public abstract void propagateLoopCountThroughoutLexicalScope(final long count);
+  public abstract void propagateLoopCountThroughoutLexicalScope(long count);
 }

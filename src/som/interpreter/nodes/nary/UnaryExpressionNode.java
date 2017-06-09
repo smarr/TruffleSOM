@@ -1,11 +1,12 @@
 package som.interpreter.nodes.nary;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
-
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.PreevaluatedExpression;
+
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)
 public abstract class UnaryExpressionNode extends ExpressionNode
@@ -16,10 +17,11 @@ public abstract class UnaryExpressionNode extends ExpressionNode
   }
 
   // For nodes that are not representing source code
-  public UnaryExpressionNode() { super(null); }
+  public UnaryExpressionNode() {
+    super(null);
+  }
 
-  public abstract Object executeEvaluated(final VirtualFrame frame,
-      final Object receiver);
+  public abstract Object executeEvaluated(VirtualFrame frame, Object receiver);
 
   @Override
   public final Object doPreEvaluated(final VirtualFrame frame,

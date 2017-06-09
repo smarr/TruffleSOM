@@ -37,20 +37,21 @@ import som.vmobjects.SSymbol;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+
 public final class ClassGenerationContext {
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
-  private final Universe universe;
+  private final Universe            universe;
 
   public ClassGenerationContext(final Universe universe) {
     this.universe = universe;
   }
 
-  private SSymbol             name;
-  private SSymbol             superName;
-  private boolean             classSide;
-  private final List<SSymbol> instanceFields  = new ArrayList<SSymbol>();
+  private SSymbol                name;
+  private SSymbol                superName;
+  private boolean                classSide;
+  private final List<SSymbol>    instanceFields  = new ArrayList<SSymbol>();
   private final List<SInvokable> instanceMethods = new ArrayList<SInvokable>();
-  private final List<SSymbol> classFields     = new ArrayList<SSymbol>();
+  private final List<SSymbol>    classFields     = new ArrayList<SSymbol>();
   private final List<SInvokable> classMethods    = new ArrayList<SInvokable>();
 
   public void setName(final SSymbol name) {

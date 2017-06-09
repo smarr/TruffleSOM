@@ -11,7 +11,7 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 
 public final class ObjectLayout {
-  private final SClass forClass;
+  private final SClass     forClass;
   private final Assumption latestLayoutForClass;
 
   private final int primitiveStorageLocationsUsed;
@@ -36,7 +36,7 @@ public final class ObjectLayout {
     storageLocations = new StorageLocation[knownFieldTypes.length];
 
     int nextFreePrimIdx = 0;
-    int nextFreeObjIdx  = 0;
+    int nextFreeObjIdx = 0;
 
     for (int i = 0; i < totalNumberOfStorageLocations; i++) {
       Class<?> type = knownFieldTypes[i];
@@ -60,7 +60,7 @@ public final class ObjectLayout {
     }
 
     primitiveStorageLocationsUsed = nextFreePrimIdx;
-    objectStorageLocationsUsed    = nextFreeObjIdx;
+    objectStorageLocationsUsed = nextFreeObjIdx;
   }
 
   public boolean isValid() {
@@ -102,7 +102,7 @@ public final class ObjectLayout {
   }
 
   public ObjectLayout withInitializedField(final long fieldIndex, final Class<?> type) {
-    Class <?> specType;
+    Class<?> specType;
     if (type == Long.class || type == Double.class) {
       specType = type;
     } else {
@@ -134,13 +134,17 @@ public final class ObjectLayout {
 
   public int getNumberOfUsedExtendedObjectStorageLocations() {
     int requiredExtensionFields = objectStorageLocationsUsed - SObject.NUM_OBJECT_FIELDS;
-    if (requiredExtensionFields < 0) { return 0; }
+    if (requiredExtensionFields < 0) {
+      return 0;
+    }
     return requiredExtensionFields;
   }
 
   public int getNumberOfUsedExtendedPrimStorageLocations() {
     int requiredExtensionFields = primitiveStorageLocationsUsed - SObject.NUM_PRIMITIVE_FIELDS;
-    if (requiredExtensionFields < 0) { return 0;  }
+    if (requiredExtensionFields < 0) {
+      return 0;
+    }
     return requiredExtensionFields;
   }
 }

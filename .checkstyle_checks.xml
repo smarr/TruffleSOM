@@ -17,15 +17,19 @@
       <property name="checkHtml" value="false"/>
     </module>
     <module name="LocalFinalVariableName"/>
-    <module name="LocalVariableName"/>
+    <module name="LocalVariableName">
+      <property name="format" value="^[a-z_][a-zA-Z0-9_]*$"/>
+    </module>
     <module name="MemberName">
-      <property name="format" value="^(([a-z][a-zA-Z0-9]*$)|(_[A-Z][a-zA-Z0-9]*_[a-z][a-zA-Z0-9]*$))"/>
+      <property name="format" value="^(([a-z][a-zA-Z0-9_]*$)|(_[A-Z][a-zA-Z0-9]*_[a-z][a-zA-Z0-9]*$))"/>
     </module>
     <module name="MethodName">
       <property name="format" value="^[a-z][a-z_A-Z0-9]*$"/>
     </module>
     <module name="PackageName"/>
-    <module name="ParameterName"/>
+    <module name="ParameterName">
+      <property name="format" value="^[a-z][a-z_A-Z0-9]*$"/>
+    </module>
     <module name="TypeName">
       <property name="format" value="^[A-Z][_a-zA-Z0-9]*$"/>
     </module>
@@ -37,16 +41,17 @@
     <module name="NoWhitespaceAfter">
       <property name="tokens" value="ARRAY_INIT,BNOT,DEC,DOT,INC,LNOT,UNARY_MINUS,UNARY_PLUS"/>
     </module>
-    <module name="NoWhitespaceBefore">
-      <property name="tokens" value="SEMI,DOT,POST_DEC,POST_INC"/>
-    </module>
+    <module name="NoWhitespaceBefore"/>
     <module name="ParenPad"/>
     <module name="TypecastParenPad">
       <property name="tokens" value="RPAREN,TYPECAST"/>
     </module>
     <module name="WhitespaceAfter"/>
     <module name="WhitespaceAround">
-      <property name="tokens" value="ASSIGN,BAND,BAND_ASSIGN,BOR,BOR_ASSIGN,BSR,BSR_ASSIGN,BXOR,BXOR_ASSIGN,COLON,DIV,DIV_ASSIGN,EQUAL,GE,GT,LAND,LE,LITERAL_ASSERT,LITERAL_CATCH,LITERAL_DO,LITERAL_ELSE,LITERAL_FINALLY,LITERAL_FOR,LITERAL_IF,LITERAL_RETURN,LITERAL_SYNCHRONIZED,LITERAL_TRY,LITERAL_WHILE,LOR,LT,MINUS,MINUS_ASSIGN,MOD,MOD_ASSIGN,NOT_EQUAL,PLUS,PLUS_ASSIGN,QUESTION,SL,SLIST,SL_ASSIGN,SR,SR_ASSIGN,STAR,STAR_ASSIGN,LITERAL_ASSERT,TYPE_EXTENSION_AND"/>
+      <property name="tokens" value="ASSIGN,BAND,BAND_ASSIGN,BOR,BOR_ASSIGN,BSR,BSR_ASSIGN,BXOR,BXOR_ASSIGN,COLON,DIV,DIV_ASSIGN,EQUAL,GE,GT,LAND,LE,LITERAL_ASSERT,LITERAL_CATCH,LITERAL_DO,LITERAL_ELSE,LITERAL_FINALLY,LITERAL_FOR,LITERAL_IF,LITERAL_RETURN,LITERAL_SYNCHRONIZED,LITERAL_TRY,LITERAL_WHILE,LOR,LT,MINUS,MINUS_ASSIGN,MOD,MOD_ASSIGN,NOT_EQUAL,PLUS,PLUS_ASSIGN,QUESTION,SL,SLIST,SL_ASSIGN,SR,SR_ASSIGN,STAR,STAR_ASSIGN,TYPE_EXTENSION_AND"/>
+      <property name="allowEmptyConstructors" value="true"/>
+      <property name="allowEmptyMethods" value="true"/>
+      <property name="allowEmptyCatches" value="true"/>
     </module>
     <module name="RedundantModifier"/>
     <module name="AvoidNestedBlocks">
@@ -107,7 +112,10 @@
       <property name="severity" value="ignore"/>
       <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     </module>
-    <module name="JUnitTestCase"/>
+    <module name="JUnitTestCase">
+      <property name="severity" value="ignore"/>
+      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
+    </module>
     <module name="ModifiedControlVariable"/>
     <module name="MutableException">
       <property name="severity" value="ignore"/>
@@ -132,6 +140,14 @@
       <metadata name="com.atlassw.tools.eclipse.checkstyle.customMessage" value="Illegal whitespace before a comma."/>
       <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Checks for whitespace before a comma."/>
     </module>
+    <module name="RegexpSinglelineJava">
+      <metadata name="net.sf.eclipsecs.core.comment" value="needs a space after comment start"/>
+      <property name="format" value="[^:&quot;]//[^&quot;\s]"/>
+      <property name="message" value="needs a space after comment start"/>
+    </module>
+  </module>
+  <module name="SuppressionFilter">
+    <property name="file" value="${basedir}/.checkstyle_suppressions.xml"/>
   </module>
   <module name="RegexpHeader">
     <property name="severity" value="ignore"/>

@@ -21,7 +21,7 @@ public abstract class PerformWithArgumentsPrim extends TernaryExpressionNode {
 
   @Specialization
   public final Object doObject(final VirtualFrame frame,
-      final Object receiver, final SSymbol selector, final SArray  argsArr) {
+      final Object receiver, final SSymbol selector, final SArray argsArr) {
     return dispatch.executeDispatch(frame, receiver, selector, argsArr);
   }
 

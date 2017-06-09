@@ -31,12 +31,13 @@ public abstract class AbstractSymbolDispatch extends Node {
     return ToArgumentsArrayNodeGen.create(null, null);
   }
 
-  @Specialization(limit = "INLINE_CACHE_SIZE", guards = {"selector == cachedSelector", "argsArr == null"})
+  @Specialization(limit = "INLINE_CACHE_SIZE",
+      guards = {"selector == cachedSelector", "argsArr == null"})
   public Object doCachedWithoutArgArr(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("selector") final SSymbol cachedSelector,
       @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend) {
-    Object[] arguments = { receiver };
+    Object[] arguments = {receiver};
 
     PreevaluatedExpression realCachedSend = cachedSend;
     return realCachedSend.doPreEvaluated(frame, arguments);
@@ -60,7 +61,7 @@ public abstract class AbstractSymbolDispatch extends Node {
       @Cached("create()") final IndirectCallNode call) {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
 
-    Object[] arguments = { receiver };
+    Object[] arguments = {receiver};
 
     return call.call(frame, invokable.getCallTarget(), arguments);
   }

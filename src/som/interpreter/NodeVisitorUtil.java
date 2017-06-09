@@ -8,12 +8,15 @@ import som.interpreter.nodes.ExpressionNode;
 
 public final class NodeVisitorUtil {
 
-  private static class DummyParent extends Node {
-    private DummyParent() { super(); }
+  private static final class DummyParent extends Node {
+    private DummyParent() {
+      super();
+    }
+
     @Child private ExpressionNode child;
 
     private void adopt(final ExpressionNode child) {
-        this.child = insert(child);
+      this.child = insert(child);
     }
   }
 

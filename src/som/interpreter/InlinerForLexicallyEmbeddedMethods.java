@@ -27,14 +27,14 @@ public class InlinerForLexicallyEmbeddedMethods implements NodeVisitor {
   }
 
   private final MethodGenerationContext mgenc;
-  private final Local[] blockArguments;
-  private final int blockStartIdx;
+  private final Local[]                 blockArguments;
+  private final int                     blockStartIdx;
 
   public InlinerForLexicallyEmbeddedMethods(final MethodGenerationContext mgenc,
       final Local[] blockArguments, final int blockStartIdx) {
     this.mgenc = mgenc;
     this.blockArguments = blockArguments;
-    this.blockStartIdx  = blockStartIdx;
+    this.blockStartIdx = blockStartIdx;
   }
 
   @Override
@@ -45,7 +45,8 @@ public class InlinerForLexicallyEmbeddedMethods implements NodeVisitor {
     return true;
   }
 
-  public UninitializedVariableReadNode getLocalRead(final Object slotIdentifier, final SourceSection source) {
+  public UninitializedVariableReadNode getLocalRead(final Object slotIdentifier,
+      final SourceSection source) {
     String inlinedId = getEmbeddedSlotId(slotIdentifier);
     mgenc.addLocalIfAbsent(inlinedId);
     return (UninitializedVariableReadNode) mgenc.getLocalReadNode(inlinedId, source);

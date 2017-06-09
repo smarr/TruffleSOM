@@ -33,18 +33,21 @@ import som.primitives.arrays.DoPrimFactory;
 import som.primitives.arrays.NewPrimFactory;
 import som.primitives.arrays.PutAllNodeFactory;
 
+
 public final class ArrayPrimitives extends Primitives {
-  public ArrayPrimitives(final boolean displayWarning) { super(displayWarning); }
+  public ArrayPrimitives(final boolean displayWarning) {
+    super(displayWarning);
+  }
 
   @Override
   public void installPrimitives() {
-    installInstancePrimitive("at:",     AtPrimFactory.getInstance());
+    installInstancePrimitive("at:", AtPrimFactory.getInstance());
     installInstancePrimitive("at:put:", AtPutPrimFactory.getInstance());
-    installInstancePrimitive("length",  LengthPrimFactory.getInstance());
-    installInstancePrimitive("copy",    CopyPrimFactory.getInstance());
+    installInstancePrimitive("length", LengthPrimFactory.getInstance());
+    installInstancePrimitive("copy", CopyPrimFactory.getInstance());
     installInstancePrimitive("doIndexes:", DoIndexesPrimFactory.getInstance());
-    installInstancePrimitive("do:",        DoPrimFactory.getInstance());
-    installInstancePrimitive("putAll:",    PutAllNodeFactory.getInstance());
+    installInstancePrimitive("do:", DoPrimFactory.getInstance());
+    installInstancePrimitive("putAll:", PutAllNodeFactory.getInstance());
 
     installClassPrimitive("new:", NewPrimFactory.getInstance());
   }

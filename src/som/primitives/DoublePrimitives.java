@@ -40,29 +40,32 @@ import som.primitives.arithmetic.SinPrimFactory;
 import som.primitives.arithmetic.SqrtPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
 
+
 public final class DoublePrimitives extends Primitives {
-  public DoublePrimitives(final boolean displayWarning) { super(displayWarning); }
+  public DoublePrimitives(final boolean displayWarning) {
+    super(displayWarning);
+  }
 
   @Override
   public void installPrimitives() {
     installInstancePrimitive("asString", AsStringPrimFactory.getInstance());
 
-    installInstancePrimitive("sqrt",  SqrtPrimFactory.getInstance());
-    installInstancePrimitive("+",     AdditionPrimFactory.getInstance());
-    installInstancePrimitive("-",     SubtractionPrimFactory.getInstance());
-    installInstancePrimitive("*",     MultiplicationPrimFactory.getInstance());
-    installInstancePrimitive("//",    DoubleDivPrimFactory.getInstance());
-    installInstancePrimitive("%",     ModuloPrimFactory.getInstance());
-    installInstancePrimitive("=",     EqualsPrimFactory.getInstance());
-    installInstancePrimitive("<",     LessThanPrimFactory.getInstance());
-    installInstancePrimitive("<=",    LessThanOrEqualPrimFactory.getInstance());
-    installInstancePrimitive(">",     GreaterThanPrimFactory.getInstance());
-    installInstancePrimitive("<>",    UnequalsPrimFactory.getInstance());
-    installInstancePrimitive("~=",    UnequalsPrimFactory.getInstance());
+    installInstancePrimitive("sqrt", SqrtPrimFactory.getInstance());
+    installInstancePrimitive("+", AdditionPrimFactory.getInstance());
+    installInstancePrimitive("-", SubtractionPrimFactory.getInstance());
+    installInstancePrimitive("*", MultiplicationPrimFactory.getInstance());
+    installInstancePrimitive("//", DoubleDivPrimFactory.getInstance());
+    installInstancePrimitive("%", ModuloPrimFactory.getInstance());
+    installInstancePrimitive("=", EqualsPrimFactory.getInstance());
+    installInstancePrimitive("<", LessThanPrimFactory.getInstance());
+    installInstancePrimitive("<=", LessThanOrEqualPrimFactory.getInstance());
+    installInstancePrimitive(">", GreaterThanPrimFactory.getInstance());
+    installInstancePrimitive("<>", UnequalsPrimFactory.getInstance());
+    installInstancePrimitive("~=", UnequalsPrimFactory.getInstance());
     installInstancePrimitive("round", RoundPrimFactory.getInstance());
     installInstancePrimitive("asInteger", AsIntegerPrimFactory.getInstance());
-    installInstancePrimitive("cos",   CosPrimFactory.getInstance());
-    installInstancePrimitive("sin",   SinPrimFactory.getInstance());
+    installInstancePrimitive("cos", CosPrimFactory.getInstance());
+    installInstancePrimitive("sin", SinPrimFactory.getInstance());
 
     installClassPrimitive("PositiveInfinity", PositiveInfinityPrimFactory.getInstance());
   }

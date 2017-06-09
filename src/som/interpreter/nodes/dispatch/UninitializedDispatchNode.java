@@ -37,7 +37,8 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
 
     if (rcvr instanceof SObject) {
       SObject r = (SObject) rcvr;
-      if (r.updateLayoutToMatchClass() && first != this) { // if first is this, short cut and directly continue...
+      if (r.updateLayoutToMatchClass() && first != this) { // if first is this, short cut and
+                                                           // directly continue...
         return first;
       }
     }
@@ -74,8 +75,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
-    return specialize(arguments).
-        executeDispatch(frame, arguments);
+    return specialize(arguments).executeDispatch(frame, arguments);
   }
 
   @Override

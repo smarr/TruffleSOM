@@ -30,7 +30,9 @@ public abstract class DoubleDivPrim extends ArithmeticPrim {
   @Specialization
   public final SAbstractObject doLong(final long left, final BigInteger right) {
     CompilerAsserts.neverPartOfCompilation("DoubleDiv100");
-    throw new NotYetImplementedException(); // TODO: need to implement the "/" case here directly... : return resendAsBigInteger("/", left, (SBigInteger) rightObj, frame.pack());
+    throw new NotYetImplementedException(); // TODO: need to implement the "/" case here
+                                            // directly... : return resendAsBigInteger("/",
+                                            // left, (SBigInteger) rightObj, frame.pack());
   }
 
   @Specialization

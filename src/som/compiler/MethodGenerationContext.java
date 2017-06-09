@@ -56,7 +56,6 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
 
-
 public final class MethodGenerationContext {
 
   private final ClassGenerationContext  holderGenc;
@@ -66,18 +65,18 @@ public final class MethodGenerationContext {
   private SSymbol signature;
   private boolean primitive;
   private boolean needsToCatchNonLocalReturn;
-  private boolean throwsNonLocalReturn;       // does directly or indirectly a non-local return
+  private boolean throwsNonLocalReturn;      // does directly or indirectly a non-local return
 
   private boolean accessesVariablesOfOuterScope;
 
-  private final LinkedHashMap<String, Argument> arguments = new LinkedHashMap<String, Argument>();
+  private final LinkedHashMap<String, Argument> arguments =
+      new LinkedHashMap<String, Argument>();
   private final LinkedHashMap<String, Local>    locals    = new LinkedHashMap<String, Local>();
 
-  private       FrameSlot     frameOnStackSlot;
-  private final LexicalScope  currentScope;
+  private FrameSlot          frameOnStackSlot;
+  private final LexicalScope currentScope;
 
   private final List<SMethod> embeddedBlockMethods;
-
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc) {
     this(holderGenc, null, false);
@@ -90,16 +89,16 @@ public final class MethodGenerationContext {
 
   private MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc, final boolean isBlockMethod) {
-    this.holderGenc      = holderGenc;
-    this.outerGenc       = outerGenc;
-    this.blockMethod     = isBlockMethod;
+    this.holderGenc = holderGenc;
+    this.outerGenc = outerGenc;
+    this.blockMethod = isBlockMethod;
 
     LexicalScope outer = (outerGenc != null) ? outerGenc.getCurrentLexicalScope() : null;
-    this.currentScope   = new LexicalScope(new FrameDescriptor(), outer);
+    this.currentScope = new LexicalScope(new FrameDescriptor(), outer);
 
     accessesVariablesOfOuterScope = false;
-    throwsNonLocalReturn            = false;
-    needsToCatchNonLocalReturn      = false;
+    throwsNonLocalReturn = false;
+    needsToCatchNonLocalReturn = false;
     embeddedBlockMethods = new ArrayList<SMethod>();
   }
 
@@ -170,9 +169,9 @@ public final class MethodGenerationContext {
     }
 
     ArrayList<Variable> onlyLocalAccess = new ArrayList<>(arguments.size() + locals.size());
-    ArrayList<Variable> nonLocalAccess  = new ArrayList<>(arguments.size() + locals.size());
+    ArrayList<Variable> nonLocalAccess = new ArrayList<>(arguments.size() + locals.size());
     separateVariables(arguments.values(), onlyLocalAccess, nonLocalAccess);
-    separateVariables(locals.values(),    onlyLocalAccess, nonLocalAccess);
+    separateVariables(locals.values(), onlyLocalAccess, nonLocalAccess);
 
     if (needsToCatchNonLocalReturn()) {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarkerSlot());
@@ -208,7 +207,8 @@ public final class MethodGenerationContext {
 
   private void addArgument(final String arg) {
     if (("self".equals(arg) || "$blockSelf".equals(arg)) && arguments.size() > 0) {
-      throw new IllegalStateException("The self argument always has to be the first argument of a method");
+      throw new IllegalStateException(
+          "The self argument always has to be the first argument of a method");
     }
 
     Argument argument = new Argument(arg, arguments.size());
@@ -374,6 +374,7 @@ public final class MethodGenerationContext {
 
   @Override
   public String toString() {
-    return "MethodGenC(" + holderGenc.getName().getString() + ">>" + signature.toString() + ")";
+    return "MethodGenC(" + holderGenc.getName().getString() + ">>" + signature.toString()
+        + ")";
   }
 }

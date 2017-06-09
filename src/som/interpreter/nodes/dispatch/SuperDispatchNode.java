@@ -11,6 +11,7 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
+
 /**
  * Super sends are special, they lead to a lexically defined receiver class.
  * So, it's always the cached receiver.
@@ -31,9 +32,9 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
 
     private UninitializedDispatchNode(final SSymbol selector,
         final SSymbol holderClass, final boolean classSide) {
-      this.selector    = selector;
+      this.selector = selector;
       this.holderClass = holderClass;
-      this.classSide   = classSide;
+      this.classSide = classSide;
     }
 
     private SClass getLexicalSuperClass() {
@@ -59,8 +60,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     @Override
     public Object executeDispatch(
         final VirtualFrame frame, final Object[] arguments) {
-      return specialize().
-          executeDispatch(frame, arguments);
+      return specialize().executeDispatch(frame, arguments);
     }
   }
 

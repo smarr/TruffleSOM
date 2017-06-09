@@ -10,8 +10,7 @@ import com.oracle.truffle.api.nodes.Node;
 public abstract class AbstractDispatchNode extends Node implements DispatchChain {
   public static final int INLINE_CACHE_SIZE = 6;
 
-  public abstract Object executeDispatch(
-      final VirtualFrame frame, final Object[] arguments);
+  public abstract Object executeDispatch(VirtualFrame frame, Object[] arguments);
 
   public abstract static class AbstractCachedDispatchNode
       extends AbstractDispatchNode {
@@ -21,10 +20,11 @@ public abstract class AbstractDispatchNode extends Node implements DispatchChain
 
     public AbstractCachedDispatchNode(final CallTarget methodCallTarget,
         final AbstractDispatchNode nextInCache) {
-      DirectCallNode cachedMethod = Truffle.getRuntime().createDirectCallNode(methodCallTarget);
+      DirectCallNode cachedMethod =
+          Truffle.getRuntime().createDirectCallNode(methodCallTarget);
 
       this.cachedMethod = cachedMethod;
-      this.nextInCache  = nextInCache;
+      this.nextInCache = nextInCache;
     }
 
     @Override

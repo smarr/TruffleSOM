@@ -18,9 +18,10 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
+
 @NodeChildren({
-  @NodeChild(value = "from",  type = ExpressionNode.class),
-  @NodeChild(value = "to",  type = ExpressionNode.class)})
+    @NodeChild(value = "from", type = ExpressionNode.class),
+    @NodeChild(value = "to", type = ExpressionNode.class)})
 public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
 
   @Child protected ExpressionNode body;
@@ -32,20 +33,20 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
   private final FrameSlot loopIndex;
 
   public abstract ExpressionNode getFrom();
+
   public abstract ExpressionNode getTo();
 
   public IntToDoInlinedLiteralsNode(final ExpressionNode body,
       final FrameSlot loopIndex, final ExpressionNode originalBody,
       final SourceSection sourceSection) {
     super(sourceSection);
-    this.body           = body;
-    this.loopIndex      = loopIndex;
+    this.body = body;
+    this.loopIndex = loopIndex;
     this.bodyActualNode = originalBody;
 
     // and, we can already tell the loop index that it is going to be long
     loopIndex.setKind(FrameSlotKind.Long);
   }
-
 
   @Specialization
   public final long doIntToDo(final VirtualFrame frame, final long from, final long to) {
@@ -87,7 +88,9 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
   }
 
   private void reportLoopCount(final long count) {
-    if (count < 1) { return; }
+    if (count < 1) {
+      return;
+    }
 
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");
     Node current = getParent();
@@ -98,7 +101,6 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
       ((Invokable) current).propagateLoopCountThroughoutLexicalScope(count);
     }
   }
-
 
   @Override
   public void replaceWithLexicallyEmbeddedNode(
@@ -123,4 +125,4 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
       final InlinerAdaptToEmbeddedOuterContext inliner) {
     // NOOP: This node has a FrameSlot, but it is local, so does not need to be updated.
   }
- }
+}

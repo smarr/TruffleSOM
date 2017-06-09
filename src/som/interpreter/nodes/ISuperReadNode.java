@@ -23,7 +23,9 @@ package som.interpreter.nodes;
 
 import som.vmobjects.SSymbol;
 
+
 public interface ISuperReadNode {
   SSymbol getHolderClass();
+
   boolean isClassSide();
 }

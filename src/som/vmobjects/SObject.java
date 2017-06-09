@@ -40,6 +40,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
+
 public class SObject extends SAbstractObject {
 
   @CompilationFinal protected SClass clazz;
@@ -47,17 +48,17 @@ public class SObject extends SAbstractObject {
   public static final int NUM_PRIMITIVE_FIELDS = 5;
   public static final int NUM_OBJECT_FIELDS    = 5;
 
-  @SuppressWarnings("unused")  private long   primField1;
-  @SuppressWarnings("unused")  private long   primField2;
-  @SuppressWarnings("unused")  private long   primField3;
-  @SuppressWarnings("unused")  private long   primField4;
-  @SuppressWarnings("unused")  private long   primField5;
+  @SuppressWarnings("unused") private long primField1;
+  @SuppressWarnings("unused") private long primField2;
+  @SuppressWarnings("unused") private long primField3;
+  @SuppressWarnings("unused") private long primField4;
+  @SuppressWarnings("unused") private long primField5;
 
-  @SuppressWarnings("unused")  private Object field1;
-  @SuppressWarnings("unused")  private Object field2;
-  @SuppressWarnings("unused")  private Object field3;
-  @SuppressWarnings("unused")  private Object field4;
-  @SuppressWarnings("unused")  private Object field5;
+  @SuppressWarnings("unused") private Object field1;
+  @SuppressWarnings("unused") private Object field2;
+  @SuppressWarnings("unused") private Object field3;
+  @SuppressWarnings("unused") private Object field4;
+  @SuppressWarnings("unused") private Object field5;
 
   @SuppressWarnings("unused") @CompilationFinal private long[]   extensionPrimFields;
   @SuppressWarnings("unused") @CompilationFinal private Object[] extensionObjFields;
@@ -72,7 +73,7 @@ public class SObject extends SAbstractObject {
 
   protected SObject(final SClass instanceClass) {
     numberOfFields = instanceClass.getNumberOfInstanceFields();
-    clazz          = instanceClass;
+    clazz = instanceClass;
     setLayoutInitially(instanceClass.getLayoutForInstances());
   }
 
@@ -84,11 +85,12 @@ public class SObject extends SAbstractObject {
   private void setLayoutInitially(final ObjectLayout layout) {
     field1 = field2 = field3 = field4 = field5 = Nil.nilObject;
 
-    objectLayout   = layout;
-    assert objectLayout.getNumberOfFields() == numberOfFields || !Universe.current().isObjectSystemInitialized();
+    objectLayout = layout;
+    assert objectLayout.getNumberOfFields() == numberOfFields
+        || !Universe.current().isObjectSystemInitialized();
 
     extensionPrimFields = getExtendedPrimStorage();
-    extensionObjFields  = getExtendedObjectStorage();
+    extensionObjFields = getExtendedObjectStorage();
   }
 
   public final int getNumberOfFields() {
@@ -123,7 +125,8 @@ public class SObject extends SAbstractObject {
   }
 
   private Object[] getExtendedObjectStorage() {
-    Object[] storage = new Object[objectLayout.getNumberOfUsedExtendedObjectStorageLocations()];
+    Object[] storage =
+        new Object[objectLayout.getNumberOfUsedExtendedObjectStorageLocations()];
     Arrays.fill(storage, Nil.nilObject);
     return storage;
   }
@@ -174,16 +177,17 @@ public class SObject extends SAbstractObject {
 
     Object[] fieldValues = getAllFields();
 
-    objectLayout        = layout;
+    objectLayout = layout;
 
-    primitiveUsedMap    = 0;
+    primitiveUsedMap = 0;
     extensionPrimFields = getExtendedPrimStorage();
-    extensionObjFields  = getExtendedObjectStorage();
+    extensionObjFields = getExtendedObjectStorage();
 
     setAllFields(fieldValues);
   }
 
-  protected final void updateLayoutWithInitializedField(final long index, final Class<?> type) {
+  protected final void updateLayoutWithInitializedField(final long index,
+      final Class<?> type) {
     ObjectLayout layout = clazz.updateInstanceLayoutWithInitializedField(index, type);
 
     assert objectLayout != layout;
@@ -220,8 +224,8 @@ public class SObject extends SAbstractObject {
 
   private static final long FIRST_OBJECT_FIELD_OFFSET = getFirstObjectFieldOffset();
   private static final long FIRST_PRIM_FIELD_OFFSET   = getFirstPrimFieldOffset();
-  private static final long OBJECT_FIELD_LENGTH = getObjectFieldLength();
-  private static final long PRIM_FIELD_LENGTH   = getPrimFieldLength();
+  private static final long OBJECT_FIELD_LENGTH       = getObjectFieldLength();
+  private static final long PRIM_FIELD_LENGTH         = getPrimFieldLength();
 
   public static long getObjectFieldOffset(final int fieldIndex) {
     assert 0 <= fieldIndex && fieldIndex < NUM_OBJECT_FIELDS;
@@ -234,7 +238,8 @@ public class SObject extends SAbstractObject {
   }
 
   public static int getPrimitiveFieldMask(final int fieldIndex) {
-    assert 0 <= fieldIndex && fieldIndex < 32; // this limits the number of object fields for the moment...
+    assert 0 <= fieldIndex && fieldIndex < 32; // this limits the number of object fields for
+                                               // the moment...
     return 1 << fieldIndex;
   }
 
@@ -317,7 +322,8 @@ public class SObject extends SAbstractObject {
       long dist = getFieldDistance("field1", "field2");
       // this can go wrong if the VM rearranges fields to fill holes in the
       // memory layout of the object structure
-      assert dist == 4 || dist == 8 : "We expect these fields to be adjecent and either 32 or 64bit appart.";
+      assert dist == 4
+          || dist == 8 : "We expect these fields to be adjecent and either 32 or 64bit appart.";
       return dist;
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
@@ -338,10 +344,12 @@ public class SObject extends SAbstractObject {
     }
   }
 
-  private static long getFieldDistance(final String field1, final String field2) throws NoSuchFieldException,
+  private static long getFieldDistance(final String field1, final String field2)
+      throws NoSuchFieldException,
       IllegalAccessException {
-    final Field firstField  = SObject.class.getDeclaredField(field1);
+    final Field firstField = SObject.class.getDeclaredField(field1);
     final Field secondField = SObject.class.getDeclaredField(field2);
-    return StorageLocation.getFieldOffset(secondField) - StorageLocation.getFieldOffset(firstField);
+    return StorageLocation.getFieldOffset(secondField)
+        - StorageLocation.getFieldOffset(firstField);
   }
 }

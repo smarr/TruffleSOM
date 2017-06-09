@@ -48,36 +48,40 @@ import som.primitives.arithmetic.RemainderPrimFactory;
 import som.primitives.arithmetic.SqrtPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
 
+
 public final class IntegerPrimitives extends Primitives {
-  public IntegerPrimitives(final boolean displayWarning) { super(displayWarning); }
+  public IntegerPrimitives(final boolean displayWarning) {
+    super(displayWarning);
+  }
 
   @Override
   public void installPrimitives() {
     installInstancePrimitive("asString", AsStringPrimFactory.getInstance());
-    installInstancePrimitive("sqrt",     SqrtPrimFactory.getInstance());
+    installInstancePrimitive("sqrt", SqrtPrimFactory.getInstance());
     installInstancePrimitive("atRandom", RandomPrimFactory.getInstance());
-    installInstancePrimitive("+",        AdditionPrimFactory.getInstance());
-    installInstancePrimitive("-",        SubtractionPrimFactory.getInstance());
-    installInstancePrimitive("*",        MultiplicationPrimFactory.getInstance());
-    installInstancePrimitive("//",       DoubleDivPrimFactory.getInstance());
-    installInstancePrimitive("/",        DividePrimFactory.getInstance());
-    installInstancePrimitive("%",        ModuloPrimFactory.getInstance());
-    installInstancePrimitive("rem:",     RemainderPrimFactory.getInstance());
-    installInstancePrimitive("&",        LogicAndPrimFactory.getInstance());
-    installInstancePrimitive("=",        EqualsPrimFactory.getInstance());
-    installInstancePrimitive("<",        LessThanPrimFactory.getInstance());
-    installInstancePrimitive("<=",       LessThanOrEqualPrimFactory.getInstance());
-    installInstancePrimitive(">",        GreaterThanPrimFactory.getInstance());
-    installInstancePrimitive("<>",       UnequalsPrimFactory.getInstance());
-    installInstancePrimitive("~=",       UnequalsPrimFactory.getInstance());
+    installInstancePrimitive("+", AdditionPrimFactory.getInstance());
+    installInstancePrimitive("-", SubtractionPrimFactory.getInstance());
+    installInstancePrimitive("*", MultiplicationPrimFactory.getInstance());
+    installInstancePrimitive("//", DoubleDivPrimFactory.getInstance());
+    installInstancePrimitive("/", DividePrimFactory.getInstance());
+    installInstancePrimitive("%", ModuloPrimFactory.getInstance());
+    installInstancePrimitive("rem:", RemainderPrimFactory.getInstance());
+    installInstancePrimitive("&", LogicAndPrimFactory.getInstance());
+    installInstancePrimitive("=", EqualsPrimFactory.getInstance());
+    installInstancePrimitive("<", LessThanPrimFactory.getInstance());
+    installInstancePrimitive("<=", LessThanOrEqualPrimFactory.getInstance());
+    installInstancePrimitive(">", GreaterThanPrimFactory.getInstance());
+    installInstancePrimitive("<>", UnequalsPrimFactory.getInstance());
+    installInstancePrimitive("~=", UnequalsPrimFactory.getInstance());
 
-    installInstancePrimitive("<<",       LeftShiftPrimFactory.getInstance());
-    installInstancePrimitive(">>>",      UnsignedRightShiftPrimFactory.getInstance());
-    installInstancePrimitive("bitXor:",  BitXorPrimFactory.getInstance());
-    installInstancePrimitive("max:",     MaxIntPrimFactory.getInstance());
+    installInstancePrimitive("<<", LeftShiftPrimFactory.getInstance());
+    installInstancePrimitive(">>>", UnsignedRightShiftPrimFactory.getInstance());
+    installInstancePrimitive("bitXor:", BitXorPrimFactory.getInstance());
+    installInstancePrimitive("max:", MaxIntPrimFactory.getInstance());
 
-    installInstancePrimitive("as32BitSignedValue",   As32BitSignedValueFactory.getInstance());
-    installInstancePrimitive("as32BitUnsignedValue", As32BitUnsignedValueFactory.getInstance());
+    installInstancePrimitive("as32BitSignedValue", As32BitSignedValueFactory.getInstance());
+    installInstancePrimitive("as32BitUnsignedValue",
+        As32BitUnsignedValueFactory.getInstance());
 
     installInstancePrimitive("to:", ToPrimFactory.getInstance());
     installInstancePrimitive("abs", AbsPrimFactory.getInstance());
