@@ -1,9 +1,5 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -12,11 +8,15 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
+import som.interpreter.nodes.nary.TernaryExpressionNode;
+import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable;
+
 
 /**
  * This node implements the correct message semantics and uses sends to the
  * blocks' methods instead of inlining the code directly.
- * 
+ *
  * @author smarr
  */
 public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
@@ -84,7 +84,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
     }
   }
 
-  @Specialization(contains = {"doIfTrueIfFalseWithInliningTwoBlocks"})
+  @Specialization(replaces = {"doIfTrueIfFalseWithInliningTwoBlocks"})
   public final Object doIfTrueIfFalse(final VirtualFrame frame,
       final boolean receiver, final SBlock trueBlock, final SBlock falseBlock) {
     CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.10");
@@ -115,7 +115,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
     }
   }
 
-  @Specialization(contains = {"doIfTrueIfFalseWithInliningTrueValue"})
+  @Specialization(replaces = {"doIfTrueIfFalseWithInliningTrueValue"})
   public final Object doIfTrueIfFalseTrueValue(final VirtualFrame frame,
       final boolean receiver, final Object trueValue, final SBlock falseBlock) {
     if (condProf.profile(receiver)) {
@@ -126,7 +126,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
     }
   }
 
-  @Specialization(contains = {"doIfTrueIfFalseWithInliningFalseValue"})
+  @Specialization(replaces = {"doIfTrueIfFalseWithInliningFalseValue"})
   public final Object doIfTrueIfFalseFalseValue(final VirtualFrame frame,
       final boolean receiver, final SBlock trueBlock, final Object falseValue) {
     if (condProf.profile(receiver)) {

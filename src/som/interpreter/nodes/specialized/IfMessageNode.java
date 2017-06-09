@@ -1,10 +1,5 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -13,6 +8,11 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.vm.constants.Nil;
+import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable;
 
 
 public abstract class IfMessageNode extends BinaryExpressionNode {
@@ -44,7 +44,7 @@ public abstract class IfMessageNode extends BinaryExpressionNode {
     }
   }
 
-  @Specialization(contains = "cachedBlock")
+  @Specialization(replaces = "cachedBlock")
   public final Object fallback(final VirtualFrame frame, final boolean rcvr,
       final SBlock arg,
       @Cached("createIndirect()") final IndirectCallNode callNode) {

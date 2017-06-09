@@ -1,16 +1,16 @@
 package som.interpreter.nodes.specialized.whileloops;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.vm.constants.Globals;
 import som.vm.constants.Nil;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public abstract class WhileCache extends BinaryExpressionNode {
@@ -47,7 +47,7 @@ public abstract class WhileCache extends BinaryExpressionNode {
     }
   }
 
-  @Specialization(contains = "doCached")
+  @Specialization(replaces = "doCached")
   public final SObject doUncached(final VirtualFrame frame, final SBlock loopCondition,
       final SBlock loopBody) {
     CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch"); // no caching, direct
