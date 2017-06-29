@@ -37,7 +37,6 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import som.interpreter.objectstorage.ObjectLayout;
 import som.interpreter.objectstorage.StorageLocation;
 import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
-import som.vm.Universe;
 import som.vm.constants.Nil;
 
 
@@ -86,8 +85,9 @@ public class SObject extends SAbstractObject {
     field1 = field2 = field3 = field4 = field5 = Nil.nilObject;
 
     objectLayout = layout;
-    assert objectLayout.getNumberOfFields() == numberOfFields
-        || !Universe.current().isObjectSystemInitialized();
+    // Can't check this cheaply
+    // assert objectLayout.getNumberOfFields() == numberOfFields
+    // || !Universe.current().isObjectSystemInitialized();
 
     extensionPrimFields = getExtendedPrimStorage();
     extensionObjFields = getExtendedObjectStorage();

@@ -1,11 +1,12 @@
 package som.primitives;
 
 import som.interpreter.nodes.specialized.NotMessageNodeFactory;
+import som.vm.Universe;
 
 
 public final class TruePrimitives extends Primitives {
-  public TruePrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public TruePrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

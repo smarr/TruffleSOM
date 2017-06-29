@@ -27,15 +27,16 @@ package som.compiler;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.profiles.ValueProfile;
+
+import som.interpreter.SomLanguage;
 import som.vm.Universe;
 import som.vm.constants.Classes;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 
 public final class ClassGenerationContext {
@@ -53,6 +54,14 @@ public final class ClassGenerationContext {
   private final List<SInvokable> instanceMethods = new ArrayList<SInvokable>();
   private final List<SSymbol>    classFields     = new ArrayList<SSymbol>();
   private final List<SInvokable> classMethods    = new ArrayList<SInvokable>();
+
+  public SomLanguage getLanguage() {
+    return universe.getLanguage();
+  }
+
+  public Universe getUniverse() {
+    return universe;
+  }
 
   public void setName(final SSymbol name) {
     this.name = name;

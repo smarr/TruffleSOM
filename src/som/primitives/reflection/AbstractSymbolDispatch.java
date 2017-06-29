@@ -12,6 +12,7 @@ import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.primitives.arrays.ToArgumentsArrayNode;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
+import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
@@ -20,11 +21,18 @@ import som.vmobjects.SSymbol;
 public abstract class AbstractSymbolDispatch extends Node {
   public static final int INLINE_CACHE_SIZE = 6;
 
+  protected final Universe universe;
+
+  public AbstractSymbolDispatch(final Universe universe) {
+    this.universe = universe;
+  }
+
   public abstract Object executeDispatch(VirtualFrame frame, Object receiver,
       SSymbol selector, Object argsArr);
 
-  public static final AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
-    return MessageSendNode.createForPerformNodes(selector);
+  public static final AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
+      final Universe universe) {
+    return MessageSendNode.createForPerformNodes(selector, universe);
   }
 
   public static final ToArgumentsArrayNode createArgArrayNode() {
@@ -36,7 +44,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doCachedWithoutArgArr(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("selector") final SSymbol cachedSelector,
-      @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend) {
+      @Cached("createForPerformNodes(selector, universe)") final AbstractMessageSendNode cachedSend) {
     Object[] arguments = {receiver};
 
     PreevaluatedExpression realCachedSend = cachedSend;
@@ -47,7 +55,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doCached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("selector") final SSymbol cachedSelector,
-      @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend,
+      @Cached("createForPerformNodes(selector, universe)") final AbstractMessageSendNode cachedSend,
       @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
     Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
 
@@ -59,7 +67,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doUncached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("create()") final IndirectCallNode call) {
-    SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
+    SInvokable invokable = Types.getClassOf(receiver, universe).lookupInvokable(selector);
 
     Object[] arguments = {receiver};
 
@@ -71,7 +79,7 @@ public abstract class AbstractSymbolDispatch extends Node {
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("create()") final IndirectCallNode call,
       @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
-    SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
+    SInvokable invokable = Types.getClassOf(receiver, universe).lookupInvokable(selector);
 
     Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
 

@@ -1,6 +1,5 @@
 package som.primitives;
 
-import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -16,11 +15,15 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
-@ImportStatic(SystemPrims.class)
 public abstract class GlobalPrim extends BinarySystemNode {
-  @Child private GetGlobalNode getGlobal = new UninitializedGetGlobal(0);
+  @Child private GetGlobalNode getGlobal;
 
-  @Specialization(guards = "receiverIsSystemObject(receiver)")
+  public GlobalPrim(final Universe universe) {
+    super(universe);
+    getGlobal = new UninitializedGetGlobal(0, universe);
+  }
+
+  @Specialization(guards = "receiver == universe.getSystemObject()")
   public final Object doSObject(final VirtualFrame frame, final SObject receiver,
       final SSymbol argument) {
     return getGlobal.getGlobal(frame, argument);
@@ -42,10 +45,12 @@ public abstract class GlobalPrim extends BinarySystemNode {
   }
 
   private static final class UninitializedGetGlobal extends GetGlobalNode {
-    private final int depth;
+    private final int      depth;
+    private final Universe universe;
 
-    UninitializedGetGlobal(final int depth) {
+    UninitializedGetGlobal(final int depth, final Universe universe) {
       this.depth = depth;
+      this.universe = universe;
     }
 
     @Override
@@ -55,13 +60,13 @@ public abstract class GlobalPrim extends BinarySystemNode {
 
     private GetGlobalNode specialize(final SSymbol argument) {
       if (depth < INLINE_CACHE_SIZE) {
-        return replace(new CachedGetGlobal(argument, depth));
+        return replace(new CachedGetGlobal(argument, depth, universe));
       } else {
         GetGlobalNode head = this;
         while (head.getParent() instanceof GetGlobalNode) {
           head = (GetGlobalNode) head.getParent();
         }
-        return head.replace(new GetGlobalFallback());
+        return head.replace(new GetGlobalFallback(universe));
       }
     }
   }
@@ -72,11 +77,11 @@ public abstract class GlobalPrim extends BinarySystemNode {
     @Child private GlobalNode    getGlobal;
     @Child private GetGlobalNode next;
 
-    CachedGetGlobal(final SSymbol name, final int depth) {
+    CachedGetGlobal(final SSymbol name, final int depth, final Universe universe) {
       this.depth = depth;
       this.name = name;
-      getGlobal = new UninitializedGlobalReadWithoutErrorNode(name, null);
-      next = new UninitializedGetGlobal(this.depth + 1);
+      getGlobal = new UninitializedGlobalReadWithoutErrorNode(name, null, universe);
+      next = new UninitializedGetGlobal(this.depth + 1, universe);
     }
 
     @Override
@@ -93,8 +98,8 @@ public abstract class GlobalPrim extends BinarySystemNode {
 
     private final Universe universe;
 
-    GetGlobalFallback() {
-      this.universe = Universe.current();
+    GetGlobalFallback(final Universe universe) {
+      this.universe = universe;
     }
 
     @Override

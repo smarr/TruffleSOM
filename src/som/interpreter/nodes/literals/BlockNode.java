@@ -1,5 +1,10 @@
 package som.interpreter.nodes.literals;
 
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
@@ -13,38 +18,23 @@ import som.vmobjects.SBlock;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable.SMethod;
 
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
-
 
 public class BlockNode extends LiteralNode {
 
   protected final SMethod            blockMethod;
   @CompilationFinal protected SClass blockClass;
 
-  public BlockNode(final SMethod blockMethod,
-      final SourceSection source) {
+  protected final Universe universe;
+
+  public BlockNode(final SMethod blockMethod, final SourceSection source,
+      final Universe universe) {
     super(source);
     this.blockMethod = blockMethod;
+    this.universe = universe;
   }
 
   protected void setBlockClass() {
-    switch (blockMethod.getNumberOfArguments()) {
-      case 1:
-        blockClass = Universe.current().getBlockClass(1);
-        break;
-      case 2:
-        blockClass = Universe.current().getBlockClass(2);
-        break;
-      case 3:
-        blockClass = Universe.current().getBlockClass(3);
-        break;
-      default:
-        throw new RuntimeException(
-            "We do currently not have support for more than 3 arguments to a block.");
-    }
+    blockClass = universe.getBlockClass(blockMethod.getNumberOfArguments());
   }
 
   @Override
@@ -94,7 +84,7 @@ public class BlockNode extends LiteralNode {
   }
 
   protected BlockNode createNode(final SMethod adapted) {
-    return new BlockNode(adapted, getSourceSection());
+    return new BlockNode(adapted, sourceSection, universe);
   }
 
   @Override
@@ -107,13 +97,13 @@ public class BlockNode extends LiteralNode {
 
   public static final class BlockNodeWithContext extends BlockNode {
 
-    public BlockNodeWithContext(final SMethod blockMethod,
-        final SourceSection source) {
-      super(blockMethod, source);
+    public BlockNodeWithContext(final SMethod blockMethod, final SourceSection source,
+        final Universe universe) {
+      super(blockMethod, source, universe);
     }
 
     public BlockNodeWithContext(final BlockNodeWithContext node) {
-      this(node.blockMethod, node.getSourceSection());
+      this(node.blockMethod, node.sourceSection, node.universe);
     }
 
     @Override
@@ -127,7 +117,7 @@ public class BlockNode extends LiteralNode {
 
     @Override
     protected BlockNode createNode(final SMethod adapted) {
-      return new BlockNodeWithContext(adapted, getSourceSection());
+      return new BlockNodeWithContext(adapted, sourceSection, universe);
     }
   }
 }

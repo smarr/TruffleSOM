@@ -25,9 +25,12 @@
 
 package som.primitives;
 
+import som.vm.Universe;
+
+
 public final class SymbolPrimitives extends Primitives {
-  public SymbolPrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public SymbolPrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

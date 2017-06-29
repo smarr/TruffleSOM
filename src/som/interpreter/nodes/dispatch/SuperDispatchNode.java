@@ -1,15 +1,15 @@
 package som.interpreter.nodes.dispatch;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.DirectCallNode;
+
 import som.interpreter.nodes.ISuperReadNode;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.DirectCallNode;
 
 
 /**
@@ -19,26 +19,28 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 public abstract class SuperDispatchNode extends AbstractDispatchNode {
 
   public static SuperDispatchNode create(final SSymbol selector,
-      final ISuperReadNode superNode) {
+      final ISuperReadNode superNode, final Universe universe) {
     CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create1");
     return new UninitializedDispatchNode(selector, superNode.getHolderClass(),
-        superNode.isClassSide());
+        superNode.isClassSide(), universe);
   }
 
   private static final class UninitializedDispatchNode extends SuperDispatchNode {
-    private final SSymbol selector;
-    private final SSymbol holderClass;
-    private final boolean classSide;
+    private final SSymbol  selector;
+    private final SSymbol  holderClass;
+    private final boolean  classSide;
+    private final Universe universe;
 
     private UninitializedDispatchNode(final SSymbol selector,
-        final SSymbol holderClass, final boolean classSide) {
+        final SSymbol holderClass, final boolean classSide, final Universe universe) {
       this.selector = selector;
       this.holderClass = holderClass;
       this.classSide = classSide;
+      this.universe = universe;
     }
 
     private SClass getLexicalSuperClass() {
-      SClass clazz = (SClass) Universe.current().getGlobal(holderClass);
+      SClass clazz = (SClass) universe.getGlobal(holderClass);
       if (classSide) {
         clazz = clazz.getSOMClass();
       }

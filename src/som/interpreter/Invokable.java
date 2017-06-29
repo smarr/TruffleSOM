@@ -13,18 +13,32 @@ import som.interpreter.nodes.ExpressionNode;
 
 
 public abstract class Invokable extends RootNode {
+  protected final String        name;
+  protected final SourceSection sourceSection;
 
   @Child protected ExpressionNode expressionOrSequence;
 
   protected final ExpressionNode uninitializedBody;
 
-  public Invokable(final SourceSection sourceSection,
+  protected Invokable(final String name, final SourceSection sourceSection,
       final FrameDescriptor frameDescriptor,
       final ExpressionNode expressionOrSequence,
-      final ExpressionNode uninitialized) {
-    super(SomLanguage.class, sourceSection, frameDescriptor);
+      final ExpressionNode uninitialized, final SomLanguage lang) {
+    super(lang, frameDescriptor);
+    this.name = name;
+    this.sourceSection = sourceSection;
     this.uninitializedBody = uninitialized;
     this.expressionOrSequence = expressionOrSequence;
+  }
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public SourceSection getSourceSection() {
+    return sourceSection;
   }
 
   @Override

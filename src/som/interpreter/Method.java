@@ -34,12 +34,11 @@ public final class Method extends Invokable {
 
   private final LexicalScope currentLexicalScope;
 
-  public Method(final SourceSection sourceSection,
-      final ExpressionNode expressions,
-      final LexicalScope currentLexicalScope,
-      final ExpressionNode uninitialized) {
-    super(sourceSection, currentLexicalScope.getFrameDescriptor(),
-        expressions, uninitialized);
+  public Method(final String name, final SourceSection sourceSection,
+      final ExpressionNode expressions, final LexicalScope currentLexicalScope,
+      final ExpressionNode uninitialized, final SomLanguage lang) {
+    super(name, sourceSection, currentLexicalScope.getFrameDescriptor(), expressions,
+        uninitialized, lang);
     this.currentLexicalScope = currentLexicalScope;
     currentLexicalScope.setMethod(this);
   }
@@ -56,8 +55,8 @@ public final class Method extends Invokable {
         inlinedFrameDescriptor, outerScope);
     ExpressionNode inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(
         uninitializedBody, inlinedCurrentScope);
-    Method clone = new Method(getSourceSection(), inlinedBody,
-        inlinedCurrentScope, uninitializedBody);
+    Method clone = new Method(name, sourceSection, inlinedBody,
+        inlinedCurrentScope, uninitializedBody, getLanguage(SomLanguage.class));
     return clone;
   }
 
@@ -69,8 +68,8 @@ public final class Method extends Invokable {
         uninitializedBody, inliner, currentAdaptedScope);
     ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
 
-    Method clone = new Method(getSourceSection(), adaptedBody,
-        currentAdaptedScope, uninitAdaptedBody);
+    Method clone = new Method(name, sourceSection, adaptedBody,
+        currentAdaptedScope, uninitAdaptedBody, getLanguage(SomLanguage.class));
     return clone;
   }
 
@@ -82,8 +81,8 @@ public final class Method extends Invokable {
         uninitializedBody, inliner, currentAdaptedScope);
     ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
 
-    Method clone = new Method(getSourceSection(),
-        adaptedBody, currentAdaptedScope, uninitAdaptedBody);
+    Method clone = new Method(name, sourceSection,
+        adaptedBody, currentAdaptedScope, uninitAdaptedBody, getLanguage(SomLanguage.class));
     return clone;
   }
 

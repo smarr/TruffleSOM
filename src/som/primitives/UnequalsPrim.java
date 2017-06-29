@@ -2,17 +2,25 @@ package som.primitives;
 
 import java.math.BigInteger;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.constants.Globals;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
-
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+
+import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.vm.Universe;
+import som.vmobjects.SObject;
+import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 public abstract class UnequalsPrim extends BinaryExpressionNode {
+
+  private final SObject trueObject;
+  private final SObject falseObject;
+
+  public UnequalsPrim(final Universe universe) {
+    this.trueObject = universe.getTrueObject();
+    this.falseObject = universe.getFalseObject();
+  }
 
   @Specialization
   public final boolean doBoolean(final boolean left, final boolean right) {
@@ -21,8 +29,8 @@ public abstract class UnequalsPrim extends BinaryExpressionNode {
 
   @Specialization
   public final boolean doBoolean(final boolean left, final SObject right) {
-    return (left && right != Globals.trueObject) ||
-        (!left && right != Globals.falseObject);
+    return (left && right != trueObject) ||
+        (!left && right != falseObject);
   }
 
   @Specialization

@@ -2,6 +2,9 @@ package som.interpreter;
 
 import java.util.List;
 
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
@@ -24,14 +27,8 @@ import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
-import som.interpreter.nodes.literals.BlockNode;
-import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.vm.Universe;
-import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.source.SourceSection;
 
 
 public final class SNodeFactory {
@@ -53,7 +50,7 @@ public final class SNodeFactory {
 
   public static GlobalNode createGlobalRead(final SSymbol name,
       final Universe universe, final SourceSection source) {
-    return new UninitializedGlobalReadNode(name, source);
+    return new UninitializedGlobalReadNode(name, source, universe);
   }
 
   public static FieldWriteNode createFieldWrite(final ExpressionNode self,
@@ -100,28 +97,19 @@ public final class SNodeFactory {
     return new SequenceNode(exps.toArray(new ExpressionNode[0]), source);
   }
 
-  public static BlockNode createBlockNode(final SMethod blockMethod,
-      final boolean withContext, final SourceSection source) {
-    if (withContext) {
-      return new BlockNodeWithContext(blockMethod, source);
-    } else {
-      return new BlockNode(blockMethod, source);
-    }
+  public static AbstractMessageSendNode createMessageSend(final SSymbol msg,
+      final ExpressionNode[] exprs, final SourceSection source, final Universe universe) {
+    return MessageSendNode.create(msg, exprs, source, universe);
   }
 
   public static AbstractMessageSendNode createMessageSend(final SSymbol msg,
-      final ExpressionNode[] exprs, final SourceSection source) {
-    return MessageSendNode.create(msg, exprs, source);
-  }
-
-  public static AbstractMessageSendNode createMessageSend(final SSymbol msg,
-      final List<ExpressionNode> exprs, final SourceSection source) {
-    return MessageSendNode.create(msg, exprs.toArray(new ExpressionNode[0]), source);
+      final List<ExpressionNode> exprs, final SourceSection source, final Universe universe) {
+    return MessageSendNode.create(msg, exprs.toArray(new ExpressionNode[0]), source, universe);
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,
       final FrameSlot markerSlot, final int contextLevel,
-      final SourceSection source) {
-    return new ReturnNonLocalNode(exp, markerSlot, contextLevel, source);
+      final SourceSection source, final Universe universe) {
+    return new ReturnNonLocalNode(exp, markerSlot, contextLevel, source, universe);
   }
 }

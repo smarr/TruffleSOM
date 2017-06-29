@@ -33,11 +33,12 @@ import som.primitives.SystemPrimsFactory.PrintNewlinePrimFactory;
 import som.primitives.SystemPrimsFactory.PrintStringPrimFactory;
 import som.primitives.SystemPrimsFactory.TicksPrimFactory;
 import som.primitives.SystemPrimsFactory.TimePrimFactory;
+import som.vm.Universe;
 
 
 public final class SystemPrimitives extends Primitives {
-  public SystemPrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public SystemPrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

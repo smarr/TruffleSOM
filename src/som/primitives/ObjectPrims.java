@@ -9,6 +9,7 @@ import som.interpreter.Types;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.SystemPrims.UnarySystemNode;
 import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
 import som.vm.constants.Nil;
@@ -106,7 +107,11 @@ public final class ObjectPrims {
   }
 
   @GenerateNodeFactory
-  public abstract static class ClassPrim extends UnaryExpressionNode {
+  public abstract static class ClassPrim extends UnarySystemNode {
+    public ClassPrim(final Universe universe) {
+      super(universe);
+    }
+
     @Specialization
     public final SClass doSAbstractObject(final SAbstractObject receiver) {
       return receiver.getSOMClass();
@@ -114,7 +119,7 @@ public final class ObjectPrims {
 
     @Specialization
     public final SClass doObject(final Object receiver) {
-      return Types.getClassOf(receiver);
+      return Types.getClassOf(receiver, universe);
     }
   }
 

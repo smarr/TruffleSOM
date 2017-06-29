@@ -25,8 +25,12 @@
 
 package som.primitives;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.dsl.NodeFactory;
+
 import som.compiler.MethodGenerationContext;
 import som.interpreter.Primitive;
+import som.interpreter.SomLanguage;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
@@ -38,9 +42,6 @@ import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
 
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.dsl.NodeFactory;
-
 
 public abstract class Primitives {
 
@@ -48,8 +49,8 @@ public abstract class Primitives {
   protected SClass         holder;
   protected final boolean  displayWarning;
 
-  public Primitives(final boolean displayWarning) {
-    this.universe = Universe.current();
+  public Primitives(final boolean displayWarning, final Universe universe) {
+    this.universe = universe;
     this.displayWarning = displayWarning;
   }
 
@@ -77,7 +78,11 @@ public abstract class Primitives {
     ExpressionNode primNode;
     switch (numArgs) {
       case 1:
-        primNode = nodeFactory.createNode(args[0]);
+        try {
+          primNode = nodeFactory.createNode(args[0]);
+        } catch (IllegalArgumentException e) {
+          primNode = nodeFactory.createNode(universe, args[0]);
+        }
         break;
       case 2:
         // HACK for node class where we use `executeWith`
@@ -85,7 +90,11 @@ public abstract class Primitives {
           primNode = nodeFactory.createNode(args[0], args[1],
               LengthPrimFactory.create(null));
         } else {
-          primNode = nodeFactory.createNode(args[0], args[1]);
+          try {
+            primNode = nodeFactory.createNode(args[0], args[1]);
+          } catch (IllegalArgumentException e) {
+            primNode = nodeFactory.createNode(universe, args[0], args[1]);
+          }
         }
         break;
       case 3:
@@ -94,31 +103,42 @@ public abstract class Primitives {
           primNode = nodeFactory.createNode(args[0], args[1], args[2],
               ToArgumentsArrayNodeGen.create(null, null));
         } else {
-          primNode = nodeFactory.createNode(args[0], args[1], args[2]);
+          try {
+            primNode = nodeFactory.createNode(args[0], args[1], args[2]);
+          } catch (IllegalArgumentException e) {
+            primNode = nodeFactory.createNode(universe, args[0], args[1], args[2]);
+          }
         }
         break;
       case 4:
-        primNode = nodeFactory.createNode(args[0], args[1], args[2], args[3]);
+        try {
+          primNode = nodeFactory.createNode(args[0], args[1], args[2], args[3]);
+        } catch (IllegalArgumentException e) {
+          primNode = nodeFactory.createNode(universe, args[0], args[1], args[2], args[3]);
+        }
         break;
       default:
         throw new RuntimeException("Not supported by SOM.");
     }
 
     Primitive primMethodNode =
-        new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-            (ExpressionNode) primNode.deepCopy());
+        new Primitive(signature.getString(), primNode,
+            mgen.getCurrentLexicalScope().getFrameDescriptor(),
+            (ExpressionNode) primNode.deepCopy(), universe.getLanguage());
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
     return prim;
   }
 
-  public static SInvokable constructEmptyPrimitive(final SSymbol signature) {
+  public static SInvokable constructEmptyPrimitive(final SSymbol signature,
+      final SomLanguage lang) {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(null);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));
     Primitive primMethodNode =
-        new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-            (ExpressionNode) primNode.deepCopy());
+        new Primitive(signature.getString(), primNode,
+            mgen.getCurrentLexicalScope().getFrameDescriptor(),
+            (ExpressionNode) primNode.deepCopy(), lang);
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
     return prim;
   }
@@ -145,6 +165,6 @@ public abstract class Primitives {
   public static SInvokable getEmptyPrimitive(final String selector,
       final Universe universe) {
     SSymbol signature = universe.symbolFor(selector);
-    return constructEmptyPrimitive(signature);
+    return constructEmptyPrimitive(signature, universe.getLanguage());
   }
 }
