@@ -30,7 +30,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.oracle.truffle.api.vm.PolyglotEngine.Value;
+
 import som.vm.Universe;
+import som.vmobjects.SObject;
 
 
 @RunWith(Parameterized.class)
@@ -77,13 +80,13 @@ public class SomTests {
 
   @Test
   public void testSomeTest() {
-    u.setAvoidExit(true);
-    String[] args = {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName};
-
-    u.interpret(args);
-
-    assertEquals(0, u.lastExitCode());
+    Value returnCode = Universe.eval(
+        new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName});
+    Object obj = returnCode.get();
+    if (obj instanceof SObject) {
+      assertEquals("System", ((SObject) obj).getSOMClass().getName().getString());
+    } else {
+      assertEquals(0, (int) returnCode.as(Integer.class));
+    }
   }
-
-  private static final Universe u = Universe.current();
 }

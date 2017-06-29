@@ -31,7 +31,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import som.vm.Universe;
+import com.oracle.truffle.api.vm.PolyglotEngine;
+import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
+import com.oracle.truffle.api.vm.PolyglotEngine.Value;
+
+import som.interpreter.SomLanguage;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
@@ -153,12 +157,15 @@ public class BasicInterpreterTests {
 
   @Test
   public void testBasicInterpreterBehavior() {
-    Universe u = Universe.current();
-    u.setAvoidExit(true);
-    u.setupClassPath("Smalltalk:TestSuite/BasicInterpreterTests");
+    Builder builder = PolyglotEngine.newBuilder();
+    builder.config(SomLanguage.MIME_TYPE, SomLanguage.CLASS_PATH,
+        "Smalltalk:TestSuite/BasicInterpreterTests");
+    builder.config(SomLanguage.MIME_TYPE, SomLanguage.TEST_CLASS, testClass);
+    builder.config(SomLanguage.MIME_TYPE, SomLanguage.TEST_SELECTOR, testSelector);
 
-    Object actualResult = u.interpret(testClass, testSelector);
+    PolyglotEngine engine = builder.build();
+    Value actualResult = engine.eval(SomLanguage.START);
 
-    assertEqualsSOMValue(expectedResult, actualResult);
+    assertEqualsSOMValue(expectedResult, actualResult.as(Object.class));
   }
 }

@@ -46,14 +46,15 @@ import java.util.StringTokenizer;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.vm.PolyglotEngine;
+import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
+import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
 import som.compiler.Disassembler;
 import som.interpreter.Invokable;
+import som.interpreter.SomLanguage;
 import som.interpreter.TruffleCompiler;
-import som.vm.constants.Globals;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -103,14 +104,18 @@ public final class Universe {
   }
 
   public static void main(final String[] arguments) {
-    Universe u = current();
+    Value returnCode = eval(arguments);
+    System.exit(returnCode.as(Integer.class));
+  }
 
-    try {
-      u.interpret(arguments);
-      u.exit(0);
-    } catch (IllegalStateException e) {
-      errorExit(e.getMessage());
-    }
+  public static Value eval(final String[] arguments) {
+    Builder builder = PolyglotEngine.newBuilder();
+    builder.config(SomLanguage.MIME_TYPE, SomLanguage.VM_ARGS, arguments);
+
+    PolyglotEngine engine = builder.build();
+
+    Value returnCode = engine.eval(SomLanguage.START);
+    return returnCode;
   }
 
   public Object interpret(String[] arguments) {
@@ -125,35 +130,34 @@ public final class Universe {
     this.language = language;
     this.globals = new HashMap<SSymbol, Association>();
     this.symbolTable = new HashMap<>();
-    this.avoidExit = false;
     this.alreadyInitialized = false;
-    this.lastExitCode = 0;
 
     this.blockClasses = new SClass[4];
   }
 
-  public TruffleRuntime getTruffleRuntime() {
-    return truffleRuntime;
+  public static final class SomExit extends ThreadDeath {
+    private static final long serialVersionUID = 485621638205177405L;
+
+    public final int errorCode;
+
+    SomExit(final int errorCode) {
+      this.errorCode = errorCode;
+    }
   }
 
   public void exit(final int errorCode) {
     TruffleCompiler.transferToInterpreter("exit");
-    // Exit from the Java system
-    if (!avoidExit) {
-      System.exit(errorCode);
-    } else {
-      lastExitCode = errorCode;
-    }
+    throw new SomExit(errorCode);
   }
 
-  public int lastExitCode() {
-    return lastExitCode;
+  public SomLanguage getLanguage() {
+    return language;
   }
 
   public static void errorExit(final String message) {
     TruffleCompiler.transferToInterpreter("errorExit");
     errorPrintln("Runtime Error: " + message);
-    current().exit(1);
+    throw new SomExit(1);
   }
 
   @TruffleBoundary
@@ -621,10 +625,6 @@ public final class Universe {
     return result;
   }
 
-  public void setAvoidExit(final boolean value) {
-    avoidExit = value;
-  }
-
   @TruffleBoundary
   public static void errorPrint(final String msg) {
     // Checkstyle: stop
@@ -704,14 +704,9 @@ public final class Universe {
   private String[]                  classPath;
   @CompilationFinal private boolean printAST;
 
-  private final TruffleRuntime truffleRuntime;
+  private final SomLanguage language;
 
   private final HashMap<String, SSymbol> symbolTable;
-
-  // TODO: this is not how it is supposed to be... it is just a hack to cope
-  // with the use of system.exit in SOM to enable testing
-  @CompilationFinal private boolean avoidExit;
-  private int                       lastExitCode;
 
   // Optimizations
   private final SClass[] blockClasses;
