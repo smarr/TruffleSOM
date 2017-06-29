@@ -78,7 +78,11 @@ public abstract class Primitives {
     ExpressionNode primNode;
     switch (numArgs) {
       case 1:
-        primNode = nodeFactory.createNode(args[0]);
+        try {
+          primNode = nodeFactory.createNode(args[0]);
+        } catch (IllegalArgumentException e) {
+          primNode = nodeFactory.createNode(universe, args[0]);
+        }
         break;
       case 2:
         // HACK for node class where we use `executeWith`
@@ -86,7 +90,11 @@ public abstract class Primitives {
           primNode = nodeFactory.createNode(args[0], args[1],
               LengthPrimFactory.create(null));
         } else {
-          primNode = nodeFactory.createNode(args[0], args[1]);
+          try {
+            primNode = nodeFactory.createNode(args[0], args[1]);
+          } catch (IllegalArgumentException e) {
+            primNode = nodeFactory.createNode(universe, args[0], args[1]);
+          }
         }
         break;
       case 3:
@@ -95,11 +103,19 @@ public abstract class Primitives {
           primNode = nodeFactory.createNode(args[0], args[1], args[2],
               ToArgumentsArrayNodeGen.create(null, null));
         } else {
-          primNode = nodeFactory.createNode(args[0], args[1], args[2]);
+          try {
+            primNode = nodeFactory.createNode(args[0], args[1], args[2]);
+          } catch (IllegalArgumentException e) {
+            primNode = nodeFactory.createNode(universe, args[0], args[1], args[2]);
+          }
         }
         break;
       case 4:
-        primNode = nodeFactory.createNode(args[0], args[1], args[2], args[3]);
+        try {
+          primNode = nodeFactory.createNode(args[0], args[1], args[2], args[3]);
+        } catch (IllegalArgumentException e) {
+          primNode = nodeFactory.createNode(universe, args[0], args[1], args[2], args[3]);
+        }
         break;
       default:
         throw new RuntimeException("Not supported by SOM.");
