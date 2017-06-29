@@ -65,6 +65,7 @@ import som.primitives.arrays.NewPrimFactory;
 import som.primitives.arrays.PutAllNodeFactory;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.vm.NotYetImplementedException;
+import som.vm.Universe;
 import som.vm.constants.Classes;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -74,18 +75,20 @@ import som.vmobjects.SSymbol;
 public final class MessageSendNode {
 
   public static AbstractMessageSendNode create(final SSymbol selector,
-      final ExpressionNode[] arguments, final SourceSection source) {
-    return new UninitializedMessageSendNode(selector, arguments, source);
+      final ExpressionNode[] arguments, final SourceSection source, final Universe universe) {
+    return new UninitializedMessageSendNode(selector, arguments, source, universe);
   }
 
-  public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
-    return new UninitializedSymbolSendNode(selector, null);
+  public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
+      final Universe universe) {
+    return new UninitializedSymbolSendNode(selector, null, universe);
   }
 
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
-      final ExpressionNode[] argumentNodes, final SourceSection source) {
+      final ExpressionNode[] argumentNodes, final SourceSection source,
+      final Universe universe) {
     return new GenericMessageSendNode(selector, argumentNodes,
-        new UninitializedDispatchNode(selector), source);
+        new UninitializedDispatchNode(selector, universe), source);
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
@@ -123,12 +126,15 @@ public final class MessageSendNode {
   public abstract static class AbstractUninitializedMessageSendNode
       extends AbstractMessageSendNode {
 
-    protected final SSymbol selector;
+    protected final SSymbol  selector;
+    protected final Universe universe;
 
     protected AbstractUninitializedMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments, final SourceSection source) {
+        final ExpressionNode[] arguments, final SourceSection source,
+        final Universe universe) {
       super(arguments, source);
       this.selector = selector;
+      this.universe = universe;
     }
 
     @Override
@@ -175,7 +181,7 @@ public final class MessageSendNode {
     private GenericMessageSendNode makeGenericSend() {
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
           argumentNodes,
-          new UninitializedDispatchNode(selector),
+          new UninitializedDispatchNode(selector, universe),
           getSourceSection());
       return replace(send);
     }
@@ -187,25 +193,26 @@ public final class MessageSendNode {
         case "length":
           if (receiver instanceof SArray) {
             return replace(new EagerUnaryPrimitiveNode(selector,
-                argumentNodes[0], LengthPrimFactory.create(null)));
+                argumentNodes[0], LengthPrimFactory.create(null), universe));
           }
           break;
         case "value":
           if (receiver instanceof SBlock || receiver instanceof Boolean) {
             return replace(new EagerUnaryPrimitiveNode(selector,
-                argumentNodes[0], ValueNonePrimFactory.create(null)));
+                argumentNodes[0], ValueNonePrimFactory.create(null), universe));
           }
           break;
         case "not":
           if (receiver instanceof Boolean) {
             return replace(new EagerUnaryPrimitiveNode(selector,
-                argumentNodes[0], NotMessageNodeFactory.create(getSourceSection(), null)));
+                argumentNodes[0], NotMessageNodeFactory.create(getSourceSection(), null),
+                universe));
           }
           break;
         case "abs":
           if (receiver instanceof Long) {
             return replace(new EagerUnaryPrimitiveNode(selector,
-                argumentNodes[0], AbsPrimFactory.create(null)));
+                argumentNodes[0], AbsPrimFactory.create(null), universe));
           }
           break;
         case "isNil":
@@ -222,38 +229,38 @@ public final class MessageSendNode {
           if (arguments[0] instanceof SArray) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                AtPrimFactory.create(null, null)));
+                AtPrimFactory.create(null, null), universe));
           }
           break;
         case "new:":
           if (arguments[0] == Classes.arrayClass) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                NewPrimFactory.create(null, null)));
+                NewPrimFactory.create(null, null), universe));
           }
           break;
         case "instVarAt:":
           return replace(new EagerBinaryPrimitiveNode(selector,
               argumentNodes[0], argumentNodes[1],
-              InstVarAtPrimFactory.create(null, null)));
+              InstVarAtPrimFactory.create(null, null), universe));
         case "doIndexes:":
           if (arguments[0] instanceof SArray) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                DoIndexesPrimFactory.create(null, null)));
+                DoIndexesPrimFactory.create(null, null), universe));
           }
           break;
         case "do:":
           if (arguments[0] instanceof SArray) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                DoPrimFactory.create(null, null)));
+                DoPrimFactory.create(null, null), universe));
           }
           break;
         case "putAll:":
           return replace(new EagerBinaryPrimitiveNode(selector,
               argumentNodes[0], argumentNodes[1],
-              PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null))));
+              PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null)), universe));
         case "whileTrue:": {
           if (argumentNodes[1] instanceof BlockNode &&
               argumentNodes[0] instanceof BlockNode) {
@@ -307,7 +314,7 @@ public final class MessageSendNode {
           if (arguments[0] instanceof SBlock) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                ValueOnePrimFactory.create(null, null)));
+                ValueOnePrimFactory.create(null, null), universe));
           }
           break;
 
@@ -321,7 +328,7 @@ public final class MessageSendNode {
           if (arguments[0] instanceof Long) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                ToPrimFactory.create(null, null)));
+                ToPrimFactory.create(null, null), universe));
           }
           break;
 
@@ -329,81 +336,81 @@ public final class MessageSendNode {
         case "<":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              LessThanPrimFactory.create(null, null)));
+              LessThanPrimFactory.create(null, null), universe));
         case "<=":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              LessThanOrEqualPrimFactory.create(null, null)));
+              LessThanOrEqualPrimFactory.create(null, null), universe));
         case ">":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              GreaterThanPrimFactory.create(null, null)));
+              GreaterThanPrimFactory.create(null, null), universe));
         case "+":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              AdditionPrimFactory.create(null, null)));
+              AdditionPrimFactory.create(null, null), universe));
         case "-":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              SubtractionPrimFactory.create(null, null)));
+              SubtractionPrimFactory.create(null, null), universe));
         case "*":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              MultiplicationPrimFactory.create(null, null)));
+              MultiplicationPrimFactory.create(null, null), universe));
         case "=":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              EqualsPrimFactory.create(null, null)));
+              EqualsPrimFactory.create(universe, null, null), universe));
         case "<>":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              UnequalsPrimFactory.create(null, null)));
+              UnequalsPrimFactory.create(universe, null, null), universe));
         case "~=":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              UnequalsPrimFactory.create(null, null)));
+              UnequalsPrimFactory.create(universe, null, null), universe));
         case "==":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              EqualsEqualsPrimFactory.create(null, null)));
+              EqualsEqualsPrimFactory.create(universe, null, null), universe));
         case "bitXor:":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              BitXorPrimFactory.create(null, null)));
+              BitXorPrimFactory.create(null, null), universe));
         case "//":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              DoubleDivPrimFactory.create(null, null)));
+              DoubleDivPrimFactory.create(null, null), universe));
         case "%":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              ModuloPrimFactory.create(null, null)));
+              ModuloPrimFactory.create(null, null), universe));
         case "rem:":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              RemainderPrimFactory.create(null, null)));
+              RemainderPrimFactory.create(null, null), universe));
         case "/":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              DividePrimFactory.create(null, null)));
+              DividePrimFactory.create(null, null), universe));
         case "&":
           return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
               argumentNodes[1],
-              LogicAndPrimFactory.create(null, null)));
+              LogicAndPrimFactory.create(null, null), universe));
 
         // eagerly but cautious:
         case "<<":
           if (arguments[0] instanceof Long) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                LeftShiftPrimFactory.create(null, null)));
+                LeftShiftPrimFactory.create(null, null), universe));
           }
           break;
         case ">>>":
           if (arguments[0] instanceof Long) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                UnsignedRightShiftPrimFactory.create(null, null)));
+                UnsignedRightShiftPrimFactory.create(null, null), universe));
           }
           break;
 
@@ -418,7 +425,7 @@ public final class MessageSendNode {
           if (arguments[0] instanceof SArray) {
             return replace(new EagerTernaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1], argumentNodes[2],
-                AtPutPrimFactory.create(null, null, null)));
+                AtPutPrimFactory.create(null, null, null), universe));
           }
           break;
         case "ifTrue:ifFalse:":
@@ -475,15 +482,16 @@ public final class MessageSendNode {
       extends AbstractUninitializedMessageSendNode {
 
     protected UninitializedMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments, final SourceSection source) {
-      super(selector, arguments, source);
+        final ExpressionNode[] arguments, final SourceSection source,
+        final Universe universe) {
+      super(selector, arguments, source, universe);
     }
 
     @Override
     protected PreevaluatedExpression makeSuperSend() {
       GenericMessageSendNode node = new GenericMessageSendNode(selector,
           argumentNodes, SuperDispatchNode.create(selector,
-              (ISuperReadNode) argumentNodes[0]),
+              (ISuperReadNode) argumentNodes[0], universe),
           getSourceSection());
       return replace(node);
     }
@@ -493,8 +501,8 @@ public final class MessageSendNode {
       extends AbstractUninitializedMessageSendNode {
 
     protected UninitializedSymbolSendNode(final SSymbol selector,
-        final SourceSection source) {
-      super(selector, new ExpressionNode[0], source);
+        final SourceSection source, final Universe universe) {
+      super(selector, new ExpressionNode[0], source, universe);
     }
 
     @Override

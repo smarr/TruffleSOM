@@ -121,8 +121,8 @@ public final class Universe {
     return execute(arguments);
   }
 
-  private Universe() {
-    this.truffleRuntime = Truffle.getRuntime();
+  public Universe(final SomLanguage language) {
+    this.language = language;
     this.globals = new HashMap<SSymbol, Association>();
     this.symbolTable = new HashMap<>();
     this.avoidExit = false;
@@ -384,10 +384,6 @@ public final class Universe {
     loadBlockClass(2);
     loadBlockClass(3);
 
-    if (Globals.trueObject != trueObject) {
-      errorExit("Initialization went wrong for class Globals");
-    }
-
     if (null == blockClasses[1]) {
       errorExit("Initialization went wrong for class Blocks");
     }
@@ -571,7 +567,7 @@ public final class Universe {
     // Load primitives if class defines them, or try to load optional
     // primitives defined for system classes.
     if (result.hasPrimitives() || isSystemClass) {
-      result.loadPrimitives(!isSystemClass);
+      result.loadPrimitives(!isSystemClass, this);
     }
   }
 
@@ -722,19 +718,12 @@ public final class Universe {
 
   // Latest instance
   // WARNING: this is problematic with multiple interpreters in the same VM...
-  @CompilationFinal private static Universe current;
-  @CompilationFinal private boolean         alreadyInitialized;
+
+  @CompilationFinal private boolean alreadyInitialized;
 
   @CompilationFinal private boolean objectSystemInitialized = false;
 
   public boolean isObjectSystemInitialized() {
     return objectSystemInitialized;
-  }
-
-  public static Universe current() {
-    if (current == null) {
-      current = new Universe();
-    }
-    return current;
   }
 }

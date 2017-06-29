@@ -3,11 +3,12 @@ package som.primitives;
 import som.primitives.MethodPrimsFactory.HolderPrimFactory;
 import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
 import som.primitives.MethodPrimsFactory.SignaturePrimFactory;
+import som.vm.Universe;
 
 
 public final class MethodPrimitives extends Primitives {
-  public MethodPrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public MethodPrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

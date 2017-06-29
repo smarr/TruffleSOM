@@ -47,11 +47,12 @@ import som.primitives.arithmetic.MultiplicationPrimFactory;
 import som.primitives.arithmetic.RemainderPrimFactory;
 import som.primitives.arithmetic.SqrtPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
+import som.vm.Universe;
 
 
 public final class IntegerPrimitives extends Primitives {
-  public IntegerPrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public IntegerPrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

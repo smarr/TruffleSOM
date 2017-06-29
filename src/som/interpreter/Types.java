@@ -23,8 +23,11 @@ package som.interpreter;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.dsl.TypeSystem;
+
+import som.vm.Universe;
 import som.vm.constants.Classes;
-import som.vm.constants.Globals;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -32,9 +35,6 @@ import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.dsl.TypeSystem;
 
 
 @TypeSystem({boolean.class,
@@ -52,7 +52,7 @@ import com.oracle.truffle.api.dsl.TypeSystem;
     Object[].class}) // Object[] is only for argument passing
 public class Types {
 
-  public static SClass getClassOf(final Object obj) {
+  public static SClass getClassOf(final Object obj, final Universe universe) {
     CompilerAsserts.neverPartOfCompilation();
     assert obj != null;
 
@@ -60,9 +60,9 @@ public class Types {
       return ((SAbstractObject) obj).getSOMClass();
     } else if (obj instanceof Boolean) {
       if ((boolean) obj) {
-        return Globals.trueClass;
+        return universe.getTrueClass();
       } else {
-        return Globals.falseClass;
+        return universe.getFalseClass();
       }
     } else if (obj instanceof Long || obj instanceof BigInteger) {
       return Classes.integerClass;

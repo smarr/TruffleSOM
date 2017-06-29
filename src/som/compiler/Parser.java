@@ -581,9 +581,9 @@ public final class Parser {
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod, getSource(coord));
+          return new BlockNodeWithContext(blockMethod, getSource(coord), universe);
         } else {
-          return new BlockNode(blockMethod, getSource(coord));
+          return new BlockNode(blockMethod, getSource(coord), universe);
         }
       }
       default: {
@@ -634,7 +634,7 @@ public final class Parser {
     SourceCoordinate coord = getCoordinate();
     SSymbol selector = unarySelector();
     return createMessageSend(selector, new ExpressionNode[] {receiver},
-        getSource(coord));
+        getSource(coord), universe);
   }
 
   private AbstractMessageSendNode binaryMessage(final MethodGenerationContext mgenc,
@@ -644,7 +644,7 @@ public final class Parser {
     ExpressionNode operand = binaryOperand(mgenc);
 
     return createMessageSend(msg, new ExpressionNode[] {receiver, operand},
-        getSource(coord));
+        getSource(coord), universe);
   }
 
   private ExpressionNode binaryOperand(final MethodGenerationContext mgenc) throws ParseError {
@@ -725,7 +725,7 @@ public final class Parser {
     }
 
     return createMessageSend(msg, arguments.toArray(new ExpressionNode[0]),
-        source);
+        source, universe);
   }
 
   private ExpressionNode formula(final MethodGenerationContext mgenc) throws ParseError {

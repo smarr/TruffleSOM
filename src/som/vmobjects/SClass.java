@@ -29,17 +29,17 @@ import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
-import som.interpreter.objectstorage.ObjectLayout;
-import som.primitives.Primitives;
-import som.vm.Universe;
-import som.vm.constants.Nil;
-import som.vmobjects.SInvokable.SPrimitive;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.profiles.ValueProfile;
+
+import som.interpreter.objectstorage.ObjectLayout;
+import som.primitives.Primitives;
+import som.vm.Universe;
+import som.vm.constants.Nil;
+import som.vmobjects.SInvokable.SPrimitive;
 
 
 public final class SClass extends SObject {
@@ -234,7 +234,7 @@ public final class SClass extends SObject {
     return includesPrimitives(this) || includesPrimitives(clazz);
   }
 
-  public void loadPrimitives(final boolean displayWarning) {
+  public void loadPrimitives(final boolean displayWarning, final Universe universe) {
     CompilerAsserts.neverPartOfCompilation();
 
     // Compute the class name of the Java(TM) class containing the
@@ -245,8 +245,8 @@ public final class SClass extends SObject {
     try {
       Class<?> primitivesClass = Class.forName(className);
       try {
-        Constructor<?> ctor = primitivesClass.getConstructor(boolean.class);
-        ((Primitives) ctor.newInstance(displayWarning)).installPrimitivesIn(this);
+        Constructor<?> ctor = primitivesClass.getConstructor(boolean.class, Universe.class);
+        ((Primitives) ctor.newInstance(displayWarning, universe)).installPrimitivesIn(this);
       } catch (Exception e) {
         Universe.errorExit("Primitives class " + className
             + " cannot be instantiated");

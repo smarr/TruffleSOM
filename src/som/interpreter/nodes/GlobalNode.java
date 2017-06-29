@@ -44,7 +44,7 @@ public abstract class GlobalNode extends ExpressionNode {
   }
 
   public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
-    private final Universe universe;
+    protected final Universe universe;
 
     public AbstractUninitializedGlobalReadNode(final SSymbol globalName,
         final Universe universe, final SourceSection source) {
@@ -86,8 +86,8 @@ public abstract class GlobalNode extends ExpressionNode {
       extends AbstractUninitializedGlobalReadNode {
 
     public UninitializedGlobalReadNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, Universe.current(), source);
+        final SourceSection source, final Universe universe) {
+      super(globalName, universe, source);
     }
 
     @Override
@@ -97,15 +97,15 @@ public abstract class GlobalNode extends ExpressionNode {
       // if it is not defined, we will send a error message to the current
       // receiver object
       Object self = SArguments.rcvr(frame);
-      return SAbstractObject.sendUnknownGlobal(self, globalName);
+      return SAbstractObject.sendUnknownGlobal(self, globalName, universe);
     }
   }
 
   public static final class UninitializedGlobalReadWithoutErrorNode
       extends AbstractUninitializedGlobalReadNode {
     public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, Universe.current(), source);
+        final SourceSection source, final Universe universe) {
+      super(globalName, universe, source);
     }
 
     @Override

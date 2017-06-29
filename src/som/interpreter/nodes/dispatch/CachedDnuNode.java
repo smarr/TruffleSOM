@@ -17,8 +17,9 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
   private final DispatchGuard guard;
 
   public CachedDnuNode(final SClass rcvrClass, final DispatchGuard guard,
-      final SSymbol selector, final AbstractDispatchNode nextInCache) {
-    super(getDnuCallTarget(rcvrClass), nextInCache);
+      final SSymbol selector, final AbstractDispatchNode nextInCache,
+      final Universe universe) {
+    super(getDnuCallTarget(rcvrClass, universe), nextInCache);
     this.selector = selector;
     this.guard = guard;
   }
@@ -38,9 +39,9 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
     }
   }
 
-  public static CallTarget getDnuCallTarget(final SClass rcvrClass) {
+  public static CallTarget getDnuCallTarget(final SClass rcvrClass, final Universe universe) {
     return rcvrClass.lookupInvokable(
-        Universe.current().symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
+        universe.symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
   }
 
   protected Object performDnu(final VirtualFrame frame, final Object[] arguments,

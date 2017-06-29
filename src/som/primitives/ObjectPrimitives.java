@@ -34,11 +34,12 @@ import som.primitives.reflection.PerformInSuperclassPrimFactory;
 import som.primitives.reflection.PerformPrimFactory;
 import som.primitives.reflection.PerformWithArgumentsInSuperclassPrimFactory;
 import som.primitives.reflection.PerformWithArgumentsPrimFactory;
+import som.vm.Universe;
 
 
 public final class ObjectPrimitives extends Primitives {
-  public ObjectPrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public ObjectPrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

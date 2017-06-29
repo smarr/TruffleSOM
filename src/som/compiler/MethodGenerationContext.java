@@ -325,7 +325,7 @@ public final class MethodGenerationContext {
       final SourceSection source) {
     makeCatchNonLocalReturn();
     return createNonLocalReturn(expr, getFrameOnStackMarkerSlot(),
-        getOuterSelfContextLevel(), source);
+        getOuterSelfContextLevel(), source, holderGenc.getUniverse());
   }
 
   private ExpressionNode getSelfRead(final SourceSection source) {

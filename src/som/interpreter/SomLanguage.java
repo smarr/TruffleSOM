@@ -31,14 +31,14 @@ public class SomLanguage extends TruffleLanguage<Object> {
   }
 
   @Override
-  protected Object findExportedSymbol(final Object context,
+  protected Object findExportedSymbol(final Universe context,
       final String globalName, final boolean onlyExplicit) {
     throw new NotYetImplementedException();
   }
 
   @Override
-  protected Object getLanguageGlobal(final Object context) {
-    throw new NotYetImplementedException();
+  protected Object getLanguageGlobal(final Universe context) {
+    return null;
   }
 
   @Override

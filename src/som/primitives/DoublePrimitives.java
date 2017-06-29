@@ -39,11 +39,12 @@ import som.primitives.arithmetic.MultiplicationPrimFactory;
 import som.primitives.arithmetic.SinPrimFactory;
 import som.primitives.arithmetic.SqrtPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
+import som.vm.Universe;
 
 
 public final class DoublePrimitives extends Primitives {
-  public DoublePrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public DoublePrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

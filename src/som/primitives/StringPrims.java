@@ -1,14 +1,14 @@
 package som.primitives;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.Specialization;
+
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.Specialization;
 
 
 public class StringPrims {
@@ -40,8 +40,8 @@ public class StringPrims {
   public abstract static class AsSymbolPrim extends UnaryExpressionNode {
     private final Universe universe;
 
-    public AsSymbolPrim() {
-      this.universe = Universe.current();
+    public AsSymbolPrim(final Universe universe) {
+      this.universe = universe;
     }
 
     @Specialization

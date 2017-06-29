@@ -32,11 +32,12 @@ import som.primitives.arrays.DoIndexesPrimFactory;
 import som.primitives.arrays.DoPrimFactory;
 import som.primitives.arrays.NewPrimFactory;
 import som.primitives.arrays.PutAllNodeFactory;
+import som.vm.Universe;
 
 
 public final class ArrayPrimitives extends Primitives {
-  public ArrayPrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public ArrayPrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override

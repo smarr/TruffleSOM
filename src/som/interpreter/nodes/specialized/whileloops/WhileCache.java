@@ -6,7 +6,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.constants.Globals;
+import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
@@ -18,9 +18,13 @@ public abstract class WhileCache extends BinaryExpressionNode {
   public static final int INLINE_CACHE_SIZE = 6;
 
   protected final boolean predicateBool;
+  private final SObject   trueObject;
+  private final SObject   falseObject;
 
-  public WhileCache(final boolean predicateBool) {
+  public WhileCache(final boolean predicateBool, final Universe universe) {
     this.predicateBool = predicateBool;
+    this.trueObject = universe.getTrueObject();
+    this.falseObject = universe.getFalseObject();
   }
 
   @Specialization(limit = "INLINE_CACHE_SIZE",
@@ -37,12 +41,12 @@ public abstract class WhileCache extends BinaryExpressionNode {
   private boolean obj2bool(final Object o) {
     if (o instanceof Boolean) {
       return (boolean) o;
-    } else if (o == Globals.trueObject) {
+    } else if (o == trueObject) {
       CompilerAsserts.neverPartOfCompilation("obj2Bool1");
       return true;
     } else {
       CompilerAsserts.neverPartOfCompilation("obj2Bool2");
-      assert o == Globals.falseObject;
+      assert o == falseObject;
       return false;
     }
   }

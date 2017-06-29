@@ -1,13 +1,14 @@
 package som.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import som.vm.Universe;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
@@ -16,18 +17,20 @@ public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
   @Child private ExpressionNode       argument;
   @Child private BinaryExpressionNode primitive;
 
-  private final SSymbol selector;
+  private final Universe universe;
+  private final SSymbol  selector;
 
   public EagerBinaryPrimitiveNode(
       final SSymbol selector,
       final ExpressionNode receiver,
       final ExpressionNode argument,
-      final BinaryExpressionNode primitive) {
+      final BinaryExpressionNode primitive, final Universe universe) {
     super(null);
     this.receiver = receiver;
     this.argument = argument;
     this.primitive = primitive;
     this.selector = selector;
+    this.universe = universe;
   }
 
   @Override
@@ -53,7 +56,7 @@ public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
 
   private GenericMessageSendNode makeGenericSend() {
     GenericMessageSendNode node = MessageSendNode.createGeneric(selector,
-        new ExpressionNode[] {receiver, argument}, getSourceSection());
+        new ExpressionNode[] {receiver, argument}, sourceSection, universe);
     return replace(node);
   }
 }

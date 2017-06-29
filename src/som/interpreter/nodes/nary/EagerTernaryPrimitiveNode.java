@@ -1,14 +1,15 @@
 package som.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import som.vm.Universe;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
@@ -18,20 +19,22 @@ public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
   @Child private ExpressionNode        argument2;
   @Child private TernaryExpressionNode primitive;
 
-  private final SSymbol selector;
+  private final SSymbol  selector;
+  private final Universe universe;
 
   public EagerTernaryPrimitiveNode(
       final SSymbol selector,
       final ExpressionNode receiver,
       final ExpressionNode argument1,
       final ExpressionNode argument2,
-      final TernaryExpressionNode primitive) {
+      final TernaryExpressionNode primitive, final Universe universe) {
     super(null);
     this.receiver = receiver;
     this.argument1 = argument1;
     this.argument2 = argument2;
     this.primitive = primitive;
     this.selector = selector;
+    this.universe = universe;
   }
 
   @Override
@@ -59,7 +62,7 @@ public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
   private AbstractMessageSendNode makeGenericSend() {
     GenericMessageSendNode node = MessageSendNode.createGeneric(selector,
         new ExpressionNode[] {receiver, argument1, argument2},
-        getSourceSection());
+        sourceSection, universe);
     return replace(node);
   }
 }

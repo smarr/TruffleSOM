@@ -21,15 +21,6 @@
  */
 package som.interpreter.nodes;
 
-import som.interpreter.FrameOnStackMarker;
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.ReturnException;
-import som.interpreter.SArguments;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SBlock;
-
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
@@ -38,28 +29,40 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
+import som.interpreter.FrameOnStackMarker;
+import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import som.interpreter.ReturnException;
+import som.interpreter.SArguments;
+import som.interpreter.SplitterForLexicallyEmbeddedCode;
+import som.vm.Universe;
+import som.vmobjects.SAbstractObject;
+import som.vmobjects.SBlock;
+
 
 public final class ReturnNonLocalNode extends ContextualNode {
 
   @Child private ExpressionNode expression;
   private final BranchProfile   blockEscaped;
   private final FrameSlot       frameOnStackMarker;
+  private final Universe        universe;
 
   public ReturnNonLocalNode(final ExpressionNode expression,
       final FrameSlot frameOnStackMarker,
       final int outerSelfContextLevel,
-      final SourceSection source) {
+      final SourceSection source, final Universe universe) {
     super(outerSelfContextLevel, source);
     assert outerSelfContextLevel > 0;
     this.expression = expression;
     this.blockEscaped = BranchProfile.create();
     this.frameOnStackMarker = frameOnStackMarker;
+    this.universe = universe;
   }
 
   public ReturnNonLocalNode(final ReturnNonLocalNode node,
       final FrameSlot inlinedFrameOnStack) {
     this(node.expression, inlinedFrameOnStack,
-        node.contextLevel, node.getSourceSection());
+        node.contextLevel, node.getSourceSection(), node.universe);
   }
 
   private FrameOnStackMarker getMarkerFromContext(final MaterializedFrame ctx) {
@@ -79,7 +82,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
       blockEscaped.enter();
       SBlock block = (SBlock) SArguments.rcvr(frame);
       Object self = SArguments.rcvr(ctx);
-      return SAbstractObject.sendEscapedBlock(self, block);
+      return SAbstractObject.sendEscapedBlock(self, block, universe);
     }
   }
 
@@ -101,7 +104,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
           getSourceSection());
     } else {
       inlined = new ReturnNonLocalNode(expression,
-          frameOnStackMarker, contextLevel - 1, getSourceSection());
+          frameOnStackMarker, contextLevel - 1, sourceSection, universe);
     }
     replace(inlined);
   }
@@ -117,7 +120,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
     if (inliner.needToAdjustLevel(contextLevel)) {
       ReturnNonLocalNode node = new ReturnNonLocalNode(
-          expression, frameOnStackMarker, contextLevel - 1, getSourceSection());
+          expression, frameOnStackMarker, contextLevel - 1, sourceSection, universe);
       replace(node);
       return;
     }
@@ -127,7 +130,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
    * Normally, there are no local returns in SOM. However, after
    * inlining/embedding of blocks, we need this ReturnLocalNode to replace
    * previous non-local returns.
-   * 
+   *
    * @author Stefan Marr
    */
   private static final class ReturnLocalNode extends ExpressionNode {

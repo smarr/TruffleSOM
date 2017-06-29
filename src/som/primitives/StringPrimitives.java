@@ -28,11 +28,12 @@ package som.primitives;
 import som.primitives.StringPrimsFactory.AsSymbolPrimFactory;
 import som.primitives.StringPrimsFactory.ConcatPrimFactory;
 import som.primitives.StringPrimsFactory.SubstringPrimFactory;
+import som.vm.Universe;
 
 
 public final class StringPrimitives extends Primitives {
-  public StringPrimitives(final boolean displayWarning) {
-    super(displayWarning);
+  public StringPrimitives(final boolean displayWarning, final Universe uni) {
+    super(displayWarning, uni);
   }
 
   @Override
