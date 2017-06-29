@@ -4,6 +4,7 @@
     <property name="src_gen.dir" value="src_gen"/>
     <property name="test.dir"    value="tests"/>
     <property name="lib.dir"     value="libs" />
+    <property name="sdk.dir"     value="${lib.dir}/truffle/sdk" />
     <property name="truffle.dir" value="${lib.dir}/truffle/truffle" />
     <property name="truffle.build" value="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
@@ -32,7 +33,17 @@
     </target>
     
     <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
+        <exec executable="${mx.cmd}" dir="${sdk.dir}" failonerror="true">
+            <arg value="ideclean"/>
+        </exec>
+        <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
+            <arg value="ideclean"/>
+        </exec>
+        
         <exec executable="${mx.cmd}" dir="${truffle.dir}">
+            <arg value="clean"/>
+        </exec>
+        <exec executable="${mx.cmd}" dir="${sdk.dir}">
             <arg value="clean"/>
         </exec>
     </target>
@@ -91,6 +102,9 @@
 
     <target name="ideinit" depends="core-lib">
         <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
+            <arg value="eclipseinit"/>
+        </exec>
+        <exec executable="${mx.cmd}" dir="${sdk.dir}" failonerror="true">
             <arg value="eclipseinit"/>
         </exec>
     </target>
