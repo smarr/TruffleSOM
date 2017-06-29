@@ -49,8 +49,8 @@ public abstract class Primitives {
   protected SClass         holder;
   protected final boolean  displayWarning;
 
-  public Primitives(final boolean displayWarning) {
-    this.universe = Universe.current();
+  public Primitives(final boolean displayWarning, final Universe universe) {
+    this.universe = universe;
     this.displayWarning = displayWarning;
   }
 
@@ -106,20 +106,23 @@ public abstract class Primitives {
     }
 
     Primitive primMethodNode =
-        new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-            (ExpressionNode) primNode.deepCopy());
+        new Primitive(signature.getString(), primNode,
+            mgen.getCurrentLexicalScope().getFrameDescriptor(),
+            (ExpressionNode) primNode.deepCopy(), universe.getLanguage());
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
     return prim;
   }
 
-  public static SInvokable constructEmptyPrimitive(final SSymbol signature) {
+  public static SInvokable constructEmptyPrimitive(final SSymbol signature,
+      final SomLanguage lang) {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(null);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));
     Primitive primMethodNode =
-        new Primitive(primNode, mgen.getCurrentLexicalScope().getFrameDescriptor(),
-            (ExpressionNode) primNode.deepCopy());
+        new Primitive(signature.getString(), primNode,
+            mgen.getCurrentLexicalScope().getFrameDescriptor(),
+            (ExpressionNode) primNode.deepCopy(), lang);
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
     return prim;
   }
@@ -146,6 +149,6 @@ public abstract class Primitives {
   public static SInvokable getEmptyPrimitive(final String selector,
       final Universe universe) {
     SSymbol signature = universe.symbolFor(selector);
-    return constructEmptyPrimitive(signature);
+    return constructEmptyPrimitive(signature, universe.getLanguage());
   }
 }

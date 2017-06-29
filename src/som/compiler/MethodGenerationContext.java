@@ -163,9 +163,17 @@ public final class MethodGenerationContext {
     }
   }
 
+  private String getMethodIdentifier() {
+    String cls = holderGenc.getName().getString();
+    if (holderGenc.isClassSide()) {
+      cls += "_class";
+    }
+    return cls + ">>" + signature.toString();
+  }
+
   public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection) {
     if (primitive) {
-      return Primitives.constructEmptyPrimitive(signature);
+      return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage());
     }
 
     ArrayList<Variable> onlyLocalAccess = new ArrayList<>(arguments.size() + locals.size());
@@ -178,8 +186,8 @@ public final class MethodGenerationContext {
     }
 
     Method truffleMethod =
-        new Method(getSourceSectionForMethod(sourceSection),
-            body, currentScope, (ExpressionNode) body.deepCopy());
+        new Method(getMethodIdentifier(), getSourceSectionForMethod(sourceSection),
+            body, currentScope, (ExpressionNode) body.deepCopy(), holderGenc.getLanguage());
 
     SInvokable meth = Universe.newMethod(signature, truffleMethod, false,
         embeddedBlockMethods.toArray(new SMethod[0]));
