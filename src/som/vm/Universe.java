@@ -105,7 +105,12 @@ public final class Universe {
 
   public static void main(final String[] arguments) {
     Value returnCode = eval(arguments);
-    System.exit(returnCode.as(Integer.class));
+    Object o = returnCode.get();
+    if (o instanceof SObject) {
+      System.exit(0);
+    } else {
+      System.exit(returnCode.as(Integer.class));
+    }
   }
 
   public static Value eval(final String[] arguments) {
