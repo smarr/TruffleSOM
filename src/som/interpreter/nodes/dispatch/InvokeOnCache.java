@@ -85,7 +85,7 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
     public Object executeDispatch(final VirtualFrame frame,
         final SInvokable invokable, final Object[] arguments) {
       if (this.invokable == invokable) {
-        return callNode.call(frame, arguments);
+        return callNode.call(arguments);
       } else {
         return nextInCache.executeDispatch(frame, invokable, arguments);
       }
@@ -109,7 +109,7 @@ public abstract class InvokeOnCache extends Node implements DispatchChain {
     @Override
     public Object executeDispatch(final VirtualFrame frame,
         final SInvokable invokable, final Object[] arguments) {
-      return callNode.call(frame, invokable.getCallTarget(), arguments);
+      return callNode.call(invokable.getCallTarget(), arguments);
     }
 
     @Override

@@ -1,10 +1,10 @@
 package som.interpreter.nodes.dispatch;
 
-import som.vmobjects.SBlock;
-
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+
+import som.vmobjects.SBlock;
 
 
 public final class GenericBlockDispatchNode extends AbstractDispatchNode {
@@ -14,7 +14,7 @@ public final class GenericBlockDispatchNode extends AbstractDispatchNode {
   public Object executeDispatch(final VirtualFrame frame,
       final Object[] arguments) {
     SBlock rcvr = (SBlock) arguments[0];
-    return call.call(frame, rcvr.getMethod().getCallTarget(), arguments);
+    return call.call(rcvr.getMethod().getCallTarget(), arguments);
   }
 
   @Override

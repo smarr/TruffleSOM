@@ -1,19 +1,18 @@
 package som.interpreter.nodes.specialized;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
+
 import som.interpreter.Invokable;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
-
-import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
 
 
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
@@ -40,10 +39,9 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(guards = "isSameBlockLong(block)")
-  public final long doIntToDo(final VirtualFrame frame, final long receiver, final long limit,
-      final SBlock block) {
+  public final long doIntToDo(final long receiver, final long limit, final SBlock block) {
     try {
-      doLooping(frame, receiver, limit, block);
+      doLooping(receiver, limit, block);
     } finally {
       if (CompilerDirectives.inInterpreter() && (limit - receiver) > 0) {
         reportLoopCount(limit - receiver);
@@ -57,11 +55,10 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(guards = "isSameBlockDouble(block)")
-  public final long doIntToDo(final VirtualFrame frame, final long receiver,
-      final double dLimit, final SBlock block) {
+  public final long doIntToDo(final long receiver, final double dLimit, final SBlock block) {
     long limit = (long) dLimit;
     try {
-      doLooping(frame, receiver, limit, block);
+      doLooping(receiver, limit, block);
     } finally {
       if (CompilerDirectives.inInterpreter()) {
         reportLoopCount((int) limit - receiver);
@@ -70,13 +67,12 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
     return receiver;
   }
 
-  protected void doLooping(final VirtualFrame frame, final long receiver,
-      long limit, final SBlock block) {
+  protected void doLooping(final long receiver, final long limit, final SBlock block) {
     if (receiver <= limit) {
-      valueSend.call(frame, new Object[] {block, receiver});
+      valueSend.call(new Object[] {block, receiver});
     }
     for (long i = receiver + 1; i <= limit; i++) {
-      valueSend.call(frame, new Object[] {block, i});
+      valueSend.call(new Object[] {block, i});
     }
   }
 

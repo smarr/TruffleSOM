@@ -1,17 +1,16 @@
 package som.primitives.reflection;
 
-import som.interpreter.nodes.nary.QuaternaryExpressionNode;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SSymbol;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+
+import som.interpreter.nodes.nary.QuaternaryExpressionNode;
+import som.vmobjects.SClass;
+import som.vmobjects.SInvokable;
+import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
@@ -24,13 +23,12 @@ public abstract class PerformWithArgumentsInSuperclassPrim extends QuaternaryExp
   }
 
   @Specialization
-  public final Object doSAbstractObject(final VirtualFrame frame,
-      final Object receiver, final SSymbol selector,
+  public final Object doSAbstractObject(final Object receiver, final SSymbol selector,
       final Object[] argArr, final SClass clazz) {
     CompilerAsserts.neverPartOfCompilation(
         "PerformWithArgumentsInSuperclassPrim.doSAbstractObject()");
     SInvokable invokable = clazz.lookupInvokable(selector);
-    return call.call(frame, invokable.getCallTarget(),
+    return call.call(invokable.getCallTarget(),
         mergeReceiverWithArguments(receiver, argArr));
   }
 

@@ -1,11 +1,11 @@
 package som.interpreter.nodes.dispatch;
 
-import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
-
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+
+import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 
 
 public final class CachedDispatchNode extends AbstractCachedDispatchNode {
@@ -24,7 +24,7 @@ public final class CachedDispatchNode extends AbstractCachedDispatchNode {
     Object rcvr = arguments[0];
     try {
       if (guard.entryMatches(rcvr)) {
-        return cachedMethod.call(frame, arguments);
+        return cachedMethod.call(arguments);
       } else {
         return nextInCache.executeDispatch(frame, arguments);
       }

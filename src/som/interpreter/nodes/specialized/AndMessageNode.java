@@ -1,15 +1,15 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.vmobjects.SBlock;
+import som.vmobjects.SInvokable;
 
 
 @GenerateNodeFactory
@@ -36,12 +36,11 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
   }
 
   @Specialization(guards = "isSameBlock(argument)")
-  public final boolean doAnd(final VirtualFrame frame, final boolean receiver,
-      final SBlock argument) {
+  public final boolean doAnd(final boolean receiver, final SBlock argument) {
     if (receiver == false) {
       return false;
     } else {
-      return (boolean) blockValueSend.call(frame, new Object[] {argument});
+      return (boolean) blockValueSend.call(new Object[] {argument});
     }
   }
 

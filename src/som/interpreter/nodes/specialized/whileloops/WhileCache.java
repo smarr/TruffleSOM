@@ -30,12 +30,11 @@ public abstract class WhileCache extends BinaryExpressionNode {
   @Specialization(limit = "INLINE_CACHE_SIZE",
       guards = {"loopCondition.getMethod() == cachedLoopCondition",
           "loopBody.getMethod() == cachedLoopBody"})
-  public final SObject doCached(final VirtualFrame frame,
-      final SBlock loopCondition, final SBlock loopBody,
+  public final SObject doCached(final SBlock loopCondition, final SBlock loopBody,
       @Cached("loopCondition.getMethod()") final SInvokable cachedLoopCondition,
       @Cached("loopBody.getMethod()") final SInvokable cachedLoopBody,
       @Cached("create(loopCondition, loopBody, predicateBool)") final WhileWithDynamicBlocksNode whileNode) {
-    return whileNode.doWhileUnconditionally(frame, loopCondition, loopBody);
+    return whileNode.doWhileUnconditionally(loopCondition, loopBody);
   }
 
   private boolean obj2bool(final Object o) {
@@ -58,15 +57,15 @@ public abstract class WhileCache extends BinaryExpressionNode {
                                                                           // invokes, no loop
                                                                           // count reporting...
 
-    Object conditionResult = loopCondition.getMethod().invoke(loopCondition);
+    Object conditionResult = loopCondition.getMethod().invoke(new Object[] {loopCondition});
 
     // TODO: this is a simplification, we don't cover the case receiver isn't a boolean
     boolean loopConditionResult = obj2bool(conditionResult);
 
     // TODO: this is a simplification, we don't cover the case receiver isn't a boolean
     while (loopConditionResult == predicateBool) {
-      loopBody.getMethod().invoke(loopBody);
-      conditionResult = loopCondition.getMethod().invoke(loopCondition);
+      loopBody.getMethod().invoke(new Object[] {loopBody});
+      conditionResult = loopCondition.getMethod().invoke(new Object[] {loopCondition});
       loopConditionResult = obj2bool(conditionResult);
     }
     return Nil.nilObject;

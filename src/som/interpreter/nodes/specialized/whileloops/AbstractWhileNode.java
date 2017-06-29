@@ -41,22 +41,21 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
   @Override
   public final Object executeEvaluated(final VirtualFrame frame,
       final Object rcvr, final Object arg) {
-    return doWhileConditionally(frame, (SBlock) rcvr, (SBlock) arg);
+    return doWhileConditionally((SBlock) rcvr, (SBlock) arg);
   }
 
-  protected final SObject doWhileUnconditionally(final VirtualFrame frame,
-      final SBlock loopCondition, final SBlock loopBody) {
+  protected final SObject doWhileUnconditionally(final SBlock loopCondition,
+      final SBlock loopBody) {
     long iterationCount = 0;
 
-    boolean loopConditionResult = (boolean) conditionValueSend.call(
-        frame, new Object[] {loopCondition});
+    boolean loopConditionResult =
+        (boolean) conditionValueSend.call(new Object[] {loopCondition});
 
     try {
       // TODO: this is a simplification, we don't cover the case receiver isn't a boolean
       while (loopConditionResult == predicateBool) {
-        bodyValueSend.call(frame, new Object[] {loopBody});
-        loopConditionResult = (boolean) conditionValueSend.call(
-            frame, new Object[] {loopCondition});
+        bodyValueSend.call(new Object[] {loopBody});
+        loopConditionResult = (boolean) conditionValueSend.call(new Object[] {loopCondition});
 
         if (CompilerDirectives.inInterpreter()) {
           iterationCount++;
@@ -70,8 +69,7 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
     return Nil.nilObject;
   }
 
-  protected abstract SObject doWhileConditionally(VirtualFrame frame, SBlock loopCondition,
-      SBlock loopBody);
+  protected abstract SObject doWhileConditionally(SBlock loopCondition, SBlock loopBody);
 
   protected final void reportLoopCount(final long count) {
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");

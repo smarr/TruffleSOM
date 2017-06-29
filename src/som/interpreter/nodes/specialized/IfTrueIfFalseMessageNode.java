@@ -75,63 +75,63 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(guards = "hasSameArguments(trueBlock, falseBlock)")
-  public final Object doIfTrueIfFalseWithInliningTwoBlocks(final VirtualFrame frame,
-      final boolean receiver, final SBlock trueBlock, final SBlock falseBlock) {
+  public final Object doIfTrueIfFalseWithInliningTwoBlocks(final boolean receiver,
+      final SBlock trueBlock, final SBlock falseBlock) {
     if (condProf.profile(receiver)) {
-      return trueValueSend.call(frame, new Object[] {trueBlock});
+      return trueValueSend.call(new Object[] {trueBlock});
     } else {
-      return falseValueSend.call(frame, new Object[] {falseBlock});
+      return falseValueSend.call(new Object[] {falseBlock});
     }
   }
 
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningTwoBlocks"})
-  public final Object doIfTrueIfFalse(final VirtualFrame frame,
-      final boolean receiver, final SBlock trueBlock, final SBlock falseBlock) {
+  public final Object doIfTrueIfFalse(final boolean receiver, final SBlock trueBlock,
+      final SBlock falseBlock) {
     CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.10");
     if (condProf.profile(receiver)) {
-      return trueBlock.getMethod().invoke(frame, call, trueBlock);
+      return trueBlock.getMethod().invoke(call, new Object[] {trueBlock});
     } else {
-      return falseBlock.getMethod().invoke(frame, call, falseBlock);
+      return falseBlock.getMethod().invoke(call, new Object[] {falseBlock});
     }
   }
 
   @Specialization(guards = "hasSameArguments(trueValue, falseBlock)")
-  public final Object doIfTrueIfFalseWithInliningTrueValue(final VirtualFrame frame,
-      final boolean receiver, final Object trueValue, final SBlock falseBlock) {
+  public final Object doIfTrueIfFalseWithInliningTrueValue(final boolean receiver,
+      final Object trueValue, final SBlock falseBlock) {
     if (condProf.profile(receiver)) {
       return trueValue;
     } else {
-      return falseValueSend.call(frame, new Object[] {falseBlock});
+      return falseValueSend.call(new Object[] {falseBlock});
     }
   }
 
   @Specialization(guards = "hasSameArguments(trueBlock, falseValue)")
-  public final Object doIfTrueIfFalseWithInliningFalseValue(final VirtualFrame frame,
-      final boolean receiver, final SBlock trueBlock, final Object falseValue) {
+  public final Object doIfTrueIfFalseWithInliningFalseValue(final boolean receiver,
+      final SBlock trueBlock, final Object falseValue) {
     if (condProf.profile(receiver)) {
-      return trueValueSend.call(frame, new Object[] {trueBlock});
+      return trueValueSend.call(new Object[] {trueBlock});
     } else {
       return falseValue;
     }
   }
 
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningTrueValue"})
-  public final Object doIfTrueIfFalseTrueValue(final VirtualFrame frame,
-      final boolean receiver, final Object trueValue, final SBlock falseBlock) {
+  public final Object doIfTrueIfFalseTrueValue(final boolean receiver, final Object trueValue,
+      final SBlock falseBlock) {
     if (condProf.profile(receiver)) {
       return trueValue;
     } else {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.20");
-      return falseBlock.getMethod().invoke(frame, call, falseBlock);
+      return falseBlock.getMethod().invoke(call, new Object[] {falseBlock});
     }
   }
 
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningFalseValue"})
-  public final Object doIfTrueIfFalseFalseValue(final VirtualFrame frame,
-      final boolean receiver, final SBlock trueBlock, final Object falseValue) {
+  public final Object doIfTrueIfFalseFalseValue(final boolean receiver, final SBlock trueBlock,
+      final Object falseValue) {
     if (condProf.profile(receiver)) {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.30");
-      return trueBlock.getMethod().invoke(frame, call, trueBlock);
+      return trueBlock.getMethod().invoke(call, new Object[] {trueBlock});
     } else {
       return falseValue;
     }

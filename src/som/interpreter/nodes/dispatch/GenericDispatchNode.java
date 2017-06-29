@@ -44,7 +44,7 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
       args = new Object[] {arguments[0], selector, argumentsArray};
       target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
     }
-    return call.call(frame, target, args);
+    return call.call(target, args);
   }
 
   @Override

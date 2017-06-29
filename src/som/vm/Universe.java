@@ -302,7 +302,7 @@ public final class Universe {
     // Lookup the initialize invokable on the system class
     SInvokable initialize = clazz.getSOMClass().lookupInvokable(
         symbolFor(selector));
-    return initialize.invoke(clazz);
+    return initialize.invoke(new Object[] {clazz});
   }
 
   private Object execute(final String[] arguments) {

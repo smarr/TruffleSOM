@@ -29,7 +29,7 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
     Object rcvr = arguments[0];
     try {
       if (guard.entryMatches(rcvr)) {
-        return performDnu(frame, arguments, rcvr);
+        return performDnu(arguments, rcvr);
       } else {
         return nextInCache.executeDispatch(frame, arguments);
       }
@@ -44,10 +44,9 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
         universe.symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
   }
 
-  protected Object performDnu(final VirtualFrame frame, final Object[] arguments,
-      final Object rcvr) {
+  protected Object performDnu(final Object[] arguments, final Object rcvr) {
     Object[] argsArr = new Object[] {
         rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments)};
-    return cachedMethod.call(frame, argsArr);
+    return cachedMethod.call(argsArr);
   }
 }

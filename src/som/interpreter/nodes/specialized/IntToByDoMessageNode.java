@@ -52,14 +52,14 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
   }
 
   @Specialization(guards = "isSameBlockLong(block)")
-  public final long doIntToByDo(final VirtualFrame frame, final long receiver,
+  public final long doIntToByDo(final long receiver,
       final long limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
-        valueSend.call(frame, new Object[] {block, receiver});
+        valueSend.call(new Object[] {block, receiver});
       }
       for (long i = receiver + step; i <= limit; i += step) {
-        valueSend.call(frame, new Object[] {block, i});
+        valueSend.call(new Object[] {block, i});
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -70,14 +70,14 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode
   }
 
   @Specialization(guards = "isSameBlockDouble(block)")
-  public final long doIntToByDo(final VirtualFrame frame, final long receiver,
+  public final long doIntToByDo(final long receiver,
       final double limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
-        valueSend.call(frame, new Object[] {block, receiver});
+        valueSend.call(new Object[] {block, receiver});
       }
       for (long i = receiver + step; i <= limit; i += step) {
-        valueSend.call(frame, new Object[] {block, i});
+        valueSend.call(new Object[] {block, i});
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
