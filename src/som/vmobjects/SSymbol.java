@@ -24,7 +24,7 @@
 
 package som.vmobjects;
 
-import som.vm.constants.Classes;
+import som.vm.Universe;
 
 
 public final class SSymbol extends SAbstractObject {
@@ -38,9 +38,8 @@ public final class SSymbol extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass() {
-    assert Classes.symbolClass != null;
-    return Classes.symbolClass;
+  public SClass getSOMClass(final Universe universe) {
+    return universe.symbolClass;
   }
 
   public String getString() {

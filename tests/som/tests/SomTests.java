@@ -84,7 +84,8 @@ public class SomTests {
         new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName});
     Object obj = returnCode.get();
     if (obj instanceof SObject) {
-      assertEquals("System", ((SObject) obj).getSOMClass().getName().getString());
+      assertEquals("System",
+          ((SObject) obj).getSOMClass(null).getName().getString());
     } else {
       assertEquals(0, (int) returnCode.as(Integer.class));
     }

@@ -159,7 +159,7 @@ public abstract class Primitives {
 
     // Install the given primitive as an instance primitive in the class of
     // the holder class
-    holder.getSOMClass().addInstancePrimitive(prim, displayWarning);
+    holder.getSOMClass(universe).addInstancePrimitive(prim, displayWarning);
   }
 
   public static SInvokable getEmptyPrimitive(final String selector,

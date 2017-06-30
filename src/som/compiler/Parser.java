@@ -271,7 +271,7 @@ public final class Parser {
       }
 
       cgenc.setInstanceFieldsOfSuper(superClass.getInstanceFields());
-      cgenc.setClassFieldsOfSuper(superClass.getSOMClass().getInstanceFields());
+      cgenc.setClassFieldsOfSuper(superClass.getSOMClass(universe).getInstanceFields());
     }
   }
 

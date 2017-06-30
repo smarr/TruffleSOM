@@ -9,6 +9,7 @@ import som.interpreter.Types;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.SystemPrims.BinarySystemNode;
 import som.primitives.SystemPrims.UnarySystemNode;
 import som.primitives.reflection.IndexDispatch;
 import som.vm.Universe;
@@ -22,17 +23,17 @@ import som.vmobjects.SSymbol;
 public final class ObjectPrims {
 
   @GenerateNodeFactory
-  public abstract static class InstVarAtPrim extends BinaryExpressionNode {
+  public abstract static class InstVarAtPrim extends BinarySystemNode {
 
     @Child private IndexDispatch dispatch;
 
-    public InstVarAtPrim() {
-      super();
-      dispatch = IndexDispatch.create();
+    public InstVarAtPrim(final Universe universe) {
+      super(universe);
+      dispatch = IndexDispatch.create(universe);
     }
 
     public InstVarAtPrim(final InstVarAtPrim node) {
-      this();
+      this(node.universe);
     }
 
     @Specialization
@@ -55,14 +56,16 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   public abstract static class InstVarAtPutPrim extends TernaryExpressionNode {
     @Child private IndexDispatch dispatch;
+    private final Universe       universe;
 
-    public InstVarAtPutPrim() {
+    public InstVarAtPutPrim(final Universe universe) {
       super();
-      dispatch = IndexDispatch.create();
+      dispatch = IndexDispatch.create(universe);
+      this.universe = universe;
     }
 
     public InstVarAtPutPrim(final InstVarAtPutPrim node) {
-      this();
+      this(node.universe);
     }
 
     @Specialization
@@ -114,7 +117,7 @@ public final class ObjectPrims {
 
     @Specialization
     public final SClass doSAbstractObject(final SAbstractObject receiver) {
-      return receiver.getSOMClass();
+      return receiver.getSOMClass(universe);
     }
 
     @Specialization

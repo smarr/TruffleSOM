@@ -2,17 +2,17 @@ package som.primitives;
 
 import java.math.BigInteger;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.arithmetic.ArithmeticPrim;
-import som.vm.constants.Classes;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
-import som.vmobjects.SSymbol;
-
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
+
+import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.arithmetic.ArithmeticPrim;
+import som.vm.Universe;
+import som.vmobjects.SArray;
+import som.vmobjects.SClass;
+import som.vmobjects.SSymbol;
 
 
 public abstract class IntegerPrims {
@@ -43,16 +43,18 @@ public abstract class IntegerPrims {
 
   @GenerateNodeFactory
   public abstract static class FromStringPrim extends ArithmeticPrim {
-    protected final boolean receiverIsIntegerClass(final SClass receiver) {
-      return receiver == Classes.integerClass;
+    protected final SClass integerClass;
+
+    public FromStringPrim(final Universe universe) {
+      this.integerClass = universe.integerClass;
     }
 
-    @Specialization(guards = "receiverIsIntegerClass(receiver)")
+    @Specialization(guards = "receiver == integerClass")
     public final Object doSClass(final SClass receiver, final String argument) {
       return Long.parseLong(argument);
     }
 
-    @Specialization(guards = "receiverIsIntegerClass(receiver)")
+    @Specialization(guards = "receiver == integerClass")
     public final Object doSClass(final SClass receiver, final SSymbol argument) {
       return Long.parseLong(argument.getString());
     }

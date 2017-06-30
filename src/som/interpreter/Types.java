@@ -27,7 +27,6 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
 import som.vm.Universe;
-import som.vm.constants.Classes;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -57,7 +56,7 @@ public class Types {
     assert obj != null;
 
     if (obj instanceof SAbstractObject) {
-      return ((SAbstractObject) obj).getSOMClass();
+      return ((SAbstractObject) obj).getSOMClass(universe);
     } else if (obj instanceof Boolean) {
       if ((boolean) obj) {
         return universe.getTrueClass();
@@ -65,11 +64,11 @@ public class Types {
         return universe.getFalseClass();
       }
     } else if (obj instanceof Long || obj instanceof BigInteger) {
-      return Classes.integerClass;
+      return universe.integerClass;
     } else if (obj instanceof String) {
-      return Classes.stringClass;
+      return universe.stringClass;
     } else if (obj instanceof Double) {
-      return Classes.doubleClass;
+      return universe.doubleClass;
     }
 
     TruffleCompiler.transferToInterpreter("Should not be reachable");

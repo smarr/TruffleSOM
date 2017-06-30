@@ -32,7 +32,6 @@ import com.oracle.truffle.api.profiles.ValueProfile;
 
 import som.interpreter.SomLanguage;
 import som.vm.Universe;
-import som.vm.constants.Classes;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
@@ -132,7 +131,7 @@ public final class ClassGenerationContext {
     SClass superClass = universe.loadClass(superName);
 
     // Allocate the class of the resulting class
-    SClass resultClass = universe.newClass(Classes.metaclassClass);
+    SClass resultClass = universe.newClass(universe.metaclassClass);
 
     // Initialize the class of the resulting class
     resultClass.setInstanceFields(
@@ -141,7 +140,7 @@ public final class ClassGenerationContext {
         SArray.create(classMethods.toArray(new Object[0])));
     resultClass.setName(universe.symbolFor(ccname));
 
-    SClass superMClass = superClass.getSOMClass();
+    SClass superMClass = superClass.getSOMClass(universe);
     resultClass.setSuperClass(superMClass);
 
     // Allocate the resulting class
@@ -165,7 +164,7 @@ public final class ClassGenerationContext {
     systemClass.setInstanceFields(
         SArray.create(instanceFields.toArray(new Object[0])));
     // class-bound == class-instance-bound
-    SClass superMClass = systemClass.getSOMClass();
+    SClass superMClass = systemClass.getSOMClass(universe);
     superMClass.setInstanceInvokables(
         SArray.create(classMethods.toArray(new Object[0])));
     superMClass.setInstanceFields(

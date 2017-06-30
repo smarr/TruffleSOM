@@ -42,7 +42,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     private SClass getLexicalSuperClass() {
       SClass clazz = (SClass) universe.getGlobal(holderClass);
       if (classSide) {
-        clazz = clazz.getSOMClass();
+        clazz = clazz.getSOMClass(universe);
       }
       return (SClass) clazz.getSuperClass();
     }

@@ -25,19 +25,6 @@
 
 package som.vm;
 
-import static som.vm.constants.Classes.arrayClass;
-import static som.vm.constants.Classes.booleanClass;
-import static som.vm.constants.Classes.classClass;
-import static som.vm.constants.Classes.doubleClass;
-import static som.vm.constants.Classes.integerClass;
-import static som.vm.constants.Classes.metaclassClass;
-import static som.vm.constants.Classes.methodClass;
-import static som.vm.constants.Classes.nilClass;
-import static som.vm.constants.Classes.objectClass;
-import static som.vm.constants.Classes.primitiveClass;
-import static som.vm.constants.Classes.stringClass;
-import static som.vm.constants.Classes.symbolClass;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -138,6 +125,23 @@ public final class Universe {
     this.alreadyInitialized = false;
 
     this.blockClasses = new SClass[4];
+
+    // Allocate the Metaclass classes
+    metaclassClass = newMetaclassClass();
+
+    // Allocate the rest of the system classes
+
+    objectClass = newSystemClass();
+    nilClass = newSystemClass();
+    classClass = newSystemClass();
+    arrayClass = newSystemClass();
+    symbolClass = newSystemClass();
+    methodClass = newSystemClass();
+    integerClass = newSystemClass();
+    primitiveClass = newSystemClass();
+    stringClass = newSystemClass();
+    doubleClass = newSystemClass();
+    booleanClass = newSystemClass();
   }
 
   public static final class SomExit extends ThreadDeath {
@@ -300,8 +304,7 @@ public final class Universe {
     SClass clazz = loadClass(symbolFor(className));
 
     // Lookup the initialize invokable on the system class
-    SInvokable initialize = clazz.getSOMClass().lookupInvokable(
-        symbolFor(selector));
+    SInvokable initialize = clazz.getSOMClass(this).lookupInvokable(symbolFor(selector));
     return initialize.invoke(new Object[] {clazz});
   }
 
@@ -437,13 +440,13 @@ public final class Universe {
   }
 
   @TruffleBoundary
-  public static SClass newMetaclassClass() {
+  private static SClass newMetaclassClass() {
     // Allocate the metaclass classes
     SClass result = new SClass(0);
     result.setClass(new SClass(0));
 
     // Setup the metaclass hierarchy
-    result.getSOMClass().setClass(result);
+    result.getSOMClass(null).setClass(result);
     return result;
   }
 
@@ -454,13 +457,13 @@ public final class Universe {
   }
 
   @TruffleBoundary
-  public static SClass newSystemClass() {
+  private SClass newSystemClass() {
     // Allocate the new system class
     SClass systemClass = new SClass(0);
 
     // Setup the metaclass hierarchy
     systemClass.setClass(new SClass(0));
-    systemClass.getSOMClass().setClass(metaclassClass);
+    systemClass.getSOMClass(this).setClass(metaclassClass);
 
     // Return the freshly allocated system class
     return systemClass;
@@ -471,22 +474,22 @@ public final class Universe {
     // Initialize the superclass hierarchy
     if (superClass != null) {
       systemClass.setSuperClass(superClass);
-      systemClass.getSOMClass().setSuperClass(superClass.getSOMClass());
+      systemClass.getSOMClass(this).setSuperClass(superClass.getSOMClass(this));
     } else {
-      systemClass.getSOMClass().setSuperClass(classClass);
+      systemClass.getSOMClass(this).setSuperClass(classClass);
     }
 
     // Initialize the array of instance fields
     systemClass.setInstanceFields(SArray.create(new Object[0]));
-    systemClass.getSOMClass().setInstanceFields(SArray.create(new Object[0]));
+    systemClass.getSOMClass(this).setInstanceFields(SArray.create(new Object[0]));
 
     // Initialize the array of instance invokables
     systemClass.setInstanceInvokables(SArray.create(new Object[0]));
-    systemClass.getSOMClass().setInstanceInvokables(SArray.create(new Object[0]));
+    systemClass.getSOMClass(this).setInstanceInvokables(SArray.create(new Object[0]));
 
     // Initialize the name of the system class
     systemClass.setName(symbolFor(name));
-    systemClass.getSOMClass().setName(symbolFor(name + " class"));
+    systemClass.getSOMClass(this).setName(symbolFor(name + " class"));
 
     // Insert the system class into the dictionary of globals
     setGlobal(systemClass.getName(), systemClass);
@@ -605,7 +608,7 @@ public final class Universe {
         SClass result = som.compiler.SourcecodeCompiler.compileClass(cpEntry,
             name.getString(), systemClass, this);
         if (printAST) {
-          Disassembler.dump(result.getSOMClass());
+          Disassembler.dump(result.getSOMClass(this));
           Disassembler.dump(result);
         }
         return result;
@@ -696,6 +699,21 @@ public final class Universe {
     return systemClass;
   }
 
+  public final SClass objectClass;
+  public final SClass classClass;
+  public final SClass metaclassClass;
+
+  public final SClass nilClass;
+  public final SClass integerClass;
+  public final SClass arrayClass;
+  public final SClass methodClass;
+  public final SClass symbolClass;
+  public final SClass primitiveClass;
+  public final SClass stringClass;
+  public final SClass doubleClass;
+
+  public final SClass booleanClass;
+
   @CompilationFinal private SObject trueObject;
   @CompilationFinal private SObject falseObject;
   @CompilationFinal private SObject systemObject;
@@ -714,7 +732,7 @@ public final class Universe {
   private final HashMap<String, SSymbol> symbolTable;
 
   // Optimizations
-  private final SClass[] blockClasses;
+  @CompilationFinal(dimensions = 1) private final SClass[] blockClasses;
 
   // Latest instance
   // WARNING: this is problematic with multiple interpreters in the same VM...

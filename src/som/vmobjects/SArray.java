@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-import som.vm.constants.Classes;
+import som.vm.Universe;
 import som.vm.constants.Nil;
 
 
@@ -339,7 +339,7 @@ public final class SArray extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass() {
-    return Classes.arrayClass;
+  public SClass getSOMClass(final Universe universe) {
+    return universe.arrayClass;
   }
 }

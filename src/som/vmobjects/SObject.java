@@ -37,6 +37,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import som.interpreter.objectstorage.ObjectLayout;
 import som.interpreter.objectstorage.StorageLocation;
 import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
+import som.vm.Universe;
 import som.vm.constants.Nil;
 
 
@@ -206,7 +207,7 @@ public class SObject extends SAbstractObject {
   }
 
   @Override
-  public final SClass getSOMClass() {
+  public final SClass getSOMClass(Universe universe) {
     return clazz;
   }
 

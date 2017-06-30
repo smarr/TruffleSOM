@@ -32,7 +32,7 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
 import som.interpreter.Invokable;
-import som.vm.constants.Classes;
+import som.vm.Universe;
 
 
 public abstract class SInvokable extends SAbstractObject {
@@ -66,9 +66,8 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SClass getSOMClass() {
-      assert Classes.methodClass != null;
-      return Classes.methodClass;
+    public SClass getSOMClass(final Universe universe) {
+      return universe.methodClass;
     }
   }
 
@@ -78,9 +77,8 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SClass getSOMClass() {
-      assert Classes.primitiveClass != null;
-      return Classes.primitiveClass;
+    public SClass getSOMClass(final Universe universe) {
+      return universe.primitiveClass;
     }
   }
 

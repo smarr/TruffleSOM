@@ -55,7 +55,7 @@ public final class SBlock extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass() {
+  public SClass getSOMClass(Universe universe) {
     return blockClass;
   }
 

@@ -1,22 +1,22 @@
 package som.primitives.arrays;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.constants.Classes;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
-
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
+import som.primitives.SystemPrims.BinarySystemNode;
+import som.vm.Universe;
+import som.vmobjects.SArray;
+import som.vmobjects.SClass;
+
 
 @GenerateNodeFactory
-public abstract class NewPrim extends BinaryExpressionNode {
+public abstract class NewPrim extends BinarySystemNode {
 
-  protected static final boolean receiverIsArrayClass(final SClass receiver) {
-    return receiver == Classes.arrayClass;
+  public NewPrim(final Universe universe) {
+    super(universe);
   }
 
-  @Specialization(guards = "receiverIsArrayClass(receiver)")
+  @Specialization(guards = "receiver == universe.arrayClass")
   public final SArray doSClass(final SClass receiver, final long length) {
     return new SArray(length);
   }

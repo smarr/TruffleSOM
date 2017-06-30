@@ -118,4 +118,8 @@ public class SomLanguage extends TruffleLanguage<Universe> {
       final MaterializedFrame mFrame) throws IOException {
     throw new NotYetImplementedException();
   }
+
+  public static Universe getCurrentContext() {
+    return getCurrentContext(SomLanguage.class);
+  }
 }

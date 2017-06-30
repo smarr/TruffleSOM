@@ -66,7 +66,6 @@ import som.primitives.arrays.PutAllNodeFactory;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
-import som.vm.constants.Classes;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 import som.vmobjects.SSymbol;
@@ -233,16 +232,16 @@ public final class MessageSendNode {
           }
           break;
         case "new:":
-          if (arguments[0] == Classes.arrayClass) {
+          if (arguments[0] == universe.arrayClass) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
                 argumentNodes[1],
-                NewPrimFactory.create(null, null), universe));
+                NewPrimFactory.create(universe, null, null), universe));
           }
           break;
         case "instVarAt:":
           return replace(new EagerBinaryPrimitiveNode(selector,
               argumentNodes[0], argumentNodes[1],
-              InstVarAtPrimFactory.create(null, null), universe));
+              InstVarAtPrimFactory.create(universe, null, null), universe));
         case "doIndexes:":
           if (arguments[0] instanceof SArray) {
             return replace(new EagerBinaryPrimitiveNode(selector, argumentNodes[0],
@@ -460,7 +459,7 @@ public final class MessageSendNode {
               argumentNodes[0], argumentNodes[1], argumentNodes[2],
               ToArgumentsArrayNodeGen.create(null, null)));
         case "instVarAt:put:":
-          return replace(InstVarAtPutPrimFactory.create(
+          return replace(InstVarAtPutPrimFactory.create(universe,
               argumentNodes[0], argumentNodes[1], argumentNodes[2]));
       }
       return makeGenericSend();

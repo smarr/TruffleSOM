@@ -2,18 +2,19 @@ package som.vmobjects;
 
 import com.oracle.truffle.api.CompilerAsserts;
 
+import som.interpreter.SomLanguage;
 import som.interpreter.Types;
 import som.vm.Universe;
 
 
 public abstract class SAbstractObject {
 
-  public abstract SClass getSOMClass();
+  public abstract SClass getSOMClass(Universe universe);
 
   @Override
   public String toString() {
     CompilerAsserts.neverPartOfCompilation();
-    SClass clazz = getSOMClass();
+    SClass clazz = getSOMClass(SomLanguage.getCurrentContext());
     if (clazz == null) {
       return "an Object(clazz==null)";
     }

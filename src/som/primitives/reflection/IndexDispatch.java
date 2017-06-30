@@ -9,6 +9,7 @@ import som.interpreter.nodes.dispatch.DispatchChain;
 import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
@@ -16,14 +17,16 @@ import som.vmobjects.SObject;
 public abstract class IndexDispatch extends Node implements DispatchChain {
   public static final int INLINE_CACHE_SIZE = 6;
 
-  public static IndexDispatch create() {
-    return new UninitializedDispatchNode(0);
+  public static IndexDispatch create(final Universe universe) {
+    return new UninitializedDispatchNode(0, universe);
   }
 
-  protected final int depth;
+  protected final int      depth;
+  protected final Universe universe;
 
-  public IndexDispatch(final int depth) {
+  public IndexDispatch(final int depth, final Universe universe) {
     this.depth = depth;
+    this.universe = universe;
   }
 
   public abstract Object executeDispatch(SObject obj, int index);
@@ -32,8 +35,8 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   private static final class UninitializedDispatchNode extends IndexDispatch {
 
-    UninitializedDispatchNode(final int depth) {
-      super(depth);
+    UninitializedDispatchNode(final int depth, final Universe universe) {
+      super(depth, universe);
     }
 
     private IndexDispatch specialize(final SClass clazz, final int index, final boolean read) {
@@ -43,10 +46,10 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
         IndexDispatch specialized;
         if (read) {
           specialized = new CachedReadDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1), depth);
+              new UninitializedDispatchNode(depth + 1, universe), depth);
         } else {
           specialized = new CachedWriteDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1), depth);
+              new UninitializedDispatchNode(depth + 1, universe), depth);
         }
         return replace(specialized);
       }
@@ -57,12 +60,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final SObject obj, final int index) {
-      return specialize(obj.getSOMClass(), index, true).executeDispatch(obj, index);
+      return specialize(obj.getSOMClass(universe), index, true).executeDispatch(obj, index);
     }
 
     @Override
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      return specialize(obj.getSOMClass(), index, false).executeDispatch(obj, index, value);
+      return specialize(obj.getSOMClass(universe), index, false).executeDispatch(obj, index,
+          value);
     }
 
     private IndexDispatch determineChainHead() {
@@ -88,7 +92,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     CachedReadDispatchNode(final SClass clazz, final int index,
         final IndexDispatch next, final int depth) {
-      super(depth);
+      super(depth, next.universe);
       this.index = index;
       this.clazz = clazz;
       this.next = next;
@@ -97,7 +101,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final SObject obj, final int index) {
-      if (this.index == index && this.clazz == obj.getSOMClass()) {
+      if (this.index == index && this.clazz == obj.getSOMClass(universe)) {
         return access.read(obj);
       } else {
         return next.executeDispatch(obj, index);
@@ -124,7 +128,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     CachedWriteDispatchNode(final SClass clazz, final int index, final IndexDispatch next,
         final int depth) {
-      super(depth);
+      super(depth, next.universe);
       this.index = index;
       this.clazz = clazz;
       this.next = next;
@@ -139,7 +143,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      if (this.index == index && this.clazz == obj.getSOMClass()) {
+      if (this.index == index && this.clazz == obj.getSOMClass(universe)) {
         return access.write(obj, value);
       } else {
         return next.executeDispatch(obj, index, value);
@@ -155,7 +159,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   private static final class GenericDispatchNode extends IndexDispatch {
 
     GenericDispatchNode() {
-      super(0);
+      super(0, null);
     }
 
     @Override
