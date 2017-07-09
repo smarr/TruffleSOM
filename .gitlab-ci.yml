@@ -22,4 +22,4 @@ benchmark_job:
   allow_failure: true
   script:
     - make
-    - rebench -d --without-nice -c --commit-id="$CI_BUILD_REF" --environment="Infinity Ubuntu" --project=TruffleSOM --branch="$CI_BUILD_REF_NAME" core-lib/codespeed.conf TruffleSOM
+    - export EXP=`if [[ "$CI_BUILD_REF_NAME" = "master" ]]; then echo ""; else echo "-exp"; fi`; rebench -d --without-nice -c --commit-id="$CI_BUILD_REF" --environment="Infinity Ubuntu" --project=TruffleSOM --branch=master core-lib/codespeed.conf TruffleSOM${EXP}
