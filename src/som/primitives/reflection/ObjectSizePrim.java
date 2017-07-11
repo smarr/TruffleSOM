@@ -1,4 +1,4 @@
-package som.primitives;
+package som.primitives.reflection;
 
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vmobjects.SObject;

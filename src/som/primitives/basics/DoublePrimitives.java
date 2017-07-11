@@ -23,11 +23,9 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.basics;
 
-import som.primitives.DoublePrimsFactory.AsIntegerPrimFactory;
-import som.primitives.DoublePrimsFactory.PositiveInfinityPrimFactory;
-import som.primitives.DoublePrimsFactory.RoundPrimFactory;
+import som.primitives.Primitives;
 import som.primitives.arithmetic.AdditionPrimFactory;
 import som.primitives.arithmetic.CosPrimFactory;
 import som.primitives.arithmetic.DoubleDivPrimFactory;
@@ -39,6 +37,9 @@ import som.primitives.arithmetic.MultiplicationPrimFactory;
 import som.primitives.arithmetic.SinPrimFactory;
 import som.primitives.arithmetic.SqrtPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
+import som.primitives.basics.DoublePrimsFactory.AsIntegerPrimFactory;
+import som.primitives.basics.DoublePrimsFactory.PositiveInfinityPrimFactory;
+import som.primitives.basics.DoublePrimsFactory.RoundPrimFactory;
 import som.vm.Universe;
 
 

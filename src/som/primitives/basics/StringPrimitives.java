@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.basics;
 
-import som.primitives.StringPrimsFactory.AsSymbolPrimFactory;
-import som.primitives.StringPrimsFactory.ConcatPrimFactory;
-import som.primitives.StringPrimsFactory.SubstringPrimFactory;
+import som.primitives.Primitives;
+import som.primitives.basics.StringPrimsFactory.AsSymbolPrimFactory;
+import som.primitives.basics.StringPrimsFactory.ConcatPrimFactory;
+import som.primitives.basics.StringPrimsFactory.SubstringPrimFactory;
 import som.vm.Universe;
 
 

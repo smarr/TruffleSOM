@@ -1,10 +1,11 @@
-package som.primitives;
+package som.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.Specialization;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.SOMNode;
-import som.primitives.SystemPrims.BinarySystemNode;
+import som.primitives.basics.SystemPrims;
+import som.primitives.basics.SystemPrims.BinarySystemNode;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
 import som.vmobjects.SObject;

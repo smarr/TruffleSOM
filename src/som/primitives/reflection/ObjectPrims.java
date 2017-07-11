@@ -1,4 +1,4 @@
-package som.primitives;
+package som.primitives.reflection;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
@@ -9,9 +9,9 @@ import som.interpreter.Types;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.SystemPrims.BinarySystemNode;
-import som.primitives.SystemPrims.UnarySystemNode;
-import som.primitives.reflection.IndexDispatch;
+import som.primitives.basics.SystemPrims;
+import som.primitives.basics.SystemPrims.BinarySystemNode;
+import som.primitives.basics.SystemPrims.UnarySystemNode;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;

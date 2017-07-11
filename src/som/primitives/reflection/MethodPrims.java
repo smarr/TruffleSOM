@@ -1,4 +1,4 @@
-package som.primitives;
+package som.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;

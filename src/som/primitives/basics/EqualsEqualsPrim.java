@@ -1,4 +1,4 @@
-package som.primitives;
+package som.primitives.basics;
 
 import java.math.BigInteger;
 

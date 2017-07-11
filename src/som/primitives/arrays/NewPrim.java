@@ -3,7 +3,7 @@ package som.primitives.arrays;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
-import som.primitives.SystemPrims.BinarySystemNode;
+import som.primitives.basics.SystemPrims.BinarySystemNode;
 import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;

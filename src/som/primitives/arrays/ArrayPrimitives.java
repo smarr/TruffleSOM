@@ -23,15 +23,10 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.arrays;
 
-import som.primitives.arrays.AtPrimFactory;
-import som.primitives.arrays.AtPutPrimFactory;
-import som.primitives.arrays.CopyPrimFactory;
-import som.primitives.arrays.DoIndexesPrimFactory;
-import som.primitives.arrays.DoPrimFactory;
-import som.primitives.arrays.NewPrimFactory;
-import som.primitives.arrays.PutAllNodeFactory;
+import som.primitives.Primitives;
+import som.primitives.basics.LengthPrimFactory;
 import som.vm.Universe;
 
 

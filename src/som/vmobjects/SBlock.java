@@ -28,11 +28,11 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 
 import som.interpreter.SArguments;
-import som.primitives.BlockPrimsFactory.ValueMorePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueTwoPrimFactory;
 import som.primitives.Primitives;
+import som.primitives.basics.BlockPrimsFactory.ValueMorePrimFactory;
+import som.primitives.basics.BlockPrimsFactory.ValueNonePrimFactory;
+import som.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
+import som.primitives.basics.BlockPrimsFactory.ValueTwoPrimFactory;
 import som.vm.Universe;
 
 
@@ -55,7 +55,7 @@ public final class SBlock extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass(Universe universe) {
+  public SClass getSOMClass(final Universe universe) {
     return blockClass;
   }
 

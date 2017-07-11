@@ -23,18 +23,28 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.reflection;
 
+import som.primitives.Primitives;
+import som.primitives.basics.NewObjectPrimFactory;
+import som.primitives.reflection.ClassPrimsFactory.InstanceFieldsPrimFactory;
+import som.primitives.reflection.ClassPrimsFactory.InstanceInvokablesPrimFactory;
+import som.primitives.reflection.ClassPrimsFactory.NamePrimFactory;
+import som.primitives.reflection.ClassPrimsFactory.SuperClassPrimFactory;
 import som.vm.Universe;
 
 
-public final class SymbolPrimitives extends Primitives {
-  public SymbolPrimitives(final boolean displayWarning, final Universe uni) {
+public final class ClassPrimitives extends Primitives {
+  public ClassPrimitives(final boolean displayWarning, final Universe uni) {
     super(displayWarning, uni);
   }
 
   @Override
   public void installPrimitives() {
-    installInstancePrimitive("asString", AsStringPrimFactory.getInstance());
+    installInstancePrimitive("new", NewObjectPrimFactory.getInstance());
+    installInstancePrimitive("name", NamePrimFactory.getInstance());
+    installInstancePrimitive("superclass", SuperClassPrimFactory.getInstance());
+    installInstancePrimitive("methods", InstanceInvokablesPrimFactory.getInstance());
+    installInstancePrimitive("fields", InstanceFieldsPrimFactory.getInstance());
   }
 }

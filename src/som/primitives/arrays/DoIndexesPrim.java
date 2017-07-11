@@ -1,15 +1,5 @@
 package som.primitives.arrays;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.BlockPrims.ValuePrimitiveNode;
-import som.primitives.LengthPrim;
-import som.primitives.LengthPrimFactory;
-import som.vmobjects.SArray;
-import som.vmobjects.SBlock;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
@@ -17,6 +7,16 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+
+import som.interpreter.Invokable;
+import som.interpreter.nodes.dispatch.AbstractDispatchNode;
+import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
+import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.primitives.basics.LengthPrim;
+import som.primitives.basics.LengthPrimFactory;
+import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import som.vmobjects.SArray;
+import som.vmobjects.SBlock;
 
 
 @GenerateNodeFactory

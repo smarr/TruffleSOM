@@ -4,7 +4,7 @@ import som.interpreter.Invokable;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.BlockPrims.ValuePrimitiveNode;
+import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;

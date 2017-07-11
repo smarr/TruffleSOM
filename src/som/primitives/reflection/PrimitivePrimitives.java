@@ -1,8 +1,9 @@
-package som.primitives;
+package som.primitives.reflection;
 
-import som.primitives.MethodPrimsFactory.HolderPrimFactory;
-import som.primitives.MethodPrimsFactory.InvokeOnPrimFactory;
-import som.primitives.MethodPrimsFactory.SignaturePrimFactory;
+import som.primitives.Primitives;
+import som.primitives.reflection.MethodPrimsFactory.HolderPrimFactory;
+import som.primitives.reflection.MethodPrimsFactory.InvokeOnPrimFactory;
+import som.primitives.reflection.MethodPrimsFactory.SignaturePrimFactory;
 import som.vm.Universe;
 
 

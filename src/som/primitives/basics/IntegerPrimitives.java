@@ -23,17 +23,9 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.basics;
 
-import som.primitives.IntegerPrimsFactory.AbsPrimFactory;
-import som.primitives.IntegerPrimsFactory.As32BitSignedValueFactory;
-import som.primitives.IntegerPrimsFactory.As32BitUnsignedValueFactory;
-import som.primitives.IntegerPrimsFactory.FromStringPrimFactory;
-import som.primitives.IntegerPrimsFactory.LeftShiftPrimFactory;
-import som.primitives.IntegerPrimsFactory.MaxIntPrimFactory;
-import som.primitives.IntegerPrimsFactory.RandomPrimFactory;
-import som.primitives.IntegerPrimsFactory.ToPrimFactory;
-import som.primitives.IntegerPrimsFactory.UnsignedRightShiftPrimFactory;
+import som.primitives.Primitives;
 import som.primitives.arithmetic.AdditionPrimFactory;
 import som.primitives.arithmetic.BitXorPrimFactory;
 import som.primitives.arithmetic.DividePrimFactory;
@@ -47,6 +39,15 @@ import som.primitives.arithmetic.MultiplicationPrimFactory;
 import som.primitives.arithmetic.RemainderPrimFactory;
 import som.primitives.arithmetic.SqrtPrimFactory;
 import som.primitives.arithmetic.SubtractionPrimFactory;
+import som.primitives.basics.IntegerPrimsFactory.AbsPrimFactory;
+import som.primitives.basics.IntegerPrimsFactory.As32BitSignedValueFactory;
+import som.primitives.basics.IntegerPrimsFactory.As32BitUnsignedValueFactory;
+import som.primitives.basics.IntegerPrimsFactory.FromStringPrimFactory;
+import som.primitives.basics.IntegerPrimsFactory.LeftShiftPrimFactory;
+import som.primitives.basics.IntegerPrimsFactory.MaxIntPrimFactory;
+import som.primitives.basics.IntegerPrimsFactory.RandomPrimFactory;
+import som.primitives.basics.IntegerPrimsFactory.ToPrimFactory;
+import som.primitives.basics.IntegerPrimsFactory.UnsignedRightShiftPrimFactory;
 import som.vm.Universe;
 
 

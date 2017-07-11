@@ -23,17 +23,16 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.reflection;
 
-import som.primitives.ObjectPrimsFactory.ClassPrimFactory;
-import som.primitives.ObjectPrimsFactory.HaltPrimFactory;
-import som.primitives.ObjectPrimsFactory.InstVarAtPrimFactory;
-import som.primitives.ObjectPrimsFactory.InstVarAtPutPrimFactory;
-import som.primitives.ObjectPrimsFactory.InstVarNamedPrimFactory;
-import som.primitives.reflection.PerformInSuperclassPrimFactory;
-import som.primitives.reflection.PerformPrimFactory;
-import som.primitives.reflection.PerformWithArgumentsInSuperclassPrimFactory;
-import som.primitives.reflection.PerformWithArgumentsPrimFactory;
+import som.primitives.Primitives;
+import som.primitives.basics.EqualsEqualsPrimFactory;
+import som.primitives.basics.HashPrimFactory;
+import som.primitives.reflection.ObjectPrimsFactory.ClassPrimFactory;
+import som.primitives.reflection.ObjectPrimsFactory.HaltPrimFactory;
+import som.primitives.reflection.ObjectPrimsFactory.InstVarAtPrimFactory;
+import som.primitives.reflection.ObjectPrimsFactory.InstVarAtPutPrimFactory;
+import som.primitives.reflection.ObjectPrimsFactory.InstVarNamedPrimFactory;
 import som.vm.Universe;
 
 

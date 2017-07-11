@@ -1,4 +1,4 @@
-package som.primitives;
+package som.primitives.basics;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;

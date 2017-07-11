@@ -1,4 +1,4 @@
-package som.primitives;
+package som.primitives.basics;
 
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vmobjects.SArray;

@@ -23,15 +23,16 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.basics;
 
 import som.interpreter.nodes.specialized.whileloops.WhilePrimitiveNodeFactory.WhileFalsePrimitiveNodeFactory;
 import som.interpreter.nodes.specialized.whileloops.WhilePrimitiveNodeFactory.WhileTruePrimitiveNodeFactory;
-import som.primitives.BlockPrimsFactory.RestartPrimFactory;
-import som.primitives.BlockPrimsFactory.ValueMorePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueTwoPrimFactory;
+import som.primitives.Primitives;
+import som.primitives.basics.BlockPrimsFactory.RestartPrimFactory;
+import som.primitives.basics.BlockPrimsFactory.ValueMorePrimFactory;
+import som.primitives.basics.BlockPrimsFactory.ValueNonePrimFactory;
+import som.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
+import som.primitives.basics.BlockPrimsFactory.ValueTwoPrimFactory;
 import som.vm.Universe;
 
 

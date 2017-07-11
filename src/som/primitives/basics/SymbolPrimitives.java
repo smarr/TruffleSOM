@@ -23,35 +23,19 @@
  * THE SOFTWARE.
  */
 
-package som.primitives;
+package som.primitives.basics;
 
-import som.primitives.SystemPrimsFactory.ExitPrimFactory;
-import som.primitives.SystemPrimsFactory.FullGCPrimFactory;
-import som.primitives.SystemPrimsFactory.GlobalPutPrimFactory;
-import som.primitives.SystemPrimsFactory.LoadPrimFactory;
-import som.primitives.SystemPrimsFactory.PrintNewlinePrimFactory;
-import som.primitives.SystemPrimsFactory.PrintStringPrimFactory;
-import som.primitives.SystemPrimsFactory.TicksPrimFactory;
-import som.primitives.SystemPrimsFactory.TimePrimFactory;
+import som.primitives.Primitives;
 import som.vm.Universe;
 
 
-public final class SystemPrimitives extends Primitives {
-  public SystemPrimitives(final boolean displayWarning, final Universe uni) {
+public final class SymbolPrimitives extends Primitives {
+  public SymbolPrimitives(final boolean displayWarning, final Universe uni) {
     super(displayWarning, uni);
   }
 
   @Override
   public void installPrimitives() {
-    installInstancePrimitive("load:", LoadPrimFactory.getInstance());
-    installInstancePrimitive("exit:", ExitPrimFactory.getInstance());
-    installInstancePrimitive("hasGlobal:", HasGlobalPrimFactory.getInstance());
-    installInstancePrimitive("global:", GlobalPrimFactory.getInstance());
-    installInstancePrimitive("global:put:", GlobalPutPrimFactory.getInstance());
-    installInstancePrimitive("printString:", PrintStringPrimFactory.getInstance());
-    installInstancePrimitive("printNewline", PrintNewlinePrimFactory.getInstance());
-    installInstancePrimitive("time", TimePrimFactory.getInstance());
-    installInstancePrimitive("ticks", TicksPrimFactory.getInstance());
-    installInstancePrimitive("fullGC", FullGCPrimFactory.getInstance());
+    installInstancePrimitive("asString", AsStringPrimFactory.getInstance());
   }
 }
