@@ -131,6 +131,16 @@ public final class Primitives {
   }
 
   @SuppressWarnings("unchecked")
+  public Specializer<EagerlySpecializableNode> getParserSpecializer(final SSymbol selector,
+      final ExpressionNode[] argNodes) {
+    Specializer<? extends ExpressionNode> specializer = eagerPrimitives.get(selector);
+    if (specializer != null && specializer.inParser() && specializer.matches(null, argNodes)) {
+      return (Specializer<EagerlySpecializableNode>) specializer;
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
   public Specializer<EagerlySpecializableNode> getEagerSpecializer(final SSymbol selector,
       final Object[] arguments, final ExpressionNode[] argumentNodes) {
     Specializer<? extends ExpressionNode> specializer = eagerPrimitives.get(selector);

@@ -21,7 +21,6 @@ import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import som.interpreter.nodes.MessageSendNode;
-import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.SequenceNode;
@@ -97,14 +96,9 @@ public final class SNodeFactory {
     return new SequenceNode(exps.toArray(new ExpressionNode[0]), source);
   }
 
-  public static AbstractMessageSendNode createMessageSend(final SSymbol msg,
+  public static ExpressionNode createMessageSend(final SSymbol msg,
       final ExpressionNode[] exprs, final SourceSection source, final Universe universe) {
     return MessageSendNode.create(msg, exprs, source, universe);
-  }
-
-  public static AbstractMessageSendNode createMessageSend(final SSymbol msg,
-      final List<ExpressionNode> exprs, final SourceSection source, final Universe universe) {
-    return MessageSendNode.create(msg, exprs.toArray(new ExpressionNode[0]), source, universe);
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,

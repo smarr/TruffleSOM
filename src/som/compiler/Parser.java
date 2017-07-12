@@ -75,7 +75,6 @@ import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.literals.ArrayLiteralNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
 import som.interpreter.nodes.literals.BlockNode;
@@ -629,7 +628,7 @@ public final class Parser {
     return msg;
   }
 
-  private AbstractMessageSendNode unaryMessage(final ExpressionNode receiver)
+  private ExpressionNode unaryMessage(final ExpressionNode receiver)
       throws ParseError {
     SourceCoordinate coord = getCoordinate();
     SSymbol selector = unarySelector();
@@ -637,7 +636,7 @@ public final class Parser {
         getSource(coord), universe);
   }
 
-  private AbstractMessageSendNode binaryMessage(final MethodGenerationContext mgenc,
+  private ExpressionNode binaryMessage(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ParseError {
     SourceCoordinate coord = getCoordinate();
     SSymbol msg = binarySelector();

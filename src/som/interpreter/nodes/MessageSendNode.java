@@ -22,9 +22,23 @@ import som.vmobjects.SSymbol;
 
 public final class MessageSendNode {
 
-  public static AbstractMessageSendNode create(final SSymbol selector,
+  public static ExpressionNode create(final SSymbol selector,
       final ExpressionNode[] arguments, final SourceSection source, final Universe universe) {
-    return new UninitializedMessageSendNode(selector, arguments, source, universe);
+    Primitives prims = universe.getPrimitives();
+    Specializer<EagerlySpecializableNode> specializer =
+        prims.getParserSpecializer(selector, arguments);
+    if (specializer == null) {
+      return new UninitializedMessageSendNode(selector, arguments, source, universe);
+    }
+
+    EagerlySpecializableNode newNode =
+        specializer.create(null, arguments, source, !specializer.noWrapper());
+
+    if (specializer.noWrapper()) {
+      return newNode;
+    } else {
+      return newNode.wrapInEagerWrapper(selector, arguments, universe);
+    }
   }
 
   public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
