@@ -6,14 +6,12 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
 
 
 @NodeChildren({
     @NodeChild(value = "receiver", type = ExpressionNode.class),
     @NodeChild(value = "argument", type = ExpressionNode.class)})
-public abstract class BinaryExpressionNode extends ExpressionNode
-    implements PreevaluatedExpression {
+public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
 
   public BinaryExpressionNode(final SourceSection source) {
     super(source);

@@ -5,12 +5,10 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
 
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)
-public abstract class UnaryExpressionNode extends ExpressionNode
-    implements PreevaluatedExpression {
+public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
 
   public UnaryExpressionNode(final SourceSection source) {
     super(source);
