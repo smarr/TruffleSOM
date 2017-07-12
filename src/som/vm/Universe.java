@@ -42,6 +42,7 @@ import som.compiler.Disassembler;
 import som.interpreter.Invokable;
 import som.interpreter.SomLanguage;
 import som.interpreter.TruffleCompiler;
+import som.primitives.Primitives;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -142,6 +143,8 @@ public final class Universe {
     stringClass = newSystemClass();
     doubleClass = newSystemClass();
     booleanClass = newSystemClass();
+
+    this.primitives = new Primitives(this);
   }
 
   public static final class SomExit extends ThreadDeath {
@@ -543,14 +546,7 @@ public final class Universe {
     assert getGlobal(name) == null;
 
     // Get the block class for blocks with the given number of arguments
-    SClass result = loadClass(name, null);
-
-    // Add the appropriate value primitive to the block class
-    result.addInstancePrimitive(SBlock.getEvaluationPrimitive(
-        numberOfArguments, this, result), true);
-
-    // Insert the block class into the dictionary of globals
-    setGlobal(name, result);
+    SClass result = loadClass(name);
 
     blockClasses[numberOfArguments] = result;
   }
@@ -579,7 +575,7 @@ public final class Universe {
     // Load primitives if class defines them, or try to load optional
     // primitives defined for system classes.
     if (result.hasPrimitives() || isSystemClass) {
-      result.loadPrimitives(!isSystemClass, this);
+      primitives.loadPrimitives(result, !isSystemClass);
     }
   }
 
@@ -699,6 +695,10 @@ public final class Universe {
     return systemClass;
   }
 
+  public Primitives getPrimitives() {
+    return primitives;
+  }
+
   public final SClass objectClass;
   public final SClass classClass;
   public final SClass metaclassClass;
@@ -734,8 +734,7 @@ public final class Universe {
   // Optimizations
   @CompilationFinal(dimensions = 1) private final SClass[] blockClasses;
 
-  // Latest instance
-  // WARNING: this is problematic with multiple interpreters in the same VM...
+  private final Primitives primitives;
 
   @CompilationFinal private boolean alreadyInitialized;
 
