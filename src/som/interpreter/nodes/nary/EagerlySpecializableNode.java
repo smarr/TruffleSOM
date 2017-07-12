@@ -4,6 +4,8 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.Universe;
+import som.vmobjects.SSymbol;
 
 
 /**
@@ -22,7 +24,9 @@ public abstract class EagerlySpecializableNode extends ExpressionNode
     super(source);
   }
 
-  protected EagerlySpecializableNode() {
-    super(null);
-  }
+  /**
+   * Create an eager primitive wrapper, which wraps this node.
+   */
+  public abstract EagerPrimitive wrapInEagerWrapper(SSymbol selector,
+      ExpressionNode[] arguments, Universe universe);
 }

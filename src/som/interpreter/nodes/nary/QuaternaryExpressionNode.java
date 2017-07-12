@@ -6,6 +6,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
+import som.vm.NotYetImplementedException;
+import som.vm.Universe;
+import som.vmobjects.SSymbol;
 
 
 @NodeChildren({
@@ -26,5 +29,11 @@ public abstract class QuaternaryExpressionNode extends EagerlySpecializableNode 
   public final Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0], arguments[1], arguments[2], arguments[3]);
+  }
+
+  @Override
+  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
+      final ExpressionNode[] arguments, final Universe universe) {
+    throw new NotYetImplementedException();
   }
 }

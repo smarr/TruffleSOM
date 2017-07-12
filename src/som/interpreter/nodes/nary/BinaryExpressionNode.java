@@ -6,6 +6,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
+import som.vm.Universe;
+import som.vmobjects.SSymbol;
 
 
 @NodeChildren({
@@ -17,11 +19,6 @@ public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
     super(source);
   }
 
-  // for nodes that are not representing source code
-  public BinaryExpressionNode() {
-    super(null);
-  }
-
   public abstract Object executeEvaluated(VirtualFrame frame, Object receiver,
       Object argument);
 
@@ -29,5 +26,12 @@ public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
   public final Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0], arguments[1]);
+  }
+
+  @Override
+  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
+      final ExpressionNode[] arguments, final Universe universe) {
+    return new EagerBinaryPrimitiveNode(sourceSection, selector,
+        arguments[0], arguments[1], this, universe);
   }
 }

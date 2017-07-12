@@ -2,6 +2,7 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
@@ -11,7 +12,7 @@ import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
-public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
+public final class EagerBinaryPrimitiveNode extends EagerPrimitive {
 
   @Child private ExpressionNode       receiver;
   @Child private ExpressionNode       argument;
@@ -20,12 +21,10 @@ public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
   private final Universe universe;
   private final SSymbol  selector;
 
-  public EagerBinaryPrimitiveNode(
-      final SSymbol selector,
-      final ExpressionNode receiver,
-      final ExpressionNode argument,
+  public EagerBinaryPrimitiveNode(final SourceSection source, final SSymbol selector,
+      final ExpressionNode receiver, final ExpressionNode argument,
       final BinaryExpressionNode primitive, final Universe universe) {
-    super(null);
+    super(source);
     this.receiver = receiver;
     this.argument = argument;
     this.primitive = primitive;
@@ -41,7 +40,6 @@ public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
     return executeEvaluated(frame, rcvr, arg);
   }
 
-  @Override
   public Object executeEvaluated(final VirtualFrame frame,
       final Object receiver, final Object argument) {
     try {
@@ -52,6 +50,12 @@ public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
       return makeGenericSend().doPreEvaluated(frame,
           new Object[] {receiver, argument});
     }
+  }
+
+  @Override
+  public Object doPreEvaluated(final VirtualFrame frame,
+      final Object[] arguments) {
+    return executeEvaluated(frame, arguments[0], arguments[1]);
   }
 
   private GenericMessageSendNode makeGenericSend() {
