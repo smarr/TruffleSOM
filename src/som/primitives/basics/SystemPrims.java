@@ -2,10 +2,12 @@ package som.primitives.basics;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.Primitive;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SClass;
@@ -19,8 +21,8 @@ public final class SystemPrims {
   public abstract static class BinarySystemNode extends BinaryExpressionNode {
     protected final Universe universe;
 
-    protected BinarySystemNode(final Universe universe) {
-      super(null);
+    protected BinarySystemNode(final SourceSection source, final Universe universe) {
+      super(source);
       this.universe = universe;
     }
   }
@@ -28,15 +30,17 @@ public final class SystemPrims {
   public abstract static class UnarySystemNode extends UnaryExpressionNode {
     protected final Universe universe;
 
-    protected UnarySystemNode(final Universe universe) {
-      super(null);
+    protected UnarySystemNode(final SourceSection source, final Universe universe) {
+      super(source);
       this.universe = universe;
     }
   }
 
+  @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "load:", requiresContext = true)
   public abstract static class LoadPrim extends BinarySystemNode {
-    public LoadPrim(final Universe universe) {
-      super(universe);
+    public LoadPrim(final SourceSection source, final Universe universe) {
+      super(source, universe);
     }
 
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -46,9 +50,11 @@ public final class SystemPrims {
     }
   }
 
+  @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "exit:", requiresContext = true)
   public abstract static class ExitPrim extends BinarySystemNode {
-    public ExitPrim(final Universe universe) {
-      super(universe);
+    public ExitPrim(final SourceSection source, final Universe universe) {
+      super(source, universe);
     }
 
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -59,10 +65,12 @@ public final class SystemPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "global:put:", requiresContext = true)
   public abstract static class GlobalPutPrim extends TernaryExpressionNode {
     protected final Universe universe;
 
-    public GlobalPutPrim(final Universe universe) {
+    public GlobalPutPrim(final SourceSection source, final Universe universe) {
+      super(source);
       this.universe = universe;
     }
 
@@ -74,9 +82,11 @@ public final class SystemPrims {
     }
   }
 
+  @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "printString:", requiresContext = true)
   public abstract static class PrintStringPrim extends BinarySystemNode {
-    public PrintStringPrim(final Universe universe) {
-      super(universe);
+    public PrintStringPrim(final SourceSection source, final Universe universe) {
+      super(source, universe);
     }
 
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -92,9 +102,10 @@ public final class SystemPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "printNewline", requiresContext = true)
   public abstract static class PrintNewlinePrim extends UnarySystemNode {
-    public PrintNewlinePrim(final Universe universe) {
-      super(universe);
+    public PrintNewlinePrim(final SourceSection source, final Universe universe) {
+      super(source, universe);
     }
 
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -105,9 +116,10 @@ public final class SystemPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "fullGC", requiresContext = true)
   public abstract static class FullGCPrim extends UnarySystemNode {
-    public FullGCPrim(final Universe universe) {
-      super(universe);
+    public FullGCPrim(final SourceSection source, final Universe universe) {
+      super(source, universe);
     }
 
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -118,9 +130,10 @@ public final class SystemPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "time", requiresContext = true)
   public abstract static class TimePrim extends UnarySystemNode {
-    public TimePrim(final Universe universe) {
-      super(universe);
+    public TimePrim(final SourceSection source, final Universe universe) {
+      super(source, universe);
     }
 
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -130,9 +143,10 @@ public final class SystemPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "ticks", requiresContext = true)
   public abstract static class TicksPrim extends UnarySystemNode {
-    public TicksPrim(final Universe universe) {
-      super(universe);
+    public TicksPrim(final SourceSection source, final Universe universe) {
+      super(source, universe);
     }
 
     @Specialization(guards = "receiver == universe.getSystemObject()")

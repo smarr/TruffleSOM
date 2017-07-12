@@ -33,6 +33,35 @@ import som.interpreter.Primitive;
 import som.interpreter.SomLanguage;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ExpressionNode;
+import som.interpreter.nodes.nary.EagerlySpecializableNode;
+import som.interpreter.nodes.specialized.AndMessageNodeFactory;
+import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
+import som.interpreter.nodes.specialized.IntDownToDoMessageNodeFactory;
+import som.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
+import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
+import som.interpreter.nodes.specialized.NotMessageNodeFactory;
+import som.interpreter.nodes.specialized.OrMessageNodeFactory;
+import som.primitives.arithmetic.AdditionPrimFactory;
+import som.primitives.arithmetic.BitXorPrimFactory;
+import som.primitives.arithmetic.CosPrimFactory;
+import som.primitives.arithmetic.DividePrimFactory;
+import som.primitives.arithmetic.DoubleDivPrimFactory;
+import som.primitives.arithmetic.GreaterThanPrimFactory;
+import som.primitives.arithmetic.LessThanOrEqualPrimFactory;
+import som.primitives.arithmetic.LessThanPrimFactory;
+import som.primitives.arithmetic.LogicAndPrimFactory;
+import som.primitives.arithmetic.ModuloPrimFactory;
+import som.primitives.arithmetic.MultiplicationPrimFactory;
+import som.primitives.arithmetic.RemainderPrimFactory;
+import som.primitives.arithmetic.SinPrimFactory;
+import som.primitives.arithmetic.SqrtPrimFactory;
+import som.primitives.arithmetic.SubtractionPrimFactory;
+import som.primitives.arrays.AtPrimFactory;
+import som.primitives.arrays.AtPutPrimFactory;
+import som.primitives.arrays.CopyPrimFactory;
+import som.primitives.arrays.DoIndexesPrimFactory;
+import som.primitives.arrays.DoPrimFactory;
+import som.primitives.arrays.NewPrimFactory;
 import som.primitives.arrays.PutAllNodeFactory;
 import som.primitives.arrays.ToArgumentsArrayNodeGen;
 import som.primitives.basics.LengthPrimFactory;
@@ -163,9 +192,30 @@ public abstract class Primitives {
     holder.getSOMClass(universe).addInstancePrimitive(prim, displayWarning);
   }
 
-  public static SInvokable getEmptyPrimitive(final String selector,
-      final Universe universe) {
-    SSymbol signature = universe.symbolFor(selector);
-    return constructEmptyPrimitive(signature, universe.getLanguage());
+    allFactories.add(AsStringPrimFactory.getInstance());
+    allFactories.add(EqualsEqualsPrimFactory.getInstance());
+    allFactories.add(EqualsPrimFactory.getInstance());
+    allFactories.add(HashPrimFactory.getInstance());
+    allFactories.add(LengthPrimFactory.getInstance());
+    allFactories.add(NewObjectPrimFactory.getInstance());
+    allFactories.add(UnequalsPrimFactory.getInstance());
+
+    allFactories.add(AndMessageNodeFactory.getInstance());
+    allFactories.add(IntToDoMessageNodeFactory.getInstance());
+    allFactories.add(IntToByDoMessageNodeFactory.getInstance());
+    allFactories.add(IntDownToDoMessageNodeFactory.getInstance());
+    allFactories.add(OrMessageNodeFactory.getInstance());
+    allFactories.add(IfTrueIfFalseMessageNodeFactory.getInstance());
+    allFactories.add(NotMessageNodeFactory.getInstance());
+
+    allFactories.add(GlobalPrimFactory.getInstance());
+    allFactories.add(HasGlobalPrimFactory.getInstance());
+    allFactories.add(ObjectSizePrimFactory.getInstance());
+    allFactories.add(PerformInSuperclassPrimFactory.getInstance());
+    allFactories.add(PerformPrimFactory.getInstance());
+    allFactories.add(PerformWithArgumentsInSuperclassPrimFactory.getInstance());
+    allFactories.add(PerformWithArgumentsPrimFactory.getInstance());
+
+    return allFactories;
   }
 }

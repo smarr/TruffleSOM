@@ -4,20 +4,29 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.primitives.Primitive;
 import som.vm.Universe;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Integer", primitive = "<>", requiresContext = true)
+@Primitive(className = "Integer", primitive = "~=", requiresContext = true)
+@Primitive(className = "Double", primitive = "<>", requiresContext = true)
+@Primitive(className = "Double", primitive = "~=", requiresContext = true)
+@Primitive(selector = "<>", requiresContext = true)
+@Primitive(selector = "~=", requiresContext = true)
 public abstract class UnequalsPrim extends BinaryExpressionNode {
 
   private final SObject trueObject;
   private final SObject falseObject;
 
-  public UnequalsPrim(final Universe universe) {
+  public UnequalsPrim(final SourceSection source, final Universe universe) {
+    super(source);
     this.trueObject = universe.getTrueObject();
     this.falseObject = universe.getFalseObject();
   }

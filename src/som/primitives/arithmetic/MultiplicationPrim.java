@@ -5,10 +5,20 @@ import java.math.BigInteger;
 import com.oracle.truffle.api.ExactMath;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
+
+import som.primitives.Primitive;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Integer", primitive = "*")
+@Primitive(className = "Double", primitive = "*")
+@Primitive(selector = "*")
 public abstract class MultiplicationPrim extends ArithmeticPrim {
+  public MultiplicationPrim(final SourceSection source) {
+    super(source);
+  }
+
   @Specialization(rewriteOn = ArithmeticException.class)
   public final long doLong(final long left, final long right) {
     return ExactMath.multiplyExact(left, right);

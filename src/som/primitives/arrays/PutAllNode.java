@@ -9,13 +9,16 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.Invokable;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.basics.LengthPrim;
+import som.primitives.Primitive;
 import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import som.primitives.basics.LengthPrim;
+import som.primitives.basics.LengthPrimFactory;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
@@ -25,13 +28,15 @@ import som.vmobjects.SObject;
 
 @GenerateNodeFactory
 @ImportStatic(ArrayType.class)
+@Primitive(className = "Array", primitive = "putAll:", selector = "putAll:", disabled = true,
+    extraChild = LengthPrimFactory.class)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
 public abstract class PutAllNode extends BinaryExpressionNode
     implements ValuePrimitiveNode {
   @Child private AbstractDispatchNode block;
 
-  public PutAllNode() {
-    super(null);
+  public PutAllNode(final SourceSection source) {
+    super(source);
     block = new UninitializedValuePrimDispatchNode();
   }
 

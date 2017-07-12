@@ -2,15 +2,22 @@ package som.primitives.arithmetic;
 
 import java.math.BigInteger;
 
-import som.vm.NotYetImplementedException;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
+
+import som.primitives.Primitive;
+import som.vm.NotYetImplementedException;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Integer", primitive = "/", selector = "/")
 public abstract class DividePrim extends ArithmeticPrim {
+  public DividePrim(final SourceSection source) {
+    super(source);
+  }
+
   @Specialization
   public final long doLong(final long left, final long right) {
     return left / right;

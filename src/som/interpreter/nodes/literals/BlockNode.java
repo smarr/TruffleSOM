@@ -33,6 +33,10 @@ public class BlockNode extends LiteralNode {
     this.universe = universe;
   }
 
+  public SMethod getMethod() {
+    return blockMethod;
+  }
+
   protected void setBlockClass() {
     blockClass = universe.getBlockClass(blockMethod.getNumberOfArguments());
   }

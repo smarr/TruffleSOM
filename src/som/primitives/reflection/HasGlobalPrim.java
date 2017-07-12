@@ -1,10 +1,11 @@
 package som.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.SOMNode;
-import som.primitives.basics.SystemPrims;
+import som.primitives.Primitive;
 import som.primitives.basics.SystemPrims.BinarySystemNode;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
@@ -12,12 +13,13 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
+@Primitive(className = "System", primitive = "hasGlobal:", requiresContext = true)
 public abstract class HasGlobalPrim extends BinarySystemNode {
 
   @Child private HasGlobalNode hasGlobal;
 
-  public HasGlobalPrim(final Universe universe) {
-    super(universe);
+  public HasGlobalPrim(final SourceSection source, final Universe universe) {
+    super(source, universe);
     hasGlobal = new UninitializedHasGlobal(0, universe);
   }
 

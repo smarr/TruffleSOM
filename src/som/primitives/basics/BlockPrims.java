@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
@@ -12,6 +13,7 @@ import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.Primitive;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SBlock;
 
@@ -23,9 +25,10 @@ public abstract class BlockPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Block", primitive = "restart")
   public abstract static class RestartPrim extends UnaryExpressionNode {
-    public RestartPrim() {
-      super(null);
+    public RestartPrim(final SourceSection source) {
+      super(source);
     }
 
     @Specialization
@@ -39,12 +42,16 @@ public abstract class BlockPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Block", primitive = "value")
+  @Primitive(className = "Block1", primitive = "value")
+  @Primitive(selector = "value", inParser = false,
+      receiverType = {SBlock.class, Boolean.class})
   public abstract static class ValueNonePrim extends UnaryExpressionNode
       implements ValuePrimitiveNode {
     @Child private AbstractDispatchNode dispatchNode;
 
-    public ValueNonePrim() {
-      super(null);
+    public ValueNonePrim(final SourceSection source) {
+      super(source);
       dispatchNode = new UninitializedValuePrimDispatchNode();
     }
 
@@ -79,12 +86,14 @@ public abstract class BlockPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Block2", primitive = "value:", selector = "value:", inParser = false,
+      receiverType = SBlock.class)
   public abstract static class ValueOnePrim extends BinaryExpressionNode
       implements ValuePrimitiveNode {
     @Child private AbstractDispatchNode dispatchNode;
 
-    public ValueOnePrim() {
-      super(null);
+    public ValueOnePrim(final SourceSection source) {
+      super(source);
       dispatchNode = new UninitializedValuePrimDispatchNode();
     }
 
@@ -115,12 +124,14 @@ public abstract class BlockPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Block3", primitive = "value:with:", selector = "value:with:",
+      inParser = false, receiverType = SBlock.class)
   public abstract static class ValueTwoPrim extends TernaryExpressionNode
       implements ValuePrimitiveNode {
     @Child private AbstractDispatchNode dispatchNode;
 
-    public ValueTwoPrim() {
-      super(null);
+    public ValueTwoPrim(final SourceSection source) {
+      super(source);
       dispatchNode = new UninitializedValuePrimDispatchNode();
     }
 
@@ -151,6 +162,7 @@ public abstract class BlockPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Block4", primitive = "value:with:with:")
   public abstract static class ValueMorePrim extends QuaternaryExpressionNode {
     public ValueMorePrim() {
       super(null);

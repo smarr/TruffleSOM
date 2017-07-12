@@ -2,22 +2,26 @@ package som.primitives.arithmetic;
 
 import java.math.BigInteger;
 
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.Primitive;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Integer", primitive = "sqrt")
+@Primitive(className = "Double", primitive = "sqrt")
 public abstract class SqrtPrim extends UnaryExpressionNode {
-
-  public SqrtPrim() {
-    super(null);
-  }
 
   private final BranchProfile longReturn   = BranchProfile.create();
   private final BranchProfile doubleReturn = BranchProfile.create();
+
+  public SqrtPrim(final SourceSection source) {
+    super(source);
+  }
 
   @Specialization
   public final Object doLong(final long receiver) {

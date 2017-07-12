@@ -2,6 +2,7 @@ package som.primitives.arrays;
 
 import java.util.Arrays;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
@@ -15,6 +16,7 @@ import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
 
 
+@GenerateNodeFactory
 @ImportStatic(ArrayType.class)
 @NodeChildren({
     @NodeChild("somArray"),

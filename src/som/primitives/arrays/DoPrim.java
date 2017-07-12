@@ -1,16 +1,5 @@
 package som.primitives.arrays;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SArray;
-import som.vmobjects.SArray.ArrayType;
-import som.vmobjects.SArray.PartiallyEmptyArray;
-import som.vmobjects.SBlock;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
@@ -20,17 +9,32 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
+import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.Invokable;
+import som.interpreter.nodes.dispatch.AbstractDispatchNode;
+import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
+import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.primitives.Primitive;
+import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import som.vm.constants.Nil;
+import som.vmobjects.SArray;
+import som.vmobjects.SArray.ArrayType;
+import som.vmobjects.SArray.PartiallyEmptyArray;
+import som.vmobjects.SBlock;
 
 
 @GenerateNodeFactory
 @ImportStatic(ArrayType.class)
+@Primitive(className = "Array", primitive = "do:", selector = "do:",
+    receiverType = SArray.class, disabled = true)
 public abstract class DoPrim extends BinaryExpressionNode
     implements ValuePrimitiveNode {
   @Child private AbstractDispatchNode block;
   private final ValueProfile          storageType = ValueProfile.createClassProfile();
 
-  public DoPrim() {
-    super(null);
+  public DoPrim(final SourceSection source) {
+    super(source);
     block = new UninitializedValuePrimDispatchNode();
   }
 

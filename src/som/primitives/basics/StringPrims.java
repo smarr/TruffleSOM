@@ -2,10 +2,12 @@ package som.primitives.basics;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.Primitive;
 import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SSymbol;
@@ -14,7 +16,12 @@ import som.vmobjects.SSymbol;
 public class StringPrims {
 
   @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "concatenate:")
   public abstract static class ConcatPrim extends BinaryExpressionNode {
+    public ConcatPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final String doString(final String receiver, final String argument) {
       return receiver + argument;
@@ -37,10 +44,12 @@ public class StringPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "asSymbol", requiresContext = true)
   public abstract static class AsSymbolPrim extends UnaryExpressionNode {
     private final Universe universe;
 
-    public AsSymbolPrim(final Universe universe) {
+    public AsSymbolPrim(final SourceSection source, final Universe universe) {
+      super(source);
       this.universe = universe;
     }
 
@@ -56,7 +65,12 @@ public class StringPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "primSubstringFrom:to:")
   public abstract static class SubstringPrim extends TernaryExpressionNode {
+    public SubstringPrim(final SourceSection sourceSection) {
+      super(sourceSection);
+    }
+
     @Specialization
     public final String doString(final String receiver, final long start,
         final long end) {

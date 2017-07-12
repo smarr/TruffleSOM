@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.vm.Universe;
@@ -21,7 +22,9 @@ public abstract class WhileCache extends BinaryExpressionNode {
   private final SObject   trueObject;
   private final SObject   falseObject;
 
-  public WhileCache(final boolean predicateBool, final Universe universe) {
+  public WhileCache(final SourceSection source, final boolean predicateBool,
+      final Universe universe) {
+    super(source);
     this.predicateBool = predicateBool;
     this.trueObject = universe.getTrueObject();
     this.falseObject = universe.getFalseObject();

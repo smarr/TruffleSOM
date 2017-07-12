@@ -3,6 +3,8 @@ package som.interpreter.nodes.specialized;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
@@ -11,11 +13,34 @@ import com.oracle.truffle.api.nodes.RootNode;
 import som.interpreter.Invokable;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
+import som.interpreter.nodes.specialized.IntToDoMessageNode.ToDoSplzr;
+import som.primitives.Primitive;
+import som.primitives.Specializer;
+import som.vm.Universe;
+import som.vm.VmSettings;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
 
+@GenerateNodeFactory
+@Primitive(selector = "to:do:", noWrapper = true, disabled = true,
+    specializer = ToDoSplzr.class, inParser = false)
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
+
+  public static class ToDoSplzr extends Specializer<IntToDoMessageNode> {
+    public ToDoSplzr(final Primitive prim, final NodeFactory<IntToDoMessageNode> fact,
+        final Universe universe) {
+      super(prim, fact, universe);
+    }
+
+    @Override
+    public boolean matches(final Object[] args,
+        final ExpressionNode[] argNodes) {
+      return !VmSettings.DYNAMIC_METRICS && args[0] instanceof Long &&
+          (args[1] instanceof Long || args[1] instanceof Double) &&
+          args[2] instanceof SBlock;
+    }
+  }
 
   private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;

@@ -11,7 +11,7 @@ import som.interpreter.nodes.MessageSendNode;
 import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.primitives.arrays.ToArgumentsArrayNode;
-import som.primitives.arrays.ToArgumentsArrayNodeGen;
+import som.primitives.arrays.ToArgumentsArrayNodeFactory;
 import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SInvokable;
@@ -36,7 +36,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   }
 
   public static final ToArgumentsArrayNode createArgArrayNode() {
-    return ToArgumentsArrayNodeGen.create(null, null);
+    return ToArgumentsArrayNodeFactory.create(null, null);
   }
 
   @Specialization(limit = "INLINE_CACHE_SIZE",

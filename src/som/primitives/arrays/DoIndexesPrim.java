@@ -7,28 +7,32 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.Invokable;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.primitives.Primitive;
+import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
 import som.primitives.basics.LengthPrim;
 import som.primitives.basics.LengthPrimFactory;
-import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Array", primitive = "doIndexes:", selector = "doIndexes:",
+    receiverType = SArray.class, disabled = true)
 public abstract class DoIndexesPrim extends BinaryExpressionNode
     implements ValuePrimitiveNode {
   @Child private AbstractDispatchNode block;
   @Child private LengthPrim           length;
 
-  public DoIndexesPrim() {
-    super(null);
+  public DoIndexesPrim(final SourceSection source) {
+    super(source);
     block = new UninitializedValuePrimDispatchNode();
-    length = LengthPrimFactory.create(null);
+    length = LengthPrimFactory.create(source, null);
   }
 
   @Specialization
