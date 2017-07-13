@@ -45,7 +45,7 @@ public final class Method extends Invokable {
 
   @Override
   public String toString() {
-    return "Method @" + Integer.toHexString(hashCode());
+    return "Method " + getName() + " @" + Integer.toHexString(hashCode());
   }
 
   @Override
