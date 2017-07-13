@@ -27,6 +27,8 @@ explore.add_argument('-i', '--igv', help='dump compilation details to IGV',
                     dest='igv', action='store_true', default=False)
 explore.add_argument('-l', '--low-level', help='enable low-level optimization output',
                     dest='low_level', action='store_true', default=False)
+explore.add_argument('-ti', '--trace-invalidation', help='trace assumption invalidation and transfers to interpreter',
+                    dest='trace_invalidation', action='store_true', default=False)
 explore.add_argument('-w', '--perf-warnings', help='enable performance warnings',
                     dest='perf_warnings', action='store_true', default=False)
 explore.add_argument('-v', '--visual-vm', help='connect to VisualVM for profiling',
@@ -164,6 +166,9 @@ if not args.interpreter and args.perf_warnings:
               '-Dgraal.TraceTruffleCompilation=true',
               '-Dgraal.TraceTruffleCompilationDetails=true',
               '-Dgraal.TraceTruffleExpansionSource=true']
+if not args.interpreter and args.trace_invalidation:
+    flags += ['-Dgraal.TraceTruffleTransferToInterpreter=true',
+              '-Dgraal.TraceTruffleAssumptions=true']
 if not args.interpreter and args.only_compile:
     flags.append("-Dgraal.TruffleCompileOnly=%s" % only_compile)
 if args.visual_vm:
