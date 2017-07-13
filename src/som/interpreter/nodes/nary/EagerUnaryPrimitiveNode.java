@@ -24,8 +24,8 @@ public class EagerUnaryPrimitiveNode extends EagerPrimitive {
       final ExpressionNode receiver, final UnaryExpressionNode primitive,
       final Universe universe) {
     super(source);
-    this.receiver = receiver;
-    this.primitive = primitive;
+    this.receiver = insert(receiver);
+    this.primitive = insert(primitive);
     this.selector = selector;
     this.universe = universe;
   }

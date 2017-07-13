@@ -25,9 +25,9 @@ public final class EagerBinaryPrimitiveNode extends EagerPrimitive {
       final ExpressionNode receiver, final ExpressionNode argument,
       final BinaryExpressionNode primitive, final Universe universe) {
     super(source);
-    this.receiver = receiver;
-    this.argument = argument;
-    this.primitive = primitive;
+    this.receiver = insert(receiver);
+    this.argument = insert(argument);
+    this.primitive = insert(primitive);
     this.selector = selector;
     this.universe = universe;
   }
