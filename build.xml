@@ -97,7 +97,7 @@
     </target>
 
     <target name="truffle-libs" depends="core-lib">
-        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+        <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
             <arg value="build"/>
             <arg value="--no-native"/>
         </exec>
