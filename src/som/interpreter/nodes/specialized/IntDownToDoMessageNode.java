@@ -3,27 +3,33 @@ package som.interpreter.nodes.specialized;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.Invokable;
-import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
+import som.interpreter.nodes.specialized.IntToDoMessageNode.ToDoSplzr;
+import som.primitives.Primitive;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
 
+@GenerateNodeFactory
+@Primitive(selector = "downTo:do:", noWrapper = true, disabled = true,
+    specializer = ToDoSplzr.class, inParser = false, requiresArguments = true)
 public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
 
   private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;
 
-  public IntDownToDoMessageNode(final ExpressionNode orignialNode,
-      final SBlock block) {
-    super(orignialNode.getSourceSection());
-    blockMethod = block.getMethod();
+  public IntDownToDoMessageNode(final SourceSection source,
+      final Object[] args) {
+    super(source);
+    blockMethod = ((SBlock) args[2]).getMethod();
     valueSend = Truffle.getRuntime().createDirectCallNode(
         blockMethod.getCallTarget());
   }

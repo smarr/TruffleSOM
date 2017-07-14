@@ -2,6 +2,7 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
@@ -11,7 +12,7 @@ import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
-public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
+public class EagerUnaryPrimitiveNode extends EagerPrimitive {
 
   @Child private ExpressionNode      receiver;
   @Child private UnaryExpressionNode primitive;
@@ -19,12 +20,12 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
   private final SSymbol  selector;
   private final Universe universe;
 
-  public EagerUnaryPrimitiveNode(final SSymbol selector,
+  public EagerUnaryPrimitiveNode(final SourceSection source, final SSymbol selector,
       final ExpressionNode receiver, final UnaryExpressionNode primitive,
       final Universe universe) {
-    super(null);
-    this.receiver = receiver;
-    this.primitive = primitive;
+    super(source);
+    this.receiver = insert(receiver);
+    this.primitive = insert(primitive);
     this.selector = selector;
     this.universe = universe;
   }
@@ -36,7 +37,6 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
     return executeEvaluated(frame, rcvr);
   }
 
-  @Override
   public Object executeEvaluated(final VirtualFrame frame,
       final Object receiver) {
     try {
@@ -46,6 +46,12 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
           "Eager Primitive with unsupported specialization.");
       return makeGenericSend().doPreEvaluated(frame, new Object[] {receiver});
     }
+  }
+
+  @Override
+  public Object doPreEvaluated(final VirtualFrame frame,
+      final Object[] arguments) {
+    return executeEvaluated(frame, arguments[0]);
   }
 
   private GenericMessageSendNode makeGenericSend() {

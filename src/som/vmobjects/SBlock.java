@@ -24,15 +24,9 @@
 
 package som.vmobjects;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 
 import som.interpreter.SArguments;
-import som.primitives.BlockPrimsFactory.ValueMorePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueTwoPrimFactory;
-import som.primitives.Primitives;
 import som.vm.Universe;
 
 
@@ -55,50 +49,12 @@ public final class SBlock extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass(Universe universe) {
+  public SClass getSOMClass(final Universe universe) {
     return blockClass;
   }
 
   public Object getOuterSelf() {
     return SArguments.rcvr(getContext());
-  }
-
-  public static SInvokable getEvaluationPrimitive(final int numberOfArguments,
-      final Universe universe, final SClass rcvrClass) {
-    CompilerAsserts.neverPartOfCompilation("SBlock.getEvaluationPrimitive(...)");
-    SSymbol sig = universe.symbolFor(computeSignatureString(numberOfArguments));
-
-    switch (numberOfArguments) {
-      case 1:
-        return Primitives.constructPrimitive(sig,
-            ValueNonePrimFactory.getInstance(), universe, rcvrClass);
-      case 2:
-        return Primitives.constructPrimitive(sig,
-            ValueOnePrimFactory.getInstance(), universe, rcvrClass);
-      case 3:
-        return Primitives.constructPrimitive(sig,
-            ValueTwoPrimFactory.getInstance(), universe, rcvrClass);
-      case 4:
-        return Primitives.constructPrimitive(sig,
-            ValueMorePrimFactory.getInstance(), universe, rcvrClass);
-      default:
-        throw new RuntimeException(
-            "Should not reach here. SOM only has blocks with up to 2 arguments.");
-    }
-  }
-
-  private static String computeSignatureString(final int numberOfArguments) {
-    // Compute the signature string
-    String signatureString = "value";
-    if (numberOfArguments > 1) {
-      signatureString += ":";
-    }
-
-    // Add extra value: selector elements if necessary
-    for (int i = 2; i < numberOfArguments; i++) {
-      signatureString += "with:";
-    }
-    return signatureString;
   }
 
   private final SClass            blockClass;

@@ -1,18 +1,25 @@
-package som.primitives;
-
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
+package som.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.Primitive;
+import som.vmobjects.SAbstractObject;
+import som.vmobjects.SArray;
+import som.vmobjects.SClass;
 
 
 public class ClassPrims {
 
   @GenerateNodeFactory
+  @Primitive(className = "Class", primitive = "name")
   public abstract static class NamePrim extends UnaryExpressionNode {
+    public NamePrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final SAbstractObject doSClass(final SClass receiver) {
       return receiver.getName();
@@ -20,7 +27,12 @@ public class ClassPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Class", primitive = "superclass")
   public abstract static class SuperClassPrim extends UnaryExpressionNode {
+    public SuperClassPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final SAbstractObject doSClass(final SClass receiver) {
       return receiver.getSuperClass();
@@ -28,7 +40,12 @@ public class ClassPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Class", primitive = "methods")
   public abstract static class InstanceInvokablesPrim extends UnaryExpressionNode {
+    public InstanceInvokablesPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final SArray doSClass(final SClass receiver) {
       return receiver.getInstanceInvokables();
@@ -36,7 +53,12 @@ public class ClassPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Class", primitive = "fields")
   public abstract static class InstanceFieldsPrim extends UnaryExpressionNode {
+    public InstanceFieldsPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final SArray doSClass(final SClass receiver) {
       return receiver.getInstanceFields();

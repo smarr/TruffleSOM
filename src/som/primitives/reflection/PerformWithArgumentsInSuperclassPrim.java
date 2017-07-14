@@ -6,19 +6,22 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.QuaternaryExpressionNode;
+import som.primitives.Primitive;
 import som.vmobjects.SClass;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Object", primitive = "perform:withArguments:inSuperclass:")
 public abstract class PerformWithArgumentsInSuperclassPrim extends QuaternaryExpressionNode {
   @Child private IndirectCallNode call;
 
-  public PerformWithArgumentsInSuperclassPrim() {
-    super(null);
+  public PerformWithArgumentsInSuperclassPrim(final SourceSection source) {
+    super(source);
     call = Truffle.getRuntime().createIndirectCallNode();
   }
 

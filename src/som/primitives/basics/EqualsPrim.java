@@ -1,23 +1,30 @@
-package som.primitives;
+package som.primitives.basics;
 
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.primitives.Primitive;
 import som.vm.Universe;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Integer", primitive = "=", requiresContext = true)
+@Primitive(className = "Double", primitive = "=", requiresContext = true)
+@Primitive(className = "String", primitive = "=", requiresContext = true)
+@Primitive(selector = "=", requiresContext = true)
 public abstract class EqualsPrim extends BinaryExpressionNode {
 
   private final SObject trueObject;
   private final SObject falseObject;
 
-  public EqualsPrim(final Universe universe) {
+  public EqualsPrim(final SourceSection source, final Universe universe) {
+    super(source);
     this.trueObject = universe.getTrueObject();
     this.falseObject = universe.getFalseObject();
   }

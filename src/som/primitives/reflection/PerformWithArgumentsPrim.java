@@ -4,19 +4,23 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.TernaryExpressionNode;
+import som.primitives.Primitive;
 import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
+@Primitive(className = "Object", primitive = "perform:withArguments:", requiresContext = true)
 public abstract class PerformWithArgumentsPrim extends TernaryExpressionNode {
 
   @Child protected AbstractSymbolDispatch dispatch;
 
-  public PerformWithArgumentsPrim(final Universe universe) {
+  public PerformWithArgumentsPrim(final SourceSection source, final Universe universe) {
+    super(source);
     dispatch = AbstractSymbolDispatchNodeGen.create(universe);
   }
 

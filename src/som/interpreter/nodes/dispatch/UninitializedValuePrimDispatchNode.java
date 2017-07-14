@@ -1,7 +1,8 @@
 package som.interpreter.nodes.dispatch;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import som.primitives.BlockPrims.ValuePrimitiveNode;
+
+import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 

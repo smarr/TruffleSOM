@@ -173,7 +173,8 @@ public final class MethodGenerationContext {
 
   public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection) {
     if (primitive) {
-      return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage());
+      return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage(),
+          sourceSection);
     }
 
     ArrayList<Variable> onlyLocalAccess = new ArrayList<>(arguments.size() + locals.size());

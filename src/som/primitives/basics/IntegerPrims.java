@@ -1,13 +1,15 @@
-package som.primitives;
+package som.primitives.basics;
 
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
+import som.primitives.Primitive;
 import som.primitives.arithmetic.ArithmeticPrim;
 import som.vm.Universe;
 import som.vmobjects.SArray;
@@ -18,7 +20,12 @@ import som.vmobjects.SSymbol;
 public abstract class IntegerPrims {
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "atRandom")
   public abstract static class RandomPrim extends UnaryExpressionNode {
+    public RandomPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final long doLong(final long receiver) {
       return (long) (receiver * Math.random());
@@ -26,7 +33,12 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "as32BitSignedValue")
   public abstract static class As32BitSignedValue extends UnaryExpressionNode {
+    public As32BitSignedValue(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final long doLong(final long receiver) {
       return (int) receiver;
@@ -34,7 +46,12 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "as32BitUnsignedValue")
   public abstract static class As32BitUnsignedValue extends UnaryExpressionNode {
+    public As32BitUnsignedValue(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final long doLong(final long receiver) {
       return Integer.toUnsignedLong((int) receiver);
@@ -42,10 +59,13 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "fromString:", classSide = true,
+      requiresContext = true)
   public abstract static class FromStringPrim extends ArithmeticPrim {
     protected final SClass integerClass;
 
-    public FromStringPrim(final Universe universe) {
+    public FromStringPrim(final SourceSection source, final Universe universe) {
+      super(source);
       this.integerClass = universe.integerClass;
     }
 
@@ -61,8 +81,13 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "<<", selector = "<<")
   public abstract static class LeftShiftPrim extends ArithmeticPrim {
     private final BranchProfile overflow = BranchProfile.create();
+
+    public LeftShiftPrim(final SourceSection source) {
+      super(source);
+    }
 
     @Specialization(rewriteOn = ArithmeticException.class)
     public final long doLong(final long receiver, final long right) {
@@ -85,7 +110,12 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = ">>>", selector = ">>>")
   public abstract static class UnsignedRightShiftPrim extends ArithmeticPrim {
+    public UnsignedRightShiftPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final long doLong(final long receiver, final long right) {
       return receiver >>> right;
@@ -93,7 +123,12 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "max:")
   public abstract static class MaxIntPrim extends ArithmeticPrim {
+    public MaxIntPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final long doLong(final long receiver, final long right) {
       return Math.max(receiver, right);
@@ -101,7 +136,13 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "to:", selector = "to:",
+      receiverType = Long.class, disabled = true)
   public abstract static class ToPrim extends BinaryExpressionNode {
+    public ToPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final SArray doLong(final long receiver, final long right) {
       int cnt = (int) right - (int) receiver + 1;
@@ -114,7 +155,13 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "abs", selector = "abs",
+      receiverType = Long.class)
   public abstract static class AbsPrim extends UnaryExpressionNode {
+    public AbsPrim(final SourceSection source) {
+      super(source);
+    }
+
     @Specialization
     public final long doLong(final long receiver) {
       return Math.abs(receiver);

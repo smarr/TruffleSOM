@@ -5,20 +5,15 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
+import som.vm.Universe;
+import som.vmobjects.SSymbol;
 
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)
-public abstract class UnaryExpressionNode extends ExpressionNode
-    implements PreevaluatedExpression {
+public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
 
   public UnaryExpressionNode(final SourceSection source) {
     super(source);
-  }
-
-  // For nodes that are not representing source code
-  public UnaryExpressionNode() {
-    super(null);
   }
 
   public abstract Object executeEvaluated(VirtualFrame frame, Object receiver);
@@ -27,5 +22,12 @@ public abstract class UnaryExpressionNode extends ExpressionNode
   public final Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0]);
+  }
+
+  @Override
+  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
+      final ExpressionNode[] arguments, final Universe universe) {
+    return new EagerUnaryPrimitiveNode(sourceSection, selector,
+        arguments[0], this, universe);
   }
 }

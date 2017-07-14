@@ -2,6 +2,7 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
@@ -12,7 +13,7 @@ import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
-public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
+public final class EagerTernaryPrimitiveNode extends EagerPrimitive {
 
   @Child private ExpressionNode        receiver;
   @Child private ExpressionNode        argument1;
@@ -22,17 +23,17 @@ public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
   private final SSymbol  selector;
   private final Universe universe;
 
-  public EagerTernaryPrimitiveNode(
+  public EagerTernaryPrimitiveNode(final SourceSection source,
       final SSymbol selector,
       final ExpressionNode receiver,
       final ExpressionNode argument1,
       final ExpressionNode argument2,
       final TernaryExpressionNode primitive, final Universe universe) {
-    super(null);
-    this.receiver = receiver;
-    this.argument1 = argument1;
-    this.argument2 = argument2;
-    this.primitive = primitive;
+    super(source);
+    this.receiver = insert(receiver);
+    this.argument1 = insert(argument1);
+    this.argument2 = insert(argument2);
+    this.primitive = insert(primitive);
     this.selector = selector;
     this.universe = universe;
   }
@@ -46,7 +47,6 @@ public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
     return executeEvaluated(frame, rcvr, arg1, arg2);
   }
 
-  @Override
   public Object executeEvaluated(final VirtualFrame frame,
       final Object receiver, final Object argument1, final Object argument2) {
     try {
@@ -57,6 +57,12 @@ public final class EagerTernaryPrimitiveNode extends TernaryExpressionNode {
       return makeGenericSend().doPreEvaluated(frame,
           new Object[] {receiver, argument1, argument2});
     }
+  }
+
+  @Override
+  public Object doPreEvaluated(final VirtualFrame frame,
+      final Object[] arguments) {
+    return executeEvaluated(frame, arguments[0], arguments[1], arguments[2]);
   }
 
   private AbstractMessageSendNode makeGenericSend() {

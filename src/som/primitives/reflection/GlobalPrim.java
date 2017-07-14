@@ -1,13 +1,15 @@
-package som.primitives;
+package som.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadWithoutErrorNode;
 import som.interpreter.nodes.SOMNode;
-import som.primitives.SystemPrims.BinarySystemNode;
+import som.primitives.Primitive;
+import som.primitives.basics.SystemPrims.BinarySystemNode;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
 import som.vm.constants.Nil;
@@ -15,11 +17,12 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
+@Primitive(className = "System", primitive = "global:", requiresContext = true)
 public abstract class GlobalPrim extends BinarySystemNode {
   @Child private GetGlobalNode getGlobal;
 
-  public GlobalPrim(final Universe universe) {
-    super(universe);
+  public GlobalPrim(final SourceSection source, final Universe universe) {
+    super(source, universe);
     getGlobal = new UninitializedGetGlobal(0, universe);
   }
 
