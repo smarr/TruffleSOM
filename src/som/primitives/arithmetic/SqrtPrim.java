@@ -7,8 +7,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.Primitive;
 
 
 @GenerateNodeFactory

@@ -4,7 +4,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.primitives.Primitive;
+import bd.primitives.Primitive;
 
 
 @GenerateNodeFactory

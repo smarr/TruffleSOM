@@ -5,9 +5,9 @@ import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
+import bd.primitives.Specializer;
 import som.interpreter.nodes.ExpressionNode;
-import som.primitives.Primitive;
-import som.primitives.Specializer;
 import som.primitives.basics.SystemPrims.BinarySystemNode;
 import som.vm.Universe;
 import som.vmobjects.SArray;
@@ -19,7 +19,7 @@ import som.vmobjects.SClass;
     inParser = false, specializer = NewPrim.IsArrayClass.class, requiresContext = true)
 public abstract class NewPrim extends BinarySystemNode {
 
-  public static class IsArrayClass extends Specializer<NewPrim> {
+  public static class IsArrayClass extends Specializer<NewPrim, Universe, ExpressionNode> {
     public IsArrayClass(final Primitive prim, final NodeFactory<NewPrim> fact,
         final Universe universe) {
       super(prim, fact, universe);
@@ -27,7 +27,7 @@ public abstract class NewPrim extends BinarySystemNode {
 
     @Override
     public boolean matches(final Object[] args, final ExpressionNode[] argNodes) {
-      return args[0] == universe.arrayClass;
+      return args[0] == context.arrayClass;
     }
   }
 

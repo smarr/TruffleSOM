@@ -10,14 +10,14 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
+import bd.primitives.Primitive;
+import bd.primitives.Specializer;
+import bd.settings.VmSettings;
 import som.interpreter.Invokable;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
 import som.interpreter.nodes.specialized.IntToDoMessageNode.ToDoSplzr;
-import som.primitives.Primitive;
-import som.primitives.Specializer;
 import som.vm.Universe;
-import som.vm.VmSettings;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
@@ -27,7 +27,8 @@ import som.vmobjects.SInvokable;
     specializer = ToDoSplzr.class, inParser = false)
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
 
-  public static class ToDoSplzr extends Specializer<IntToDoMessageNode> {
+  public static class ToDoSplzr
+      extends Specializer<IntToDoMessageNode, Universe, ExpressionNode> {
     public ToDoSplzr(final Primitive prim, final NodeFactory<IntToDoMessageNode> fact,
         final Universe universe) {
       super(prim, fact, universe);

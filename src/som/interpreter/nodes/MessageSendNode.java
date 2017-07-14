@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Specializer;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
@@ -14,7 +15,6 @@ import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.nary.EagerlySpecializableNode;
 import som.primitives.Primitives;
-import som.primitives.Specializer;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
 import som.vmobjects.SSymbol;
@@ -25,7 +25,7 @@ public final class MessageSendNode {
   public static ExpressionNode create(final SSymbol selector,
       final ExpressionNode[] arguments, final SourceSection source, final Universe universe) {
     Primitives prims = universe.getPrimitives();
-    Specializer<EagerlySpecializableNode> specializer =
+    Specializer<EagerlySpecializableNode, Universe, ExpressionNode> specializer =
         prims.getParserSpecializer(selector, arguments);
     if (specializer == null) {
       return new UninitializedMessageSendNode(selector, arguments, source, universe);
@@ -122,7 +122,7 @@ public final class MessageSendNode {
 
       Primitives prims = universe.getPrimitives();
 
-      Specializer<EagerlySpecializableNode> specializer =
+      Specializer<EagerlySpecializableNode, Universe, ExpressionNode> specializer =
           prims.getEagerSpecializer(selector, arguments, argumentNodes);
 
       if (specializer != null) {

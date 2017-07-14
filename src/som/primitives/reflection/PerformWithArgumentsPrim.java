@@ -6,8 +6,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.primitives.Primitive;
 import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SSymbol;

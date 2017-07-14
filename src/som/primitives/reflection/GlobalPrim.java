@@ -4,11 +4,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadWithoutErrorNode;
 import som.interpreter.nodes.SOMNode;
-import som.primitives.Primitive;
 import som.primitives.basics.SystemPrims.BinarySystemNode;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;

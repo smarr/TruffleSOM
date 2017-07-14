@@ -8,13 +8,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
+import bd.primitives.Specializer;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory.AndBoolMessageNodeFactory;
-import som.primitives.Primitive;
-import som.primitives.Specializer;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
@@ -25,7 +25,8 @@ import som.vmobjects.SInvokable.SMethod;
 @Primitive(selector = "and:", noWrapper = false, specializer = AndOrSplzr.class)
 @Primitive(selector = "&&", noWrapper = false, specializer = AndOrSplzr.class)
 public abstract class AndMessageNode extends BinaryExpressionNode {
-  public static class AndOrSplzr extends Specializer<BinaryExpressionNode> {
+  public static class AndOrSplzr
+      extends Specializer<BinaryExpressionNode, Universe, ExpressionNode> {
     protected final NodeFactory<BinaryExpressionNode> boolFact;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
