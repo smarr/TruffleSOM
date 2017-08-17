@@ -4,7 +4,6 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 
@@ -14,11 +13,6 @@ import bd.primitives.Primitive;
 @Primitive(className = "Double", primitive = "%")
 @Primitive(selector = "%")
 public abstract class ModuloPrim extends ArithmeticPrim {
-
-  public ModuloPrim(final SourceSection source) {
-    super(source);
-  }
-
   @Specialization
   public final double doDouble(final double left, final double right) {
     return left % right;

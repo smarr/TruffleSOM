@@ -1,14 +1,13 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.constants.Nil;
-
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.ExpressionNode;
+import som.vm.constants.Nil;
 
 
 public final class IfInlinedLiteralNode extends ExpressionNode {
@@ -23,13 +22,8 @@ public final class IfInlinedLiteralNode extends ExpressionNode {
   // original nodes around
   private final ExpressionNode bodyActualNode;
 
-  public IfInlinedLiteralNode(
-      final ExpressionNode conditionNode,
-      final boolean expectedBool,
-      final ExpressionNode inlinedBodyNode,
-      final ExpressionNode originalBodyNode,
-      final SourceSection sourceSection) {
-    super(sourceSection);
+  public IfInlinedLiteralNode(final ExpressionNode conditionNode, final boolean expectedBool,
+      final ExpressionNode inlinedBodyNode, final ExpressionNode originalBodyNode) {
     this.conditionNode = conditionNode;
     this.expectedBool = expectedBool;
     this.bodyNode = inlinedBodyNode;

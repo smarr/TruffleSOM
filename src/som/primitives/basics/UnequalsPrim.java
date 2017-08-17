@@ -2,33 +2,35 @@ package som.primitives.basics;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import som.vm.Universe;
 import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(className = "Integer", primitive = "<>", requiresContext = true)
-@Primitive(className = "Integer", primitive = "~=", requiresContext = true)
-@Primitive(className = "Double", primitive = "<>", requiresContext = true)
-@Primitive(className = "Double", primitive = "~=", requiresContext = true)
-@Primitive(selector = "<>", requiresContext = true)
-@Primitive(selector = "~=", requiresContext = true)
-public abstract class UnequalsPrim extends BinaryExpressionNode {
+@Primitive(className = "Integer", primitive = "<>")
+@Primitive(className = "Integer", primitive = "~=")
+@Primitive(className = "Double", primitive = "<>")
+@Primitive(className = "Double", primitive = "~=")
+@Primitive(selector = "<>")
+@Primitive(selector = "~=")
+public abstract class UnequalsPrim extends BinarySystemOperation {
 
-  private final SObject trueObject;
-  private final SObject falseObject;
+  @CompilationFinal private SObject trueObject;
+  @CompilationFinal private SObject falseObject;
 
-  public UnequalsPrim(final SourceSection source, final Universe universe) {
-    super(source);
+  @Override
+  public BinarySystemOperation initialize(final Universe universe) {
+    super.initialize(universe);
     this.trueObject = universe.getTrueObject();
     this.falseObject = universe.getFalseObject();
+    return this;
   }
 
   @Specialization

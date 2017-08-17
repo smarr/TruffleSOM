@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.vm.NotYetImplementedException;
@@ -14,10 +13,6 @@ import som.vm.NotYetImplementedException;
 @GenerateNodeFactory
 @Primitive(className = "Integer", primitive = "/", selector = "/")
 public abstract class DividePrim extends ArithmeticPrim {
-  public DividePrim(final SourceSection source) {
-    super(source);
-  }
-
   @Specialization
   public final long doLong(final long left, final long right) {
     return left / right;
@@ -42,8 +37,8 @@ public abstract class DividePrim extends ArithmeticPrim {
   @Specialization
   public final Object doLong(final long left, final double right) {
     CompilerAsserts.neverPartOfCompilation("DividePrim");
-    throw new NotYetImplementedException(); // TODO: need to implement the "//" case here
-                                            // directly... : resendAsDouble("//", left,
-                                            // (SDouble) rightObj, frame.pack());
+    // TODO: need to implement the "//" case here directly... :
+    // resendAsDouble("//", left, (SDouble) rightObj, frame.pack());
+    throw new NotYetImplementedException();
   }
 }

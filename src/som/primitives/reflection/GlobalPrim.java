@@ -1,5 +1,6 @@
 package som.primitives.reflection;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
@@ -9,7 +10,7 @@ import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadWithoutErrorNode;
 import som.interpreter.nodes.SOMNode;
-import som.primitives.basics.SystemPrims.BinarySystemNode;
+import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
 import som.vm.constants.Nil;
@@ -17,13 +18,16 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
-@Primitive(className = "System", primitive = "global:", requiresContext = true)
-public abstract class GlobalPrim extends BinarySystemNode {
+@GenerateNodeFactory
+@Primitive(className = "System", primitive = "global:")
+public abstract class GlobalPrim extends BinarySystemOperation {
   @Child private GetGlobalNode getGlobal;
 
-  public GlobalPrim(final SourceSection source, final Universe universe) {
-    super(source, universe);
-    getGlobal = new UninitializedGetGlobal(0, universe);
+  @Override
+  public BinarySystemOperation initialize(final Universe universe) {
+    super.initialize(universe);
+    getGlobal = new UninitializedGetGlobal(0, universe).initialize(sourceSection);
+    return this;
   }
 
   @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -34,10 +38,6 @@ public abstract class GlobalPrim extends BinarySystemNode {
 
   private abstract static class GetGlobalNode extends SOMNode {
     protected static final int INLINE_CACHE_SIZE = 6;
-
-    private GetGlobalNode() {
-      super(null);
-    }
 
     public abstract Object getGlobal(VirtualFrame frame, SSymbol argument);
 
@@ -63,13 +63,13 @@ public abstract class GlobalPrim extends BinarySystemNode {
 
     private GetGlobalNode specialize(final SSymbol argument) {
       if (depth < INLINE_CACHE_SIZE) {
-        return replace(new CachedGetGlobal(argument, depth, universe));
+        return replace(new CachedGetGlobal(argument, depth, sourceSection, universe));
       } else {
         GetGlobalNode head = this;
         while (head.getParent() instanceof GetGlobalNode) {
           head = (GetGlobalNode) head.getParent();
         }
-        return head.replace(new GetGlobalFallback(universe));
+        return head.replace(new GetGlobalFallback(universe).initialize(sourceSection));
       }
     }
   }
@@ -80,11 +80,12 @@ public abstract class GlobalPrim extends BinarySystemNode {
     @Child private GlobalNode    getGlobal;
     @Child private GetGlobalNode next;
 
-    CachedGetGlobal(final SSymbol name, final int depth, final Universe universe) {
+    CachedGetGlobal(final SSymbol name, final int depth, final SourceSection source,
+        final Universe universe) {
       this.depth = depth;
       this.name = name;
-      getGlobal = new UninitializedGlobalReadWithoutErrorNode(name, null, universe);
-      next = new UninitializedGetGlobal(this.depth + 1, universe);
+      getGlobal = new UninitializedGlobalReadWithoutErrorNode(name, source, universe);
+      next = new UninitializedGetGlobal(this.depth + 1, universe).initialize(source);
     }
 
     @Override

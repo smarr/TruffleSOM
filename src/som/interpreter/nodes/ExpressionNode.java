@@ -25,7 +25,6 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.TypesGen;
 import som.vmobjects.SAbstractObject;
@@ -38,10 +37,6 @@ import som.vmobjects.SSymbol;
 
 
 public abstract class ExpressionNode extends SOMNode {
-
-  public ExpressionNode(final SourceSection sourceSection) {
-    super(sourceSection);
-  }
 
   public abstract Object executeGeneric(VirtualFrame frame);
 

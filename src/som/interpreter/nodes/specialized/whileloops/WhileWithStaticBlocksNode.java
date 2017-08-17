@@ -1,7 +1,6 @@
 package som.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.nodes.literals.BlockNode;
 import som.vmobjects.SBlock;
@@ -12,10 +11,9 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
   @Child protected BlockNode receiver;
   @Child protected BlockNode argument;
 
-  private WhileWithStaticBlocksNode(final BlockNode receiver,
-      final BlockNode argument, final SBlock rcvr, final SBlock arg,
-      final boolean predicateBool, final SourceSection source) {
-    super(rcvr, arg, predicateBool, source);
+  private WhileWithStaticBlocksNode(final BlockNode receiver, final BlockNode argument,
+      final SBlock rcvr, final SBlock arg, final boolean predicateBool) {
+    super(rcvr, arg, predicateBool);
     this.receiver = receiver;
     this.argument = argument;
   }
@@ -35,17 +33,15 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
 
   public static final class WhileTrueStaticBlocksNode extends WhileWithStaticBlocksNode {
     public WhileTrueStaticBlocksNode(final BlockNode receiver,
-        final BlockNode argument, final SBlock rcvr, final SBlock arg,
-        final SourceSection source) {
-      super(receiver, argument, rcvr, arg, true, source);
+        final BlockNode argument, final SBlock rcvr, final SBlock arg) {
+      super(receiver, argument, rcvr, arg, true);
     }
   }
 
   public static final class WhileFalseStaticBlocksNode extends WhileWithStaticBlocksNode {
     public WhileFalseStaticBlocksNode(final BlockNode receiver,
-        final BlockNode argument, final SBlock rcvr, final SBlock arg,
-        final SourceSection source) {
-      super(receiver, argument, rcvr, arg, false, source);
+        final BlockNode argument, final SBlock rcvr, final SBlock arg) {
+      super(receiver, argument, rcvr, arg, false);
     }
   }
 }

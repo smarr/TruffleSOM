@@ -9,7 +9,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.Invokable;
@@ -31,14 +30,8 @@ import som.vmobjects.SObject;
 @Primitive(className = "Array", primitive = "putAll:", selector = "putAll:", disabled = true,
     extraChild = LengthPrimFactory.class)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
-public abstract class PutAllNode extends BinaryExpressionNode
-    implements ValuePrimitiveNode {
-  @Child private AbstractDispatchNode block;
-
-  public PutAllNode(final SourceSection source) {
-    super(source);
-    block = new UninitializedValuePrimDispatchNode();
-  }
+public abstract class PutAllNode extends BinaryExpressionNode implements ValuePrimitiveNode {
+  @Child private AbstractDispatchNode block = new UninitializedValuePrimDispatchNode();
 
   @Override
   public void adoptNewDispatchListHead(final AbstractDispatchNode node) {

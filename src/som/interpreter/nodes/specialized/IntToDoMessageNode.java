@@ -20,6 +20,7 @@ import som.interpreter.nodes.specialized.IntToDoMessageNode.ToDoSplzr;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
+import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
@@ -27,16 +28,14 @@ import som.vmobjects.SInvokable;
     specializer = ToDoSplzr.class, inParser = false)
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
 
-  public static class ToDoSplzr
-      extends Specializer<IntToDoMessageNode, Universe, ExpressionNode> {
-    public ToDoSplzr(final Primitive prim, final NodeFactory<IntToDoMessageNode> fact,
+  public static class ToDoSplzr extends Specializer<Universe, ExpressionNode, SSymbol> {
+    public ToDoSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact,
         final Universe universe) {
       super(prim, fact, universe);
     }
 
     @Override
-    public boolean matches(final Object[] args,
-        final ExpressionNode[] argNodes) {
+    public boolean matches(final Object[] args, final ExpressionNode[] argNodes) {
       return !VmSettings.DYNAMIC_METRICS && args[0] instanceof Long &&
           (args[1] instanceof Long || args[1] instanceof Double) &&
           args[2] instanceof SBlock;
@@ -46,18 +45,9 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
   private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;
 
-  public IntToDoMessageNode(final ExpressionNode orignialNode,
-      final SBlock block) {
-    super(orignialNode.getSourceSection());
+  public IntToDoMessageNode(final ExpressionNode orignialNode, final SBlock block) {
     blockMethod = block.getMethod();
-    valueSend = Truffle.getRuntime().createDirectCallNode(
-        blockMethod.getCallTarget());
-  }
-
-  public IntToDoMessageNode(final IntToDoMessageNode node) {
-    super(node.getSourceSection());
-    this.blockMethod = node.blockMethod;
-    this.valueSend = node.valueSend;
+    valueSend = Truffle.getRuntime().createDirectCallNode(blockMethod.getCallTarget());
   }
 
   protected final boolean isSameBlockLong(final SBlock block) {

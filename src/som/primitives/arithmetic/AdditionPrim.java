@@ -4,7 +4,6 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.vmobjects.SClass;
@@ -16,10 +15,6 @@ import som.vmobjects.SSymbol;
 @Primitive(className = "Double", primitive = "+")
 @Primitive(selector = "+")
 public abstract class AdditionPrim extends ArithmeticPrim {
-  public AdditionPrim(final SourceSection source) {
-    super(source);
-  }
-
   @Specialization(rewriteOn = ArithmeticException.class)
   public final long doLong(final long left, final long argument) {
     return Math.addExact(left, argument);

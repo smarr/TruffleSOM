@@ -1,11 +1,5 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.Invokable;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
-import som.interpreter.nodes.ExpressionNode;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -16,7 +10,12 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import som.interpreter.Invokable;
+import som.interpreter.SplitterForLexicallyEmbeddedCode;
+import som.interpreter.nodes.ExpressionNode;
 
 
 @NodeChildren({
@@ -36,10 +35,8 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
 
   public abstract ExpressionNode getTo();
 
-  public IntToDoInlinedLiteralsNode(final ExpressionNode body,
-      final FrameSlot loopIndex, final ExpressionNode originalBody,
-      final SourceSection sourceSection) {
-    super(sourceSection);
+  public IntToDoInlinedLiteralsNode(final ExpressionNode body, final FrameSlot loopIndex,
+      final ExpressionNode originalBody) {
     this.body = body;
     this.loopIndex = loopIndex;
     this.bodyActualNode = originalBody;
@@ -106,8 +103,8 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
   public void replaceWithLexicallyEmbeddedNode(
       final InlinerForLexicallyEmbeddedMethods inliner) {
     IntToDoInlinedLiteralsNode node = IntToDoInlinedLiteralsNodeGen.create(body,
-        inliner.addLocalSlot(loopIndex.getIdentifier()),
-        bodyActualNode, getSourceSection(), getFrom(), getTo());
+        inliner.addLocalSlot(loopIndex.getIdentifier()), bodyActualNode, getFrom(), getTo());
+    node.initialize(sourceSection);
     replace(node);
     // create loopIndex in new context...
   }
@@ -116,8 +113,8 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
   public void replaceWithIndependentCopyForInlining(
       final SplitterForLexicallyEmbeddedCode inliner) {
     FrameSlot inlinedLoopIdx = inliner.getLocalFrameSlot(loopIndex.getIdentifier());
-    replace(IntToDoInlinedLiteralsNodeGen.create(body, inlinedLoopIdx,
-        bodyActualNode, getSourceSection(), getFrom(), getTo()));
+    replace(IntToDoInlinedLiteralsNodeGen.create(body, inlinedLoopIdx, bodyActualNode,
+        getFrom(), getTo()).initialize(sourceSection));
   }
 
   @Override

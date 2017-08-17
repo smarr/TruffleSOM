@@ -38,8 +38,7 @@ public abstract class GlobalNode extends ExpressionNode {
 
   protected final SSymbol globalName;
 
-  public GlobalNode(final SSymbol globalName, final SourceSection source) {
-    super(source);
+  public GlobalNode(final SSymbol globalName) {
     this.globalName = globalName;
   }
 
@@ -47,9 +46,10 @@ public abstract class GlobalNode extends ExpressionNode {
     protected final Universe universe;
 
     public AbstractUninitializedGlobalReadNode(final SSymbol globalName,
-        final Universe universe, final SourceSection source) {
-      super(globalName, source);
+        final SourceSection source, final Universe universe) {
+      super(globalName);
       this.universe = universe;
+      initialize(source);
     }
 
     protected abstract Object executeUnknownGlobal(VirtualFrame frame);
@@ -61,21 +61,21 @@ public abstract class GlobalNode extends ExpressionNode {
       // first let's check whether it is one of the well known globals
       switch (globalName.getString()) {
         case "true":
-          return replace(new TrueGlobalNode(globalName, getSourceSection())).executeGeneric(
-              frame);
+          return replace((GlobalNode) new TrueGlobalNode(
+              globalName).initialize(sourceSection)).executeGeneric(frame);
         case "false":
-          return replace(new FalseGlobalNode(globalName, getSourceSection())).executeGeneric(
-              frame);
+          return replace((GlobalNode) new FalseGlobalNode(
+              globalName).initialize(sourceSection)).executeGeneric(frame);
         case "nil":
-          return replace(new NilGlobalNode(globalName, getSourceSection())).executeGeneric(
-              frame);
+          return replace((GlobalNode) new NilGlobalNode(
+              globalName).initialize(sourceSection)).executeGeneric(frame);
       }
 
       // Get the global from the universe
       Association assoc = universe.getGlobalsAssociation(globalName);
       if (assoc != null) {
-        return replace(new CachedGlobalReadNode(globalName, assoc,
-            getSourceSection())).executeGeneric(frame);
+        return replace((GlobalNode) new CachedGlobalReadNode(
+            globalName, assoc, sourceSection)).executeGeneric(frame);
       } else {
         return executeUnknownGlobal(frame);
       }
@@ -84,10 +84,9 @@ public abstract class GlobalNode extends ExpressionNode {
 
   public static final class UninitializedGlobalReadNode
       extends AbstractUninitializedGlobalReadNode {
-
-    public UninitializedGlobalReadNode(final SSymbol globalName,
-        final SourceSection source, final Universe universe) {
-      super(globalName, universe, source);
+    public UninitializedGlobalReadNode(final SSymbol globalName, final SourceSection source,
+        final Universe universe) {
+      super(globalName, source, universe);
     }
 
     @Override
@@ -105,7 +104,7 @@ public abstract class GlobalNode extends ExpressionNode {
       extends AbstractUninitializedGlobalReadNode {
     public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName,
         final SourceSection source, final Universe universe) {
-      super(globalName, universe, source);
+      super(globalName, source, universe);
     }
 
     @Override
@@ -117,10 +116,11 @@ public abstract class GlobalNode extends ExpressionNode {
   private static final class CachedGlobalReadNode extends GlobalNode {
     private final Association assoc;
 
-    private CachedGlobalReadNode(final SSymbol globalName,
-        final Association assoc, final SourceSection source) {
-      super(globalName, source);
+    private CachedGlobalReadNode(final SSymbol globalName, final Association assoc,
+        final SourceSection source) {
+      super(globalName);
       this.assoc = assoc;
+      initialize(source);
     }
 
     @Override
@@ -130,8 +130,8 @@ public abstract class GlobalNode extends ExpressionNode {
   }
 
   private static final class TrueGlobalNode extends GlobalNode {
-    TrueGlobalNode(final SSymbol globalName, final SourceSection source) {
-      super(globalName, source);
+    TrueGlobalNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override
@@ -146,9 +146,8 @@ public abstract class GlobalNode extends ExpressionNode {
   }
 
   private static final class FalseGlobalNode extends GlobalNode {
-    FalseGlobalNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, source);
+    FalseGlobalNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override
@@ -163,9 +162,8 @@ public abstract class GlobalNode extends ExpressionNode {
   }
 
   private static final class NilGlobalNode extends GlobalNode {
-    NilGlobalNode(final SSymbol globalName,
-        final SourceSection source) {
-      super(globalName, source);
+    NilGlobalNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override

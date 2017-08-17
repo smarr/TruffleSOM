@@ -7,7 +7,6 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.Invokable;
@@ -23,18 +22,10 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
   private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;
 
-  public IntToByDoMessageNode(final SourceSection source,
-      final Object[] args) {
-    super(source);
+  public IntToByDoMessageNode(final Object[] args) {
     blockMethod = ((SBlock) args[3]).getMethod();
     valueSend = Truffle.getRuntime().createDirectCallNode(
         blockMethod.getCallTarget());
-  }
-
-  public IntToByDoMessageNode(final IntToByDoMessageNode node) {
-    super(node.getSourceSection());
-    this.blockMethod = node.blockMethod;
-    this.valueSend = node.valueSend;
   }
 
   protected final boolean isSameBlockLong(final SBlock block) {

@@ -2,7 +2,6 @@ package som.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
@@ -12,11 +11,6 @@ import som.vmobjects.SObject;
 @GenerateNodeFactory
 @Primitive(className = "Object", primitive = "objectSize")
 public abstract class ObjectSizePrim extends UnaryExpressionNode {
-
-  public ObjectSizePrim(final SourceSection source) {
-    super(source);
-  }
-
   @Specialization
   public final long doArray(final Object[] receiver) {
     int size = 0;

@@ -4,15 +4,14 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.Types;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.interpreter.nodes.nary.TernaryExpressionNode;
+import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import som.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.basics.SystemPrims.BinarySystemNode;
-import som.primitives.basics.SystemPrims.UnarySystemNode;
+import som.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
 import som.vm.Universe;
 import som.vm.constants.Nil;
 import som.vmobjects.SAbstractObject;
@@ -23,19 +22,15 @@ import som.vmobjects.SSymbol;
 
 public final class ObjectPrims {
 
-  @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:",
-      requiresContext = true)
-  public abstract static class InstVarAtPrim extends BinarySystemNode {
-
+  @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:")
+  public abstract static class InstVarAtPrim extends BinarySystemOperation {
     @Child private IndexDispatch dispatch;
 
-    public InstVarAtPrim(final SourceSection source, final Universe universe) {
-      super(source, universe);
+    @Override
+    public BinarySystemOperation initialize(final Universe universe) {
+      super.initialize(universe);
       dispatch = IndexDispatch.create(universe);
-    }
-
-    public InstVarAtPrim(final InstVarAtPrim node) {
-      this(node.sourceSection, node.universe);
+      return this;
     }
 
     @Specialization
@@ -56,20 +51,15 @@ public final class ObjectPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(className = "Object", primitive = "instVarAt:put:", selector = "instVarAt:put:",
-      requiresContext = true)
-  public abstract static class InstVarAtPutPrim extends TernaryExpressionNode {
+  @Primitive(className = "Object", primitive = "instVarAt:put:", selector = "instVarAt:put:")
+  public abstract static class InstVarAtPutPrim extends TernarySystemOperation {
     @Child private IndexDispatch dispatch;
-    private final Universe       universe;
 
-    public InstVarAtPutPrim(final SourceSection source, final Universe universe) {
-      super(source);
+    @Override
+    public TernarySystemOperation initialize(final Universe universe) {
+      super.initialize(universe);
       dispatch = IndexDispatch.create(universe);
-      this.universe = universe;
-    }
-
-    public InstVarAtPutPrim(final InstVarAtPutPrim node) {
-      this(node.sourceSection, node.universe);
+      return this;
     }
 
     @Specialization
@@ -94,10 +84,6 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "instVarNamed:", selector = "instVarNamed:")
   public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
-    public InstVarNamedPrim(final SourceSection source) {
-      super(source);
-    }
-
     @Specialization
     public final Object doSObject(final SObject receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation();
@@ -108,10 +94,6 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "halt")
   public abstract static class HaltPrim extends UnaryExpressionNode {
-    public HaltPrim(final SourceSection source) {
-      super(source);
-    }
-
     @Specialization
     public final Object doSAbstractObject(final Object receiver) {
       Universe.errorPrintln("BREAKPOINT");
@@ -120,12 +102,8 @@ public final class ObjectPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(className = "Object", primitive = "class", requiresContext = true)
-  public abstract static class ClassPrim extends UnarySystemNode {
-    public ClassPrim(final SourceSection source, final Universe universe) {
-      super(source, universe);
-    }
-
+  @Primitive(className = "Object", primitive = "class")
+  public abstract static class ClassPrim extends UnarySystemOperation {
     @Specialization
     public final SClass doSAbstractObject(final SAbstractObject receiver) {
       return receiver.getSOMClass(universe);
@@ -140,10 +118,6 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   @Primitive(selector = "isNil", noWrapper = true)
   public abstract static class IsNilNode extends UnaryExpressionNode {
-    public IsNilNode(final SourceSection source) {
-      super(source);
-    }
-
     @Specialization
     public final boolean isNil(final Object receiver) {
       return receiver == Nil.nilObject;
@@ -153,10 +127,6 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   @Primitive(selector = "notNil", noWrapper = true)
   public abstract static class NotNilNode extends UnaryExpressionNode {
-    public NotNilNode(final SourceSection source) {
-      super(source);
-    }
-
     @Specialization
     public final boolean notNil(final Object receiver) {
       return receiver != Nil.nilObject;

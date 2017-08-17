@@ -3,22 +3,23 @@ package som.primitives.reflection;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(className = "Object", primitive = "perform:", requiresContext = true)
-public abstract class PerformPrim extends BinaryExpressionNode {
+@Primitive(className = "Object", primitive = "perform:")
+public abstract class PerformPrim extends BinarySystemOperation {
   @Child protected AbstractSymbolDispatch dispatch;
 
-  public PerformPrim(final SourceSection source, final Universe universe) {
-    super(source);
+  @Override
+  public BinarySystemOperation initialize(final Universe universe) {
+    super.initialize(universe);
     dispatch = AbstractSymbolDispatchNodeGen.create(universe);
+    return this;
   }
 
   @Specialization

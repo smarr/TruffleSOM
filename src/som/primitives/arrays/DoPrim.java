@@ -9,7 +9,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.Invokable;
@@ -30,13 +29,8 @@ import som.vmobjects.SBlock;
     receiverType = SArray.class, disabled = true)
 public abstract class DoPrim extends BinaryExpressionNode
     implements ValuePrimitiveNode {
-  @Child private AbstractDispatchNode block;
+  @Child private AbstractDispatchNode block       = new UninitializedValuePrimDispatchNode();
   private final ValueProfile          storageType = ValueProfile.createClassProfile();
-
-  public DoPrim(final SourceSection source) {
-    super(source);
-    block = new UninitializedValuePrimDispatchNode();
-  }
 
   @Override
   public void adoptNewDispatchListHead(final AbstractDispatchNode node) {

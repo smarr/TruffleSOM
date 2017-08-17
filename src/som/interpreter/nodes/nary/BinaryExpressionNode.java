@@ -1,10 +1,11 @@
 package som.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
+import bd.nodes.WithContext;
 import som.interpreter.nodes.ExpressionNode;
 import som.vm.Universe;
 import som.vmobjects.SSymbol;
@@ -14,10 +15,6 @@ import som.vmobjects.SSymbol;
     @NodeChild(value = "receiver", type = ExpressionNode.class),
     @NodeChild(value = "argument", type = ExpressionNode.class)})
 public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
-
-  public BinaryExpressionNode(final SourceSection source) {
-    super(source);
-  }
 
   public abstract Object executeEvaluated(VirtualFrame frame, Object receiver,
       Object argument);
@@ -31,7 +28,19 @@ public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
   @Override
   public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
       final ExpressionNode[] arguments, final Universe universe) {
-    return new EagerBinaryPrimitiveNode(sourceSection, selector,
-        arguments[0], arguments[1], this, universe);
+    return new EagerBinaryPrimitiveNode(selector, arguments[0], arguments[1], this,
+        universe).initialize(sourceSection);
+  }
+
+  public abstract static class BinarySystemOperation extends BinaryExpressionNode
+      implements WithContext<BinarySystemOperation, Universe> {
+    @CompilationFinal protected Universe universe;
+
+    @Override
+    public BinarySystemOperation initialize(final Universe universe) {
+      assert this.universe == null && universe != null;
+      this.universe = universe;
+      return this;
+    }
   }
 }

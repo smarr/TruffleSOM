@@ -21,24 +21,28 @@
  */
 package som.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
+
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.Types;
 
-import com.oracle.truffle.api.dsl.TypeSystemReference;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
-
 
 @TypeSystemReference(Types.class)
 public abstract class SOMNode extends Node {
 
-  protected final SourceSection sourceSection;
+  @CompilationFinal protected SourceSection sourceSection;
 
-  public SOMNode(final SourceSection sourceSection) {
-    super();
+  @SuppressWarnings("unchecked")
+  public <T extends SOMNode> T initialize(final SourceSection sourceSection) {
+    assert sourceSection != null;
+    assert this.sourceSection == null : "sourceSection should only be set once";
     this.sourceSection = sourceSection;
+    return (T) this;
   }
 
   @Override
@@ -51,7 +55,7 @@ public abstract class SOMNode extends Node {
    * block method to refer to the correct out lexical context, and for instance,
    * to replace FrameSlot references by the correct and independent new outer
    * lexical scope.
-   * 
+   *
    * @param inliner
    */
   public void replaceWithIndependentCopyForInlining(
@@ -69,7 +73,7 @@ public abstract class SOMNode extends Node {
    * trigger adaptation of methods lexically embedded/included in this copy.
    * The actual adaptation of those methods is done by
    * replaceWithCopyAdaptedToEmbeddedOuterContext();
-   * 
+   *
    * @param inlinerForLexicallyEmbeddedMethods
    */
   public void replaceWithLexicallyEmbeddedNode(
@@ -85,7 +89,7 @@ public abstract class SOMNode extends Node {
    * just got embedded into its outer context.
    * Thus, all frame slots need to be fixed up, as well as all embedded
    * blocks.
-   * 
+   *
    * @param inlinerAdaptToEmbeddedOuterContext
    */
   public void replaceWithCopyAdaptedToEmbeddedOuterContext(

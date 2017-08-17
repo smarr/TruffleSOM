@@ -5,7 +5,6 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
@@ -18,10 +17,6 @@ import som.vmobjects.SSymbol;
 @GenerateNodeFactory
 @Primitive(className = "Object", primitive = "perform:inSuperclass:")
 public abstract class PerformInSuperclassPrim extends TernaryExpressionNode {
-  public PerformInSuperclassPrim(final SourceSection sourceSection) {
-    super(sourceSection);
-  }
-
   @Child private IndirectCallNode call = Truffle.getRuntime().createIndirectCallNode();
 
   @Specialization

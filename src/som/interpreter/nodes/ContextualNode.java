@@ -25,7 +25,6 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
@@ -38,8 +37,7 @@ public abstract class ContextualNode extends ExpressionNode {
   protected final int        contextLevel;
   private final ValueProfile frameType;
 
-  public ContextualNode(final int contextLevel, final SourceSection source) {
-    super(source);
+  public ContextualNode(final int contextLevel) {
     this.contextLevel = contextLevel;
     this.frameType = ValueProfile.createClassProfile();
   }

@@ -13,29 +13,30 @@ import bd.primitives.Specializer;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
+import som.interpreter.nodes.nary.EagerlySpecializableNode;
 import som.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory.AndBoolMessageNodeFactory;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
+import som.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 @Primitive(selector = "and:", noWrapper = false, specializer = AndOrSplzr.class)
 @Primitive(selector = "&&", noWrapper = false, specializer = AndOrSplzr.class)
 public abstract class AndMessageNode extends BinaryExpressionNode {
-  public static class AndOrSplzr
-      extends Specializer<BinaryExpressionNode, Universe, ExpressionNode> {
+  public static class AndOrSplzr extends Specializer<Universe, ExpressionNode, SSymbol> {
     protected final NodeFactory<BinaryExpressionNode> boolFact;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public AndOrSplzr(final Primitive prim,
-        final NodeFactory<BinaryExpressionNode> fact, final Universe universe) {
+        final NodeFactory<ExpressionNode> fact, final Universe universe) {
       this(prim, fact, (NodeFactory) AndBoolMessageNodeFactory.getInstance(), universe);
     }
 
-    protected AndOrSplzr(final Primitive prim, final NodeFactory<BinaryExpressionNode> msgFact,
+    protected AndOrSplzr(final Primitive prim, final NodeFactory<ExpressionNode> msgFact,
         final NodeFactory<BinaryExpressionNode> boolFact, final Universe universe) {
       super(prim, msgFact, universe);
       this.boolFact = boolFact;
@@ -53,33 +54,29 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     }
 
     @Override
-    public final BinaryExpressionNode create(final Object[] arguments,
+    public final ExpressionNode create(final Object[] arguments,
         final ExpressionNode[] argNodes, final SourceSection section,
         final boolean eagerWrapper) {
+      EagerlySpecializableNode node;
       if (argNodes[1] instanceof BlockNode) {
-        return fact.createNode(((BlockNode) argNodes[1]).getMethod(), section, argNodes[0],
-            argNodes[1]);
+        node = (EagerlySpecializableNode) fact.createNode(
+            ((BlockNode) argNodes[1]).getMethod(), argNodes[0], argNodes[1]);
       } else {
         assert arguments == null || arguments[1] instanceof Boolean;
-        return boolFact.createNode(section, argNodes[0], argNodes[1]);
+        node = boolFact.createNode(argNodes[0], argNodes[1]);
       }
+      node.initialize(section, eagerWrapper);
+      return node;
     }
   }
 
   private final SInvokable      blockMethod;
   @Child private DirectCallNode blockValueSend;
 
-  public AndMessageNode(final SMethod blockMethod, final SourceSection source) {
-    super(source);
+  public AndMessageNode(final SMethod blockMethod) {
     this.blockMethod = blockMethod;
     blockValueSend = Truffle.getRuntime().createDirectCallNode(
         blockMethod.getCallTarget());
-  }
-
-  public AndMessageNode(final AndMessageNode copy) {
-    super(copy.getSourceSection());
-    blockMethod = copy.blockMethod;
-    blockValueSend = copy.blockValueSend;
   }
 
   protected final boolean isSameBlock(final SBlock argument) {
@@ -97,11 +94,6 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
 
   @GenerateNodeFactory
   public abstract static class AndBoolMessageNode extends BinaryExpressionNode {
-
-    public AndBoolMessageNode(final SourceSection source) {
-      super(source);
-    }
-
     @Specialization
     public final boolean doAnd(final VirtualFrame frame, final boolean receiver,
         final boolean argument) {

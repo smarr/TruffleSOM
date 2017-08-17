@@ -4,7 +4,6 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 
@@ -14,10 +13,6 @@ import bd.primitives.Primitive;
 @Primitive(className = "Double", primitive = "<=")
 @Primitive(selector = "<=")
 public abstract class LessThanOrEqualPrim extends ArithmeticPrim {
-  public LessThanOrEqualPrim(final SourceSection source) {
-    super(source);
-  }
-
   @Specialization
   public final boolean doLong(final long left, final long right) {
     return left <= right;

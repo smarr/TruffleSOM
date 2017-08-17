@@ -2,7 +2,6 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
@@ -21,10 +20,9 @@ public final class EagerBinaryPrimitiveNode extends EagerPrimitive {
   private final Universe universe;
   private final SSymbol  selector;
 
-  public EagerBinaryPrimitiveNode(final SourceSection source, final SSymbol selector,
-      final ExpressionNode receiver, final ExpressionNode argument,
-      final BinaryExpressionNode primitive, final Universe universe) {
-    super(source);
+  public EagerBinaryPrimitiveNode(final SSymbol selector, final ExpressionNode receiver,
+      final ExpressionNode argument, final BinaryExpressionNode primitive,
+      final Universe universe) {
     this.receiver = insert(receiver);
     this.argument = insert(argument);
     this.primitive = insert(primitive);

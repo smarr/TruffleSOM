@@ -3,7 +3,6 @@ package som.interpreter.nodes.literals;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.compiler.MethodGenerationContext;
 import som.compiler.Variable.Local;
@@ -26,9 +25,7 @@ public class BlockNode extends LiteralNode {
 
   protected final Universe universe;
 
-  public BlockNode(final SMethod blockMethod, final SourceSection source,
-      final Universe universe) {
-    super(source);
+  public BlockNode(final SMethod blockMethod, final Universe universe) {
     this.blockMethod = blockMethod;
     this.universe = universe;
   }
@@ -88,7 +85,7 @@ public class BlockNode extends LiteralNode {
   }
 
   protected BlockNode createNode(final SMethod adapted) {
-    return new BlockNode(adapted, sourceSection, universe);
+    return new BlockNode(adapted, universe).initialize(sourceSection);
   }
 
   @Override
@@ -101,13 +98,8 @@ public class BlockNode extends LiteralNode {
 
   public static final class BlockNodeWithContext extends BlockNode {
 
-    public BlockNodeWithContext(final SMethod blockMethod, final SourceSection source,
-        final Universe universe) {
-      super(blockMethod, source, universe);
-    }
-
-    public BlockNodeWithContext(final BlockNodeWithContext node) {
-      this(node.blockMethod, node.sourceSection, node.universe);
+    public BlockNodeWithContext(final SMethod blockMethod, final Universe universe) {
+      super(blockMethod, universe);
     }
 
     @Override
@@ -121,7 +113,7 @@ public class BlockNode extends LiteralNode {
 
     @Override
     protected BlockNode createNode(final SMethod adapted) {
-      return new BlockNodeWithContext(adapted, sourceSection, universe);
+      return new BlockNodeWithContext(adapted, universe).initialize(sourceSection);
     }
   }
 }
