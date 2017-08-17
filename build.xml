@@ -3,11 +3,12 @@
     <property name="src.dir"     value="src"/>
     <property name="src_gen.dir" value="src_gen"/>
     <property name="test.dir"    value="tests"/>
-    <property name="lib.dir"     value="libs" />
+    <property name="lib.dir"     location="libs" />
+    <property name="bd.dir"      value="${lib.dir}/black-diamonds/"/>
     <property name="sdk.dir"     value="${lib.dir}/truffle/sdk" />
-    <property name="sdk.build"   value="${sdk.dir}/mxbuild/dists" />
-    <property name="truffle.dir" value="${lib.dir}/truffle/truffle" />
-    <property name="truffle.build" value="${truffle.dir}/mxbuild/dists" />
+    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
+    <property name="truffle.dir"   location="${lib.dir}/truffle/truffle" />
+    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
 
     <property name="checkstyle.version" value="7.8.1" />
@@ -22,6 +23,7 @@
     <path id="project.classpath">
         <pathelement location="${classes.dir}" />
         <pathelement location="${test.dir}" />
+        <pathelement location="${bd.dir}/build/classes" />
         <pathelement location="${sdk.build}/graal-sdk.jar" />
         <pathelement location="${sdk.build}/word-api.jar" />
         <pathelement location="${lib.dir}/junit-${junit.version}.jar" />
@@ -103,6 +105,15 @@
         </exec>
     </target>
 
+    <target name="bd-libs"> <!-- implicit dependency on truffle-libs -->
+        <ant dir="${bd.dir}" useNativeBasedir="true" target="libs-junit" inheritAll="false"/>
+        <ant dir="${bd.dir}" useNativeBasedir="true" target="compile-nodeps" inheritAll="false">
+            <property name="sdk.build"   value="${sdk.build}" />
+            <property name="truffle.dir" value="${truffle.dir}" />
+            <property name="truffle.build" value="${truffle.build}" />
+        </ant>
+    </target>
+
     <target name="ideinit" depends="core-lib">
         <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
             <arg value="eclipseinit"/>
@@ -112,7 +123,7 @@
         </exec>
     </target>
 
-    <target name="libs" depends="core-lib,truffle-libs">
+    <target name="libs" depends="core-lib,truffle-libs,bd-libs">
         <get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar"
             usetimestamp="true"
             dest="${lib.dir}/junit-${junit.version}.jar" />
