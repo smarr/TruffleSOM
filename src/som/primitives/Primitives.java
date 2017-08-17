@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.PrimitiveLoader;
@@ -41,7 +42,6 @@ import som.interpreter.Primitive;
 import som.interpreter.SomLanguage;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.nary.EagerlySpecializableNode;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory;
 import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
 import som.interpreter.nodes.specialized.IntDownToDoMessageNodeFactory;
@@ -100,15 +100,14 @@ import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
 
 
-public final class Primitives
-    extends PrimitiveLoader<Universe, ExpressionNode, SSymbol, EagerlySpecializableNode> {
+public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbol> {
 
   public static SInvokable constructEmptyPrimitive(final SSymbol signature,
       final SomLanguage lang, final SourceSection sourceSection) {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(null);
 
-    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0, null));
+    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0));
     Primitive primMethodNode =
         new Primitive(signature.getString(), sourceSection, primNode,
             mgen.getCurrentLexicalScope().getFrameDescriptor(),
@@ -118,16 +117,16 @@ public final class Primitives
   }
 
   /** Primitives for class and method name. */
-  private final HashMap<SSymbol, HashMap<SSymbol, Specializer<? extends ExpressionNode, Universe, ExpressionNode>>> primitives;
+  private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
 
   public Primitives(final Universe universe) {
     super(universe);
     this.primitives = new HashMap<>();
-    initialize(universe.getLanguage());
+    initialize();
   }
 
   public void loadPrimitives(final SClass clazz, final boolean displayWarning) {
-    HashMap<SSymbol, Specializer<? extends ExpressionNode, Universe, ExpressionNode>> prims =
+    HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> prims =
         primitives.get(clazz.getName());
     if (prims == null) {
       if (displayWarning) {
@@ -136,7 +135,7 @@ public final class Primitives
       return;
     }
 
-    for (Entry<SSymbol, Specializer<? extends ExpressionNode, Universe, ExpressionNode>> e : prims.entrySet()) {
+    for (Entry<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> e : prims.entrySet()) {
       SClass target;
       if (e.getValue().classSide()) {
         target = clazz.getSOMClass(context);
@@ -147,74 +146,61 @@ public final class Primitives
       SInvokable ivk = target.lookupInvokable(e.getKey());
       assert ivk != null : "Lookup of " + e.getKey().toString() + " failed in "
           + target.getName().getString() + ". Can't install a primitive for it.";
-      SInvokable prim = constructPrimitive(e.getKey(), ivk.getInvokable().getSourceSection(),
-          context.getLanguage(), e.getValue());
-
+      SInvokable prim = constructPrimitive(e.getKey(), context.getLanguage(), e.getValue());
       target.addInstanceInvokable(prim);
     }
   }
 
-  /**
-   * Setup the lookup data structures for primitive registration as well as eager primitive
-   * replacement.
-   */
-  private void initialize(final SomLanguage lang) {
-    List<NodeFactory<? extends ExpressionNode>> primFacts = getFactories();
-    for (NodeFactory<? extends ExpressionNode> primFact : primFacts) {
-      bd.primitives.Primitive[] prims = getPrimitiveAnnotation(primFact);
-      if (prims != null) {
-        for (bd.primitives.Primitive prim : prims) {
-          Specializer<? extends ExpressionNode, Universe, ExpressionNode> specializer =
-              createSpecializer(prim, primFact);
-          String className = prim.className();
-          String primName = prim.primitive();
+  @Override
+  protected void registerPrimitive(final bd.primitives.Primitive prim,
+      final Specializer<Universe, ExpressionNode, SSymbol> specializer) {
+    String className = prim.className();
+    String primName = prim.primitive();
 
-          if (!("".equals(primName)) && !("".equals(className))) {
-            SSymbol clazz = context.symbolFor(className);
-            SSymbol signature = context.symbolFor(primName);
-            HashMap<SSymbol, Specializer<? extends ExpressionNode, Universe, ExpressionNode>> primsForClass =
-                primitives.computeIfAbsent(clazz, s -> new HashMap<>());
-            assert !primsForClass.containsKey(signature) : className
-                + " already has a primitive " + primName + " registered.";
-            primsForClass.put(signature, specializer);
-          } else {
-            assert "".equals(primName) && "".equals(
-                className) : "If either primitive() or className() is set on @Primitive, both should be set";
-          }
-
-          if (!("".equals(prim.selector()))) {
-            SSymbol msgSel = context.symbolFor(prim.selector());
-            assert !eagerPrimitives.containsKey(
-                msgSel) : "There is already an eager primitive registered for selector: "
-                    + prim.selector();
-            eagerPrimitives.put(msgSel, specializer);
-          }
-        }
-      }
+    if (!("".equals(primName)) && !("".equals(className))) {
+      SSymbol clazz = context.symbolFor(className);
+      SSymbol signature = context.symbolFor(primName);
+      HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> primsForClass =
+          primitives.computeIfAbsent(clazz, s -> new HashMap<>());
+      assert !primsForClass.containsKey(signature) : className
+          + " already has a primitive " + primName + " registered.";
+      primsForClass.put(signature, specializer);
+    } else {
+      assert "".equals(primName) && "".equals(
+          className) : "If either primitive() or className() is set on @Primitive, both should be set";
     }
   }
 
+  @Override
+  protected SSymbol getId(final String id) {
+    return context.symbolFor(id);
+  }
+
   private static SInvokable constructPrimitive(final SSymbol signature,
-      final SourceSection section, final SomLanguage lang,
-      final Specializer<? extends ExpressionNode, Universe, ExpressionNode> specializer) {
+      final SomLanguage lang,
+      final Specializer<Universe, ExpressionNode, SSymbol> specializer) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
     final int numArgs = signature.getNumberOfSignatureArguments();
+
+    Source s = SomLanguage.getSyntheticSource("primitive", specializer.getName());
+    SourceSection source = s.createSection(1);
 
     MethodGenerationContext mgen = new MethodGenerationContext(null);
     ExpressionNode[] args = new ExpressionNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
-      args[i] = new LocalArgumentReadNode(i, section);
+      args[i] = new LocalArgumentReadNode(i).initialize(source);
     }
 
-    ExpressionNode primNode = specializer.create(null, args, section, false);
+    ExpressionNode primNode = specializer.create(null, args, source, false);
 
-    Primitive primMethodNode = new Primitive(signature.getString(), section, primNode,
+    Primitive primMethodNode = new Primitive(signature.getString(), source, primNode,
         mgen.getCurrentLexicalScope().getFrameDescriptor(),
         (ExpressionNode) primNode.deepCopy(), lang);
     return Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
   }
 
   @Override
+  @SuppressWarnings({"unchecked", "rawtypes"})
   protected List<NodeFactory<? extends ExpressionNode>> getFactories() {
     List<NodeFactory<? extends ExpressionNode>> allFactories = new ArrayList<>();
 
@@ -222,7 +208,7 @@ public final class Primitives
     allFactories.addAll(DoublePrimsFactory.getFactories());
     allFactories.addAll(IntegerPrimsFactory.getFactories());
     allFactories.addAll(StringPrimsFactory.getFactories());
-    allFactories.addAll(SystemPrimsFactory.getFactories());
+    allFactories.addAll((List) SystemPrimsFactory.getFactories());
     allFactories.addAll(ClassPrimsFactory.getFactories());
     allFactories.addAll(MethodPrimsFactory.getFactories());
     allFactories.addAll(ObjectPrimsFactory.getFactories());
