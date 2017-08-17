@@ -39,7 +39,7 @@ import som.vmobjects.SObject;
 @RunWith(Parameterized.class)
 public class SomTests {
 
-  @Parameters
+  @Parameters(name = "{0} [{index}]")
   public static Iterable<Object[]> data() {
     return Arrays.asList(new Object[][] {
         {"Array"},
