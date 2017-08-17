@@ -18,7 +18,7 @@ public abstract class PerformPrim extends BinarySystemOperation {
   @Override
   public BinarySystemOperation initialize(final Universe universe) {
     super.initialize(universe);
-    dispatch = AbstractSymbolDispatchNodeGen.create(universe);
+    dispatch = AbstractSymbolDispatchNodeGen.create(sourceSection, universe);
     return this;
   }
 

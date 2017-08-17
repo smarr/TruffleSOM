@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.Types;
 import som.interpreter.nodes.MessageSendNode;
@@ -21,18 +22,26 @@ import som.vmobjects.SSymbol;
 public abstract class AbstractSymbolDispatch extends Node {
   public static final int INLINE_CACHE_SIZE = 6;
 
-  protected final Universe universe;
+  private final SourceSection sourceSection;
+  protected final Universe    universe;
 
-  public AbstractSymbolDispatch(final Universe universe) {
+  public AbstractSymbolDispatch(final SourceSection source, final Universe universe) {
     this.universe = universe;
+    assert source != null;
+    this.sourceSection = source;
+  }
+
+  @Override
+  public final SourceSection getSourceSection() {
+    return sourceSection;
   }
 
   public abstract Object executeDispatch(VirtualFrame frame, Object receiver,
       SSymbol selector, Object argsArr);
 
-  public static final AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
+  protected final AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
       final Universe universe) {
-    return MessageSendNode.createForPerformNodes(selector, universe);
+    return MessageSendNode.createForPerformNodes(selector, sourceSection, universe);
   }
 
   public static final ToArgumentsArrayNode createArgArrayNode() {

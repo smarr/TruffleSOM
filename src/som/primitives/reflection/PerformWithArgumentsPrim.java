@@ -21,7 +21,7 @@ public abstract class PerformWithArgumentsPrim extends TernarySystemOperation {
   @Override
   public PerformWithArgumentsPrim initialize(final Universe universe) {
     super.initialize(universe);
-    dispatch = AbstractSymbolDispatchNodeGen.create(universe);
+    dispatch = AbstractSymbolDispatchNodeGen.create(sourceSection, universe);
     return this;
   }
 

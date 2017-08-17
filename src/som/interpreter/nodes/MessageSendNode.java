@@ -43,8 +43,8 @@ public final class MessageSendNode {
   }
 
   public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
-      final Universe universe) {
-    return new UninitializedSymbolSendNode(selector, universe);
+      final SourceSection source, final Universe universe) {
+    return new UninitializedSymbolSendNode(selector, universe).initialize(source);
   }
 
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
