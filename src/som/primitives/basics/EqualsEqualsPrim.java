@@ -3,7 +3,6 @@ package som.primitives.basics;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
@@ -16,7 +15,6 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
-@GenerateNodeFactory
 @Primitive(className = "Object", primitive = "==", selector = "==")
 public abstract class EqualsEqualsPrim extends BinarySystemOperation {
 

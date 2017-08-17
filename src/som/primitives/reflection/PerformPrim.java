@@ -1,6 +1,5 @@
 package som.primitives.reflection;
 
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -10,7 +9,6 @@ import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
-@GenerateNodeFactory
 @Primitive(className = "Object", primitive = "perform:")
 public abstract class PerformPrim extends BinarySystemOperation {
   @Child protected AbstractSymbolDispatch dispatch;

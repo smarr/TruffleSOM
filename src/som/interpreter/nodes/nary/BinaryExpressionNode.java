@@ -1,6 +1,7 @@
 package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -32,6 +33,7 @@ public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
         universe).initialize(sourceSection);
   }
 
+  @GenerateNodeFactory
   public abstract static class BinarySystemOperation extends BinaryExpressionNode
       implements WithContext<BinarySystemOperation, Universe> {
     @CompilationFinal protected Universe universe;

@@ -47,7 +47,6 @@ public abstract class IntegerPrims {
     }
   }
 
-  @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "fromString:", classSide = true)
   public abstract static class FromStringPrim extends BinarySystemOperation {
     @CompilationFinal protected SClass integerClass;

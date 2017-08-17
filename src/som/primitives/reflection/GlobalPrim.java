@@ -1,6 +1,5 @@
 package som.primitives.reflection;
 
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
@@ -18,7 +17,6 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
-@GenerateNodeFactory
 @Primitive(className = "System", primitive = "global:")
 public abstract class GlobalPrim extends BinarySystemOperation {
   @Child private GetGlobalNode getGlobal;

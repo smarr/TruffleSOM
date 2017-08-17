@@ -102,6 +102,9 @@ import som.vmobjects.SSymbol;
 
 public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbol> {
 
+  /** Primitives for class and method name. */
+  private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
+
   public static SInvokable constructEmptyPrimitive(final SSymbol signature,
       final SomLanguage lang, final SourceSection sourceSection) {
     CompilerAsserts.neverPartOfCompilation();
@@ -115,9 +118,6 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
     return prim;
   }
-
-  /** Primitives for class and method name. */
-  private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
 
   public Primitives(final Universe universe) {
     super(universe);
@@ -211,7 +211,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     allFactories.addAll((List) SystemPrimsFactory.getFactories());
     allFactories.addAll(ClassPrimsFactory.getFactories());
     allFactories.addAll(MethodPrimsFactory.getFactories());
-    allFactories.addAll(ObjectPrimsFactory.getFactories());
+    allFactories.addAll((List) ObjectPrimsFactory.getFactories());
 
     allFactories.add(AdditionPrimFactory.getInstance());
     allFactories.add(BitXorPrimFactory.getInstance());

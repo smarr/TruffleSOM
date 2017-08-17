@@ -16,7 +16,6 @@ import som.vmobjects.SSymbol;
 
 public final class SystemPrims {
 
-  @GenerateNodeFactory
   @Primitive(className = "System", primitive = "load:")
   public abstract static class LoadPrim extends BinarySystemOperation {
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -26,7 +25,6 @@ public final class SystemPrims {
     }
   }
 
-  @GenerateNodeFactory
   @Primitive(className = "System", primitive = "exit:")
   public abstract static class ExitPrim extends BinarySystemOperation {
     @Specialization(guards = "receiver == universe.getSystemObject()")
@@ -47,7 +45,6 @@ public final class SystemPrims {
     }
   }
 
-  @GenerateNodeFactory
   @Primitive(className = "System", primitive = "printString:")
   public abstract static class PrintStringPrim extends BinarySystemOperation {
     @Specialization(guards = "receiver == universe.getSystemObject()")

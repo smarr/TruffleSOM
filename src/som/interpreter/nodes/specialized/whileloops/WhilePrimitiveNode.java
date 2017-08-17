@@ -1,6 +1,5 @@
 package som.interpreter.nodes.specialized.whileloops;
 
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -11,7 +10,6 @@ import som.vmobjects.SBlock;
 import som.vmobjects.SObject;
 
 
-@GenerateNodeFactory
 public abstract class WhilePrimitiveNode extends BinarySystemOperation {
   final boolean predicateBool;
 

@@ -1,6 +1,5 @@
 package som.primitives.arrays;
 
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
@@ -14,7 +13,6 @@ import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
 
-@GenerateNodeFactory
 @Primitive(className = "Array", primitive = "new:", selector = "new:", classSide = true,
     inParser = false, specializer = NewPrim.IsArrayClass.class)
 public abstract class NewPrim extends BinarySystemOperation {
