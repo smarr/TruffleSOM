@@ -8,10 +8,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.primitives.Primitive;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 
@@ -33,8 +32,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
 
   @Child private IndirectCallNode call;
 
-  public IfTrueIfFalseMessageNode(final SourceSection source, final Object[] args) {
-    super(source);
+  public IfTrueIfFalseMessageNode(final Object[] args) {
     if (args[1] instanceof SBlock) {
       SBlock trueBlock = (SBlock) args[1];
       trueMethod = trueBlock.getMethod();
@@ -53,22 +51,6 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
       falseMethod = null;
     }
 
-    call = Truffle.getRuntime().createIndirectCallNode();
-  }
-
-  public IfTrueIfFalseMessageNode(final IfTrueIfFalseMessageNode node) {
-    super(node.sourceSection);
-    trueMethod = node.trueMethod;
-    if (node.trueMethod != null) {
-      trueValueSend = Truffle.getRuntime().createDirectCallNode(
-          trueMethod.getCallTarget());
-    }
-
-    falseMethod = node.falseMethod;
-    if (node.falseMethod != null) {
-      falseValueSend = Truffle.getRuntime().createDirectCallNode(
-          falseMethod.getCallTarget());
-    }
     call = Truffle.getRuntime().createIndirectCallNode();
   }
 

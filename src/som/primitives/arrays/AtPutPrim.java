@@ -4,10 +4,9 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.primitives.Primitive;
 import som.vm.constants.Nil;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
@@ -21,10 +20,6 @@ import som.vmobjects.SArray.PartiallyEmptyArray;
 public abstract class AtPutPrim extends TernaryExpressionNode {
 
   private final ValueProfile storageType = ValueProfile.createClassProfile();
-
-  public AtPutPrim(final SourceSection sourceSection) {
-    super(sourceSection);
-  }
 
   protected static final boolean valueIsNil(final Object value) {
     return value == Nil.nilObject;

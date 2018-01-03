@@ -2,12 +2,11 @@ package som.primitives.basics;
 
 import java.math.BigInteger;
 
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.Primitive;
+import bd.primitives.Primitive;
+import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
@@ -16,17 +15,18 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
-@GenerateNodeFactory
-@Primitive(className = "Object", primitive = "==", selector = "==", requiresContext = true)
-public abstract class EqualsEqualsPrim extends BinaryExpressionNode {
+@Primitive(className = "Object", primitive = "==", selector = "==")
+public abstract class EqualsEqualsPrim extends BinarySystemOperation {
 
-  private final SObject trueObject;
-  private final SObject falseObject;
+  @CompilationFinal private SObject trueObject;
+  @CompilationFinal private SObject falseObject;
 
-  public EqualsEqualsPrim(final SourceSection source, final Universe universe) {
-    super(source);
+  @Override
+  public EqualsEqualsPrim initialize(final Universe universe) {
+    super.initialize(universe);
     this.trueObject = universe.getTrueObject();
     this.falseObject = universe.getFalseObject();
+    return this;
   }
 
   @Specialization

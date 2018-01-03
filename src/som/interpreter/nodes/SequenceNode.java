@@ -25,15 +25,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
-import com.oracle.truffle.api.source.SourceSection;
 
 
 @NodeInfo(cost = NodeCost.NONE)
 public final class SequenceNode extends ExpressionNode {
   @Children private final ExpressionNode[] expressions;
 
-  public SequenceNode(final ExpressionNode[] expressions, final SourceSection source) {
-    super(source);
+  public SequenceNode(final ExpressionNode[] expressions) {
     this.expressions = expressions;
   }
 

@@ -1,12 +1,11 @@
 package som.interpreter.nodes.specialized;
 
-import som.interpreter.nodes.ExpressionNode;
-
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.source.SourceSection;
+
+import som.interpreter.nodes.ExpressionNode;
 
 
 public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
@@ -18,12 +17,8 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
   // original nodes around
   private final ExpressionNode argumentAcutalNode;
 
-  public BooleanInlinedLiteralNode(
-      final ExpressionNode receiverNode,
-      final ExpressionNode inlinedArgumentNode,
-      final ExpressionNode originalArgumentNode,
-      final SourceSection sourceSection) {
-    super(sourceSection);
+  public BooleanInlinedLiteralNode(final ExpressionNode receiverNode,
+      final ExpressionNode inlinedArgumentNode, final ExpressionNode originalArgumentNode) {
     this.receiverNode = receiverNode;
     this.argumentNode = inlinedArgumentNode;
     this.argumentAcutalNode = originalArgumentNode;
@@ -51,13 +46,9 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
 
   public static final class AndInlinedLiteralNode extends BooleanInlinedLiteralNode {
 
-    public AndInlinedLiteralNode(
-        final ExpressionNode receiverNode,
-        final ExpressionNode inlinedArgumentNode,
-        final ExpressionNode originalArgumentNode,
-        final SourceSection sourceSection) {
-      super(receiverNode, inlinedArgumentNode, originalArgumentNode,
-          sourceSection);
+    public AndInlinedLiteralNode(final ExpressionNode receiverNode,
+        final ExpressionNode inlinedArgumentNode, final ExpressionNode originalArgumentNode) {
+      super(receiverNode, inlinedArgumentNode, originalArgumentNode);
     }
 
     @Override
@@ -77,13 +68,9 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
 
   public static final class OrInlinedLiteralNode extends BooleanInlinedLiteralNode {
 
-    public OrInlinedLiteralNode(
-        final ExpressionNode receiverNode,
-        final ExpressionNode inlinedArgumentNode,
-        final ExpressionNode originalArgumentNode,
-        final SourceSection sourceSection) {
-      super(receiverNode, inlinedArgumentNode, originalArgumentNode,
-          sourceSection);
+    public OrInlinedLiteralNode(final ExpressionNode receiverNode,
+        final ExpressionNode inlinedArgumentNode, final ExpressionNode originalArgumentNode) {
+      super(receiverNode, inlinedArgumentNode, originalArgumentNode);
     }
 
     @Override

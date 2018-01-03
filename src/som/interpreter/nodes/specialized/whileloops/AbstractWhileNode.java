@@ -8,7 +8,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.Invokable;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
@@ -23,10 +22,7 @@ public abstract class AbstractWhileNode extends BinaryExpressionNode {
 
   protected final boolean predicateBool;
 
-  public AbstractWhileNode(final SBlock rcvr, final SBlock arg,
-      final boolean predicateBool, final SourceSection source) {
-    super(source);
-
+  public AbstractWhileNode(final SBlock rcvr, final SBlock arg, final boolean predicateBool) {
     CallTarget callTargetCondition = rcvr.getMethod().getCallTarget();
     conditionValueSend = Truffle.getRuntime().createDirectCallNode(
         callTargetCondition);

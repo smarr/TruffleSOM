@@ -2,7 +2,6 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.ExpressionNode;
@@ -23,13 +22,9 @@ public final class EagerTernaryPrimitiveNode extends EagerPrimitive {
   private final SSymbol  selector;
   private final Universe universe;
 
-  public EagerTernaryPrimitiveNode(final SourceSection source,
-      final SSymbol selector,
-      final ExpressionNode receiver,
-      final ExpressionNode argument1,
-      final ExpressionNode argument2,
+  public EagerTernaryPrimitiveNode(final SSymbol selector, final ExpressionNode receiver,
+      final ExpressionNode argument1, final ExpressionNode argument2,
       final TernaryExpressionNode primitive, final Universe universe) {
-    super(source);
     this.receiver = insert(receiver);
     this.argument1 = insert(argument1);
     this.argument2 = insert(argument2);
@@ -67,8 +62,7 @@ public final class EagerTernaryPrimitiveNode extends EagerPrimitive {
 
   private AbstractMessageSendNode makeGenericSend() {
     GenericMessageSendNode node = MessageSendNode.createGeneric(selector,
-        new ExpressionNode[] {receiver, argument1, argument2},
-        sourceSection, universe);
+        new ExpressionNode[] {receiver, argument1, argument2}, sourceSection, universe);
     return replace(node);
   }
 }

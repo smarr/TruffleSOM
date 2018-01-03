@@ -1,12 +1,11 @@
 package som.interpreter.nodes;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.SArguments;
 import som.vmobjects.SSymbol;
-
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
 
 public abstract class ArgumentReadNode {
@@ -14,8 +13,7 @@ public abstract class ArgumentReadNode {
   public static class LocalArgumentReadNode extends ExpressionNode {
     protected final int argumentIndex;
 
-    public LocalArgumentReadNode(final int argumentIndex, final SourceSection source) {
-      super(source);
+    public LocalArgumentReadNode(final int argumentIndex) {
       assert argumentIndex >= 0;
       this.argumentIndex = argumentIndex;
     }
@@ -36,9 +34,8 @@ public abstract class ArgumentReadNode {
   public static class NonLocalArgumentReadNode extends ContextualNode {
     protected final int argumentIndex;
 
-    public NonLocalArgumentReadNode(final int argumentIndex,
-        final int contextLevel, final SourceSection source) {
-      super(contextLevel, source);
+    public NonLocalArgumentReadNode(final int argumentIndex, final int contextLevel) {
+      super(contextLevel);
       assert contextLevel > 0;
       this.argumentIndex = argumentIndex;
     }
@@ -61,12 +58,12 @@ public abstract class ArgumentReadNode {
     }
 
     protected NonLocalArgumentReadNode createNonLocalNode() {
-      return new NonLocalArgumentReadNode(argumentIndex, contextLevel - 1,
-          getSourceSection());
+      return new NonLocalArgumentReadNode(
+          argumentIndex, contextLevel - 1).initialize(sourceSection);
     }
 
     protected LocalArgumentReadNode createLocalNode() {
-      return new LocalArgumentReadNode(argumentIndex, getSourceSection());
+      return new LocalArgumentReadNode(argumentIndex).initialize(sourceSection);
     }
 
     @Override
@@ -94,9 +91,8 @@ public abstract class ArgumentReadNode {
     private final SSymbol holderClass;
     private final boolean classSide;
 
-    public LocalSuperReadNode(final SSymbol holderClass,
-        final boolean classSide, final SourceSection source) {
-      super(SArguments.RCVR_IDX, source);
+    public LocalSuperReadNode(final SSymbol holderClass, final boolean classSide) {
+      super(SArguments.RCVR_IDX);
       this.holderClass = holderClass;
       this.classSide = classSide;
     }
@@ -118,10 +114,9 @@ public abstract class ArgumentReadNode {
     private final SSymbol holderClass;
     private final boolean classSide;
 
-    public NonLocalSuperReadNode(final int contextLevel,
-        final SSymbol holderClass, final boolean classSide,
-        final SourceSection source) {
-      super(SArguments.RCVR_IDX, contextLevel, source);
+    public NonLocalSuperReadNode(final int contextLevel, final SSymbol holderClass,
+        final boolean classSide) {
+      super(SArguments.RCVR_IDX, contextLevel);
       this.holderClass = holderClass;
       this.classSide = classSide;
     }
@@ -133,13 +128,13 @@ public abstract class ArgumentReadNode {
 
     @Override
     protected NonLocalArgumentReadNode createNonLocalNode() {
-      return new NonLocalSuperReadNode(contextLevel - 1, holderClass,
-          classSide, getSourceSection());
+      return new NonLocalSuperReadNode(
+          contextLevel - 1, holderClass, classSide).initialize(sourceSection);
     }
 
     @Override
     protected LocalArgumentReadNode createLocalNode() {
-      return new LocalSuperReadNode(holderClass, classSide, getSourceSection());
+      return new LocalSuperReadNode(holderClass, classSide).initialize(sourceSection);
     }
 
     @Override

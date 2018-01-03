@@ -1,16 +1,15 @@
 package som.interpreter.nodes.literals;
 
-import som.vmobjects.SArray;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
+
+import som.vmobjects.SArray;
 
 
 public final class ArrayLiteralNode extends LiteralNode {
 
   private final SArray values;
 
-  public ArrayLiteralNode(SArray values, final SourceSection source) {
-    super(source);
+  public ArrayLiteralNode(final SArray values) {
     this.values = values;
   }
 

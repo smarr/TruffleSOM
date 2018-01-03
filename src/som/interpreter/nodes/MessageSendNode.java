@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Specializer;
 import som.interpreter.TruffleCompiler;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.DispatchChain.Cost;
@@ -14,7 +15,6 @@ import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.nary.EagerlySpecializableNode;
 import som.primitives.Primitives;
-import som.primitives.Specializer;
 import som.vm.NotYetImplementedException;
 import som.vm.Universe;
 import som.vmobjects.SSymbol;
@@ -25,14 +25,15 @@ public final class MessageSendNode {
   public static ExpressionNode create(final SSymbol selector,
       final ExpressionNode[] arguments, final SourceSection source, final Universe universe) {
     Primitives prims = universe.getPrimitives();
-    Specializer<EagerlySpecializableNode> specializer =
+    Specializer<Universe, ExpressionNode, SSymbol> specializer =
         prims.getParserSpecializer(selector, arguments);
     if (specializer == null) {
-      return new UninitializedMessageSendNode(selector, arguments, source, universe);
+      return new UninitializedMessageSendNode(
+          selector, arguments, universe).initialize(source);
     }
 
-    EagerlySpecializableNode newNode =
-        specializer.create(null, arguments, source, !specializer.noWrapper());
+    EagerlySpecializableNode newNode = (EagerlySpecializableNode) specializer.create(null,
+        arguments, source, !specializer.noWrapper());
 
     if (specializer.noWrapper()) {
       return newNode;
@@ -42,15 +43,15 @@ public final class MessageSendNode {
   }
 
   public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
-      final Universe universe) {
-    return new UninitializedSymbolSendNode(selector, null, universe);
+      final SourceSection source, final Universe universe) {
+    return new UninitializedSymbolSendNode(selector, universe).initialize(source);
   }
 
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
       final ExpressionNode[] argumentNodes, final SourceSection source,
       final Universe universe) {
     return new GenericMessageSendNode(selector, argumentNodes,
-        new UninitializedDispatchNode(selector, universe), source);
+        new UninitializedDispatchNode(selector, universe)).initialize(source);
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
@@ -58,9 +59,7 @@ public final class MessageSendNode {
 
     @Children protected final ExpressionNode[] argumentNodes;
 
-    protected AbstractMessageSendNode(final ExpressionNode[] arguments,
-        final SourceSection source) {
-      super(source);
+    protected AbstractMessageSendNode(final ExpressionNode[] arguments) {
       this.argumentNodes = arguments;
     }
 
@@ -92,9 +91,8 @@ public final class MessageSendNode {
     protected final Universe universe;
 
     protected AbstractUninitializedMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments, final SourceSection source,
-        final Universe universe) {
-      super(arguments, source);
+        final ExpressionNode[] arguments, final Universe universe) {
+      super(arguments);
       this.selector = selector;
       this.universe = universe;
     }
@@ -122,13 +120,14 @@ public final class MessageSendNode {
 
       Primitives prims = universe.getPrimitives();
 
-      Specializer<EagerlySpecializableNode> specializer =
+      Specializer<Universe, ExpressionNode, SSymbol> specializer =
           prims.getEagerSpecializer(selector, arguments, argumentNodes);
 
       if (specializer != null) {
         boolean noWrapper = specializer.noWrapper();
         EagerlySpecializableNode newNode =
-            specializer.create(arguments, argumentNodes, sourceSection, !noWrapper);
+            (EagerlySpecializableNode) specializer.create(arguments, argumentNodes,
+                sourceSection, !noWrapper);
         if (noWrapper) {
           return replace(newNode);
         } else {
@@ -142,8 +141,8 @@ public final class MessageSendNode {
     private PreevaluatedExpression makeEagerPrim(final EagerlySpecializableNode prim) {
       assert prim.getSourceSection() != null;
 
-      PreevaluatedExpression result =
-          replace(prim.wrapInEagerWrapper(selector, argumentNodes, universe));
+      PreevaluatedExpression result = (PreevaluatedExpression) replace(
+          prim.wrapInEagerWrapper(selector, argumentNodes, universe));
 
       return result;
     }
@@ -151,10 +150,8 @@ public final class MessageSendNode {
     protected abstract PreevaluatedExpression makeSuperSend();
 
     private GenericMessageSendNode makeGenericSend() {
-      GenericMessageSendNode send = new GenericMessageSendNode(selector,
-          argumentNodes,
-          new UninitializedDispatchNode(selector, universe),
-          getSourceSection());
+      GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
+          new UninitializedDispatchNode(selector, universe)).initialize(sourceSection);
       return replace(send);
     }
 
@@ -164,17 +161,15 @@ public final class MessageSendNode {
       extends AbstractUninitializedMessageSendNode {
 
     protected UninitializedMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments, final SourceSection source,
-        final Universe universe) {
-      super(selector, arguments, source, universe);
+        final ExpressionNode[] arguments, final Universe universe) {
+      super(selector, arguments, universe);
     }
 
     @Override
     protected PreevaluatedExpression makeSuperSend() {
-      GenericMessageSendNode node = new GenericMessageSendNode(selector,
-          argumentNodes, SuperDispatchNode.create(selector,
-              (ISuperReadNode) argumentNodes[0], universe),
-          getSourceSection());
+      GenericMessageSendNode node = new GenericMessageSendNode(selector, argumentNodes,
+          SuperDispatchNode.create(selector, (ISuperReadNode) argumentNodes[0],
+              universe)).initialize(sourceSection);
       return replace(node);
     }
   }
@@ -182,9 +177,8 @@ public final class MessageSendNode {
   private static final class UninitializedSymbolSendNode
       extends AbstractUninitializedMessageSendNode {
 
-    protected UninitializedSymbolSendNode(final SSymbol selector,
-        final SourceSection source, final Universe universe) {
-      super(selector, new ExpressionNode[0], source, universe);
+    protected UninitializedSymbolSendNode(final SSymbol selector, final Universe universe) {
+      super(selector, new ExpressionNode[0], universe);
     }
 
     @Override
@@ -210,10 +204,9 @@ public final class MessageSendNode {
 
     @Child private AbstractDispatchNode dispatchNode;
 
-    private GenericMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments,
-        final AbstractDispatchNode dispatchNode, final SourceSection source) {
-      super(arguments, source);
+    private GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
+        final AbstractDispatchNode dispatchNode) {
+      super(arguments);
       this.selector = selector;
       this.dispatchNode = dispatchNode;
     }

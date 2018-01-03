@@ -6,13 +6,13 @@ import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
+import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import som.interpreter.nodes.specialized.OrMessageNode.OrSplzr;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
-import som.primitives.Primitive;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
@@ -25,7 +25,7 @@ import som.vmobjects.SInvokable.SMethod;
 public abstract class OrMessageNode extends BinaryExpressionNode {
   public static final class OrSplzr extends AndOrSplzr {
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public OrSplzr(final Primitive prim, final NodeFactory<BinaryExpressionNode> fact,
+    public OrSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact,
         final Universe universe) {
       super(prim, fact, (NodeFactory) OrBoolMessageNodeFactory.getInstance(), universe);
     }
@@ -34,17 +34,10 @@ public abstract class OrMessageNode extends BinaryExpressionNode {
   private final SInvokable      blockMethod;
   @Child private DirectCallNode blockValueSend;
 
-  public OrMessageNode(final SMethod blockMethod, final SourceSection source) {
-    super(source);
+  public OrMessageNode(final SMethod blockMethod) {
     this.blockMethod = blockMethod;
     blockValueSend = Truffle.getRuntime().createDirectCallNode(
         blockMethod.getCallTarget());
-  }
-
-  public OrMessageNode(final OrMessageNode copy) {
-    super(copy.getSourceSection());
-    blockMethod = copy.blockMethod;
-    blockValueSend = copy.blockValueSend;
   }
 
   protected final boolean isSameBlock(final SBlock argument) {
@@ -62,10 +55,6 @@ public abstract class OrMessageNode extends BinaryExpressionNode {
 
   @GenerateNodeFactory
   public abstract static class OrBoolMessageNode extends BinaryExpressionNode {
-    public OrBoolMessageNode(final SourceSection source) {
-      super(source);
-    }
-
     @Specialization
     public final boolean doOr(final VirtualFrame frame, final boolean receiver,
         final boolean argument) {

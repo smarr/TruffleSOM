@@ -4,18 +4,13 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.source.SourceSection;
 
-import som.primitives.Primitive;
+import bd.primitives.Primitive;
 
 
 @GenerateNodeFactory
 @Primitive(className = "Integer", primitive = "rem:", selector = "rem:")
 public abstract class RemainderPrim extends ArithmeticPrim {
-  public RemainderPrim(final SourceSection source) {
-    super(source);
-  }
-
   @Specialization
   public final double doDouble(final double left, final double right) {
     return left % right;

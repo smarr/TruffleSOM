@@ -1,17 +1,16 @@
 package som.primitives;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.vm.Universe;
-
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public final class EmptyPrim extends UnaryExpressionNode {
   @Child private ExpressionNode receiver;
 
   private EmptyPrim(final ExpressionNode receiver) {
-    super(null);
     this.receiver = receiver;
   }
 

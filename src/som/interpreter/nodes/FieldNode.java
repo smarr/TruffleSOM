@@ -21,25 +21,19 @@
  */
 package som.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
 import som.interpreter.objectstorage.FieldAccessorNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeChildren;
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.source.SourceSection;
-
 
 public abstract class FieldNode extends ExpressionNode {
-
-  protected FieldNode(final SourceSection source) {
-    super(source);
-  }
 
   protected abstract ExpressionNode getSelf();
 
@@ -48,15 +42,9 @@ public abstract class FieldNode extends ExpressionNode {
     @Child private ExpressionNode        self;
     @Child private AbstractReadFieldNode read;
 
-    public FieldReadNode(final ExpressionNode self, final int fieldIndex,
-        final SourceSection source) {
-      super(source);
+    public FieldReadNode(final ExpressionNode self, final int fieldIndex) {
       this.self = self;
       read = FieldAccessorNode.createRead(fieldIndex);
-    }
-
-    public FieldReadNode(final FieldReadNode node) {
-      this(node.self, node.read.getFieldIndex(), node.getSourceSection());
     }
 
     @Override
@@ -99,20 +87,14 @@ public abstract class FieldNode extends ExpressionNode {
     }
   }
 
-  @NodeChildren({
-      @NodeChild(value = "self", type = ExpressionNode.class),
-      @NodeChild(value = "value", type = ExpressionNode.class)})
+  @NodeChild(value = "self", type = ExpressionNode.class)
+  @NodeChild(value = "value", type = ExpressionNode.class)
   public abstract static class FieldWriteNode extends FieldNode
       implements PreevaluatedExpression {
     @Child private AbstractWriteFieldNode write;
 
-    public FieldWriteNode(final int fieldIndex, final SourceSection source) {
-      super(source);
+    public FieldWriteNode(final int fieldIndex) {
       write = FieldAccessorNode.createWrite(fieldIndex);
-    }
-
-    public FieldWriteNode(final FieldWriteNode node) {
-      this(node.write.getFieldIndex(), node.getSourceSection());
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,

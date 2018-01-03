@@ -1,6 +1,10 @@
 package som.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import som.compiler.Variable.Local;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
@@ -14,30 +18,23 @@ import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
 
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
-
 
 public abstract class UninitializedVariableNode extends ContextualNode {
   protected final Local variable;
 
-  public UninitializedVariableNode(final Local variable,
-      final int contextLevel, final SourceSection source) {
-    super(contextLevel, source);
+  public UninitializedVariableNode(final Local variable, final int contextLevel) {
+    super(contextLevel);
     this.variable = variable;
   }
 
   public static final class UninitializedVariableReadNode extends UninitializedVariableNode {
-    public UninitializedVariableReadNode(final Local variable,
-        final int contextLevel, final SourceSection source) {
-      super(variable, contextLevel, source);
+    public UninitializedVariableReadNode(final Local variable, final int contextLevel) {
+      super(variable, contextLevel);
     }
 
-    public UninitializedVariableReadNode(final UninitializedVariableReadNode node,
+    protected UninitializedVariableReadNode(final UninitializedVariableReadNode node,
         final FrameSlot inlinedVarSlot) {
-      this(node.variable.cloneForInlining(inlinedVarSlot), node.contextLevel,
-          node.getSourceSection());
+      this(node.variable.cloneForInlining(inlinedVarSlot), node.contextLevel);
     }
 
     @Override
@@ -46,13 +43,13 @@ public abstract class UninitializedVariableNode extends ContextualNode {
 
       if (contextLevel > 0) {
         NonLocalVariableReadNode node = NonLocalVariableReadNodeGen.create(
-            contextLevel, variable.getSlot(), getSourceSection());
+            contextLevel, variable.getSlot()).initialize(sourceSection);
         return replace(node).executeGeneric(frame);
       } else {
         // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) ==
         // variable.getSlot();
         LocalVariableReadNode node =
-            LocalVariableReadNodeGen.create(variable, getSourceSection());
+            LocalVariableReadNodeGen.create(variable).initialize(sourceSection);
         return replace(node).executeGeneric(frame);
       }
     }
@@ -62,7 +59,7 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         final SplitterForLexicallyEmbeddedCode inliner) {
       FrameSlot varSlot = inliner.getFrameSlot(this, variable.getSlotIdentifier());
       assert varSlot != null;
-      replace(new UninitializedVariableReadNode(this, varSlot));
+      replace(new UninitializedVariableReadNode(this, varSlot).initialize(sourceSection));
     }
 
     @Override
@@ -75,8 +72,8 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         inlined = inliner.getLocalRead(variable.getSlotIdentifier(),
             getSourceSection());
       } else {
-        inlined = new UninitializedVariableReadNode(variable, contextLevel - 1,
-            getSourceSection());
+        inlined = new UninitializedVariableReadNode(
+            variable, contextLevel - 1).initialize(sourceSection);
       }
       replace(inlined);
     }
@@ -89,12 +86,12 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       UninitializedVariableReadNode node;
       if (inliner.appliesTo(contextLevel)) {
         node = new UninitializedVariableReadNode(this,
-            inliner.getOuterSlot(variable.getSlotIdentifier()));
+            inliner.getOuterSlot(variable.getSlotIdentifier())).initialize(sourceSection);
         replace(node);
         return;
       } else if (inliner.needToAdjustLevel(contextLevel)) {
-        node = new UninitializedVariableReadNode(variable, contextLevel - 1,
-            getSourceSection());
+        node = new UninitializedVariableReadNode(
+            variable, contextLevel - 1).initialize(sourceSection);
         replace(node);
         return;
       }
@@ -104,17 +101,15 @@ public abstract class UninitializedVariableNode extends ContextualNode {
   public static final class UninitializedVariableWriteNode extends UninitializedVariableNode {
     @Child private ExpressionNode exp;
 
-    public UninitializedVariableWriteNode(final Local variable,
-        final int contextLevel, final ExpressionNode exp,
-        final SourceSection source) {
-      super(variable, contextLevel, source);
+    public UninitializedVariableWriteNode(final Local variable, final int contextLevel,
+        final ExpressionNode exp) {
+      super(variable, contextLevel);
       this.exp = exp;
     }
 
     public UninitializedVariableWriteNode(final UninitializedVariableWriteNode node,
         final FrameSlot inlinedVarSlot) {
-      this(node.variable.cloneForInlining(inlinedVarSlot),
-          node.contextLevel, node.exp, node.getSourceSection());
+      this(node.variable.cloneForInlining(inlinedVarSlot), node.contextLevel, node.exp);
     }
 
     @Override
@@ -123,14 +118,14 @@ public abstract class UninitializedVariableNode extends ContextualNode {
 
       if (accessesOuterContext()) {
         NonLocalVariableWriteNode node = NonLocalVariableWriteNodeGen.create(
-            contextLevel, variable.getSlot(), getSourceSection(), exp);
+            contextLevel, variable.getSlot(), exp).initialize(sourceSection);
         return replace(node).executeGeneric(frame);
       } else {
         // not sure about removing this assertion :(((
         // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) ==
         // variable.getSlot();
-        LocalVariableWriteNode node = LocalVariableWriteNodeGen.create(
-            variable, getSourceSection(), exp);
+        LocalVariableWriteNode node =
+            LocalVariableWriteNodeGen.create(variable, exp).initialize(sourceSection);
         return replace(node).executeGeneric(frame);
       }
     }
@@ -140,7 +135,7 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         final SplitterForLexicallyEmbeddedCode inliner) {
       FrameSlot varSlot = inliner.getFrameSlot(this, variable.getSlotIdentifier());
       assert varSlot != null;
-      replace(new UninitializedVariableWriteNode(this, varSlot));
+      replace(new UninitializedVariableWriteNode(this, varSlot).initialize(sourceSection));
     }
 
     @Override
@@ -151,12 +146,12 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       UninitializedVariableWriteNode node;
       if (inliner.appliesTo(contextLevel)) {
         node = new UninitializedVariableWriteNode(this,
-            inliner.getOuterSlot(variable.getSlotIdentifier()));
+            inliner.getOuterSlot(variable.getSlotIdentifier())).initialize(sourceSection);
         replace(node);
         return;
       } else if (inliner.needToAdjustLevel(contextLevel)) {
-        node = new UninitializedVariableWriteNode(variable, contextLevel - 1,
-            exp, getSourceSection());
+        node = new UninitializedVariableWriteNode(
+            variable, contextLevel - 1, exp).initialize(sourceSection);
         replace(node);
         return;
       }
@@ -177,8 +172,8 @@ public abstract class UninitializedVariableNode extends ContextualNode {
         inlined = inliner.getLocalWrite(variable.getSlotIdentifier(),
             exp, getSourceSection());
       } else {
-        inlined = new UninitializedVariableWriteNode(variable, contextLevel - 1,
-            exp, getSourceSection());
+        inlined = new UninitializedVariableWriteNode(
+            variable, contextLevel - 1, exp).initialize(sourceSection);
       }
       replace(inlined);
     }

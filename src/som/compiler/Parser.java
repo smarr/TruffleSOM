@@ -580,9 +580,9 @@ public final class Parser {
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod, getSource(coord), universe);
+          return new BlockNodeWithContext(blockMethod, universe).initialize(getSource(coord));
         } else {
-          return new BlockNode(blockMethod, getSource(coord), universe);
+          return new BlockNode(blockMethod, universe).initialize(getSource(coord));
         }
       }
       default: {
@@ -681,29 +681,29 @@ public final class Parser {
         if ("ifTrue:".equals(msgStr)) {
           ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new IfInlinedLiteralNode(arguments.get(0), true, inlinedBody,
-              arguments.get(1), source);
+              arguments.get(1)).initialize(source);
         } else if ("ifFalse:".equals(msgStr)) {
           ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new IfInlinedLiteralNode(arguments.get(0), false, inlinedBody,
-              arguments.get(1), source);
+              arguments.get(1)).initialize(source);
         } else if ("whileTrue:".equals(msgStr)) {
           ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
           ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
-              true, arguments.get(0), arguments.get(1), source);
+              true, arguments.get(0), arguments.get(1)).initialize(source);
         } else if ("whileFalse:".equals(msgStr)) {
           ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
           ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
           return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
-              false, arguments.get(0), arguments.get(1), source);
+              false, arguments.get(0), arguments.get(1)).initialize(source);
         } else if ("or:".equals(msgStr) || "||".equals(msgStr)) {
           ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new OrInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1),
-              source);
+          return new OrInlinedLiteralNode(
+              arguments.get(0), inlinedArg, arguments.get(1)).initialize(source);
         } else if ("and:".equals(msgStr) || "&&".equals(msgStr)) {
           ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new AndInlinedLiteralNode(arguments.get(0), inlinedArg, arguments.get(1),
-              source);
+          return new AndInlinedLiteralNode(
+              arguments.get(0), inlinedArg, arguments.get(1)).initialize(source);
         }
       }
     } else if (msg.getNumberOfSignatureArguments() == 3) {
@@ -711,15 +711,14 @@ public final class Parser {
           arguments.get(1) instanceof LiteralNode && arguments.get(2) instanceof LiteralNode) {
         ExpressionNode inlinedTrueNode = ((LiteralNode) arguments.get(1)).inline(mgenc);
         ExpressionNode inlinedFalseNode = ((LiteralNode) arguments.get(2)).inline(mgenc);
-        return new IfTrueIfFalseInlinedLiteralsNode(arguments.get(0),
-            inlinedTrueNode, inlinedFalseNode, arguments.get(1), arguments.get(2),
-            source);
+        return new IfTrueIfFalseInlinedLiteralsNode(arguments.get(0), inlinedTrueNode,
+            inlinedFalseNode, arguments.get(1), arguments.get(2)).initialize(source);
       } else if ("to:do:".equals(msgStr) &&
           arguments.get(2) instanceof LiteralNode) {
         Local loopIdx = mgenc.addLocal("i:" + source.getCharIndex());
         ExpressionNode inlinedBody = ((LiteralNode) arguments.get(2)).inline(mgenc, loopIdx);
         return IntToDoInlinedLiteralsNodeGen.create(inlinedBody, loopIdx.getSlot(),
-            arguments.get(2), source, arguments.get(0), arguments.get(1));
+            arguments.get(2), arguments.get(0), arguments.get(1)).initialize(source);
       }
     }
 
@@ -749,28 +748,29 @@ public final class Parser {
       case Pound: {
         peekForNextSymbolFromLexerIfNecessary();
         if (nextSym == NewTerm) {
-          return new ArrayLiteralNode(literalArray(), getSource(coord));
+          return new ArrayLiteralNode(literalArray()).initialize(getSource(coord));
         } else {
-          return new SymbolLiteralNode(literalSymbol(), getSource(coord));
+          return new SymbolLiteralNode(literalSymbol()).initialize(getSource(coord));
         }
       }
       case STString:
-        return new StringLiteralNode(literalString(), getSource(coord));
+        return new StringLiteralNode(literalString()).initialize(getSource(coord));
       default:
         boolean isNegative = isNegativeNumber();
         if (sym == Integer) {
           long value = literalInteger(isNegative);
           if (value < Long.MIN_VALUE || value > Long.MAX_VALUE) {
-            return new BigIntegerLiteralNode(BigInteger.valueOf(value), getSource(coord));
+            return new BigIntegerLiteralNode(
+                BigInteger.valueOf(value)).initialize(getSource(coord));
           } else {
-            return new IntegerLiteralNode(value, getSource(coord));
+            return new IntegerLiteralNode(value).initialize(getSource(coord));
           }
         } else {
           if (sym != Double) {
             throw new ParseError("Unexpected symbol. Expected %(expected)s, but found "
                 + "%(found)s", sym, this);
           }
-          return new DoubleLiteralNode(literalDouble(isNegative), getSource(coord));
+          return new DoubleLiteralNode(literalDouble(isNegative)).initialize(getSource(coord));
         }
     }
   }

@@ -5,10 +5,9 @@ import java.math.BigInteger;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.Primitive;
 
 
 @GenerateNodeFactory
@@ -18,10 +17,6 @@ public abstract class SqrtPrim extends UnaryExpressionNode {
 
   private final BranchProfile longReturn   = BranchProfile.create();
   private final BranchProfile doubleReturn = BranchProfile.create();
-
-  public SqrtPrim(final SourceSection source) {
-    super(source);
-  }
 
   @Specialization
   public final Object doLong(final long receiver) {

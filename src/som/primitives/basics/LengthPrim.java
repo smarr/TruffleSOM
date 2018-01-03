@@ -4,10 +4,9 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.ValueProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.Primitive;
 import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.Primitive;
 import som.vmobjects.SArray;
 import som.vmobjects.SArray.ArrayType;
 import som.vmobjects.SSymbol;
@@ -21,10 +20,6 @@ import som.vmobjects.SSymbol;
 public abstract class LengthPrim extends UnaryExpressionNode {
 
   private final ValueProfile storageType = ValueProfile.createClassProfile();
-
-  public LengthPrim(final SourceSection source) {
-    super(source);
-  }
 
   @Specialization(guards = "isEmptyType(receiver)")
   public final long doEmptySArray(final SArray receiver) {
