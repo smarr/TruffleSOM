@@ -2,7 +2,6 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.nodes.WithContext;
@@ -11,10 +10,9 @@ import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
-@NodeChildren({
-    @NodeChild(value = "receiver", type = ExpressionNode.class),
-    @NodeChild(value = "firstArg", type = ExpressionNode.class),
-    @NodeChild(value = "secondArg", type = ExpressionNode.class)})
+@NodeChild(value = "receiver", type = ExpressionNode.class)
+@NodeChild(value = "firstArg", type = ExpressionNode.class)
+@NodeChild(value = "secondArg", type = ExpressionNode.class)
 public abstract class TernaryExpressionNode extends EagerlySpecializableNode {
 
   public abstract Object executeEvaluated(VirtualFrame frame, Object receiver, Object firstArg,

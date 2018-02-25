@@ -2,7 +2,6 @@ package som.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -48,12 +47,11 @@ public final class MethodPrims {
       extraChild = ToArgumentsArrayNodeFactory.class)
   @Primitive(className = "Primitive", primitive = "invokeOn:with:",
       extraChild = ToArgumentsArrayNodeFactory.class)
-  @NodeChildren({
-      @NodeChild(value = "receiver", type = ExpressionNode.class),
-      @NodeChild(value = "target", type = ExpressionNode.class),
-      @NodeChild(value = "somArr", type = ExpressionNode.class),
-      @NodeChild(value = "argArr", type = ToArgumentsArrayNode.class,
-          executeWith = {"somArr", "target"})})
+  @NodeChild(value = "receiver", type = ExpressionNode.class)
+  @NodeChild(value = "target", type = ExpressionNode.class)
+  @NodeChild(value = "somArr", type = ExpressionNode.class)
+  @NodeChild(value = "argArr", type = ToArgumentsArrayNode.class,
+      executeWith = {"somArr", "target"})
   @Primitive(selector = "invokeOn:with:", noWrapper = true,
       extraChild = ToArgumentsArrayNodeFactory.class)
   public abstract static class InvokeOnPrim extends EagerlySpecializableNode {
