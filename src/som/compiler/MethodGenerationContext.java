@@ -40,6 +40,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.basic.ProgramDefinitionError;
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.LexicalScope;

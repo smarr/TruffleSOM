@@ -120,7 +120,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   }
 
   public Primitives(final Universe universe) {
-    super(universe);
+    super(universe, universe);
     this.primitives = new HashMap<>();
     initialize();
   }
@@ -169,11 +169,6 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
       assert "".equals(primName) && "".equals(
           className) : "If either primitive() or className() is set on @Primitive, both should be set";
     }
-  }
-
-  @Override
-  protected SSymbol getId(final String id) {
-    return context.symbolFor(id);
   }
 
   private static SInvokable constructPrimitive(final SSymbol signature,

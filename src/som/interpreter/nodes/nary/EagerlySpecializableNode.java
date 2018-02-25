@@ -2,7 +2,7 @@ package som.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.nodes.EagerlySpecializable;
+import bd.primitives.nodes.EagerlySpecializable;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 import som.vm.Universe;

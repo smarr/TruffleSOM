@@ -70,6 +70,7 @@ import java.util.List;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.basic.ProgramDefinitionError;
 import som.compiler.Lexer.Peek;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
@@ -133,9 +134,8 @@ public final class Parser {
     return "Parser(" + source.getName() + ", " + this.getCoordinate().toString() + ")";
   }
 
-  public static class ParseError extends Exception {
+  public static class ParseError extends ProgramDefinitionError {
     private static final long      serialVersionUID = 425390202979033628L;
-    private final String           message;
     private final SourceCoordinate sourceCoordinate;
     private final String           text;
     private final String           rawBuffer;
@@ -144,7 +144,7 @@ public final class Parser {
     private final Symbol           found;
 
     ParseError(final String message, final Symbol expected, final Parser parser) {
-      this.message = message;
+      super(message);
       this.sourceCoordinate = parser.getCoordinate();
       this.text = parser.text;
       this.rawBuffer = parser.lexer.getRawBuffer();
@@ -159,7 +159,7 @@ public final class Parser {
 
     @Override
     public String toString() {
-      String msg = "%(file)s:%(line)d:%(column)d: error: " + message;
+      String msg = "%(file)s:%(line)d:%(column)d: error: " + getMessage();
       String foundStr;
       if (Parser.printableSymbol(found)) {
         foundStr = found + " (" + text + ")";
@@ -218,7 +218,7 @@ public final class Parser {
     return lexer.getStartCoordinate();
   }
 
-  public void classdef(final ClassGenerationContext cgenc) throws ParseError {
+  public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     cgenc.setName(universe.symbolFor(text));
     expect(Identifier);
     expect(Equal);
@@ -312,7 +312,8 @@ public final class Parser {
         "%(expected)s, but found %(found)s", ss, this);
   }
 
-  private void instanceFields(final ClassGenerationContext cgenc) throws ParseError {
+  private void instanceFields(final ClassGenerationContext cgenc)
+      throws ProgramDefinitionError {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
         String var = variable();
@@ -322,7 +323,7 @@ public final class Parser {
     }
   }
 
-  private void classFields(final ClassGenerationContext cgenc) throws ParseError {
+  private void classFields(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
         String var = variable();
@@ -338,7 +339,8 @@ public final class Parser {
         lexer.getNumberOfCharactersRead() - coord.charIndex);
   }
 
-  private ExpressionNode method(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode method(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     pattern(mgenc);
     expect(Equal);
     if (sym == Primitive) {
@@ -354,7 +356,7 @@ public final class Parser {
     expect(Primitive);
   }
 
-  private void pattern(final MethodGenerationContext mgenc) throws ParseError {
+  private void pattern(final MethodGenerationContext mgenc) throws ProgramDefinitionError {
     mgenc.addArgumentIfAbsent("self"); // TODO: can we do that optionally?
     switch (sym) {
       case Identifier:
@@ -374,12 +376,14 @@ public final class Parser {
     mgenc.setSignature(unarySelector());
   }
 
-  private void binaryPattern(final MethodGenerationContext mgenc) throws ParseError {
+  private void binaryPattern(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     mgenc.setSignature(binarySelector());
     mgenc.addArgumentIfAbsent(argument());
   }
 
-  private void keywordPattern(final MethodGenerationContext mgenc) throws ParseError {
+  private void keywordPattern(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     StringBuffer kw = new StringBuffer();
     do {
       kw.append(keyword());
@@ -389,7 +393,8 @@ public final class Parser {
     mgenc.setSignature(universe.symbolFor(kw.toString()));
   }
 
-  private ExpressionNode methodBlock(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode methodBlock(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     expect(NewTerm);
     SourceCoordinate coord = getCoordinate();
     ExpressionNode methodBody = blockContents(mgenc);
@@ -435,11 +440,12 @@ public final class Parser {
     return s;
   }
 
-  private String argument() throws ParseError {
+  private String argument() throws ProgramDefinitionError {
     return variable();
   }
 
-  private ExpressionNode blockContents(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode blockContents(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     if (accept(Or)) {
       locals(mgenc);
       expect(Or);
@@ -447,13 +453,14 @@ public final class Parser {
     return blockBody(mgenc);
   }
 
-  private void locals(final MethodGenerationContext mgenc) throws ParseError {
+  private void locals(final MethodGenerationContext mgenc) throws ProgramDefinitionError {
     while (isIdentifier(sym)) {
       mgenc.addLocalIfAbsent(variable());
     }
   }
 
-  private ExpressionNode blockBody(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode blockBody(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     SourceCoordinate coord = getCoordinate();
     List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
@@ -495,7 +502,8 @@ public final class Parser {
     return createSequence(expressions, getSource(coord));
   }
 
-  private ExpressionNode result(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode result(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     SourceCoordinate coord = getCoordinate();
 
     ExpressionNode exp = expression(mgenc);
@@ -508,7 +516,8 @@ public final class Parser {
     }
   }
 
-  private ExpressionNode expression(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode expression(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     peekForNextSymbolFromLexer();
 
     if (nextSym == Assign) {
@@ -518,11 +527,13 @@ public final class Parser {
     }
   }
 
-  private ExpressionNode assignation(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode assignation(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     return assignments(mgenc);
   }
 
-  private ExpressionNode assignments(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode assignments(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     SourceCoordinate coord = getCoordinate();
 
     if (!isIdentifier(sym)) {
@@ -544,13 +555,14 @@ public final class Parser {
     return variableWrite(mgenc, variable, value, getSource(coord));
   }
 
-  private String assignment() throws ParseError {
+  private String assignment() throws ProgramDefinitionError {
     String v = variable();
     expect(Assign);
     return v;
   }
 
-  private ExpressionNode evaluation(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode evaluation(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     ExpressionNode exp = primary(mgenc);
     if (isIdentifier(sym) || sym == Keyword || sym == OperatorSequence
         || symIn(binaryOpSyms)) {
@@ -559,7 +571,8 @@ public final class Parser {
     return exp;
   }
 
-  private ExpressionNode primary(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode primary(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     switch (sym) {
       case Identifier:
       case Primitive: {
@@ -591,12 +604,12 @@ public final class Parser {
     }
   }
 
-  private String variable() throws ParseError {
+  private String variable() throws ProgramDefinitionError {
     return identifier();
   }
 
   private ExpressionNode messages(final MethodGenerationContext mgenc,
-      final ExpressionNode receiver) throws ParseError {
+      final ExpressionNode receiver) throws ProgramDefinitionError {
     ExpressionNode msg;
     if (isIdentifier(sym)) {
       msg = unaryMessage(receiver);
@@ -637,7 +650,7 @@ public final class Parser {
   }
 
   private ExpressionNode binaryMessage(final MethodGenerationContext mgenc,
-      final ExpressionNode receiver) throws ParseError {
+      final ExpressionNode receiver) throws ProgramDefinitionError {
     SourceCoordinate coord = getCoordinate();
     SSymbol msg = binarySelector();
     ExpressionNode operand = binaryOperand(mgenc);
@@ -646,7 +659,8 @@ public final class Parser {
         getSource(coord), universe);
   }
 
-  private ExpressionNode binaryOperand(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode binaryOperand(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     ExpressionNode operand = primary(mgenc);
 
     // a binary operand can receive unaryMessages
@@ -659,7 +673,7 @@ public final class Parser {
   }
 
   private ExpressionNode keywordMessage(final MethodGenerationContext mgenc,
-      final ExpressionNode receiver) throws ParseError {
+      final ExpressionNode receiver) throws ProgramDefinitionError {
     SourceCoordinate coord = getCoordinate();
     List<ExpressionNode> arguments = new ArrayList<ExpressionNode>();
     StringBuffer kw = new StringBuffer();
@@ -726,7 +740,8 @@ public final class Parser {
         source, universe);
   }
 
-  private ExpressionNode formula(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode formula(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     ExpressionNode operand = binaryOperand(mgenc);
 
     while (sym == OperatorSequence || symIn(binaryOpSyms)) {
@@ -735,7 +750,8 @@ public final class Parser {
     return operand;
   }
 
-  private ExpressionNode nestedTerm(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode nestedTerm(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     expect(NewTerm);
     ExpressionNode exp = expression(mgenc);
     expect(EndTerm);
@@ -886,7 +902,8 @@ public final class Parser {
     return s;
   }
 
-  private ExpressionNode nestedBlock(final MethodGenerationContext mgenc) throws ParseError {
+  private ExpressionNode nestedBlock(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     expect(NewBlock);
     SourceCoordinate coord = getCoordinate();
 
@@ -915,12 +932,14 @@ public final class Parser {
     return expressions;
   }
 
-  private void blockPattern(final MethodGenerationContext mgenc) throws ParseError {
+  private void blockPattern(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     blockArguments(mgenc);
     expect(Or);
   }
 
-  private void blockArguments(final MethodGenerationContext mgenc) throws ParseError {
+  private void blockArguments(final MethodGenerationContext mgenc)
+      throws ProgramDefinitionError {
     do {
       expect(Colon);
       mgenc.addArgumentIfAbsent(argument());

@@ -38,6 +38,7 @@ import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
 import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
+import bd.basic.IdProvider;
 import som.compiler.Disassembler;
 import som.interpreter.Invokable;
 import som.interpreter.SomLanguage;
@@ -54,7 +55,7 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
-public final class Universe {
+public final class Universe implements IdProvider<SSymbol> {
 
   public static final boolean FailOnMissingOptimizations = false;
 
@@ -415,6 +416,11 @@ public final class Universe {
     }
 
     return newSymbol(interned);
+  }
+
+  @Override
+  public SSymbol getId(final String id) {
+    return symbolFor(id);
   }
 
   public static SBlock newBlock(final SMethod method, final SClass blockClass,
