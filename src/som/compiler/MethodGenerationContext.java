@@ -152,18 +152,6 @@ public final class MethodGenerationContext {
     return needsToCatchNonLocalReturn && outerGenc == null;
   }
 
-  private void separateVariables(final Collection<? extends Variable> variables,
-      final ArrayList<Variable> onlyLocalAccess,
-      final ArrayList<Variable> nonLocalAccess) {
-    for (Variable l : variables) {
-      if (l.isAccessedOutOfContext()) {
-        nonLocalAccess.add(l);
-      } else {
-        onlyLocalAccess.add(l);
-      }
-    }
-  }
-
   private String getMethodIdentifier() {
     String cls = holderGenc.getName().getString();
     if (holderGenc.isClassSide()) {
@@ -177,11 +165,6 @@ public final class MethodGenerationContext {
       return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage(),
           sourceSection);
     }
-
-    ArrayList<Variable> onlyLocalAccess = new ArrayList<>(arguments.size() + locals.size());
-    ArrayList<Variable> nonLocalAccess = new ArrayList<>(arguments.size() + locals.size());
-    separateVariables(arguments.values(), onlyLocalAccess, nonLocalAccess);
-    separateVariables(locals.values(), onlyLocalAccess, nonLocalAccess);
 
     if (needsToCatchNonLocalReturn()) {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarkerSlot());
