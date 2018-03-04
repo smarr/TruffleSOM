@@ -34,11 +34,13 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
 import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
 import bd.basic.IdProvider;
+import bd.inlining.InlinableNodes;
 import som.compiler.Disassembler;
 import som.interpreter.Invokable;
 import som.interpreter.SomLanguage;
@@ -63,6 +65,10 @@ public final class Universe implements IdProvider<SSymbol> {
     if (FailOnMissingOptimizations) {
       CompilerAsserts.neverPartOfCompilation(msg);
     }
+  }
+
+  public static String getLocationQualifier(final SourceSection section) {
+    return ":" + section.getStartLine() + ":" + section.getStartColumn();
   }
 
   /**
@@ -146,6 +152,8 @@ public final class Universe implements IdProvider<SSymbol> {
     booleanClass = newSystemClass();
 
     this.primitives = new Primitives(this);
+    this.inlinableNodes = new InlinableNodes<>(this, Primitives.getInlinableNodes(),
+        Primitives.getInlinableFactories());
 
     symSelf = symbolFor("self");
     symBlockSelf = symbolFor("$blockSelf");
@@ -713,6 +721,10 @@ public final class Universe implements IdProvider<SSymbol> {
     return primitives;
   }
 
+  public InlinableNodes<SSymbol> getInlinableNodes() {
+    return inlinableNodes;
+  }
+
   public final SClass objectClass;
   public final SClass classClass;
   public final SClass metaclassClass;
@@ -754,6 +766,8 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal(dimensions = 1) private final SClass[] blockClasses;
 
   private final Primitives primitives;
+
+  private final InlinableNodes<SSymbol> inlinableNodes;
 
   @CompilationFinal private boolean alreadyInitialized;
 

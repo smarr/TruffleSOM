@@ -71,6 +71,7 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
+import bd.inlining.InlinableNodes;
 import som.compiler.Lexer.Peek;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
@@ -85,12 +86,6 @@ import som.interpreter.nodes.literals.IntegerLiteralNode;
 import som.interpreter.nodes.literals.LiteralNode;
 import som.interpreter.nodes.literals.StringLiteralNode;
 import som.interpreter.nodes.literals.SymbolLiteralNode;
-import som.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
-import som.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
-import som.interpreter.nodes.specialized.IfInlinedLiteralNode;
-import som.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
-import som.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeGen;
-import som.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 import som.vm.Universe;
 import som.vmobjects.SArray;
 import som.vmobjects.SClass;
@@ -104,6 +99,8 @@ public final class Parser {
   private final Universe universe;
   private final Lexer    lexer;
   private final Source   source;
+
+  private final InlinableNodes<SSymbol> inlinableNodes;
 
   private Symbol sym;
   private String text;
@@ -207,6 +204,7 @@ public final class Parser {
       final Universe universe) {
     this.universe = universe;
     this.source = source;
+    this.inlinableNodes = universe.getInlinableNodes();
 
     sym = NONE;
     lexer = new Lexer(reader, fileSize);
@@ -333,6 +331,11 @@ public final class Parser {
     }
   }
 
+  private SourceSection getEmptySource() {
+    SourceCoordinate coord = getCoordinate();
+    return source.createSection(coord.charIndex, 0);
+  }
+
   private SourceSection getSource(final SourceCoordinate coord) {
     assert lexer.getNumberOfCharactersRead() - coord.charIndex >= 0;
     return source.createSection(coord.startLine, coord.startColumn,
@@ -453,6 +456,7 @@ public final class Parser {
       locals(mgenc);
       expect(Or);
     }
+    mgenc.setVarsOnMethodScope();
     return blockBody(mgenc);
   }
 
@@ -694,50 +698,9 @@ public final class Parser {
 
     SourceSection source = getSource(coord);
 
-    if (msg.getNumberOfSignatureArguments() == 2) {
-      if (arguments.get(1) instanceof LiteralNode) {
-        if ("ifTrue:".equals(msgStr)) {
-          ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new IfInlinedLiteralNode(arguments.get(0), true, inlinedBody,
-              arguments.get(1)).initialize(source);
-        } else if ("ifFalse:".equals(msgStr)) {
-          ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new IfInlinedLiteralNode(arguments.get(0), false, inlinedBody,
-              arguments.get(1)).initialize(source);
-        } else if ("whileTrue:".equals(msgStr)) {
-          ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
-          ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
-              true, arguments.get(0), arguments.get(1)).initialize(source);
-        } else if ("whileFalse:".equals(msgStr)) {
-          ExpressionNode inlinedCondition = ((LiteralNode) arguments.get(0)).inline(mgenc);
-          ExpressionNode inlinedBody = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new WhileInlinedLiteralsNode(inlinedCondition, inlinedBody,
-              false, arguments.get(0), arguments.get(1)).initialize(source);
-        } else if ("or:".equals(msgStr) || "||".equals(msgStr)) {
-          ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new OrInlinedLiteralNode(
-              arguments.get(0), inlinedArg, arguments.get(1)).initialize(source);
-        } else if ("and:".equals(msgStr) || "&&".equals(msgStr)) {
-          ExpressionNode inlinedArg = ((LiteralNode) arguments.get(1)).inline(mgenc);
-          return new AndInlinedLiteralNode(
-              arguments.get(0), inlinedArg, arguments.get(1)).initialize(source);
-        }
-      }
-    } else if (msg.getNumberOfSignatureArguments() == 3) {
-      if ("ifTrue:ifFalse:".equals(msgStr) &&
-          arguments.get(1) instanceof LiteralNode && arguments.get(2) instanceof LiteralNode) {
-        ExpressionNode inlinedTrueNode = ((LiteralNode) arguments.get(1)).inline(mgenc);
-        ExpressionNode inlinedFalseNode = ((LiteralNode) arguments.get(2)).inline(mgenc);
-        return new IfTrueIfFalseInlinedLiteralsNode(arguments.get(0), inlinedTrueNode,
-            inlinedFalseNode, arguments.get(1), arguments.get(2)).initialize(source);
-      } else if ("to:do:".equals(msgStr) &&
-          arguments.get(2) instanceof LiteralNode) {
-        Local loopIdx = mgenc.addLocal("i:" + source.getCharIndex());
-        ExpressionNode inlinedBody = ((LiteralNode) arguments.get(2)).inline(mgenc, loopIdx);
-        return IntToDoInlinedLiteralsNodeGen.create(inlinedBody, loopIdx.getSlot(),
-            arguments.get(2), arguments.get(0), arguments.get(1)).initialize(source);
-      }
+    ExpressionNode inlined = inlinableNodes.inline(msg, arguments, mgenc, source);
+    if (inlined != null) {
+      return inlined;
     }
 
     return createMessageSend(msg, arguments.toArray(new ExpressionNode[0]),

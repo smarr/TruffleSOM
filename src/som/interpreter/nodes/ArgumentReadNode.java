@@ -2,8 +2,9 @@ package som.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import bd.inlining.ScopeAdaptationVisitor;
+import som.compiler.Variable.AccessNodeState;
+import som.compiler.Variable.Argument;
 import som.interpreter.SArguments;
 import som.vmobjects.SSymbol;
 
@@ -34,10 +35,8 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    public void replaceWithLexicallyEmbeddedNode(
-        final InlinerForLexicallyEmbeddedMethods inliner) {
-      replace(inliner.getReplacementForLocalArgument(argumentIndex,
-          getSourceSection()));
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(arg, this, 0);
     }
   }
 
@@ -58,42 +57,8 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    public void replaceWithLexicallyEmbeddedNode(
-        final InlinerForLexicallyEmbeddedMethods inliner) {
-      ExpressionNode inlined;
-      if (contextLevel == 1) {
-        inlined = createLocalNode();
-      } else {
-        inlined = createNonLocalNode();
-      }
-      replace(inlined);
-    }
-
-    protected NonLocalArgumentReadNode createNonLocalNode() {
-      return new NonLocalArgumentReadNode(
-          argumentIndex, contextLevel - 1).initialize(sourceSection);
-    }
-
-    protected LocalArgumentReadNode createLocalNode() {
-      return new LocalArgumentReadNode(argumentIndex).initialize(sourceSection);
-    }
-
-    @Override
-    public void replaceWithCopyAdaptedToEmbeddedOuterContext(
-        final InlinerAdaptToEmbeddedOuterContext inliner) {
-      // this should be the access to a block argument
-      if (inliner.appliesTo(contextLevel)) {
-        assert !(this instanceof NonLocalSuperReadNode);
-        ExpressionNode node =
-            inliner.getReplacementForBlockArgument(argumentIndex, getSourceSection());
-        replace(node);
-        return;
-      } else if (inliner.needToAdjustLevel(contextLevel)) {
-        // in the other cases, we just need to adjust the context level
-        NonLocalArgumentReadNode node = createNonLocalNode();
-        replace(node);
-        return;
-      }
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(arg, this, contextLevel);
     }
   }
 
@@ -119,6 +84,11 @@ public abstract class ArgumentReadNode {
     public boolean isClassSide() {
       return classSide;
     }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateSuperRead(arg, this, new AccessNodeState(holderClass, classSide), 0);
+    }
   }
 
   public static final class NonLocalSuperReadNode extends
@@ -140,14 +110,9 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    protected NonLocalArgumentReadNode createNonLocalNode() {
-      return new NonLocalSuperReadNode(
-          contextLevel - 1, holderClass, classSide).initialize(sourceSection);
-    }
-
-    @Override
-    protected LocalArgumentReadNode createLocalNode() {
-      return new LocalSuperReadNode(holderClass, classSide).initialize(sourceSection);
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateSuperRead(arg, this, new AccessNodeState(holderClass, classSide),
+          contextLevel);
     }
 
     @Override

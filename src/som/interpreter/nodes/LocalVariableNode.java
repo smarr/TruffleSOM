@@ -1,6 +1,5 @@
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -8,8 +7,8 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import bd.inlining.ScopeAdaptationVisitor;
 import som.compiler.Variable.Local;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 
@@ -82,6 +81,11 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
       return slot.getKind() == FrameSlotKind.Illegal;
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(local, this, 0);
     }
   }
 
@@ -160,11 +164,8 @@ public abstract class LocalVariableNode extends ExpressionNode {
     }
 
     @Override
-    public final void replaceWithIndependentCopyForInlining(
-        final SplitterForLexicallyEmbeddedCode inliner) {
-      CompilerAsserts.neverPartOfCompilation("replaceWithIndependentCopyForInlining");
-      throw new RuntimeException(
-          "Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateWrite(local, this, getExp(), 0);
     }
   }
 }

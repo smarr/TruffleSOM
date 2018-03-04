@@ -25,21 +25,22 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
+import bd.inlining.nodes.Inlinable;
 import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.PreevaluatedExpression;
 
 
 @NodeInfo(cost = NodeCost.NONE)
-public abstract class LiteralNode extends ExpressionNode implements PreevaluatedExpression {
+public abstract class LiteralNode extends ExpressionNode implements PreevaluatedExpression,
+    Inlinable<MethodGenerationContext> {
   @Override
   public final Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
     return executeGeneric(frame);
   }
 
-  public ExpressionNode inline(final MethodGenerationContext mgenc,
-      final Local... blockArguments) {
+  @Override
+  public ExpressionNode inline(final MethodGenerationContext mgenc) {
     return this;
   }
 }

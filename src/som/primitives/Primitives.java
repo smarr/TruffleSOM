@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -43,12 +44,18 @@ import som.interpreter.SomLanguage;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.specialized.AndMessageNodeFactory;
+import som.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
+import som.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
+import som.interpreter.nodes.specialized.IfInlinedLiteralNode;
+import som.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
 import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
 import som.interpreter.nodes.specialized.IntDownToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
+import som.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeFactory;
 import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.NotMessageNodeFactory;
 import som.interpreter.nodes.specialized.OrMessageNodeFactory;
+import som.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 import som.primitives.arithmetic.AdditionPrimFactory;
 import som.primitives.arithmetic.BitXorPrimFactory;
 import som.primitives.arithmetic.CosPrimFactory;
@@ -257,5 +264,25 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     allFactories.add(PerformWithArgumentsPrimFactory.getInstance());
 
     return allFactories;
+  }
+
+  public static List<Class<? extends Node>> getInlinableNodes() {
+    List<Class<? extends Node>> nodes = new ArrayList<>();
+
+    nodes.add(IfInlinedLiteralNode.class);
+    nodes.add(IfTrueIfFalseInlinedLiteralsNode.class);
+    nodes.add(AndInlinedLiteralNode.class);
+    nodes.add(OrInlinedLiteralNode.class);
+    nodes.add(WhileInlinedLiteralsNode.class);
+
+    return nodes;
+  }
+
+  public static List<NodeFactory<? extends Node>> getInlinableFactories() {
+    List<NodeFactory<? extends Node>> factories = new ArrayList<>();
+
+    factories.add(IntToDoInlinedLiteralsNodeFactory.getInstance());
+
+    return factories;
   }
 }

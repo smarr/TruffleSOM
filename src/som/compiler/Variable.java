@@ -7,15 +7,18 @@ import static som.interpreter.SNodeFactory.createVariableWrite;
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.inlining.NodeState;
 import som.interpreter.nodes.ExpressionNode;
+import som.vm.Universe;
 import som.vmobjects.SSymbol;
 
 
-public abstract class Variable
-    implements bd.inlining.Variable<ExpressionNode, AccessNodeState> {
+public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
   public final SSymbol       name;
   public final SourceSection source;
 
@@ -24,22 +27,24 @@ public abstract class Variable
     this.source = source;
   }
 
+  /** Gets the name including lexical location. */
+  public final SSymbol getQualifiedName(final Universe u) {
+    return u.symbolFor(name.getString() + Universe.getLocationQualifier(source));
+  }
+
   @Override
   public String toString() {
-    return getClass().getName() + "(" + name + ")";
+    return getClass().getSimpleName() + "(" + name + ")";
   }
 
   @Override
   public abstract ExpressionNode getReadNode(int contextLevel, SourceSection source);
 
+  public abstract Variable split(FrameDescriptor descriptor);
 
+  public abstract Local splitToMergeIntoOuterScope(Universe universe,
+      FrameDescriptor descriptor);
 
-  public final ExpressionNode getSuperReadNode(final int contextLevel,
-      final SSymbol holderClass, final boolean classSide,
-      final SourceSection source) {
-    isRead = true;
-    if (contextLevel > 0) {
-      isReadOutOfContext = true;
   @Override
   public boolean equals(final Object o) {
     assert o != null;
@@ -58,8 +63,15 @@ public abstract class Variable
         var.source) : "Why are there multiple objects for this source section? might need to fix comparison above";
     return false;
   }
+
+  public static final class AccessNodeState implements NodeState {
+    private final SSymbol holderClass;
+    private final boolean classSide;
+
+    public AccessNodeState(final SSymbol holderClass, final boolean classSide) {
+      this.holderClass = holderClass;
+      this.classSide = classSide;
     }
-    return createSuperRead(contextLevel, holderClass, classSide, source);
   }
 
   public static final class Argument extends Variable {
@@ -74,6 +86,21 @@ public abstract class Variable
       return universe.symSelf == name || universe.symBlockSelf == name;
     }
 
+    @Override
+    public Variable split(final FrameDescriptor descriptor) {
+      return this;
+    }
+
+    @Override
+    public Local splitToMergeIntoOuterScope(final Universe universe,
+        final FrameDescriptor descriptor) {
+      if (isSelf(universe)) {
+        return null;
+      }
+
+      Local l = new Local(name, source);
+      l.init(descriptor.addFrameSlot(l));
+      return l;
     }
 
     @Override
@@ -82,10 +109,17 @@ public abstract class Variable
       transferToInterpreterAndInvalidate("Variable.getReadNode");
       return createArgumentRead(this, contextLevel, source);
     }
+
+    @Override
+    public ExpressionNode getSuperReadNode(final int contextLevel, final NodeState state,
+        final SourceSection source) {
+      AccessNodeState holder = (AccessNodeState) state;
+      return createSuperRead(this, contextLevel, holder.holderClass, holder.classSide, source);
+    }
   }
 
   public static final class Local extends Variable {
-    @CompilationFinal private FrameSlot slot;
+    @CompilationFinal private transient FrameSlot slot;
 
     Local(final SSymbol name, final SourceSection source) {
       super(name, source);
@@ -105,13 +139,17 @@ public abstract class Variable
       return slot;
     }
 
-    public Object getSlotIdentifier() {
-      return slot.getIdentifier();
+    @Override
+    public Local split(final FrameDescriptor descriptor) {
+      Local newLocal = new Local(name, source);
+      newLocal.init(descriptor.addFrameSlot(newLocal));
+      return newLocal;
     }
 
-    public Local cloneForInlining(final FrameSlot inlinedSlot) {
-      Local local = new Local(name, inlinedSlot);
-      return local;
+    @Override
+    public Local splitToMergeIntoOuterScope(final Universe universe,
+        final FrameDescriptor descriptor) {
+      return split(descriptor);
     }
 
     @Override
@@ -144,6 +182,20 @@ public abstract class Variable
       throw new UnsupportedOperationException(
           "There shouldn't be any language-level read nodes for internal slots. "
               + "They are used directly by other nodes.");
+    }
+
+    @Override
+    public Variable split(final FrameDescriptor descriptor) {
+      Internal newInternal = new Internal(name);
+      assert slot.getKind() == FrameSlotKind.Object : "We only have the on stack marker currently, so, we expect those not to specialize";
+      newInternal.init(descriptor.addFrameSlot(newInternal, slot.getKind()));
+      return newInternal;
+    }
+
+    @Override
+    public Local splitToMergeIntoOuterScope(final Universe universe,
+        final FrameDescriptor descriptor) {
+      throw new UnsupportedOperationException();
     }
   }
 }

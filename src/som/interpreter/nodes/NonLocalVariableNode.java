@@ -7,10 +7,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import bd.inlining.ScopeAdaptationVisitor;
+import som.compiler.Variable.Local;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 
@@ -22,19 +23,6 @@ public abstract class NonLocalVariableNode extends ContextualNode {
 
   private NonLocalVariableNode(final int contextLevel, final Local local) {
     super(contextLevel);
-
-  @Override
-  public final void replaceWithLexicallyEmbeddedNode(
-      final InlinerForLexicallyEmbeddedMethods inliner) {
-    throw new RuntimeException(
-        "Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
-  }
-
-  @Override
-  public final void replaceWithCopyAdaptedToEmbeddedOuterContext(
-      final InlinerAdaptToEmbeddedOuterContext inliner) {
-    throw new RuntimeException(
-        "Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
     this.local = local;
     this.slot = local.getSlot();
   }
@@ -90,6 +78,11 @@ public abstract class NonLocalVariableNode extends ContextualNode {
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
       return slot.getKind() == FrameSlotKind.Illegal;
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(local, this, contextLevel);
     }
   }
 
@@ -168,6 +161,11 @@ public abstract class NonLocalVariableNode extends ContextualNode {
         transferToInterpreter("LocalVar.writeObjectToUninit");
         slot.setKind(FrameSlotKind.Object);
       }
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateWrite(local, this, getExp(), contextLevel);
     }
   }
 }

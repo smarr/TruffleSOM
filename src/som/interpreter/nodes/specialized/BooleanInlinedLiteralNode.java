@@ -5,6 +5,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+import bd.inlining.Inline;
 import som.interpreter.nodes.ExpressionNode;
 
 
@@ -44,10 +45,12 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
     }
   }
 
+  @Inline(selector = "and:", inlineableArgIdx = 1)
+  @Inline(selector = "&&", inlineableArgIdx = 1)
   public static final class AndInlinedLiteralNode extends BooleanInlinedLiteralNode {
 
     public AndInlinedLiteralNode(final ExpressionNode receiverNode,
-        final ExpressionNode inlinedArgumentNode, final ExpressionNode originalArgumentNode) {
+        final ExpressionNode originalArgumentNode, final ExpressionNode inlinedArgumentNode) {
       super(receiverNode, inlinedArgumentNode, originalArgumentNode);
     }
 
@@ -66,10 +69,12 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
     }
   }
 
+  @Inline(selector = "or:", inlineableArgIdx = 1)
+  @Inline(selector = "||", inlineableArgIdx = 1)
   public static final class OrInlinedLiteralNode extends BooleanInlinedLiteralNode {
 
     public OrInlinedLiteralNode(final ExpressionNode receiverNode,
-        final ExpressionNode inlinedArgumentNode, final ExpressionNode originalArgumentNode) {
+        final ExpressionNode originalArgumentNode, final ExpressionNode inlinedArgumentNode) {
       super(receiverNode, inlinedArgumentNode, originalArgumentNode);
     }
 

@@ -28,13 +28,12 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
+import bd.inlining.ScopeAdaptationVisitor;
+import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
 import som.compiler.Variable.Internal;
 import som.interpreter.FrameOnStackMarker;
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
 import som.interpreter.ReturnException;
 import som.interpreter.SArguments;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SBlock;
@@ -86,41 +85,19 @@ public final class ReturnNonLocalNode extends ContextualNode {
   }
 
   @Override
-  public void replaceWithIndependentCopyForInlining(
-      final SplitterForLexicallyEmbeddedCode inliner) {
-    FrameSlot inlinedFrameOnStack =
-        inliner.getFrameSlot(this, frameOnStackMarker.getIdentifier());
-    assert inlinedFrameOnStack != null;
-    replace(new ReturnNonLocalNode(this, inlinedFrameOnStack));
-  }
+  public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+    ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
 
-  @Override
-  public void replaceWithLexicallyEmbeddedNode(
-      final InlinerForLexicallyEmbeddedMethods inlinerForLexicallyEmbeddedMethods) {
-    ExpressionNode inlined;
-    if (contextLevel == 1) {
-      inlined = new ReturnLocalNode(expression, frameOnStackMarker).initialize(sourceSection);
-    } else {
-      inlined = new ReturnNonLocalNode(expression, frameOnStackMarker, contextLevel - 1,
-          universe).initialize(sourceSection);
-    }
-    replace(inlined);
-  }
-
-  @Override
-  public void replaceWithCopyAdaptedToEmbeddedOuterContext(
-      final InlinerAdaptToEmbeddedOuterContext inliner) {
-    // if the context level is 1, the variable is in the outer context,
-    // which just got inlined, so, we need to adapt the slot id
-    assert !inliner.appliesTo(contextLevel);
-    // this case should not happen, because the frame slot is at the root level
-    // so, anything that got embedded, has to be nested at least once
-
-    if (inliner.needToAdjustLevel(contextLevel)) {
-      ReturnNonLocalNode node = new ReturnNonLocalNode(expression, frameOnStackMarker,
-          contextLevel - 1, universe).initialize(sourceSection);
+    if (se.var != onStackMarkerVar || se.contextLevel < contextLevel) {
+      ExpressionNode node;
+      if (se.contextLevel == 0) {
+        node = new ReturnLocalNode(expression, (Internal) se.var);
+      } else {
+        node = new ReturnNonLocalNode(
+            expression, (Internal) se.var, se.contextLevel, universe);
+      }
+      node.initialize(sourceSection);
       replace(node);
-      return;
     }
   }
 
@@ -169,12 +146,13 @@ public final class ReturnNonLocalNode extends ContextualNode {
     }
 
     @Override
-    public void replaceWithIndependentCopyForInlining(
-        final SplitterForLexicallyEmbeddedCode inliner) {
-      FrameSlot inlinedFrameOnStack =
-          inliner.getLocalFrameSlot(frameOnStackMarker.getIdentifier());
-      assert inlinedFrameOnStack != null;
-      replace(new ReturnLocalNode(expression, inlinedFrameOnStack).initialize(sourceSection));
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
+      if (se.var != onStackMarkerVar) {
+        ReturnLocalNode node = new ReturnLocalNode(expression, (Internal) se.var);
+        node.initialize(sourceSection);
+        replace(node);
+      }
     }
   }
 
@@ -227,13 +205,12 @@ public final class ReturnNonLocalNode extends ContextualNode {
     }
 
     @Override
-    public void replaceWithIndependentCopyForInlining(
-        final SplitterForLexicallyEmbeddedCode inliner) {
-      FrameSlot inlinedFrameOnStackMarker =
-          inliner.getLocalFrameSlot(frameOnStackMarker.getIdentifier());
-      assert inlinedFrameOnStackMarker != null;
-      replace(new CatchNonLocalReturnNode(
-          methodBody, inlinedFrameOnStackMarker).initialize(sourceSection));
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
+      if (se.var != onStackMarkerVar) {
+        replace(new CatchNonLocalReturnNode(
+            methodBody, (Internal) se.var).initialize(sourceSection));
+      }
     }
   }
 }

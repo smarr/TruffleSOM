@@ -32,14 +32,16 @@ import static som.interpreter.SNodeFactory.createGlobalRead;
 import static som.interpreter.SNodeFactory.createNonLocalReturn;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
+import bd.inlining.ScopeBuilder;
+import bd.inlining.nodes.Inlinable;
 import som.compiler.Variable.AccessNodeState;
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Internal;
@@ -51,6 +53,7 @@ import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.ReturnNonLocalNode;
+import som.interpreter.nodes.literals.BlockNode;
 import som.primitives.Primitives;
 import som.vm.Universe;
 import som.vmobjects.SInvokable;
@@ -58,7 +61,7 @@ import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
 
 
-public final class MethodGenerationContext {
+public final class MethodGenerationContext implements ScopeBuilder<MethodGenerationContext> {
 
   private final ClassGenerationContext  holderGenc;
   private final MethodGenerationContext outerGenc;
@@ -117,6 +120,7 @@ public final class MethodGenerationContext {
 
   public void addEmbeddedBlockMethod(final SMethod blockMethod) {
     embeddedBlockMethods.add(blockMethod);
+    currentScope.addEmbeddedScope(((Method) blockMethod.getInvokable()).getScope());
   }
 
   public LexicalScope getCurrentLexicalScope() {
@@ -194,6 +198,21 @@ public final class MethodGenerationContext {
     return meth;
   }
 
+  public void setVarsOnMethodScope() {
+    Variable[] vars = new Variable[arguments.size() + locals.size()];
+    int i = 0;
+    for (Argument a : arguments.values()) {
+      vars[i] = a;
+      i += 1;
+    }
+
+    for (Local l : locals.values()) {
+      vars[i] = l;
+      i += 1;
+    }
+    currentScope.setVariables(vars);
+  }
+
   private SourceSection getSourceSectionForMethod(final SourceSection ssBody) {
     SourceSection ssMethod = ssBody.getSource().createSection(ssBody.getStartLine(),
         ssBody.getStartColumn(), ssBody.getCharLength());
@@ -239,6 +258,13 @@ public final class MethodGenerationContext {
     l.init(currentScope.getFrameDescriptor().addFrameSlot(l));
     assert !locals.containsKey(local);
     locals.put(local, l);
+    return l;
+  }
+
+  private Local addLocalAndUpdateScope(final SSymbol name, final SourceSection source)
+      throws ProgramDefinitionError {
+    Local l = addLocal(name, source);
+    currentScope.addVariable(l);
     return l;
   }
 
@@ -298,7 +324,7 @@ public final class MethodGenerationContext {
   public ExpressionNode getSuperReadNode(final SourceSection source) {
     Variable self = getVariable(universe.symSelf);
     return self.getSuperReadNode(getOuterSelfContextLevel(),
-        holderGenc.getName(), holderGenc.isClassSide(), source);
+        new AccessNodeState(holderGenc.getName(), holderGenc.isClassSide()), source);
   }
 
   public ExpressionNode getLocalReadNode(final SSymbol variableName,
@@ -331,7 +357,7 @@ public final class MethodGenerationContext {
   public ReturnNonLocalNode getNonLocalReturn(final ExpressionNode expr,
       final SourceSection source) {
     makeCatchNonLocalReturn();
-    return createNonLocalReturn(expr, getFrameOnStackMarkerSlot(),
+    return createNonLocalReturn(expr, getFrameOnStackMarker(),
         getOuterSelfContextLevel(), source, holderGenc.getUniverse());
   }
 
@@ -363,6 +389,58 @@ public final class MethodGenerationContext {
 
     return createFieldWrite(getSelfRead(source), exp,
         holderGenc.getFieldIndex(fieldName), source);
+  }
+
+  public void mergeIntoScope(final LexicalScope scope, final SMethod outer) {
+    for (Variable v : scope.getVariables()) {
+      Local l = v.splitToMergeIntoOuterScope(universe, currentScope.getFrameDescriptor());
+      if (l != null) { // can happen for instance for the block self, which we omit
+        SSymbol name = l.getQualifiedName(universe);
+        assert !locals.containsKey(name);
+        locals.put(name, l);
+        currentScope.addVariable(l);
+      }
+    }
+
+    SMethod[] embeddedBlocks = outer.getEmbeddedBlocks();
+    LexicalScope[] embeddedScopes = scope.getEmbeddedScopes();
+
+    assert ((embeddedBlocks == null || embeddedBlocks.length == 0) &&
+        (embeddedScopes == null || embeddedScopes.length == 0)) ||
+        embeddedBlocks.length == embeddedScopes.length;
+
+    if (embeddedScopes != null) {
+      for (LexicalScope e : embeddedScopes) {
+        currentScope.addEmbeddedScope(e.split(currentScope));
+      }
+
+      for (SMethod m : embeddedBlocks) {
+        embeddedBlockMethods.add(m);
+      }
+    }
+
+    boolean removed = embeddedBlockMethods.remove(outer);
+    assert removed;
+    currentScope.removeMerged(scope);
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public bd.inlining.Variable<?> introduceTempForInlinedVersion(
+      final Inlinable<MethodGenerationContext> blockOrVal, final SourceSection source)
+      throws ProgramDefinitionError {
+    Local loopIdx;
+    if (blockOrVal instanceof BlockNode) {
+      Argument[] args = ((BlockNode) blockOrVal).getArguments();
+      assert args.length == 2;
+      loopIdx = getLocal(args[1].getQualifiedName(universe));
+    } else {
+      // if it is a literal, we still need a memory location for counting, so,
+      // add a synthetic local
+      loopIdx = addLocalAndUpdateScope(
+          universe.symbolFor("!i" + Universe.getLocationQualifier(source)), source);
+    }
+    return loopIdx;
   }
 
   /**

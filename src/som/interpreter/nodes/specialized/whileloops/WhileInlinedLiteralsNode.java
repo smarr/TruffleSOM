@@ -8,11 +8,16 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+import bd.inlining.Inline;
+import bd.inlining.Inline.False;
+import bd.inlining.Inline.True;
 import som.interpreter.Invokable;
 import som.interpreter.nodes.ExpressionNode;
 import som.vm.constants.Nil;
 
 
+@Inline(selector = "whileTrue:", inlineableArgIdx = {0, 1}, additionalArgs = True.class)
+@Inline(selector = "whileFalse:", inlineableArgIdx = {0, 1}, additionalArgs = False.class)
 public final class WhileInlinedLiteralsNode extends ExpressionNode {
 
   @Child private ExpressionNode conditionNode;
@@ -23,9 +28,9 @@ public final class WhileInlinedLiteralsNode extends ExpressionNode {
   private final ExpressionNode conditionActualNode;
   private final ExpressionNode bodyActualNode;
 
-  public WhileInlinedLiteralsNode(final ExpressionNode inlinedConditionNode,
-      final ExpressionNode inlinedBodyNode, final boolean expectedBool,
-      final ExpressionNode originalConditionNode, final ExpressionNode originalBodyNode) {
+  public WhileInlinedLiteralsNode(final ExpressionNode originalConditionNode,
+      final ExpressionNode originalBodyNode, final ExpressionNode inlinedConditionNode,
+      final ExpressionNode inlinedBodyNode, final boolean expectedBool) {
     this.conditionNode = inlinedConditionNode;
     this.bodyNode = inlinedBodyNode;
     this.expectedBool = expectedBool;
