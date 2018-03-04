@@ -56,6 +56,7 @@ import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.primitives.Primitives;
 import som.vm.Universe;
+import som.vm.constants.Nil;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
 import som.vmobjects.SSymbol;
@@ -105,7 +106,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     this.blockMethod = isBlockMethod;
 
     LexicalScope outer = (outerGenc != null) ? outerGenc.getCurrentLexicalScope() : null;
-    this.currentScope = new LexicalScope(new FrameDescriptor(), outer);
+    this.currentScope = new LexicalScope(new FrameDescriptor(Nil.nilObject), outer);
 
     accessesVariablesOfOuterScope = false;
     throwsNonLocalReturn = false;
