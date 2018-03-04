@@ -357,7 +357,8 @@ public final class Parser {
   }
 
   private void pattern(final MethodGenerationContext mgenc) throws ProgramDefinitionError {
-    mgenc.addArgumentIfAbsent("self"); // TODO: can we do that optionally?
+    // TODO: can we do that optionally?
+    mgenc.addArgumentIfAbsent(universe.symSelf, getEmptySource());
     switch (sym) {
       case Identifier:
       case Primitive:
@@ -379,7 +380,8 @@ public final class Parser {
   private void binaryPattern(final MethodGenerationContext mgenc)
       throws ProgramDefinitionError {
     mgenc.setSignature(binarySelector());
-    mgenc.addArgumentIfAbsent(argument());
+    SourceCoordinate coord = getCoordinate();
+    mgenc.addArgumentIfAbsent(universe.symbolFor(argument()), getSource(coord));
   }
 
   private void keywordPattern(final MethodGenerationContext mgenc)
@@ -387,7 +389,8 @@ public final class Parser {
     StringBuffer kw = new StringBuffer();
     do {
       kw.append(keyword());
-      mgenc.addArgumentIfAbsent(argument());
+      SourceCoordinate coord = getCoordinate();
+      mgenc.addArgumentIfAbsent(universe.symbolFor(argument()), getSource(coord));
     } while (sym == Keyword);
 
     mgenc.setSignature(universe.symbolFor(kw.toString()));
@@ -455,7 +458,8 @@ public final class Parser {
 
   private void locals(final MethodGenerationContext mgenc) throws ProgramDefinitionError {
     while (isIdentifier(sym)) {
-      mgenc.addLocalIfAbsent(variable());
+      SourceCoordinate coord = getCoordinate();
+      mgenc.addLocalIfAbsent(universe.symbolFor(variable()), getSource(coord));
     }
   }
 
@@ -476,9 +480,9 @@ public final class Parser {
       } else if (sym == EndBlock) {
         return createSequenceNode(coord, expressions);
       } else if (sym == EndTerm) {
-        // the end of the method has been found (EndTerm) - make it implicitly
-        // return "self"
-        ExpressionNode self = variableRead(mgenc, "self", getSource(getCoordinate()));
+        // the end of the method has been found (EndTerm) - make it implicitly return "self"
+        ExpressionNode self =
+            variableRead(mgenc, universe.symSelf, getSource(getCoordinate()));
         expressions.add(self);
         return createSequenceNode(coord, expressions);
       }
@@ -541,7 +545,7 @@ public final class Parser {
           " fields, but found instead a %(found)s",
           Symbol.Identifier, this);
     }
-    String variable = assignment();
+    SSymbol variable = universe.symbolFor(assignment());
 
     peekForNextSymbolFromLexer();
 
@@ -577,7 +581,7 @@ public final class Parser {
       case Identifier:
       case Primitive: {
         SourceCoordinate coord = getCoordinate();
-        String v = variable();
+        SSymbol v = universe.symbolFor(variable());
         return variableRead(mgenc, v, getSource(coord));
       }
       case NewTerm: {
@@ -907,7 +911,7 @@ public final class Parser {
     expect(NewBlock);
     SourceCoordinate coord = getCoordinate();
 
-    mgenc.addArgumentIfAbsent("$blockSelf");
+    mgenc.addArgumentIfAbsent(universe.symBlockSelf, getEmptySource());
 
     if (sym == Colon) {
       blockPattern(mgenc);
@@ -942,15 +946,15 @@ public final class Parser {
       throws ProgramDefinitionError {
     do {
       expect(Colon);
-      mgenc.addArgumentIfAbsent(argument());
+      SourceCoordinate coord = getCoordinate();
+      mgenc.addArgumentIfAbsent(universe.symbolFor(argument()), getSource(coord));
     } while (sym == Colon);
   }
 
   private ExpressionNode variableRead(final MethodGenerationContext mgenc,
-      final String variableName,
-      final SourceSection source) {
+      final SSymbol variableName, final SourceSection source) {
     // we need to handle super special here
-    if ("super".equals(variableName)) {
+    if (universe.symSuper == variableName) {
       return mgenc.getSuperReadNode(source);
     }
 
@@ -961,26 +965,24 @@ public final class Parser {
     }
 
     // then object fields
-    SSymbol varName = universe.symbolFor(variableName);
-    FieldReadNode fieldRead = mgenc.getObjectFieldRead(varName, source);
+    FieldReadNode fieldRead = mgenc.getObjectFieldRead(variableName, source);
 
     if (fieldRead != null) {
       return fieldRead;
     }
 
     // and finally assume it is a global
-    return mgenc.getGlobalRead(varName, universe, source);
+    return mgenc.getGlobalRead(variableName, universe, source);
   }
 
   private ExpressionNode variableWrite(final MethodGenerationContext mgenc,
-      final String variableName, final ExpressionNode exp, final SourceSection source) {
+      final SSymbol variableName, final ExpressionNode exp, final SourceSection source) {
     Local variable = mgenc.getLocal(variableName);
     if (variable != null) {
       return mgenc.getLocalWriteNode(variableName, exp, source);
     }
 
-    SSymbol fieldName = universe.symbolFor(variableName);
-    FieldWriteNode fieldWrite = mgenc.getObjectFieldWrite(fieldName, exp, universe, source);
+    FieldWriteNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, universe, source);
 
     if (fieldWrite != null) {
       return fieldWrite;

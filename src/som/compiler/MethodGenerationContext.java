@@ -70,26 +70,32 @@ public final class MethodGenerationContext {
 
   private boolean accessesVariablesOfOuterScope;
 
-  private final LinkedHashMap<String, Argument> arguments =
-      new LinkedHashMap<String, Argument>();
-  private final LinkedHashMap<String, Local>    locals    = new LinkedHashMap<String, Local>();
+  private final LinkedHashMap<SSymbol, Argument> arguments;
+  private final LinkedHashMap<SSymbol, Local>    locals;
 
   private FrameSlot          frameOnStackSlot;
   private final LexicalScope currentScope;
 
   private final List<SMethod> embeddedBlockMethods;
 
+  private final Universe universe;
+
   public MethodGenerationContext(final ClassGenerationContext holderGenc) {
-    this(holderGenc, null, false);
+    this(holderGenc, null, holderGenc.getUniverse(), false);
+  }
+
+  public MethodGenerationContext(final Universe universe) {
+    this(null, null, universe, false);
   }
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc) {
-    this(holderGenc, outerGenc, true);
+    this(holderGenc, outerGenc, holderGenc.getUniverse(), true);
   }
 
   private MethodGenerationContext(final ClassGenerationContext holderGenc,
-      final MethodGenerationContext outerGenc, final boolean isBlockMethod) {
+      final MethodGenerationContext outerGenc, final Universe universe,
+      final boolean isBlockMethod) {
     this.holderGenc = holderGenc;
     this.outerGenc = outerGenc;
     this.blockMethod = isBlockMethod;
@@ -101,6 +107,11 @@ public final class MethodGenerationContext {
     throwsNonLocalReturn = false;
     needsToCatchNonLocalReturn = false;
     embeddedBlockMethods = new ArrayList<SMethod>();
+
+    arguments = new LinkedHashMap<SSymbol, Argument>();
+    locals = new LinkedHashMap<SSymbol, Local>();
+
+    this.universe = universe;
   }
 
   public void addEmbeddedBlockMethod(final SMethod blockMethod) {
@@ -246,7 +257,7 @@ public final class MethodGenerationContext {
     return level;
   }
 
-  private int getContextLevel(final String varName) {
+  private int getContextLevel(final SSymbol varName) {
     if (locals.containsKey(varName) || arguments.containsKey(varName)) {
       return 0;
     }
@@ -258,11 +269,11 @@ public final class MethodGenerationContext {
     return 0;
   }
 
-  public Local getEmbeddedLocal(final String embeddedName) {
+  public Local getEmbeddedLocal(final SSymbol embeddedName) {
     return locals.get(embeddedName);
   }
 
-  protected Variable getVariable(final String varName) {
+  protected Variable getVariable(final SSymbol varName) {
     if (locals.containsKey(varName)) {
       return locals.get(varName);
     }
@@ -282,24 +293,24 @@ public final class MethodGenerationContext {
   }
 
   public ExpressionNode getSuperReadNode(final SourceSection source) {
-    Variable self = getVariable("self");
+    Variable self = getVariable(universe.symSelf);
     return self.getSuperReadNode(getOuterSelfContextLevel(),
         holderGenc.getName(), holderGenc.isClassSide(), source);
   }
 
-  public ExpressionNode getLocalReadNode(final String variableName,
+  public ExpressionNode getLocalReadNode(final SSymbol variableName,
       final SourceSection source) {
     Variable variable = getVariable(variableName);
     return variable.getReadNode(getContextLevel(variableName), source);
   }
 
-  public ExpressionNode getLocalWriteNode(final String variableName,
+  public ExpressionNode getLocalWriteNode(final SSymbol variableName,
       final ExpressionNode valExpr, final SourceSection source) {
     Local variable = getLocal(variableName);
     return variable.getWriteNode(getContextLevel(variableName), valExpr, source);
   }
 
-  protected Local getLocal(final String varName) {
+  protected Local getLocal(final SSymbol varName) {
     if (locals.containsKey(varName)) {
       return locals.get(varName);
     }
@@ -322,7 +333,8 @@ public final class MethodGenerationContext {
   }
 
   private ExpressionNode getSelfRead(final SourceSection source) {
-    return getVariable("self").getReadNode(getContextLevel("self"), source);
+    return getVariable(universe.symSelf).getReadNode(getContextLevel(universe.symSelf),
+        source);
   }
 
   public FieldReadNode getObjectFieldRead(final SSymbol fieldName,

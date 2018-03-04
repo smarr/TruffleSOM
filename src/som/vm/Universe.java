@@ -146,6 +146,14 @@ public final class Universe implements IdProvider<SSymbol> {
     booleanClass = newSystemClass();
 
     this.primitives = new Primitives(this);
+
+    symSelf = symbolFor("self");
+    symBlockSelf = symbolFor("$blockSelf");
+    symSuper = symbolFor("super");
+
+    // Name for the frameOnStack slot,
+    // starting with ! to make it a name that's not possible in Smalltalk
+    symFrameOnStack = symbolFor("!frameOnStack");
   }
 
   public static final class SomExit extends ThreadDeath {
@@ -727,6 +735,11 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal private SClass trueClass;
   @CompilationFinal private SClass falseClass;
   @CompilationFinal private SClass systemClass;
+
+  public final SSymbol symSelf;
+  public final SSymbol symBlockSelf;
+  public final SSymbol symFrameOnStack;
+  public final SSymbol symSuper;
 
   private final HashMap<SSymbol, Association> globals;
 
