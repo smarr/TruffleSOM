@@ -2,7 +2,6 @@ package som.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import som.compiler.Variable.Local;
@@ -32,18 +31,13 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       super(variable, contextLevel);
     }
 
-    protected UninitializedVariableReadNode(final UninitializedVariableReadNode node,
-        final FrameSlot inlinedVarSlot) {
-      this(node.variable.cloneForInlining(inlinedVarSlot), node.contextLevel);
-    }
-
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedVariableReadNode");
 
       if (contextLevel > 0) {
         NonLocalVariableReadNode node = NonLocalVariableReadNodeGen.create(
-            contextLevel, variable.getSlot()).initialize(sourceSection);
+            contextLevel, variable).initialize(sourceSection);
         return replace(node).executeGeneric(frame);
       } else {
         // assert frame.getFrameDescriptor().findFrameSlot(variable.getSlotIdentifier()) ==
@@ -107,18 +101,13 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       this.exp = exp;
     }
 
-    public UninitializedVariableWriteNode(final UninitializedVariableWriteNode node,
-        final FrameSlot inlinedVarSlot) {
-      this(node.variable.cloneForInlining(inlinedVarSlot), node.contextLevel, node.exp);
-    }
-
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedVariableWriteNode");
 
       if (accessesOuterContext()) {
         NonLocalVariableWriteNode node = NonLocalVariableWriteNodeGen.create(
-            contextLevel, variable.getSlot(), exp).initialize(sourceSection);
+            contextLevel, variable, exp).initialize(sourceSection);
         return replace(node).executeGeneric(frame);
       } else {
         // not sure about removing this assertion :(((

@@ -108,9 +108,9 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   public static SInvokable constructEmptyPrimitive(final SSymbol signature,
       final SomLanguage lang, final SourceSection sourceSection) {
     CompilerAsserts.neverPartOfCompilation();
-    MethodGenerationContext mgen = new MethodGenerationContext(null);
+    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse());
 
-    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(0));
+    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0));
     Primitive primMethodNode =
         new Primitive(signature.getString(), sourceSection, primNode,
             mgen.getCurrentLexicalScope().getFrameDescriptor(),
@@ -180,10 +180,10 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     Source s = SomLanguage.getSyntheticSource("primitive", specializer.getName());
     SourceSection source = s.createSection(1);
 
-    MethodGenerationContext mgen = new MethodGenerationContext(null);
+    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse());
     ExpressionNode[] args = new ExpressionNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
-      args[i] = new LocalArgumentReadNode(i).initialize(source);
+      args[i] = new LocalArgumentReadNode(true, i).initialize(source);
     }
 
     ExpressionNode primNode = specializer.create(null, args, source, false);

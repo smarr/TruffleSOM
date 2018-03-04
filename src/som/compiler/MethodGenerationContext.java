@@ -37,11 +37,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
+import som.compiler.Variable.AccessNodeState;
 import som.compiler.Variable.Argument;
+import som.compiler.Variable.Internal;
 import som.compiler.Variable.Local;
 import som.interpreter.LexicalScope;
 import som.interpreter.Method;
@@ -73,7 +74,7 @@ public final class MethodGenerationContext {
   private final LinkedHashMap<SSymbol, Argument> arguments;
   private final LinkedHashMap<SSymbol, Local>    locals;
 
-  private FrameSlot          frameOnStackSlot;
+  private Internal           frameOnStack;
   private final LexicalScope currentScope;
 
   private final List<SMethod> embeddedBlockMethods;
@@ -122,19 +123,20 @@ public final class MethodGenerationContext {
     return currentScope;
   }
 
-  // Name for the frameOnStack slot,
-  // starting with ! to make it a name that's not possible in Smalltalk
-  private static final String frameOnStackSlotName = "!frameOnStack";
-
-  public FrameSlot getFrameOnStackMarkerSlot() {
+  public Internal getFrameOnStackMarker() {
     if (outerGenc != null) {
-      return outerGenc.getFrameOnStackMarkerSlot();
+      return outerGenc.getFrameOnStackMarker();
     }
 
-    if (frameOnStackSlot == null) {
-      frameOnStackSlot = currentScope.getFrameDescriptor().addFrameSlot(frameOnStackSlotName);
+    if (frameOnStack == null) {
+      assert needsToCatchNonLocalReturn;
+
+      frameOnStack = new Internal(universe.symFrameOnStack);
+      frameOnStack.init(
+          currentScope.getFrameDescriptor().addFrameSlot(frameOnStack, FrameSlotKind.Object));
+      currentScope.addVariable(frameOnStack);
     }
-    return frameOnStackSlot;
+    return frameOnStack;
   }
 
   public void makeCatchNonLocalReturn() {
@@ -178,7 +180,7 @@ public final class MethodGenerationContext {
     }
 
     if (needsToCatchNonLocalReturn()) {
-      body = createCatchNonLocalReturn(body, getFrameOnStackMarkerSlot());
+      body = createCatchNonLocalReturn(body, getFrameOnStackMarker());
     }
 
     Method truffleMethod =
@@ -206,34 +208,35 @@ public final class MethodGenerationContext {
     signature = sig;
   }
 
-  private void addArgument(final String arg) {
-    if (("self".equals(arg) || "$blockSelf".equals(arg)) && arguments.size() > 0) {
+  private void addArgument(final SSymbol arg, final SourceSection source) {
+    if ((universe.symSelf == arg || universe.symBlockSelf == arg) && arguments.size() > 0) {
       throw new IllegalStateException(
           "The self argument always has to be the first argument of a method");
     }
 
-    Argument argument = new Argument(arg, arguments.size());
+    Argument argument = new Argument(arg, arguments.size(), source);
     arguments.put(arg, argument);
   }
 
-  public void addArgumentIfAbsent(final String arg) {
+  public void addArgumentIfAbsent(final SSymbol arg, final SourceSection source) {
     if (arguments.containsKey(arg)) {
       return;
     }
 
-    addArgument(arg);
+    addArgument(arg, source);
   }
 
-  public void addLocalIfAbsent(final String local) {
+  public void addLocalIfAbsent(final SSymbol local, final SourceSection source) {
     if (locals.containsKey(local)) {
       return;
     }
 
-    addLocal(local);
+    addLocal(local, source);
   }
 
-  public Local addLocal(final String local) {
-    Local l = new Local(local, currentScope.getFrameDescriptor().addFrameSlot(local));
+  public Local addLocal(final SSymbol local, final SourceSection source) {
+    Local l = new Local(local, source);
+    l.init(currentScope.getFrameDescriptor().addFrameSlot(l));
     assert !locals.containsKey(local);
     locals.put(local, l);
     return l;

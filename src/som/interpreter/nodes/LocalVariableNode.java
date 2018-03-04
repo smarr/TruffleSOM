@@ -16,9 +16,11 @@ import som.vmobjects.SObject;
 
 public abstract class LocalVariableNode extends ExpressionNode {
   protected final FrameSlot slot;
+  protected final Local     local;
 
-  private LocalVariableNode(final FrameSlot slot) {
-    this.slot = slot;
+  private LocalVariableNode(final Local local) {
+    this.local = local;
+    this.slot = local.getSlot();
   }
 
   public final Object getSlotIdentifier() {
@@ -28,15 +30,11 @@ public abstract class LocalVariableNode extends ExpressionNode {
   public abstract static class LocalVariableReadNode extends LocalVariableNode {
 
     public LocalVariableReadNode(final Local variable) {
-      this(variable.getSlot());
+      super(variable);
     }
 
     public LocalVariableReadNode(final LocalVariableReadNode node) {
-      this(node.slot);
-    }
-
-    public LocalVariableReadNode(final FrameSlot slot) {
-      super(slot);
+      this(node.local);
     }
 
     @Specialization(guards = "isUninitialized(frame)")
@@ -91,15 +89,11 @@ public abstract class LocalVariableNode extends ExpressionNode {
   public abstract static class LocalVariableWriteNode extends LocalVariableNode {
 
     public LocalVariableWriteNode(final Local variable) {
-      super(variable.getSlot());
+      super(variable);
     }
 
     public LocalVariableWriteNode(final LocalVariableWriteNode node) {
-      super(node.slot);
-    }
-
-    public LocalVariableWriteNode(final FrameSlot slot) {
-      super(slot);
+      super(node.local);
     }
 
     public abstract ExpressionNode getExp();

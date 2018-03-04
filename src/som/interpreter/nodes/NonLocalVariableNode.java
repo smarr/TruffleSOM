@@ -18,11 +18,10 @@ import som.vmobjects.SObject;
 public abstract class NonLocalVariableNode extends ContextualNode {
 
   protected final FrameSlot slot;
+  protected final Local     local;
 
-  private NonLocalVariableNode(final int contextLevel, final FrameSlot slot) {
+  private NonLocalVariableNode(final int contextLevel, final Local local) {
     super(contextLevel);
-    this.slot = slot;
-  }
 
   @Override
   public final void replaceWithLexicallyEmbeddedNode(
@@ -36,12 +35,14 @@ public abstract class NonLocalVariableNode extends ContextualNode {
       final InlinerAdaptToEmbeddedOuterContext inliner) {
     throw new RuntimeException(
         "Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
+    this.local = local;
+    this.slot = local.getSlot();
   }
 
   public abstract static class NonLocalVariableReadNode extends NonLocalVariableNode {
 
-    public NonLocalVariableReadNode(final int contextLevel, final FrameSlot slot) {
-      super(contextLevel, slot);
+    public NonLocalVariableReadNode(final int contextLevel, final Local local) {
+      super(contextLevel, local);
     }
 
     @Specialization(guards = "isUninitialized(frame)")
@@ -95,9 +96,11 @@ public abstract class NonLocalVariableNode extends ContextualNode {
   @NodeChild(value = "exp", type = ExpressionNode.class)
   public abstract static class NonLocalVariableWriteNode extends NonLocalVariableNode {
 
-    public NonLocalVariableWriteNode(final int contextLevel, final FrameSlot slot) {
-      super(contextLevel, slot);
+    public NonLocalVariableWriteNode(final int contextLevel, final Local local) {
+      super(contextLevel, local);
     }
+
+    public abstract ExpressionNode getExp();
 
     @Specialization(guards = "isBoolKind(frame)")
     public final boolean writeBoolean(final VirtualFrame frame, final boolean expValue) {

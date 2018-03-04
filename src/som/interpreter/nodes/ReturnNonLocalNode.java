@@ -28,6 +28,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
+import som.compiler.Variable.Internal;
 import som.interpreter.FrameOnStackMarker;
 import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import som.interpreter.InlinerForLexicallyEmbeddedMethods;
@@ -43,23 +44,24 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
   @Child private ExpressionNode expression;
   private final BranchProfile   blockEscaped;
+  private final Internal        onStackMarkerVar;
   private final FrameSlot       frameOnStackMarker;
   private final Universe        universe;
 
-  public ReturnNonLocalNode(final ExpressionNode expression,
-      final FrameSlot frameOnStackMarker, final int outerSelfContextLevel,
-      final Universe universe) {
+  public ReturnNonLocalNode(final ExpressionNode expression, final Internal onStackMarkerVar,
+      final int outerSelfContextLevel, final Universe universe) {
     super(outerSelfContextLevel);
     assert outerSelfContextLevel > 0;
     this.expression = expression;
     this.blockEscaped = BranchProfile.create();
-    this.frameOnStackMarker = frameOnStackMarker;
+    this.onStackMarkerVar = onStackMarkerVar;
+    this.frameOnStackMarker = onStackMarkerVar.getSlot();
     this.universe = universe;
   }
 
   public ReturnNonLocalNode(final ReturnNonLocalNode node,
       final FrameSlot inlinedFrameOnStack) {
-    this(node.expression, inlinedFrameOnStack, node.contextLevel, node.universe);
+    this(node.expression, node.onStackMarkerVar, node.contextLevel, node.universe);
   }
 
   private FrameOnStackMarker getMarkerFromContext(final MaterializedFrame ctx) {
@@ -131,11 +133,15 @@ public final class ReturnNonLocalNode extends ContextualNode {
    */
   private static final class ReturnLocalNode extends ExpressionNode {
     @Child private ExpressionNode expression;
-    private final FrameSlot       frameOnStackMarker;
 
-    private ReturnLocalNode(final ExpressionNode exp, final FrameSlot frameOnStackMarker) {
+    private final Internal  onStackMarkerVar;
+    private final FrameSlot frameOnStackMarker;
+
+    private ReturnLocalNode(final ExpressionNode exp, final Internal onStackMarker) {
       this.expression = exp;
-      this.frameOnStackMarker = frameOnStackMarker;
+
+      this.onStackMarkerVar = onStackMarker;
+      this.frameOnStackMarker = onStackMarker.getSlot();
     }
 
     @Override
@@ -174,16 +180,19 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
   public static final class CatchNonLocalReturnNode extends ExpressionNode {
     @Child protected ExpressionNode methodBody;
-    private final BranchProfile     nonLocalReturnHandler;
-    private final BranchProfile     doCatch;
-    private final BranchProfile     doPropagate;
-    private final FrameSlot         frameOnStackMarker;
+
+    private final BranchProfile nonLocalReturnHandler;
+    private final BranchProfile doCatch;
+    private final BranchProfile doPropagate;
+    private final Internal      onStackMarkerVar;
+    private final FrameSlot     frameOnStackMarker;
 
     public CatchNonLocalReturnNode(final ExpressionNode methodBody,
-        final FrameSlot frameOnStackMarker) {
+        final Internal onStackMarker) {
       this.methodBody = methodBody;
       this.nonLocalReturnHandler = BranchProfile.create();
-      this.frameOnStackMarker = frameOnStackMarker;
+      this.onStackMarkerVar = onStackMarker;
+      this.frameOnStackMarker = onStackMarker.getSlot();
 
       this.doCatch = BranchProfile.create();
       this.doPropagate = BranchProfile.create();

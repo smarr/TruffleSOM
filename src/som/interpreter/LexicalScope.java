@@ -4,14 +4,16 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 
+import som.compiler.Variable;
+  private final FrameDescriptor frameDescriptor;
+  private final LexicalScope    outerScope;
 
 public final class LexicalScope {
-  private final FrameDescriptor    frameDescriptor;
-  private final LexicalScope       outerScope;
   @CompilationFinal private Method method;
 
   public LexicalScope(final FrameDescriptor frameDescriptor,
       final LexicalScope outerScope) {
+  @CompilationFinal(dimensions = 1) private Variable[]     variables;
     this.frameDescriptor = frameDescriptor;
     this.outerScope = outerScope;
   }
@@ -51,5 +53,11 @@ public final class LexicalScope {
   @Override
   public String toString() {
     return "LexScp[" + frameDescriptor.toString() + "]";
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Variable[] getVariables() {
+    return variables;
   }
 }
