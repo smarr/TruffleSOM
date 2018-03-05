@@ -50,6 +50,24 @@ public final class Method extends Invokable {
   }
 
   @Override
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
+
+    if (!(o instanceof Method)) {
+      return false;
+    }
+
+    Method m = (Method) o;
+    if (!m.name.equals(name)) {
+      return false;
+    }
+
+    return m.sourceSection.equals(sourceSection);
+  }
+
+  @Override
   public String toString() {
     return "Method " + getName() + " @" + Integer.toHexString(hashCode());
   }
@@ -85,7 +103,7 @@ public final class Method extends Invokable {
   public Node deepCopy() {
     LexicalScope splitScope = currentLexicalScope.split();
     assert currentLexicalScope != splitScope;
-    return cloneAndAdaptAfterScopeChange(splitScope, 0, false, false);
+    return cloneAndAdaptAfterScopeChange(splitScope, 0, false, true);
   }
 
   @Override
