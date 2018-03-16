@@ -8,8 +8,8 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
 import som.interpreter.nodes.ExpressionNode;
+import som.vmobjects.SInvokable.SMethod;
 
 
 public abstract class Invokable extends RootNode {
@@ -46,13 +46,8 @@ public abstract class Invokable extends RootNode {
     return expressionOrSequence.executeGeneric(frame);
   }
 
-  public abstract Invokable cloneWithNewLexicalContext(LexicalScope outerContext);
-
-  public ExpressionNode inline(final MethodGenerationContext mgenc,
-      final Local[] locals) {
-    return InlinerForLexicallyEmbeddedMethods.doInline(uninitializedBody, mgenc,
-        locals, getSourceSection().getCharIndex());
-  }
+  /** Inline invokable into the lexical context of the given builder. */
+  public abstract ExpressionNode inline(MethodGenerationContext mgenc, SMethod outer);
 
   @Override
   public final boolean isCloningAllowed() {

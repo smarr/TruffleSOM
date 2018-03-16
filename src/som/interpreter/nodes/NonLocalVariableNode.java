@@ -7,10 +7,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import bd.inlining.ScopeAdaptationVisitor;
+import som.compiler.Variable.Local;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 
@@ -18,30 +19,18 @@ import som.vmobjects.SObject;
 public abstract class NonLocalVariableNode extends ContextualNode {
 
   protected final FrameSlot slot;
+  protected final Local     local;
 
-  private NonLocalVariableNode(final int contextLevel, final FrameSlot slot) {
+  private NonLocalVariableNode(final int contextLevel, final Local local) {
     super(contextLevel);
-    this.slot = slot;
-  }
-
-  @Override
-  public final void replaceWithLexicallyEmbeddedNode(
-      final InlinerForLexicallyEmbeddedMethods inliner) {
-    throw new RuntimeException(
-        "Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
-  }
-
-  @Override
-  public final void replaceWithCopyAdaptedToEmbeddedOuterContext(
-      final InlinerAdaptToEmbeddedOuterContext inliner) {
-    throw new RuntimeException(
-        "Normally, only uninitialized variable nodes should be encountered, because this is done at parse time");
+    this.local = local;
+    this.slot = local.getSlot();
   }
 
   public abstract static class NonLocalVariableReadNode extends NonLocalVariableNode {
 
-    public NonLocalVariableReadNode(final int contextLevel, final FrameSlot slot) {
-      super(contextLevel, slot);
+    public NonLocalVariableReadNode(final int contextLevel, final Local local) {
+      super(contextLevel, local);
     }
 
     @Specialization(guards = "isUninitialized(frame)")
@@ -90,14 +79,21 @@ public abstract class NonLocalVariableNode extends ContextualNode {
     protected final boolean isUninitialized(final VirtualFrame frame) {
       return slot.getKind() == FrameSlotKind.Illegal;
     }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(local, this, contextLevel);
+    }
   }
 
   @NodeChild(value = "exp", type = ExpressionNode.class)
   public abstract static class NonLocalVariableWriteNode extends NonLocalVariableNode {
 
-    public NonLocalVariableWriteNode(final int contextLevel, final FrameSlot slot) {
-      super(contextLevel, slot);
+    public NonLocalVariableWriteNode(final int contextLevel, final Local local) {
+      super(contextLevel, local);
     }
+
+    public abstract ExpressionNode getExp();
 
     @Specialization(guards = "isBoolKind(frame)")
     public final boolean writeBoolean(final VirtualFrame frame, final boolean expValue) {
@@ -165,6 +161,11 @@ public abstract class NonLocalVariableNode extends ContextualNode {
         transferToInterpreter("LocalVar.writeObjectToUninit");
         slot.setKind(FrameSlotKind.Object);
       }
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateWrite(local, this, getExp(), contextLevel);
     }
   }
 }

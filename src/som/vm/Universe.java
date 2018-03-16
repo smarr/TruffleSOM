@@ -34,10 +34,13 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
 import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
+import bd.basic.IdProvider;
+import bd.inlining.InlinableNodes;
 import som.compiler.Disassembler;
 import som.interpreter.Invokable;
 import som.interpreter.SomLanguage;
@@ -54,7 +57,7 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 
-public final class Universe {
+public final class Universe implements IdProvider<SSymbol> {
 
   public static final boolean FailOnMissingOptimizations = false;
 
@@ -62,6 +65,10 @@ public final class Universe {
     if (FailOnMissingOptimizations) {
       CompilerAsserts.neverPartOfCompilation(msg);
     }
+  }
+
+  public static String getLocationQualifier(final SourceSection section) {
+    return ":" + section.getStartLine() + ":" + section.getStartColumn();
   }
 
   /**
@@ -145,6 +152,16 @@ public final class Universe {
     booleanClass = newSystemClass();
 
     this.primitives = new Primitives(this);
+    this.inlinableNodes = new InlinableNodes<>(this, Primitives.getInlinableNodes(),
+        Primitives.getInlinableFactories());
+
+    symSelf = symbolFor("self");
+    symBlockSelf = symbolFor("$blockSelf");
+    symSuper = symbolFor("super");
+
+    // Name for the frameOnStack slot,
+    // starting with ! to make it a name that's not possible in Smalltalk
+    symFrameOnStack = symbolFor("!frameOnStack");
   }
 
   public static final class SomExit extends ThreadDeath {
@@ -415,6 +432,11 @@ public final class Universe {
     }
 
     return newSymbol(interned);
+  }
+
+  @Override
+  public SSymbol getId(final String id) {
+    return symbolFor(id);
   }
 
   public static SBlock newBlock(final SMethod method, final SClass blockClass,
@@ -699,6 +721,10 @@ public final class Universe {
     return primitives;
   }
 
+  public InlinableNodes<SSymbol> getInlinableNodes() {
+    return inlinableNodes;
+  }
+
   public final SClass objectClass;
   public final SClass classClass;
   public final SClass metaclassClass;
@@ -722,6 +748,11 @@ public final class Universe {
   @CompilationFinal private SClass falseClass;
   @CompilationFinal private SClass systemClass;
 
+  public final SSymbol symSelf;
+  public final SSymbol symBlockSelf;
+  public final SSymbol symFrameOnStack;
+  public final SSymbol symSuper;
+
   private final HashMap<SSymbol, Association> globals;
 
   private String[]                  classPath;
@@ -735,6 +766,8 @@ public final class Universe {
   @CompilationFinal(dimensions = 1) private final SClass[] blockClasses;
 
   private final Primitives primitives;
+
+  private final InlinableNodes<SSymbol> inlinableNodes;
 
   @CompilationFinal private boolean alreadyInitialized;
 

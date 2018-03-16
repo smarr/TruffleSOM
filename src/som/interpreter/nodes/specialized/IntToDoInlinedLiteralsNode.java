@@ -2,8 +2,8 @@ package som.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
@@ -11,16 +11,19 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
+import bd.inlining.Inline;
+import bd.inlining.ScopeAdaptationVisitor;
+import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
+import som.compiler.Variable;
+import som.compiler.Variable.Local;
 import som.interpreter.Invokable;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
 
 
-@NodeChildren({
-    @NodeChild(value = "from", type = ExpressionNode.class),
-    @NodeChild(value = "to", type = ExpressionNode.class)})
+@NodeChild(value = "from", type = ExpressionNode.class)
+@NodeChild(value = "to", type = ExpressionNode.class)
+@Inline(selector = "to:do:", inlineableArgIdx = 2, introduceTemps = 2, disabled = true)
+@GenerateNodeFactory
 public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
 
   @Child protected ExpressionNode body;
@@ -30,15 +33,17 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
   private final ExpressionNode bodyActualNode;
 
   private final FrameSlot loopIndex;
+  private final Variable  loopIdxVar;
 
   public abstract ExpressionNode getFrom();
 
   public abstract ExpressionNode getTo();
 
-  public IntToDoInlinedLiteralsNode(final ExpressionNode body, final FrameSlot loopIndex,
-      final ExpressionNode originalBody) {
+  public IntToDoInlinedLiteralsNode(final ExpressionNode originalBody,
+      final ExpressionNode body, final Local loopIdxVar) {
     this.body = body;
-    this.loopIndex = loopIndex;
+    this.loopIdxVar = loopIdxVar;
+    this.loopIndex = loopIdxVar.getSlot();
     this.bodyActualNode = originalBody;
 
     // and, we can already tell the loop index that it is going to be long
@@ -100,26 +105,11 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
   }
 
   @Override
-  public void replaceWithLexicallyEmbeddedNode(
-      final InlinerForLexicallyEmbeddedMethods inliner) {
-    IntToDoInlinedLiteralsNode node = IntToDoInlinedLiteralsNodeGen.create(body,
-        inliner.addLocalSlot(loopIndex.getIdentifier()), bodyActualNode, getFrom(), getTo());
+  public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+    ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(loopIdxVar);
+    IntToDoInlinedLiteralsNode node = IntToDoInlinedLiteralsNodeFactory.create(bodyActualNode,
+        body, (Local) se.var, getFrom(), getTo());
     node.initialize(sourceSection);
     replace(node);
-    // create loopIndex in new context...
-  }
-
-  @Override
-  public void replaceWithIndependentCopyForInlining(
-      final SplitterForLexicallyEmbeddedCode inliner) {
-    FrameSlot inlinedLoopIdx = inliner.getLocalFrameSlot(loopIndex.getIdentifier());
-    replace(IntToDoInlinedLiteralsNodeGen.create(body, inlinedLoopIdx, bodyActualNode,
-        getFrom(), getTo()).initialize(sourceSection));
-  }
-
-  @Override
-  public void replaceWithCopyAdaptedToEmbeddedOuterContext(
-      final InlinerAdaptToEmbeddedOuterContext inliner) {
-    // NOOP: This node has a FrameSlot, but it is local, so does not need to be updated.
   }
 }

@@ -32,7 +32,7 @@ import java.io.StringReader;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 
-import som.compiler.Parser.ParseError;
+import bd.basic.ProgramDefinitionError;
 import som.vm.Universe;
 import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
@@ -80,7 +80,7 @@ public final class SourcecodeCompiler {
     SClass result = systemClass;
     try {
       parser.classdef(cgc);
-    } catch (ParseError pe) {
+    } catch (ProgramDefinitionError pe) {
       Universe.errorExit(pe.toString());
     }
 

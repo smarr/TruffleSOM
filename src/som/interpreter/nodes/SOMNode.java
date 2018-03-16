@@ -26,19 +26,20 @@ import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
+import bd.inlining.ScopeAdaptationVisitor;
+import bd.inlining.nodes.ScopeReference;
+import bd.inlining.nodes.WithSource;
 import som.interpreter.Types;
 
 
 @TypeSystemReference(Types.class)
-public abstract class SOMNode extends Node {
+public abstract class SOMNode extends Node implements ScopeReference, WithSource {
 
   @CompilationFinal protected SourceSection sourceSection;
 
+  @Override
   @SuppressWarnings("unchecked")
-  public <T extends SOMNode> T initialize(final SourceSection sourceSection) {
+  public <T extends Node> T initialize(final SourceSection sourceSection) {
     assert sourceSection != null;
     assert this.sourceSection == null : "sourceSection should only be set once";
     this.sourceSection = sourceSection;
@@ -50,59 +51,15 @@ public abstract class SOMNode extends Node {
     return sourceSection;
   }
 
-  /**
-   * This method is called by a visitor that adjusts a newly split copy of a
-   * block method to refer to the correct out lexical context, and for instance,
-   * to replace FrameSlot references by the correct and independent new outer
-   * lexical scope.
-   *
-   * @param inliner
-   */
-  public void replaceWithIndependentCopyForInlining(
-      final SplitterForLexicallyEmbeddedCode inliner) {
+  @Override
+  public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
     // do nothing!
     // only a small subset of nodes needs to implement this method.
-    // Most notably, nodes using FrameSlots, and block nodes with method
-    // nodes.
-  }
-
-  /**
-   * This method is called by a visitor that adjusts a copy of a block method
-   * to be embedded into its outer method/block. Thus, it needs to adjust
-   * frame slots, which are now moved up to the outer method, and also
-   * trigger adaptation of methods lexically embedded/included in this copy.
-   * The actual adaptation of those methods is done by
-   * replaceWithCopyAdaptedToEmbeddedOuterContext();
-   *
-   * @param inlinerForLexicallyEmbeddedMethods
-   */
-  public void replaceWithLexicallyEmbeddedNode(
-      final InlinerForLexicallyEmbeddedMethods inliner) {
-    // do nothing!
-    // only a small subset of nodes needs to implement this method.
-    // Most notably, nodes using FrameSlots, and block nodes with method
-    // nodes.
-  }
-
-  /**
-   * Adapt a copy of a method that is lexically enclosed in a block that
-   * just got embedded into its outer context.
-   * Thus, all frame slots need to be fixed up, as well as all embedded
-   * blocks.
-   *
-   * @param inlinerAdaptToEmbeddedOuterContext
-   */
-  public void replaceWithCopyAdaptedToEmbeddedOuterContext(
-      final InlinerAdaptToEmbeddedOuterContext inliner) {
-    // do nothing!
-    // only a small subset of nodes needs to implement this method.
-    // Most notably, nodes using FrameSlots, and block nodes with method
-    // nodes.
+    // Most notably, nodes using FrameSlots, and block nodes with method nodes.
   }
 
   /**
    * @return body of a node that just wraps the actual method body.
    */
   public abstract ExpressionNode getFirstMethodBodyNode();
-
 }

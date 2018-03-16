@@ -21,13 +21,15 @@
  */
 package som.interpreter;
 
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.inlining.ScopeAdaptationVisitor;
+import som.compiler.MethodGenerationContext;
 import som.interpreter.nodes.ExpressionNode;
+import som.vmobjects.SInvokable.SMethod;
 
 
 public final class Method extends Invokable {
@@ -43,46 +45,49 @@ public final class Method extends Invokable {
     currentLexicalScope.setMethod(this);
   }
 
+  public LexicalScope getScope() {
+    return currentLexicalScope;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (o == this) {
+      return true;
+    }
+
+    if (!(o instanceof Method)) {
+      return false;
+    }
+
+    Method m = (Method) o;
+    if (!m.name.equals(name)) {
+      return false;
+    }
+
+    return m.sourceSection.equals(sourceSection);
+  }
+
   @Override
   public String toString() {
     return "Method " + getName() + " @" + Integer.toHexString(hashCode());
   }
 
-  @Override
-  public Invokable cloneWithNewLexicalContext(final LexicalScope outerScope) {
-    FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
-    LexicalScope inlinedCurrentScope = new LexicalScope(
-        inlinedFrameDescriptor, outerScope);
-    ExpressionNode inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(
-        uninitializedBody, inlinedCurrentScope);
-    Method clone = new Method(name, sourceSection, inlinedBody,
-        inlinedCurrentScope, uninitializedBody, getLanguage(SomLanguage.class));
-    return clone;
-  }
+  public Method cloneAndAdaptAfterScopeChange(final LexicalScope adaptedScope,
+      final int appliesTo, final boolean cloneAdaptedAsUninitialized,
+      final boolean outerScopeChanged) {
+    ExpressionNode adaptedBody = ScopeAdaptationVisitor.adapt(uninitializedBody, adaptedScope,
+        appliesTo, outerScopeChanged);
 
-  public Invokable cloneAndAdaptToEmbeddedOuterContext(
-      final InlinerForLexicallyEmbeddedMethods inliner) {
-    LexicalScope currentAdaptedScope = new LexicalScope(
-        getFrameDescriptor().copy(), inliner.getCurrentLexicalScope());
-    ExpressionNode adaptedBody = InlinerAdaptToEmbeddedOuterContext.doInline(
-        uninitializedBody, inliner, currentAdaptedScope);
-    ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
+    ExpressionNode uninit;
+    if (cloneAdaptedAsUninitialized) {
+      uninit = NodeUtil.cloneNode(adaptedBody);
+    } else {
+      uninit = uninitializedBody;
+    }
 
-    Method clone = new Method(name, sourceSection, adaptedBody,
-        currentAdaptedScope, uninitAdaptedBody, getLanguage(SomLanguage.class));
-    return clone;
-  }
-
-  public Invokable cloneAndAdaptToSomeOuterContextBeingEmbedded(
-      final InlinerAdaptToEmbeddedOuterContext inliner) {
-    LexicalScope currentAdaptedScope = new LexicalScope(
-        getFrameDescriptor().copy(), inliner.getCurrentLexicalScope());
-    ExpressionNode adaptedBody = InlinerAdaptToEmbeddedOuterContext.doInline(
-        uninitializedBody, inliner, currentAdaptedScope);
-    ExpressionNode uninitAdaptedBody = NodeUtil.cloneNode(adaptedBody);
-
-    Method clone = new Method(name, sourceSection,
-        adaptedBody, currentAdaptedScope, uninitAdaptedBody, getLanguage(SomLanguage.class));
+    Method clone = new Method(name, sourceSection, adaptedBody, adaptedScope, uninit,
+        getLanguage(SomLanguage.class));
+    adaptedScope.setMethod(clone);
     return clone;
   }
 
@@ -96,6 +101,15 @@ public final class Method extends Invokable {
 
   @Override
   public Node deepCopy() {
-    return cloneWithNewLexicalContext(currentLexicalScope.getOuterScopeOrNull());
+    LexicalScope splitScope = currentLexicalScope.split();
+    assert currentLexicalScope != splitScope;
+    return cloneAndAdaptAfterScopeChange(splitScope, 0, false, true);
+  }
+
+  @Override
+  public ExpressionNode inline(final MethodGenerationContext mgenc, final SMethod outer) {
+    mgenc.mergeIntoScope(currentLexicalScope, outer);
+    return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc.getCurrentLexicalScope(), 0,
+        true);
   }
 }

@@ -2,10 +2,10 @@ package som.interpreter;
 
 import java.util.List;
 
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
 import som.compiler.Variable.Argument;
+import som.compiler.Variable.Internal;
 import som.compiler.Variable.Local;
 import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
@@ -33,9 +33,9 @@ import som.vmobjects.SSymbol;
 public final class SNodeFactory {
 
   public static CatchNonLocalReturnNode createCatchNonLocalReturn(
-      final ExpressionNode methodBody, final FrameSlot frameOnStackMarker) {
+      final ExpressionNode methodBody, final Internal onStackMarker) {
     return new CatchNonLocalReturnNode(
-        methodBody, frameOnStackMarker).initialize(methodBody.getSourceSection());
+        methodBody, onStackMarker).initialize(methodBody.getSourceSection());
   }
 
   public static FieldReadNode createFieldRead(final ExpressionNode self,
@@ -66,19 +66,19 @@ public final class SNodeFactory {
   public static ExpressionNode createArgumentRead(final Argument variable,
       final int contextLevel, final SourceSection source) {
     if (contextLevel == 0) {
-      return new LocalArgumentReadNode(variable.index).initialize(source);
+      return new LocalArgumentReadNode(variable).initialize(source);
     } else {
-      return new NonLocalArgumentReadNode(variable.index, contextLevel).initialize(source);
+      return new NonLocalArgumentReadNode(variable, contextLevel).initialize(source);
     }
   }
 
-  public static ExpressionNode createSuperRead(final int contextLevel,
+  public static ExpressionNode createSuperRead(final Argument arg, final int contextLevel,
       final SSymbol holderClass, final boolean classSide, final SourceSection source) {
     if (contextLevel == 0) {
-      return new LocalSuperReadNode(holderClass, classSide).initialize(source);
+      return new LocalSuperReadNode(arg, holderClass, classSide).initialize(source);
     } else {
       return new NonLocalSuperReadNode(
-          contextLevel, holderClass, classSide).initialize(source);
+          arg, contextLevel, holderClass, classSide).initialize(source);
     }
   }
 
@@ -89,8 +89,8 @@ public final class SNodeFactory {
   }
 
   public static LocalVariableWriteNode createLocalVariableWrite(
-      final FrameSlot varSlot, final ExpressionNode exp, final SourceSection source) {
-    return LocalVariableWriteNodeGen.create(varSlot, exp).initialize(source);
+      final Local var, final ExpressionNode exp, final SourceSection source) {
+    return LocalVariableWriteNodeGen.create(var, exp).initialize(source);
   }
 
   public static SequenceNode createSequence(final List<ExpressionNode> exps,
@@ -104,7 +104,7 @@ public final class SNodeFactory {
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,
-      final FrameSlot markerSlot, final int contextLevel,
+      final Internal markerSlot, final int contextLevel,
       final SourceSection source, final Universe universe) {
     return new ReturnNonLocalNode(exp, markerSlot, contextLevel, universe).initialize(source);
   }

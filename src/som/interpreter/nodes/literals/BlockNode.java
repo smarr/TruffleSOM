@@ -1,16 +1,16 @@
 package som.interpreter.nodes.literals;
 
+import java.util.ArrayList;
+
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import bd.inlining.ScopeAdaptationVisitor;
 import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.Invokable;
+import som.compiler.Variable;
+import som.compiler.Variable.Argument;
 import som.interpreter.Method;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.interpreter.nodes.ExpressionNode;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
@@ -34,6 +34,18 @@ public class BlockNode extends LiteralNode {
     return blockMethod;
   }
 
+  public Argument[] getArguments() {
+    Method method = (Method) blockMethod.getInvokable();
+    Variable[] variables = method.getScope().getVariables();
+    ArrayList<Argument> args = new ArrayList<>();
+    for (Variable v : variables) {
+      if (v instanceof Argument) {
+        args.add((Argument) v);
+      }
+    }
+    return args.toArray(new Argument[0]);
+  }
+
   protected void setBlockClass() {
     blockClass = universe.getBlockClass(blockMethod.getNumberOfArguments());
   }
@@ -53,35 +65,18 @@ public class BlockNode extends LiteralNode {
   }
 
   @Override
-  public void replaceWithIndependentCopyForInlining(
-      final SplitterForLexicallyEmbeddedCode inliner) {
-    Invokable clonedInvokable =
-        blockMethod.getInvokable().cloneWithNewLexicalContext(inliner.getCurrentScope());
-    replaceAdapted(clonedInvokable);
-  }
+  public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+    if (!inliner.outerScopeChanged()) {
+      return;
+    }
 
-  @Override
-  public void replaceWithLexicallyEmbeddedNode(
-      final InlinerForLexicallyEmbeddedMethods inliner) {
-    Invokable adapted =
-        ((Method) blockMethod.getInvokable()).cloneAndAdaptToEmbeddedOuterContext(inliner);
-    replaceAdapted(adapted);
-  }
-
-  @Override
-  public void replaceWithCopyAdaptedToEmbeddedOuterContext(
-      final InlinerAdaptToEmbeddedOuterContext inliner) {
-    Invokable adapted =
-        ((Method) blockMethod.getInvokable()).cloneAndAdaptToSomeOuterContextBeingEmbedded(
-            inliner);
-    replaceAdapted(adapted);
-  }
-
-  private void replaceAdapted(final Invokable adaptedForContext) {
-    SMethod adapted = (SMethod) Universe.newMethod(
-        blockMethod.getSignature(), adaptedForContext, false,
+    Method blockIvk = (Method) blockMethod.getInvokable();
+    Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(
+        inliner.getScope(blockIvk), inliner.contextLevel + 1, true,
+        inliner.outerScopeChanged());
+    SMethod method = (SMethod) Universe.newMethod(blockMethod.getSignature(), adapted, false,
         blockMethod.getEmbeddedBlocks());
-    replace(createNode(adapted));
+    replace(createNode(method));
   }
 
   protected BlockNode createNode(final SMethod adapted) {
@@ -89,11 +84,8 @@ public class BlockNode extends LiteralNode {
   }
 
   @Override
-  public ExpressionNode inline(final MethodGenerationContext mgenc,
-      final Local... blockArguments) {
-    // self doesn't need to be passed
-    assert blockMethod.getNumberOfArguments() - 1 == blockArguments.length;
-    return blockMethod.getInvokable().inline(mgenc, blockArguments);
+  public ExpressionNode inline(final MethodGenerationContext mgenc) {
+    return blockMethod.getInvokable().inline(mgenc, blockMethod);
   }
 
   public static final class BlockNodeWithContext extends BlockNode {

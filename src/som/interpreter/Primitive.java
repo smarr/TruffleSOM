@@ -7,9 +7,12 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.source.SourceSection;
 
+import som.compiler.MethodGenerationContext;
 import som.interpreter.nodes.ExpressionNode;
+import som.vmobjects.SInvokable.SMethod;
 
 
 public final class Primitive extends Invokable {
@@ -21,20 +24,18 @@ public final class Primitive extends Invokable {
   }
 
   @Override
-  public Invokable cloneWithNewLexicalContext(final LexicalScope outerContext) {
-    assert outerContext == null;
-    FrameDescriptor inlinedFrameDescriptor = getFrameDescriptor().copy();
-    LexicalScope inlinedContext = new LexicalScope(inlinedFrameDescriptor,
-        outerContext);
-    ExpressionNode inlinedBody = SplitterForLexicallyEmbeddedCode.doInline(uninitializedBody,
-        inlinedContext);
-    return new Primitive(name, sourceSection, inlinedBody, inlinedFrameDescriptor,
-        uninitializedBody, getLanguage(SomLanguage.class));
+  public Node deepCopy() {
+    assert getFrameDescriptor().getSize() == 0 : "Make sure there are no slots to be taken care off";
+    return new Primitive(name, sourceSection, NodeUtil.cloneNode(uninitializedBody),
+        getFrameDescriptor(), uninitializedBody, getLanguage(SomLanguage.class));
   }
 
   @Override
-  public Node deepCopy() {
-    return cloneWithNewLexicalContext(null);
+  public ExpressionNode inline(final MethodGenerationContext mgenc, final SMethod outer) {
+    // Note for completeness: for primitives, we use eager specialization,
+    // which is essentially much simpler inlining
+    throw new UnsupportedOperationException(
+        "Primitives are currently not directly inlined. Only block methods are.");
   }
 
   @Override

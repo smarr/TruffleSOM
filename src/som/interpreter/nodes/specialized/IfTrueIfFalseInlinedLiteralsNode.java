@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
+import bd.inlining.Inline;
 import som.interpreter.nodes.ExpressionNode;
 
 
@@ -18,6 +19,7 @@ import som.interpreter.nodes.ExpressionNode;
  *
  * @author Stefan Marr
  */
+@Inline(selector = "ifTrue:ifFalse:", inlineableArgIdx = {1, 2})
 public final class IfTrueIfFalseInlinedLiteralsNode extends ExpressionNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
@@ -31,8 +33,8 @@ public final class IfTrueIfFalseInlinedLiteralsNode extends ExpressionNode {
   private final ExpressionNode falseActualNode;
 
   public IfTrueIfFalseInlinedLiteralsNode(final ExpressionNode conditionNode,
-      final ExpressionNode inlinedTrueNode, final ExpressionNode inlinedFalseNode,
-      final ExpressionNode originalTrueNode, final ExpressionNode originalFalseNode) {
+      final ExpressionNode originalTrueNode, final ExpressionNode originalFalseNode,
+      final ExpressionNode inlinedTrueNode, final ExpressionNode inlinedFalseNode) {
     this.conditionNode = conditionNode;
     this.trueNode = inlinedTrueNode;
     this.falseNode = inlinedFalseNode;

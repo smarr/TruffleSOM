@@ -1,6 +1,5 @@
 package som.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -8,17 +7,19 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import bd.inlining.ScopeAdaptationVisitor;
 import som.compiler.Variable.Local;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
 import som.vm.constants.Nil;
 import som.vmobjects.SObject;
 
 
 public abstract class LocalVariableNode extends ExpressionNode {
   protected final FrameSlot slot;
+  protected final Local     local;
 
-  private LocalVariableNode(final FrameSlot slot) {
-    this.slot = slot;
+  private LocalVariableNode(final Local local) {
+    this.local = local;
+    this.slot = local.getSlot();
   }
 
   public final Object getSlotIdentifier() {
@@ -28,15 +29,11 @@ public abstract class LocalVariableNode extends ExpressionNode {
   public abstract static class LocalVariableReadNode extends LocalVariableNode {
 
     public LocalVariableReadNode(final Local variable) {
-      this(variable.getSlot());
+      super(variable);
     }
 
     public LocalVariableReadNode(final LocalVariableReadNode node) {
-      this(node.slot);
-    }
-
-    public LocalVariableReadNode(final FrameSlot slot) {
-      super(slot);
+      this(node.local);
     }
 
     @Specialization(guards = "isUninitialized(frame)")
@@ -85,21 +82,22 @@ public abstract class LocalVariableNode extends ExpressionNode {
     protected final boolean isUninitialized(final VirtualFrame frame) {
       return slot.getKind() == FrameSlotKind.Illegal;
     }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(local, this, 0);
+    }
   }
 
   @NodeChild(value = "exp", type = ExpressionNode.class)
   public abstract static class LocalVariableWriteNode extends LocalVariableNode {
 
     public LocalVariableWriteNode(final Local variable) {
-      super(variable.getSlot());
+      super(variable);
     }
 
     public LocalVariableWriteNode(final LocalVariableWriteNode node) {
-      super(node.slot);
-    }
-
-    public LocalVariableWriteNode(final FrameSlot slot) {
-      super(slot);
+      super(node.local);
     }
 
     public abstract ExpressionNode getExp();
@@ -166,11 +164,8 @@ public abstract class LocalVariableNode extends ExpressionNode {
     }
 
     @Override
-    public final void replaceWithIndependentCopyForInlining(
-        final SplitterForLexicallyEmbeddedCode inliner) {
-      CompilerAsserts.neverPartOfCompilation("replaceWithIndependentCopyForInlining");
-      throw new RuntimeException(
-          "Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateWrite(local, this, getExp(), 0);
     }
   }
 }
