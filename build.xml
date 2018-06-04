@@ -11,7 +11,7 @@
     <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
 
-    <property name="checkstyle.version" value="7.8.1" />
+    <property name="checkstyle.version" value="8.10.1" />
 
     <property environment="env"/>
 
@@ -151,7 +151,7 @@
 
     <target name="checkstyle-jar">
         <mkdir dir="${lib.dir}" />
-        <get src="http://tenet.dl.sourceforge.net/project/checkstyle/checkstyle/${checkstyle.version}/checkstyle-${checkstyle.version}-all.jar"
+        <get src="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-${checkstyle.version}/checkstyle-${checkstyle.version}-all.jar"
             usetimestamp="true"
             dest="${lib.dir}/checkstyle-${checkstyle.version}-all.jar" />
     </target>
