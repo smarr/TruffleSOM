@@ -25,8 +25,8 @@ public final class WhileInlinedLiteralsNode extends ExpressionNode {
 
   private final boolean expectedBool;
 
-  private final ExpressionNode conditionActualNode;
-  private final ExpressionNode bodyActualNode;
+  @SuppressWarnings("unused") private final ExpressionNode conditionActualNode;
+  @SuppressWarnings("unused") private final ExpressionNode bodyActualNode;
 
   public WhileInlinedLiteralsNode(final ExpressionNode originalConditionNode,
       final ExpressionNode originalBodyNode, final ExpressionNode inlinedConditionNode,

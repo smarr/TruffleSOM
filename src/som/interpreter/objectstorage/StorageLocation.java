@@ -83,8 +83,9 @@ public abstract class StorageLocation {
     }
   }
 
-  private final ObjectLayout layout;    // for debugging only
-  protected final long       fieldIndex;
+  @SuppressWarnings("unused") private final ObjectLayout layout; // for debugging only
+
+  protected final long fieldIndex;
 
   protected StorageLocation(final ObjectLayout layout, final long fieldIndex) {
     this.layout = layout;

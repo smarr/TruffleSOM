@@ -16,13 +16,13 @@ public abstract class BooleanInlinedLiteralNode extends ExpressionNode {
 
   // In case we need to revert from this optimistic optimization, keep the
   // original nodes around
-  private final ExpressionNode argumentAcutalNode;
+  @SuppressWarnings("unused") private final ExpressionNode argumentActualNode;
 
   public BooleanInlinedLiteralNode(final ExpressionNode receiverNode,
       final ExpressionNode inlinedArgumentNode, final ExpressionNode originalArgumentNode) {
     this.receiverNode = receiverNode;
     this.argumentNode = inlinedArgumentNode;
-    this.argumentAcutalNode = originalArgumentNode;
+    this.argumentActualNode = originalArgumentNode;
   }
 
   protected final boolean evaluateReceiver(final VirtualFrame frame) {
