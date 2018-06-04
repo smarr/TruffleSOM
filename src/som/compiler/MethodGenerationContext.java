@@ -426,7 +426,6 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public bd.inlining.Variable<?> introduceTempForInlinedVersion(
       final Inlinable<MethodGenerationContext> blockOrVal, final SourceSection source)
       throws ProgramDefinitionError {

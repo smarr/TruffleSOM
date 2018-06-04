@@ -76,7 +76,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     @Override
     public Object executeDispatch(
         final VirtualFrame frame, final Object[] arguments) {
-      return cachedSuperMethod.call(frame, arguments);
+      return cachedSuperMethod.call(arguments);
     }
   }
 
