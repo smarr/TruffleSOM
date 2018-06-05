@@ -1,4 +1,5 @@
 <factorypath>
     <factorypathentry kind="WKSPJAR" id="/TRUFFLE_API/truffle-api.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="WKSPJAR" id="/TRUFFLE_DSL_PROCESSOR/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/GRAAL_SDK/graal-sdk.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

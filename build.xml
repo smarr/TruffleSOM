@@ -11,7 +11,7 @@
     <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
 
-    <property name="checkstyle.version" value="7.8.1" />
+    <property name="checkstyle.version" value="8.10.1" />
 
     <property environment="env"/>
 
@@ -32,6 +32,18 @@
         <pathelement location="${truffle.build}/truffle-dsl-processor.jar" />
     </path>
 
+    <condition property="is.atLeastJava9" value="true" else="false">
+      <or>
+        <matches string="${java.version}" pattern="^9"/>
+        <matches string="${java.version}" pattern="^1[0-9]"/>
+      </or>
+    </condition>
+    <echo>
+        ant.java.version: ${ant.java.version}
+        java.version:     ${java.version}
+        is.atLeastJava9:  ${is.atLeastJava9}
+    </echo>
+
     <target name="clean" description="Remove build directories and generated code">
         <delete dir="${build.dir}"/>
         <delete dir="${src_gen.dir}"/>
@@ -51,6 +63,8 @@
         <exec executable="${mx.cmd}" dir="${sdk.dir}">
             <arg value="clean"/>
         </exec>
+        
+        <ant dir="${bd.dir}" useNativeBasedir="true" target="clean" inheritAll="false" />
     </target>
 
     <target name="eclipseformat">
@@ -106,11 +120,14 @@
     </target>
 
     <target name="bd-libs"> <!-- implicit dependency on truffle-libs -->
-        <ant dir="${bd.dir}" useNativeBasedir="true" target="libs-junit" inheritAll="false"/>
+        <ant dir="${bd.dir}" useNativeBasedir="true" target="libs-junit" inheritAll="false">
+            <property name="force.java8"   value="${is.atLeastJava9}" />
+        </ant>
         <ant dir="${bd.dir}" useNativeBasedir="true" target="compile-nodeps" inheritAll="false">
             <property name="sdk.build"   value="${sdk.build}" />
             <property name="truffle.dir" value="${truffle.dir}" />
             <property name="truffle.build" value="${truffle.build}" />
+            <property name="force.java8"   value="${is.atLeastJava9}" />
         </ant>
     </target>
 
@@ -134,7 +151,7 @@
 
     <target name="checkstyle-jar">
         <mkdir dir="${lib.dir}" />
-        <get src="http://tenet.dl.sourceforge.net/project/checkstyle/checkstyle/${checkstyle.version}/checkstyle-${checkstyle.version}-all.jar"
+        <get src="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-${checkstyle.version}/checkstyle-${checkstyle.version}-all.jar"
             usetimestamp="true"
             dest="${lib.dir}/checkstyle-${checkstyle.version}-all.jar" />
     </target>
