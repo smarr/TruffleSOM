@@ -26,14 +26,13 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Context.Builder;
+import org.graalvm.polyglot.Value;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import com.oracle.truffle.api.vm.PolyglotEngine;
-import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
-import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
 import som.interpreter.SomLanguage;
 import som.vmobjects.SClass;
@@ -157,14 +156,13 @@ public class BasicInterpreterTests {
 
   @Test
   public void testBasicInterpreterBehavior() {
-    Builder builder = PolyglotEngine.newBuilder();
-    builder.config(SomLanguage.MIME_TYPE, SomLanguage.CLASS_PATH,
-        "Smalltalk:TestSuite/BasicInterpreterTests");
-    builder.config(SomLanguage.MIME_TYPE, SomLanguage.TEST_CLASS, testClass);
-    builder.config(SomLanguage.MIME_TYPE, SomLanguage.TEST_SELECTOR, testSelector);
+    Builder builder = Context.newBuilder();
+    builder.option("som.CLASS_PATH", "Smalltalk:TestSuite/BasicInterpreterTests");
+    builder.option("som.TEST_CLASS", testClass);
+    builder.option("som.TEST_SELECTOR", testSelector);
 
-    PolyglotEngine engine = builder.build();
-    Value actualResult = engine.eval(SomLanguage.START);
+    Context context = builder.build();
+    Value actualResult = context.eval(SomLanguage.START);
 
     assertEqualsSOMValue(expectedResult, actualResult.as(Object.class));
   }

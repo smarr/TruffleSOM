@@ -30,14 +30,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Context.Builder;
+import org.graalvm.polyglot.Value;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.vm.PolyglotEngine;
-import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
-import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
 import bd.basic.IdProvider;
 import bd.inlining.InlinableNodes;
@@ -76,7 +77,8 @@ public final class Universe implements IdProvider<SSymbol> {
    * SSymbol and a mutable value.
    */
   public static final class Association {
-    private final SSymbol            key;
+    private final SSymbol key;
+
     @CompilationFinal private Object value;
 
     public Association(final SSymbol key, final Object value) {
@@ -100,21 +102,20 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public static void main(final String[] arguments) {
     Value returnCode = eval(arguments);
-    Object o = returnCode.get();
-    if (o instanceof SObject) {
-      System.exit(0);
+    if (returnCode.isNumber()) {
+      System.exit(returnCode.asInt());
     } else {
-      System.exit(returnCode.as(Integer.class));
+      System.exit(0);
     }
   }
 
   public static Value eval(final String[] arguments) {
-    Builder builder = PolyglotEngine.newBuilder();
-    builder.config(SomLanguage.MIME_TYPE, SomLanguage.VM_ARGS, arguments);
+    Builder builder = Context.newBuilder();
+    builder.arguments(SomLanguage.SOM, arguments);
 
-    PolyglotEngine engine = builder.build();
+    Context context = builder.build();
 
-    Value returnCode = engine.eval(SomLanguage.START);
+    Value returnCode = context.eval(SomLanguage.START);
     return returnCode;
   }
 

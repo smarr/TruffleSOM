@@ -25,12 +25,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
+import org.graalvm.polyglot.Value;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
 import som.vm.Universe;
 import som.vmobjects.SObject;
@@ -82,12 +81,11 @@ public class SomTests {
   public void testSomeTest() {
     Value returnCode = Universe.eval(
         new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName});
-    Object obj = returnCode.get();
-    if (obj instanceof SObject) {
-      assertEquals("System",
-          ((SObject) obj).getSOMClass(null).getName().getString());
+    if (returnCode.isNumber()) {
+      assertEquals(0, returnCode.asInt());
     } else {
-      assertEquals(0, (int) returnCode.as(Integer.class));
+      assertEquals("System",
+          returnCode.as(SObject.class).getSOMClass(null).getName().getString());
     }
   }
 }

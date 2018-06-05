@@ -1,10 +1,15 @@
 package som.interpreter;
 
 import java.io.IOException;
-import java.util.Map;
+
+import org.graalvm.options.OptionCategory;
+import org.graalvm.options.OptionDescriptors;
+import org.graalvm.options.OptionKey;
+import org.graalvm.options.OptionValues;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.Option;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -16,18 +21,24 @@ import som.vm.Universe;
 import som.vm.Universe.SomExit;
 
 
-@TruffleLanguage.Registration(name = "SOM", version = "0.1.0",
+@TruffleLanguage.Registration(id = "som", name = "som", version = "0.1.0",
     mimeType = SomLanguage.MIME_TYPE)
 public class SomLanguage extends TruffleLanguage<Universe> {
 
-  public static final String MIME_TYPE = "application/x-som-smalltalk";
-  public static final String VM_ARGS   = "vm-arguments";
+  protected static final String MIME_TYPE = "application/x-som-smalltalk";
+  public static final String    SOM       = "som";
 
-  public static final String CLASS_PATH    = "class-path";
-  public static final String TEST_CLASS    = "test-class";
-  public static final String TEST_SELECTOR = "test-selector";
+  @Option(help = "SOM's classpath", category = OptionCategory.USER) //
+  protected static final OptionKey<String> CLASS_PATH = new OptionKey<>("");
 
-  @CompilationFinal private Universe                 universe;
+  @Option(help = "Test Class name", category = OptionCategory.USER) //
+  protected static final OptionKey<String> TEST_CLASS = new OptionKey<>("");
+
+  @Option(help = "Test Selector", category = OptionCategory.USER) //
+  protected static final OptionKey<String> TEST_SELECTOR = new OptionKey<>("");
+
+  @CompilationFinal private Universe universe;
+
   @CompilationFinal(dimensions = 1) private String[] args;
 
   private String classPath;
@@ -40,11 +51,11 @@ public class SomLanguage extends TruffleLanguage<Universe> {
 
   @Override
   protected Universe createContext(final Env env) {
-    Map<String, Object> config = env.getConfig();
-    args = (String[]) config.get(VM_ARGS);
-    classPath = (String) config.get(CLASS_PATH);
-    testClass = (String) config.get(TEST_CLASS);
-    testSelector = (String) config.get(TEST_SELECTOR);
+    OptionValues config = env.getOptions();
+    args = env.getApplicationArguments();
+    classPath = config.get(CLASS_PATH);
+    testClass = config.get(TEST_CLASS);
+    testSelector = config.get(TEST_SELECTOR);
 
     universe = new Universe(this);
     return universe;
@@ -55,8 +66,12 @@ public class SomLanguage extends TruffleLanguage<Universe> {
                  .build();
   }
 
+  private static final String START_STR = "START";
+
   /** Marker source used to start execution with command line arguments. */
-  public static final Source START = getSyntheticSource("", "START");
+  public static final org.graalvm.polyglot.Source START =
+      org.graalvm.polyglot.Source.newBuilder(SOM, START_STR, START_STR).internal(true)
+                                 .buildLiteral();
 
   private class StartInterpretation extends RootNode {
 
@@ -66,7 +81,7 @@ public class SomLanguage extends TruffleLanguage<Universe> {
 
     @Override
     public Object execute(final VirtualFrame frame) {
-      if (testSelector != null) {
+      if (testSelector != null && !testSelector.equals("")) {
         assert classPath != null;
         assert testClass != null;
         universe.setupClassPath(classPath);
@@ -88,11 +103,23 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     return Truffle.getRuntime().createCallTarget(new StartInterpretation());
   }
 
+  private static boolean isStartSource(final Source source) {
+    return source.isInternal() &&
+        source.getName().equals(START_STR) &&
+        source.getCharacters().equals(START_STR);
+  }
+
   @Override
   protected CallTarget parse(final ParsingRequest request) throws IOException {
     Source code = request.getSource();
-    assert code == START || (code.getLength() == 0 && code.getName().equals("START"));
-    return createStartCallTarget();
+    if (isStartSource(code)) {
+      return createStartCallTarget();
+    } else {
+      // This is currently not supported.
+      // The only execution mode is using the parameters to the engine and the magic
+      // START source to trigger execution.
+      throw new NotYetImplementedException();
+    }
   }
 
   @Override
@@ -113,5 +140,10 @@ public class SomLanguage extends TruffleLanguage<Universe> {
 
   public static Universe getCurrentContext() {
     return getCurrentContext(SomLanguage.class);
+  }
+
+  @Override
+  protected OptionDescriptors getOptionDescriptors() {
+    return new SomLanguageOptionDescriptors();
   }
 }
