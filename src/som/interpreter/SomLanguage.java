@@ -123,17 +123,6 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   }
 
   @Override
-  protected Object findExportedSymbol(final Universe context,
-      final String globalName, final boolean onlyExplicit) {
-    throw new NotYetImplementedException();
-  }
-
-  @Override
-  protected Object getLanguageGlobal(final Universe context) {
-    return null;
-  }
-
-  @Override
   protected boolean isObjectOfLanguage(final Object object) {
     throw new NotYetImplementedException();
   }
