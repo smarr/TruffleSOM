@@ -1,22 +1,22 @@
-package som.interpreter.nodes.literals;
+package trufflesom.interpreter.nodes.literals;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.Invokable;
-import som.interpreter.Method;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.Universe;
-import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable.SMethod;
+import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import trufflesom.interpreter.InlinerForLexicallyEmbeddedMethods;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method;
+import trufflesom.interpreter.SplitterForLexicallyEmbeddedCode;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable.SMethod;
 
 
 public class BlockNode extends LiteralNode {

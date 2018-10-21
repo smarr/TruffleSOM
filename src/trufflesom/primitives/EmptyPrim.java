@@ -1,8 +1,8 @@
-package som.primitives;
+package trufflesom.primitives;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.vm.Universe;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vm.Universe;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 

@@ -19,12 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
-import som.interpreter.objectstorage.FieldAccessorNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.vmobjects.SObject;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;

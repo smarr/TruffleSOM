@@ -1,4 +1,4 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.RootCallTarget;
@@ -9,7 +9,7 @@ import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 public final class Primitive extends Invokable {

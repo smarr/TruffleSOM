@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.compiler;
+package trufflesom.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +30,12 @@ import java.util.List;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-import som.interpreter.SomLanguage;
-import som.vm.Universe;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class ClassGenerationContext {

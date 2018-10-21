@@ -1,4 +1,4 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
@@ -7,9 +7,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
-import som.interpreter.nodes.ExpressionNode;
+import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 public abstract class Invokable extends RootNode {

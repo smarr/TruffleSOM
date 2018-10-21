@@ -1,12 +1,12 @@
-package som.interpreter.nodes.nary;
+package trufflesom.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)

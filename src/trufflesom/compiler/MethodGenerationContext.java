@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package som.compiler;
+package trufflesom.compiler;
 
 import static som.interpreter.SNodeFactory.createCatchNonLocalReturn;
 import static som.interpreter.SNodeFactory.createFieldRead;
@@ -40,20 +40,20 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.compiler.Variable.Argument;
-import som.compiler.Variable.Local;
-import som.interpreter.LexicalScope;
-import som.interpreter.Method;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.FieldNode.FieldReadNode;
-import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.interpreter.nodes.GlobalNode;
-import som.interpreter.nodes.ReturnNonLocalNode;
-import som.primitives.Primitives;
-import som.vm.Universe;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
-import som.vmobjects.SSymbol;
+import trufflesom.compiler.Variable.Argument;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.LexicalScope;
+import trufflesom.interpreter.Method;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode;
+import trufflesom.primitives.Primitives;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class MethodGenerationContext {

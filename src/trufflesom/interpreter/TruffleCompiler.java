@@ -1,4 +1,4 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import com.oracle.truffle.api.CompilerDirectives;
 

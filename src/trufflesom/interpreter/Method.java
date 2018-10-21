@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter;
+package trufflesom.interpreter;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.nodes.LoopNode;
@@ -27,7 +27,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 public final class Method extends Invokable {

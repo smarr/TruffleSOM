@@ -1,10 +1,10 @@
-package som.primitives.arithmetic;
+package trufflesom.primitives.arithmetic;
 
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 
 
 public abstract class ArithmeticPrim extends BinaryExpressionNode {

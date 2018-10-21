@@ -1,4 +1,4 @@
-package som.vm;
+package trufflesom.vm;
 
 public class VmSettings {
   public static final boolean DYNAMIC_METRICS;

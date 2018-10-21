@@ -1,11 +1,11 @@
-package som.vmobjects;
+package trufflesom.vmobjects;
 
 import java.util.Arrays;
 
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-import som.vm.Universe;
-import som.vm.constants.Nil;
+import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 
 
 /**

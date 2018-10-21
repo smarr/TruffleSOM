@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package som.compiler;
+package trufflesom.compiler;
 
 enum Symbol {
   NONE, Integer, Double, Not, And, Or, Star, Div, Mod, Plus, Minus, Equal, More, Less,

@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package som.vmobjects;
+package trufflesom.vmobjects;
 
-import som.vm.Universe;
+import trufflesom.vm.Universe;
 
 
 public final class SSymbol extends SAbstractObject {

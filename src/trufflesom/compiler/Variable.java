@@ -1,4 +1,4 @@
-package som.compiler;
+package trufflesom.compiler;
 
 import static som.interpreter.SNodeFactory.createArgumentRead;
 import static som.interpreter.SNodeFactory.createLocalVarRead;
@@ -10,8 +10,8 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class Variable {

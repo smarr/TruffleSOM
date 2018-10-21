@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package som.compiler;
+package trufflesom.compiler;
 
 import java.io.File;
 import java.io.FileReader;
@@ -32,10 +32,10 @@ import java.io.StringReader;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 
-import som.compiler.Parser.ParseError;
-import som.vm.Universe;
-import som.vmobjects.SClass;
-import som.vmobjects.SSymbol;
+import trufflesom.compiler.Parser.ParseError;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class SourcecodeCompiler {

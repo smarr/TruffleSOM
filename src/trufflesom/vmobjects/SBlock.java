@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-package som.vmobjects;
+package trufflesom.vmobjects;
 
 import com.oracle.truffle.api.frame.MaterializedFrame;
 
-import som.interpreter.SArguments;
-import som.vm.Universe;
+import trufflesom.interpreter.SArguments;
+import trufflesom.vm.Universe;
 
 
 public final class SBlock extends SAbstractObject {

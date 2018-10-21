@@ -1,17 +1,17 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.nodes.Node;
 
-import som.interpreter.nodes.dispatch.DispatchChain;
-import som.interpreter.objectstorage.FieldAccessorNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import som.vm.Universe;
-import som.vmobjects.SClass;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.nodes.dispatch.DispatchChain;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class IndexDispatch extends Node implements DispatchChain {

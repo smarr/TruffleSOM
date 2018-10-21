@@ -1,4 +1,4 @@
-package som.primitives;
+package trufflesom.primitives;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;

@@ -1,10 +1,10 @@
-package som.vmobjects;
+package trufflesom.vmobjects;
 
 import com.oracle.truffle.api.CompilerAsserts;
 
-import som.interpreter.SomLanguage;
-import som.interpreter.Types;
-import som.vm.Universe;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.Types;
+import trufflesom.vm.Universe;
 
 
 public abstract class SAbstractObject {

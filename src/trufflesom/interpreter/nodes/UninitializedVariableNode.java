@@ -1,18 +1,18 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
-import som.compiler.Variable.Local;
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
-import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
-import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import trufflesom.interpreter.InlinerForLexicallyEmbeddedMethods;
+import trufflesom.interpreter.SplitterForLexicallyEmbeddedCode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
 
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;

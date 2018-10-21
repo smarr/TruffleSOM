@@ -1,11 +1,11 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
-import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.SOMNode;
-import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
-import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
+import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.SOMNode;
+import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
+import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
 
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.nodes.Node;

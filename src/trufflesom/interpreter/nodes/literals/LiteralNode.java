@@ -19,12 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter.nodes.literals;
+package trufflesom.interpreter.nodes.literals;
 
-import som.compiler.MethodGenerationContext;
-import som.compiler.Variable.Local;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
+import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.PreevaluatedExpression;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;

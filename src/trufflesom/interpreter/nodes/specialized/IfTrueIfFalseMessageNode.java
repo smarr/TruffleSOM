@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
@@ -10,10 +10,10 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.primitives.Primitive;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
+import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable;
 
 
 /**

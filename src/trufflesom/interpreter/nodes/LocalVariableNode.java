@@ -1,4 +1,4 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -9,10 +9,10 @@ import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.compiler.Variable.Local;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
-import som.vm.constants.Nil;
-import som.vmobjects.SObject;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.SplitterForLexicallyEmbeddedCode;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class LocalVariableNode extends ExpressionNode {

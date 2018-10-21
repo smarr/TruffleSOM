@@ -1,9 +1,9 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.SArguments;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import trufflesom.interpreter.InlinerForLexicallyEmbeddedMethods;
+import trufflesom.interpreter.SArguments;
+import trufflesom.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;

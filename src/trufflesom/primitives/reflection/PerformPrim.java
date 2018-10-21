@@ -1,14 +1,14 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.Primitive;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory

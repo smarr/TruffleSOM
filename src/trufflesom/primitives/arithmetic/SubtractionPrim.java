@@ -1,4 +1,4 @@
-package som.primitives.arithmetic;
+package trufflesom.primitives.arithmetic;
 
 import java.math.BigInteger;
 
@@ -7,7 +7,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.primitives.Primitive;
+import trufflesom.primitives.Primitive;
 
 
 @GenerateNodeFactory

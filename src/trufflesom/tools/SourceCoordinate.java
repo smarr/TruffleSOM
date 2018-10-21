@@ -1,4 +1,4 @@
-package tools;
+package trufflesom.tools;
 
 public class SourceCoordinate {
   public final int startLine;

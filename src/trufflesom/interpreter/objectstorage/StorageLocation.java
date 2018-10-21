@@ -1,22 +1,22 @@
-package som.interpreter.objectstorage;
+package trufflesom.interpreter.objectstorage;
 
 import java.lang.reflect.Field;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-import som.interpreter.TruffleCompiler;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.ReadDoubleFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.ReadLongFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.ReadObjectFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.ReadUnwrittenFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.WriteDoubleFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.WriteLongFieldNode;
-import som.interpreter.objectstorage.FieldAccessorNode.WriteObjectFieldNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadDoubleFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadLongFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadObjectFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadUnwrittenFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteDoubleFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteLongFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteObjectFieldNode;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SObject;
 import sun.misc.Unsafe;
 
 

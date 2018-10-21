@@ -1,4 +1,4 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
@@ -8,7 +8,7 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
-import som.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable;
 
 
 public abstract class InvokeOnCache extends Node implements DispatchChain {

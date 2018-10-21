@@ -1,4 +1,4 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -6,16 +6,16 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
-import som.interpreter.Types;
-import som.interpreter.nodes.MessageSendNode;
-import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
-import som.interpreter.nodes.PreevaluatedExpression;
-import som.primitives.arrays.ToArgumentsArrayNode;
-import som.primitives.arrays.ToArgumentsArrayNodeFactory;
-import som.vm.Universe;
-import som.vmobjects.SArray;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.Types;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import trufflesom.interpreter.nodes.PreevaluatedExpression;
+import trufflesom.primitives.arrays.ToArgumentsArrayNode;
+import trufflesom.primitives.arrays.ToArgumentsArrayNodeFactory;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class AbstractSymbolDispatch extends Node {

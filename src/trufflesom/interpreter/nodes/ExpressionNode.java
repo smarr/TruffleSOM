@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import java.math.BigInteger;
 
@@ -27,14 +27,14 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.TypesGen;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SArray;
-import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.TypesGen;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class ExpressionNode extends SOMNode {

@@ -1,10 +1,10 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.interpreter.Invokable;
-import som.interpreter.SplitterForLexicallyEmbeddedCode;
-import som.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import trufflesom.interpreter.InlinerForLexicallyEmbeddedMethods;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.SplitterForLexicallyEmbeddedCode;
+import trufflesom.interpreter.nodes.ExpressionNode;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;

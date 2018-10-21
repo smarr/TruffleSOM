@@ -23,15 +23,15 @@
  * THE SOFTWARE.
  */
 
-package som.vm;
+package trufflesom.vm;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import som.vm.constants.Nil;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
 
 
 public class Shell {

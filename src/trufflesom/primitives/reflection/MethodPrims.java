@@ -1,4 +1,4 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -7,16 +7,16 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
-import som.interpreter.nodes.dispatch.InvokeOnCache;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.Primitive;
-import som.primitives.arrays.ToArgumentsArrayNode;
-import som.primitives.arrays.ToArgumentsArrayNodeFactory;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SArray;
-import som.vmobjects.SInvokable;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.nodes.dispatch.InvokeOnCache;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.primitives.arrays.ToArgumentsArrayNode;
+import trufflesom.primitives.arrays.ToArgumentsArrayNodeFactory;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SInvokable;
 
 
 public final class MethodPrims {

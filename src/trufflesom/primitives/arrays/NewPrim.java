@@ -1,17 +1,17 @@
-package som.primitives.arrays;
+package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.primitives.Primitive;
-import som.primitives.Specializer;
-import som.primitives.basics.SystemPrims.BinarySystemNode;
-import som.vm.Universe;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.primitives.Specializer;
+import trufflesom.primitives.basics.SystemPrims.BinarySystemNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SClass;
 
 
 @GenerateNodeFactory

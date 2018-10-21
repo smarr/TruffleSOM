@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package som.vmobjects;
+package trufflesom.vmobjects;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
@@ -34,9 +34,9 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-import som.interpreter.objectstorage.ObjectLayout;
-import som.vm.constants.Nil;
-import som.vmobjects.SInvokable.SPrimitive;
+import trufflesom.interpreter.objectstorage.ObjectLayout;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SInvokable.SPrimitive;
 
 
 public final class SClass extends SObject {

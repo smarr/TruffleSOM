@@ -1,6 +1,6 @@
-package som.vm.constants;
+package trufflesom.vm.constants;
 
-import som.vmobjects.SObject;
+import trufflesom.vmobjects.SObject;
 
 
 public final class Nil {

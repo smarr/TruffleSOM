@@ -1,4 +1,4 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.nodes.Node;
@@ -6,8 +6,8 @@ import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.SOMNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.SOMNode;
 
 
 public final class InlinerAdaptToEmbeddedOuterContext implements NodeVisitor {

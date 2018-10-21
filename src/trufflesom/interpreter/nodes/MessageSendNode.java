@@ -1,4 +1,4 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -6,18 +6,18 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.TruffleCompiler;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.DispatchChain.Cost;
-import som.interpreter.nodes.dispatch.GenericDispatchNode;
-import som.interpreter.nodes.dispatch.SuperDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
-import som.interpreter.nodes.nary.EagerlySpecializableNode;
-import som.primitives.Primitives;
-import som.primitives.Specializer;
-import som.vm.NotYetImplementedException;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
+import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.SuperDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
+import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
+import trufflesom.primitives.Primitives;
+import trufflesom.primitives.Specializer;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class MessageSendNode {

@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
-package som.compiler;
+package trufflesom.compiler;
 
-import som.vm.Universe;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 

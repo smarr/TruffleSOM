@@ -1,4 +1,4 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.nodes.NodeCost;
 

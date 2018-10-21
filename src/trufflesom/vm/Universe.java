@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package som.vm;
+package trufflesom.vm;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,20 +38,20 @@ import com.oracle.truffle.api.vm.PolyglotEngine;
 import com.oracle.truffle.api.vm.PolyglotEngine.Builder;
 import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
-import som.compiler.Disassembler;
-import som.interpreter.Invokable;
-import som.interpreter.SomLanguage;
-import som.interpreter.TruffleCompiler;
-import som.primitives.Primitives;
-import som.vm.constants.Nil;
-import som.vmobjects.SArray;
-import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
-import som.vmobjects.SInvokable.SPrimitive;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.compiler.Disassembler;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.primitives.Primitives;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SInvokable.SPrimitive;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class Universe {

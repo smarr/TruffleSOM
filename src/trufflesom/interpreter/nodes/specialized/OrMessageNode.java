@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
@@ -8,15 +8,15 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
-import som.interpreter.nodes.specialized.OrMessageNode.OrSplzr;
-import som.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
-import som.primitives.Primitive;
-import som.vm.Universe;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
+import trufflesom.interpreter.nodes.specialized.OrMessageNode.OrSplzr;
+import trufflesom.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
+import trufflesom.primitives.Primitive;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SMethod;
 
 
 @GenerateNodeFactory

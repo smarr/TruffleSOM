@@ -1,7 +1,7 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.constants.Nil;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.constants.Nil;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;

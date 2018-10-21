@@ -1,4 +1,4 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
@@ -7,12 +7,12 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.primitives.Primitive;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory

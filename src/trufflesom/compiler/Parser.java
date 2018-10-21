@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package som.compiler;
+package trufflesom.compiler;
 
 import static som.compiler.Symbol.And;
 import static som.compiler.Symbol.Assign;
@@ -70,32 +70,32 @@ import java.util.List;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.compiler.Lexer.Peek;
-import som.compiler.Variable.Local;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.FieldNode.FieldReadNode;
-import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.interpreter.nodes.literals.ArrayLiteralNode;
-import som.interpreter.nodes.literals.BigIntegerLiteralNode;
-import som.interpreter.nodes.literals.BlockNode;
-import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
-import som.interpreter.nodes.literals.DoubleLiteralNode;
-import som.interpreter.nodes.literals.IntegerLiteralNode;
-import som.interpreter.nodes.literals.LiteralNode;
-import som.interpreter.nodes.literals.StringLiteralNode;
-import som.interpreter.nodes.literals.SymbolLiteralNode;
-import som.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
-import som.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
-import som.interpreter.nodes.specialized.IfInlinedLiteralNode;
-import som.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
-import som.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeGen;
-import som.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
-import som.vm.Universe;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable.SMethod;
-import som.vmobjects.SSymbol;
-import tools.SourceCoordinate;
+import trufflesom.compiler.Lexer.Peek;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.literals.ArrayLiteralNode;
+import trufflesom.interpreter.nodes.literals.BigIntegerLiteralNode;
+import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
+import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
+import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
+import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.interpreter.nodes.literals.StringLiteralNode;
+import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
+import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
+import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeGen;
+import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SSymbol;
+import trufflesom.tools.SourceCoordinate;
 
 
 public final class Parser {

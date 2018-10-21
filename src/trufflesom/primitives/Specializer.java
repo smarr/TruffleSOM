@@ -1,14 +1,14 @@
-package som.primitives;
+package trufflesom.primitives;
 
 import java.lang.reflect.InvocationTargetException;
 
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.primitives.Primitive.NoChild;
-import som.vm.Universe;
-import som.vm.VmSettings;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.primitives.Primitive.NoChild;
+import trufflesom.vm.Universe;
+import trufflesom.vm.VmSettings;
 
 
 /**

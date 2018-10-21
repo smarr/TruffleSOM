@@ -1,4 +1,4 @@
-package som.interpreter.nodes.literals;
+package trufflesom.interpreter.nodes.literals;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;

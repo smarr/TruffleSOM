@@ -1,12 +1,12 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.Primitive;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.primitives.Primitive;
 
 
 @GenerateNodeFactory

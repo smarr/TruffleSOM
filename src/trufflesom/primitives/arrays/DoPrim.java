@@ -1,4 +1,4 @@
-package som.primitives.arrays;
+package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -11,17 +11,17 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.Primitive;
-import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SArray;
-import som.vmobjects.SArray.ArrayType;
-import som.vmobjects.SArray.PartiallyEmptyArray;
-import som.vmobjects.SBlock;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SArray.ArrayType;
+import trufflesom.vmobjects.SArray.PartiallyEmptyArray;
+import trufflesom.vmobjects.SBlock;
 
 
 @GenerateNodeFactory

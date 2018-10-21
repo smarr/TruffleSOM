@@ -1,10 +1,10 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
-import som.vmobjects.SBlock;
+import trufflesom.vmobjects.SBlock;
 
 
 public final class GenericBlockDispatchNode extends AbstractDispatchNode {

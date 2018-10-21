@@ -1,4 +1,4 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreter;
 
@@ -10,10 +10,10 @@ import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.InlinerAdaptToEmbeddedOuterContext;
-import som.interpreter.InlinerForLexicallyEmbeddedMethods;
-import som.vm.constants.Nil;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.InlinerAdaptToEmbeddedOuterContext;
+import trufflesom.interpreter.InlinerForLexicallyEmbeddedMethods;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class NonLocalVariableNode extends ContextualNode {

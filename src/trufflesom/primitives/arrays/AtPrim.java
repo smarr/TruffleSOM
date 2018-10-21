@@ -1,4 +1,4 @@
-package som.primitives.arrays;
+package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -6,11 +6,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.Primitive;
-import som.vm.constants.Nil;
-import som.vmobjects.SArray;
-import som.vmobjects.SArray.ArrayType;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SArray.ArrayType;
 
 
 @GenerateNodeFactory

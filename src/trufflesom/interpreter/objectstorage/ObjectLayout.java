@@ -1,8 +1,8 @@
-package som.interpreter.objectstorage;
+package trufflesom.interpreter.objectstorage;
 
-import som.interpreter.objectstorage.StorageLocation.UnwrittenStorageLocation;
-import som.vmobjects.SClass;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.objectstorage.StorageLocation.UnwrittenStorageLocation;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SObject;
 
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
