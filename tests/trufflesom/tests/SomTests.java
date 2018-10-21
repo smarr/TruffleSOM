@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.tests;
+package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 
@@ -32,8 +32,8 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.oracle.truffle.api.vm.PolyglotEngine.Value;
 
-import som.vm.Universe;
-import som.vmobjects.SObject;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SObject;
 
 
 @RunWith(Parameterized.class)
