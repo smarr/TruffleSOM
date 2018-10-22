@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  */
 
-package som.compiler;
+package trufflesom.compiler;
 
-import static som.interpreter.SNodeFactory.createCatchNonLocalReturn;
-import static som.interpreter.SNodeFactory.createFieldRead;
-import static som.interpreter.SNodeFactory.createFieldWrite;
-import static som.interpreter.SNodeFactory.createGlobalRead;
-import static som.interpreter.SNodeFactory.createNonLocalReturn;
+import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
+import static trufflesom.interpreter.SNodeFactory.createFieldRead;
+import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
+import static trufflesom.interpreter.SNodeFactory.createGlobalRead;
+import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,24 +42,24 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.ScopeBuilder;
 import bd.inlining.nodes.Inlinable;
-import som.compiler.Variable.AccessNodeState;
-import som.compiler.Variable.Argument;
-import som.compiler.Variable.Internal;
-import som.compiler.Variable.Local;
-import som.interpreter.LexicalScope;
-import som.interpreter.Method;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.FieldNode.FieldReadNode;
-import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.interpreter.nodes.GlobalNode;
-import som.interpreter.nodes.ReturnNonLocalNode;
-import som.interpreter.nodes.literals.BlockNode;
-import som.primitives.Primitives;
-import som.vm.Universe;
-import som.vm.constants.Nil;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
-import som.vmobjects.SSymbol;
+import trufflesom.compiler.Variable.AccessNodeState;
+import trufflesom.compiler.Variable.Argument;
+import trufflesom.compiler.Variable.Internal;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.LexicalScope;
+import trufflesom.interpreter.Method;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode;
+import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.primitives.Primitives;
+import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class MethodGenerationContext implements ScopeBuilder<MethodGenerationContext> {

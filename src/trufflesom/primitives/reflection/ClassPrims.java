@@ -1,13 +1,13 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SClass;
 
 
 public class ClassPrims {

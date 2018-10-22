@@ -1,17 +1,17 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
-import som.interpreter.SArguments;
-import som.interpreter.Types;
-import som.vm.Universe;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.SArguments;
+import trufflesom.interpreter.Types;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class GenericDispatchNode extends AbstractDispatchNode {

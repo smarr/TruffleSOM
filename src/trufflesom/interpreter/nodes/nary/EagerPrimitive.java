@@ -1,7 +1,7 @@
-package som.interpreter.nodes.nary;
+package trufflesom.interpreter.nodes.nary;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.PreevaluatedExpression;
 
 
 public abstract class EagerPrimitive extends ExpressionNode

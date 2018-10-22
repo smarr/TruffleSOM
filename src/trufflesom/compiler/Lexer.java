@@ -22,14 +22,14 @@
  * THE SOFTWARE.
  */
 
-package som.compiler;
+package trufflesom.compiler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Field;
 
-import tools.SourceCoordinate;
+import trufflesom.tools.SourceCoordinate;
 
 
 public final class Lexer {

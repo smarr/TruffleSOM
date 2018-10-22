@@ -19,9 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
-import som.vmobjects.SSymbol;
+import trufflesom.vmobjects.SSymbol;
 
 
 public interface ISuperReadNode {

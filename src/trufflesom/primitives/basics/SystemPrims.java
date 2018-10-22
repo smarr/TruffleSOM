@@ -1,17 +1,17 @@
-package som.primitives.basics;
+package trufflesom.primitives.basics;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import som.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
-import som.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
-import som.vm.Universe;
-import som.vm.constants.Nil;
-import som.vmobjects.SClass;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class SystemPrims {

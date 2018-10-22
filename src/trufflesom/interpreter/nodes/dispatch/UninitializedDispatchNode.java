@@ -1,18 +1,18 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
-import som.interpreter.Types;
-import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import som.vm.Universe;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.Types;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class UninitializedDispatchNode extends AbstractDispatchNode {

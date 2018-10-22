@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter;
+package trufflesom.interpreter;
 
 import com.oracle.truffle.api.nodes.ControlFlowException;
 

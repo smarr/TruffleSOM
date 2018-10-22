@@ -1,10 +1,10 @@
-package som.primitives.arithmetic;
+package trufflesom.primitives.arithmetic;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 
 
 @GenerateNodeFactory

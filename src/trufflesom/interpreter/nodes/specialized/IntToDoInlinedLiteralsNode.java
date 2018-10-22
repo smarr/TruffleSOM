@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -14,10 +14,10 @@ import com.oracle.truffle.api.nodes.RootNode;
 import bd.inlining.Inline;
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
-import som.compiler.Variable;
-import som.compiler.Variable.Local;
-import som.interpreter.Invokable;
-import som.interpreter.nodes.ExpressionNode;
+import trufflesom.compiler.Variable;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 @NodeChild(value = "from", type = ExpressionNode.class)

@@ -1,4 +1,4 @@
-package som.primitives.arithmetic;
+package trufflesom.primitives.arithmetic;
 
 import java.math.BigInteger;
 

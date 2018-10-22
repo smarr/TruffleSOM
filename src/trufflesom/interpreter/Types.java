@@ -19,21 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter;
+package trufflesom.interpreter;
 
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
-import som.vm.Universe;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SArray;
-import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 @TypeSystem({boolean.class,

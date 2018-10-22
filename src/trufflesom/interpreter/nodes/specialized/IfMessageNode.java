@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
@@ -9,10 +9,10 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable;
 
 
 public abstract class IfMessageNode extends BinaryExpressionNode {

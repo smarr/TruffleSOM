@@ -1,13 +1,13 @@
-package som.primitives.basics;
+package trufflesom.primitives.basics;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.vm.Universe;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SClass;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SClass;
 
 
 @GenerateNodeFactory

@@ -1,4 +1,4 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import java.io.IOException;
 
@@ -16,9 +16,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
-import som.vm.NotYetImplementedException;
-import som.vm.Universe;
-import som.vm.Universe.SomExit;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.Universe;
+import trufflesom.vm.Universe.SomExit;
 
 
 @TruffleLanguage.Registration(id = "som", name = "som", version = "0.1.0",

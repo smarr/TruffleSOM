@@ -1,4 +1,4 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import java.util.Arrays;
 
@@ -7,7 +7,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 
 import bd.inlining.Scope;
-import som.compiler.Variable;
+import trufflesom.compiler.Variable;
 
 
 public final class LexicalScope implements Scope<LexicalScope, Method> {

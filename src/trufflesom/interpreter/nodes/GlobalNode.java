@@ -19,19 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.SArguments;
-import som.interpreter.TruffleCompiler;
-import som.vm.Universe;
-import som.vm.Universe.Association;
-import som.vm.constants.Nil;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.SArguments;
+import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.vm.Universe;
+import trufflesom.vm.Universe.Association;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class GlobalNode extends ExpressionNode {

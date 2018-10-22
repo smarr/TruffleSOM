@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package som.vmobjects;
+package trufflesom.vmobjects;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -34,11 +34,11 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
-import som.interpreter.objectstorage.ObjectLayout;
-import som.interpreter.objectstorage.StorageLocation;
-import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
-import som.vm.Universe;
-import som.vm.constants.Nil;
+import trufflesom.interpreter.objectstorage.ObjectLayout;
+import trufflesom.interpreter.objectstorage.StorageLocation;
+import trufflesom.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
+import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 
 
 public class SObject extends SAbstractObject {

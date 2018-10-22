@@ -1,15 +1,15 @@
-package som.interpreter.nodes.nary;
+package trufflesom.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import som.interpreter.TruffleCompiler;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.MessageSendNode;
-import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
-import som.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class EagerTernaryPrimitiveNode extends EagerPrimitive {

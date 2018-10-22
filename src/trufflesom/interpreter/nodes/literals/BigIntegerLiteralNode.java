@@ -1,4 +1,4 @@
-package som.interpreter.nodes.literals;
+package trufflesom.interpreter.nodes.literals;
 
 import java.math.BigInteger;
 

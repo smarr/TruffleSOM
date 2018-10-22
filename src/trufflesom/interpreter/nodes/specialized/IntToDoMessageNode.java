@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized;
+package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -13,14 +13,14 @@ import com.oracle.truffle.api.nodes.RootNode;
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
 import bd.settings.VmSettings;
-import som.interpreter.Invokable;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.nary.TernaryExpressionNode;
-import som.interpreter.nodes.specialized.IntToDoMessageNode.ToDoSplzr;
-import som.vm.Universe;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.interpreter.nodes.specialized.IntToDoMessageNode.ToDoSplzr;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory

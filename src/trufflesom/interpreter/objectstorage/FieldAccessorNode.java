@@ -1,17 +1,17 @@
-package som.interpreter.objectstorage;
+package trufflesom.interpreter.objectstorage;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-import som.interpreter.TruffleCompiler;
-import som.interpreter.TypesGen;
-import som.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
-import som.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
-import som.interpreter.objectstorage.StorageLocation.LongStorageLocation;
-import som.vm.constants.Nil;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.TypesGen;
+import trufflesom.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
+import trufflesom.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
+import trufflesom.interpreter.objectstorage.StorageLocation.LongStorageLocation;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class FieldAccessorNode extends Node {

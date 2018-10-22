@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-package som.vm;
+package trufflesom.vm;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,20 +42,20 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.IdProvider;
 import bd.inlining.InlinableNodes;
-import som.compiler.Disassembler;
-import som.interpreter.Invokable;
-import som.interpreter.SomLanguage;
-import som.interpreter.TruffleCompiler;
-import som.primitives.Primitives;
-import som.vm.constants.Nil;
-import som.vmobjects.SArray;
-import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SInvokable.SMethod;
-import som.vmobjects.SInvokable.SPrimitive;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.compiler.Disassembler;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.primitives.Primitives;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SInvokable.SPrimitive;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class Universe implements IdProvider<SSymbol> {
@@ -624,7 +624,7 @@ public final class Universe implements IdProvider<SSymbol> {
     for (String cpEntry : classPath) {
       try {
         // Load the class from a file and return the loaded class
-        SClass result = som.compiler.SourcecodeCompiler.compileClass(cpEntry,
+        SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(cpEntry,
             name.getString(), systemClass, this);
         if (printAST) {
           Disassembler.dump(result.getSOMClass(this));
@@ -644,7 +644,7 @@ public final class Universe implements IdProvider<SSymbol> {
   @TruffleBoundary
   public SClass loadShellClass(final String stmt) throws IOException {
     // Load the class from a stream and return the loaded class
-    SClass result = som.compiler.SourcecodeCompiler.compileClass(stmt, null,
+    SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(stmt, null,
         this);
     if (printAST) {
       Disassembler.dump(result);

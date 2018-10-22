@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  */
 
-package som.vmobjects;
+package trufflesom.vmobjects;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
-import som.interpreter.Invokable;
-import som.vm.Universe;
+import trufflesom.interpreter.Invokable;
+import trufflesom.vm.Universe;
 
 
 public abstract class SInvokable extends SAbstractObject {

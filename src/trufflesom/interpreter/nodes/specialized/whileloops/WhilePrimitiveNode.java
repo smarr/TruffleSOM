@@ -1,13 +1,13 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import som.vm.Universe;
-import som.vmobjects.SBlock;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class WhilePrimitiveNode extends BinarySystemOperation {

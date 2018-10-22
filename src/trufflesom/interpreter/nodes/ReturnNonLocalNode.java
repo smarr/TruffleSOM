@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
@@ -30,13 +30,13 @@ import com.oracle.truffle.api.profiles.BranchProfile;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
-import som.compiler.Variable.Internal;
-import som.interpreter.FrameOnStackMarker;
-import som.interpreter.ReturnException;
-import som.interpreter.SArguments;
-import som.vm.Universe;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SBlock;
+import trufflesom.compiler.Variable.Internal;
+import trufflesom.interpreter.FrameOnStackMarker;
+import trufflesom.interpreter.ReturnException;
+import trufflesom.interpreter.SArguments;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SBlock;
 
 
 public final class ReturnNonLocalNode extends ContextualNode {

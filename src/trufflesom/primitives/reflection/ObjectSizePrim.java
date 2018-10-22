@@ -1,11 +1,11 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vmobjects.SObject;
 
 
 @GenerateNodeFactory

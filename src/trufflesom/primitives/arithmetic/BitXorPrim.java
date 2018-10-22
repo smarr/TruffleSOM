@@ -1,4 +1,4 @@
-package som.primitives.arithmetic;
+package trufflesom.primitives.arithmetic;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;

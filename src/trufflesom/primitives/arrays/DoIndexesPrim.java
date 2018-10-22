@@ -1,4 +1,4 @@
-package som.primitives.arrays;
+package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -10,15 +10,15 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
-import som.interpreter.Invokable;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
-import som.primitives.basics.LengthPrim;
-import som.primitives.basics.LengthPrimFactory;
-import som.vmobjects.SArray;
-import som.vmobjects.SBlock;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import trufflesom.primitives.basics.LengthPrim;
+import trufflesom.primitives.basics.LengthPrimFactory;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SBlock;
 
 
 @GenerateNodeFactory

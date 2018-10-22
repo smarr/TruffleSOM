@@ -1,10 +1,10 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import som.interpreter.nodes.literals.BlockNode;
-import som.vmobjects.SBlock;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {

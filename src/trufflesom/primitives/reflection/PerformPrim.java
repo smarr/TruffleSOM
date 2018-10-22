@@ -1,12 +1,12 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 @Primitive(className = "Object", primitive = "perform:")

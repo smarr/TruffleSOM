@@ -1,12 +1,12 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
-import som.interpreter.objectstorage.ObjectLayout;
-import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.objectstorage.ObjectLayout;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class DispatchGuard {

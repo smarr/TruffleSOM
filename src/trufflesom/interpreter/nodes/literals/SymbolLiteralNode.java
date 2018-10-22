@@ -1,8 +1,8 @@
-package som.interpreter.nodes.literals;
+package trufflesom.interpreter.nodes.literals;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import som.vmobjects.SSymbol;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class SymbolLiteralNode extends LiteralNode {

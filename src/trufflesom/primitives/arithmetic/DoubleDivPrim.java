@@ -1,4 +1,4 @@
-package som.primitives.arithmetic;
+package trufflesom.primitives.arithmetic;
 
 import java.math.BigInteger;
 
@@ -7,8 +7,8 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.vm.NotYetImplementedException;
-import som.vmobjects.SAbstractObject;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vmobjects.SAbstractObject;
 
 
 @GenerateNodeFactory

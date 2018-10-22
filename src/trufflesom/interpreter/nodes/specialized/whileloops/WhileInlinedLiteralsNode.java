@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -11,9 +11,9 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import bd.inlining.Inline;
 import bd.inlining.Inline.False;
 import bd.inlining.Inline.True;
-import som.interpreter.Invokable;
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.constants.Nil;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.constants.Nil;
 
 
 @Inline(selector = "whileTrue:", inlineableArgIdx = {0, 1}, additionalArgs = True.class)

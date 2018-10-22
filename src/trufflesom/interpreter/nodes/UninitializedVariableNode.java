@@ -1,19 +1,19 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
-import som.compiler.Variable.Local;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
-import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
-import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
 
 
 public abstract class UninitializedVariableNode extends ContextualNode {

@@ -1,13 +1,13 @@
-package som.interpreter.nodes.nary;
+package trufflesom.interpreter.nodes.nary;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.NotYetImplementedException;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 @NodeChildren({

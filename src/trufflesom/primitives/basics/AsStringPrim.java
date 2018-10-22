@@ -1,4 +1,4 @@
-package som.primitives.basics;
+package trufflesom.primitives.basics;
 
 import java.math.BigInteger;
 
@@ -7,8 +7,8 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory

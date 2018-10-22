@@ -1,12 +1,12 @@
-package som.primitives.basics;
+package trufflesom.primitives.basics;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
-import som.vmobjects.SClass;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.vmobjects.SClass;
 
 
 public abstract class DoublePrims {

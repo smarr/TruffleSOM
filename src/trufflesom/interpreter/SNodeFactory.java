@@ -1,33 +1,33 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import java.util.List;
 
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.compiler.Variable.Argument;
-import som.compiler.Variable.Internal;
-import som.compiler.Variable.Local;
-import som.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
-import som.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
-import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
-import som.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
-import som.interpreter.nodes.ContextualNode;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.FieldNode.FieldReadNode;
-import som.interpreter.nodes.FieldNode.FieldWriteNode;
-import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
-import som.interpreter.nodes.GlobalNode;
-import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
-import som.interpreter.nodes.MessageSendNode;
-import som.interpreter.nodes.ReturnNonLocalNode;
-import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
-import som.interpreter.nodes.SequenceNode;
-import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
-import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.compiler.Variable.Argument;
+import trufflesom.compiler.Variable.Internal;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
+import trufflesom.interpreter.nodes.ContextualNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
+import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
+import trufflesom.interpreter.nodes.SequenceNode;
+import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
+import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class SNodeFactory {

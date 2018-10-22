@@ -1,9 +1,9 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 
-import som.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 public final class NodeVisitorUtil {

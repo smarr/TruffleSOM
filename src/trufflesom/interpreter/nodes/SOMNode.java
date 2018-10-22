@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -29,7 +29,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.nodes.ScopeReference;
 import bd.inlining.nodes.WithSource;
-import som.interpreter.Types;
+import trufflesom.interpreter.Types;
 
 
 @TypeSystemReference(Types.class)

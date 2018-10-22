@@ -1,10 +1,10 @@
-package som.compiler;
+package trufflesom.compiler;
 
-import static som.interpreter.SNodeFactory.createArgumentRead;
-import static som.interpreter.SNodeFactory.createLocalVarRead;
-import static som.interpreter.SNodeFactory.createSuperRead;
-import static som.interpreter.SNodeFactory.createVariableWrite;
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
+import static trufflesom.interpreter.SNodeFactory.createLocalVarRead;
+import static trufflesom.interpreter.SNodeFactory.createSuperRead;
+import static trufflesom.interpreter.SNodeFactory.createVariableWrite;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -13,9 +13,9 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.NodeState;
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.Universe;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {

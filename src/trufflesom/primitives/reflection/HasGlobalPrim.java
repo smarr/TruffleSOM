@@ -1,15 +1,15 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.SOMNode;
-import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import som.vm.NotYetImplementedException;
-import som.vm.Universe;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.SOMNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 @Primitive(className = "System", primitive = "hasGlobal:")

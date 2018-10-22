@@ -1,6 +1,6 @@
-package som.interpreter;
+package trufflesom.interpreter;
 
-import som.vmobjects.SArray;
+import trufflesom.vmobjects.SArray;
 
 import com.oracle.truffle.api.frame.Frame;
 

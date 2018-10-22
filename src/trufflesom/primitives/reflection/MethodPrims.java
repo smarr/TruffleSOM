@@ -1,4 +1,4 @@
-package som.primitives.reflection;
+package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -6,18 +6,18 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.dispatch.InvokeOnCache;
-import som.interpreter.nodes.nary.EagerlySpecializableNode;
-import som.interpreter.nodes.nary.UnaryExpressionNode;
-import som.primitives.arrays.ToArgumentsArrayNode;
-import som.primitives.arrays.ToArgumentsArrayNodeFactory;
-import som.vm.NotYetImplementedException;
-import som.vm.Universe;
-import som.vmobjects.SAbstractObject;
-import som.vmobjects.SArray;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.dispatch.InvokeOnCache;
+import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.primitives.arrays.ToArgumentsArrayNode;
+import trufflesom.primitives.arrays.ToArgumentsArrayNodeFactory;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class MethodPrims {

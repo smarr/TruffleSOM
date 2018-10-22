@@ -1,4 +1,4 @@
-package som.interpreter.nodes.literals;
+package trufflesom.interpreter.nodes.literals;
 
 import java.util.ArrayList;
 
@@ -7,15 +7,15 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
-import som.compiler.MethodGenerationContext;
-import som.compiler.Variable;
-import som.compiler.Variable.Argument;
-import som.interpreter.Method;
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.Universe;
-import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
-import som.vmobjects.SInvokable.SMethod;
+import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable;
+import trufflesom.compiler.Variable.Argument;
+import trufflesom.interpreter.Method;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable.SMethod;
 
 
 public class BlockNode extends LiteralNode {

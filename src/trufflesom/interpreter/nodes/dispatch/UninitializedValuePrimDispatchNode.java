@@ -1,10 +1,10 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
-import som.primitives.basics.BlockPrims.ValuePrimitiveNode;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
+import trufflesom.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;

@@ -1,4 +1,4 @@
-package som.primitives.basics;
+package trufflesom.primitives.basics;
 
 import java.math.BigInteger;
 
@@ -6,10 +6,10 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import som.vm.Universe;
-import som.vmobjects.SObject;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 @Primitive(className = "Integer", primitive = "=")

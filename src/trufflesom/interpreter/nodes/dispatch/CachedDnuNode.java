@@ -1,15 +1,15 @@
-package som.interpreter.nodes.dispatch;
+package trufflesom.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
-import som.interpreter.SArguments;
-import som.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
-import som.vm.Universe;
-import som.vmobjects.SClass;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.SArguments;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class CachedDnuNode extends AbstractCachedDispatchNode {

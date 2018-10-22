@@ -1,6 +1,6 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreter;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreter;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -10,9 +10,9 @@ import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
-import som.compiler.Variable.Local;
-import som.vm.constants.Nil;
-import som.vmobjects.SObject;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class NonLocalVariableNode extends ContextualNode {

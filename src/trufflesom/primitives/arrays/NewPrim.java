@@ -1,16 +1,16 @@
-package som.primitives.arrays;
+package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
-import som.interpreter.nodes.ExpressionNode;
-import som.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import som.vm.Universe;
-import som.vmobjects.SArray;
-import som.vmobjects.SClass;
-import som.vmobjects.SSymbol;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SSymbol;
 
 
 @Primitive(className = "Array", primitive = "new:", selector = "new:", classSide = true,

@@ -1,12 +1,12 @@
-package som.interpreter.nodes;
+package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
-import som.compiler.Variable.AccessNodeState;
-import som.compiler.Variable.Argument;
-import som.interpreter.SArguments;
-import som.vmobjects.SSymbol;
+import trufflesom.compiler.Variable.AccessNodeState;
+import trufflesom.compiler.Variable.Argument;
+import trufflesom.interpreter.SArguments;
+import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class ArgumentReadNode {
