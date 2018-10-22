@@ -1,6 +1,6 @@
 package trufflesom.interpreter.nodes;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreter;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreter;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;

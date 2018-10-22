@@ -1,15 +1,15 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.primitives.Primitive;
-import som.vm.Universe;
-import som.vmobjects.SBlock;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.primitives.Primitive;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SObject;
 
 
 @GenerateNodeFactory

@@ -24,7 +24,7 @@
 
 package trufflesom.vmobjects;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import java.util.HashMap;
 

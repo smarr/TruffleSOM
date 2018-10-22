@@ -1,6 +1,6 @@
 package trufflesom.interpreter.nodes;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.InlinerAdaptToEmbeddedOuterContext;
 import trufflesom.interpreter.InlinerForLexicallyEmbeddedMethods;

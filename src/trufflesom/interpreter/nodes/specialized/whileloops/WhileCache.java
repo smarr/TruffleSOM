@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.Cached;
@@ -6,12 +6,12 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.Universe;
-import som.vm.constants.Nil;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class WhileCache extends BinaryExpressionNode {

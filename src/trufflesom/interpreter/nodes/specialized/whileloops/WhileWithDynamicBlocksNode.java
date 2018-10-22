@@ -1,13 +1,13 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.vm.NotYetImplementedException;
-import som.vmobjects.SBlock;
-import som.vmobjects.SInvokable;
-import som.vmobjects.SObject;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SObject;
 
 
 public final class WhileWithDynamicBlocksNode extends AbstractWhileNode {

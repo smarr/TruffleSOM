@@ -601,7 +601,7 @@ public final class Universe {
     for (String cpEntry : classPath) {
       try {
         // Load the class from a file and return the loaded class
-        SClass result = som.compiler.SourcecodeCompiler.compileClass(cpEntry,
+        SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(cpEntry,
             name.getString(), systemClass, this);
         if (printAST) {
           Disassembler.dump(result.getSOMClass(this));
@@ -621,7 +621,7 @@ public final class Universe {
   @TruffleBoundary
   public SClass loadShellClass(final String stmt) throws IOException {
     // Load the class from a stream and return the loaded class
-    SClass result = som.compiler.SourcecodeCompiler.compileClass(stmt, null,
+    SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(stmt, null,
         this);
     if (printAST) {
       Disassembler.dump(result);

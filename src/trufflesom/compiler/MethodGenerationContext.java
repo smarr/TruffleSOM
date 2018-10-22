@@ -25,11 +25,11 @@
 
 package trufflesom.compiler;
 
-import static som.interpreter.SNodeFactory.createCatchNonLocalReturn;
-import static som.interpreter.SNodeFactory.createFieldRead;
-import static som.interpreter.SNodeFactory.createFieldWrite;
-import static som.interpreter.SNodeFactory.createGlobalRead;
-import static som.interpreter.SNodeFactory.createNonLocalReturn;
+import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
+import static trufflesom.interpreter.SNodeFactory.createFieldRead;
+import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
+import static trufflesom.interpreter.SNodeFactory.createGlobalRead;
+import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,6 +1,6 @@
 package trufflesom.interpreter.nodes.dispatch;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;

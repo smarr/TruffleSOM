@@ -1,6 +1,6 @@
 package trufflesom.primitives.reflection;
 
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.nodes.Node;

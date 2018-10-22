@@ -17,12 +17,12 @@ import trufflesom.vm.VmSettings;
  */
 public class Specializer<T> {
   protected final Universe                            universe;
-  protected final som.primitives.Primitive            prim;
+  protected final trufflesom.primitives.Primitive     prim;
   protected final NodeFactory<T>                      fact;
   private final NodeFactory<? extends ExpressionNode> extraChildFactory;
 
   @SuppressWarnings("unchecked")
-  public Specializer(final som.primitives.Primitive prim, final NodeFactory<T> fact,
+  public Specializer(final trufflesom.primitives.Primitive prim, final NodeFactory<T> fact,
       final Universe universe) {
     this.prim = prim;
     this.fact = fact;

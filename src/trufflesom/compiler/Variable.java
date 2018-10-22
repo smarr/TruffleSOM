@@ -1,10 +1,10 @@
 package trufflesom.compiler;
 
-import static som.interpreter.SNodeFactory.createArgumentRead;
-import static som.interpreter.SNodeFactory.createLocalVarRead;
-import static som.interpreter.SNodeFactory.createSuperRead;
-import static som.interpreter.SNodeFactory.createVariableWrite;
-import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
+import static trufflesom.interpreter.SNodeFactory.createLocalVarRead;
+import static trufflesom.interpreter.SNodeFactory.createSuperRead;
+import static trufflesom.interpreter.SNodeFactory.createVariableWrite;
+import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameSlot;

@@ -185,9 +185,9 @@ public final class Primitives {
   private void initialize(final SomLanguage lang) {
     List<NodeFactory<? extends ExpressionNode>> primFacts = getFactories();
     for (NodeFactory<? extends ExpressionNode> primFact : primFacts) {
-      som.primitives.Primitive[] prims = getPrimitiveAnnotation(primFact);
+      trufflesom.primitives.Primitive[] prims = getPrimitiveAnnotation(primFact);
       if (prims != null) {
-        for (som.primitives.Primitive prim : prims) {
+        for (trufflesom.primitives.Primitive prim : prims) {
           Specializer<? extends ExpressionNode> specializer = getSpecializer(prim, primFact);
           String className = prim.className();
           String primName = prim.primitive();
@@ -217,17 +217,17 @@ public final class Primitives {
     }
   }
 
-  private static som.primitives.Primitive[] getPrimitiveAnnotation(
+  private static trufflesom.primitives.Primitive[] getPrimitiveAnnotation(
       final NodeFactory<? extends ExpressionNode> primFact) {
     Class<?> nodeClass = primFact.getNodeClass();
-    return nodeClass.getAnnotationsByType(som.primitives.Primitive.class);
+    return nodeClass.getAnnotationsByType(trufflesom.primitives.Primitive.class);
   }
 
   @SuppressWarnings("unchecked")
-  private <T> Specializer<T> getSpecializer(final som.primitives.Primitive prim,
+  private <T> Specializer<T> getSpecializer(final trufflesom.primitives.Primitive prim,
       final NodeFactory<T> factory) {
     try {
-      return prim.specializer().getConstructor(som.primitives.Primitive.class,
+      return prim.specializer().getConstructor(trufflesom.primitives.Primitive.class,
           NodeFactory.class, Universe.class).newInstance(prim, factory, universe);
     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
         | InvocationTargetException | NoSuchMethodException | SecurityException e) {

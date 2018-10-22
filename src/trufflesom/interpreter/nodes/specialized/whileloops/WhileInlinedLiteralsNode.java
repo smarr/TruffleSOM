@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -9,9 +9,9 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.ExpressionNode;
-import som.vm.constants.Nil;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.constants.Nil;
 
 
 public final class WhileInlinedLiteralsNode extends ExpressionNode {

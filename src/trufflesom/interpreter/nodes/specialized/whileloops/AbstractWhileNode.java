@@ -1,4 +1,4 @@
-package som.interpreter.nodes.specialized.whileloops;
+package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
@@ -10,11 +10,11 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
-import som.interpreter.Invokable;
-import som.interpreter.nodes.nary.BinaryExpressionNode;
-import som.vm.constants.Nil;
-import som.vmobjects.SBlock;
-import som.vmobjects.SObject;
+import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class AbstractWhileNode extends BinaryExpressionNode {
