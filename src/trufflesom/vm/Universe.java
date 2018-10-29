@@ -42,8 +42,10 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.IdProvider;
+import bd.basic.ProgramDefinitionError;
 import bd.inlining.InlinableNodes;
 import trufflesom.compiler.Disassembler;
+import trufflesom.compiler.SourcecodeCompiler;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
@@ -130,6 +132,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public Universe(final SomLanguage language) {
     this.language = language;
+    this.compiler = new SourcecodeCompiler();
     this.globals = new HashMap<SSymbol, Association>();
     this.symbolTable = new HashMap<>();
     this.alreadyInitialized = false;
@@ -621,6 +624,11 @@ public final class Universe implements IdProvider<SSymbol> {
 
   @TruffleBoundary
   private SClass loadClass(final SSymbol name, final SClass systemClass) {
+    // Skip if classPath is not set
+    if (classPath == null) {
+      return null;
+    }
+
     // Try loading the class from all different paths
     for (String cpEntry : classPath) {
       try {
@@ -635,6 +643,8 @@ public final class Universe implements IdProvider<SSymbol> {
 
       } catch (IOException e) {
         // Continue trying different paths
+      } catch (ProgramDefinitionError e) {
+        Universe.errorExit(e.toString());
       }
     }
 
@@ -644,13 +654,16 @@ public final class Universe implements IdProvider<SSymbol> {
 
   @TruffleBoundary
   public SClass loadShellClass(final String stmt) throws IOException {
-    // Load the class from a stream and return the loaded class
-    SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(stmt, null,
-        this);
-    if (printAST) {
-      Disassembler.dump(result);
+    try {
+      // Load the class from a stream and return the loaded class
+      SClass result = compiler.compileClass(stmt, null, this);
+      if (printAST) {
+        Disassembler.dump(result);
+      }
+      return result;
+    } catch (ProgramDefinitionError e) {
+      return null;
     }
-    return result;
   }
 
   @TruffleBoundary
@@ -761,6 +774,8 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal private boolean printAST;
 
   private final SomLanguage language;
+
+  private final SourcecodeCompiler compiler;
 
   private final HashMap<String, SSymbol> symbolTable;
 

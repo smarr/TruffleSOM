@@ -27,8 +27,8 @@ import trufflesom.vmobjects.SAbstractObject;
     mimeType = SomLanguage.MIME_TYPE)
 public class SomLanguage extends TruffleLanguage<Universe> {
 
-  protected static final String MIME_TYPE = "application/x-som-smalltalk";
-  public static final String    SOM       = "som";
+  public static final String MIME_TYPE = "application/x-som-smalltalk";
+  public static final String SOM       = "som";
 
   @Option(help = "SOM's classpath", category = OptionCategory.USER) //
   protected static final OptionKey<String> CLASS_PATH = new OptionKey<>("");

@@ -175,6 +175,10 @@ public final class Parser {
       msg = msg.replace("%(found)s", foundStr);
       return msg;
     }
+
+    public SourceCoordinate getSourceCoordinate() {
+      return sourceCoordinate;
+    }
   }
 
   public static class ParseErrorWithSymbolList extends ParseError {

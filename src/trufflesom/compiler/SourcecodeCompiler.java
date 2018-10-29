@@ -38,12 +38,12 @@ import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class SourcecodeCompiler {
+public class SourcecodeCompiler {
 
   @TruffleBoundary
-  public static SClass compileClass(final String path, final String file,
+  public SClass compileClass(final String path, final String file,
       final SClass systemClass, final Universe universe)
-      throws IOException {
+      throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
     FileReader stream = new FileReader(fname);
 
@@ -65,24 +65,20 @@ public final class SourcecodeCompiler {
   }
 
   @TruffleBoundary
-  public static SClass compileClass(final String stmt, final SClass systemClass,
-      final Universe universe) {
+  public SClass compileClass(final String stmt, final SClass systemClass,
+      final Universe universe) throws ProgramDefinitionError {
     Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, universe);
 
     SClass result = compile(parser, systemClass, universe);
     return result;
   }
 
-  private static SClass compile(final Parser parser, final SClass systemClass,
-      final Universe universe) {
+  public SClass compile(final Parser parser, final SClass systemClass,
+      final Universe universe) throws ProgramDefinitionError {
     ClassGenerationContext cgc = new ClassGenerationContext(universe);
 
     SClass result = systemClass;
-    try {
-      parser.classdef(cgc);
-    } catch (ProgramDefinitionError pe) {
-      Universe.errorExit(pe.toString());
-    }
+    parser.classdef(cgc);
 
     if (systemClass == null) {
       result = cgc.assemble();
