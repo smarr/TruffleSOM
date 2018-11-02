@@ -210,6 +210,16 @@
         </java>
         <fail message="Basic tests failed." if="test.failed" />
     </target>
-    <target name="tests" depends="test" />
+    
+    <target name="som-test" depends="compile" description="Test som script">
+        <exec executable="./som" failonerror="true">
+            <arg value="-cp" />
+            <arg value="Smalltalk" />           
+            <arg value="TestSuite/TestHarness.com" />
+            <arg value="TestSuite/EmptyTest.som" />
+        </exec>
+    </target>
+
+    <target name="tests" depends="test, som-test" />
 
 </project>
