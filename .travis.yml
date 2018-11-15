@@ -10,6 +10,6 @@ install:
       tar -C ${TRAVIS_BUILD_DIR}/.. -xzf ${ECLIPSE_TAR}
       export ECLIPSE_EXE=${TRAVIS_BUILD_DIR}/../eclipse/eclipse
 script:
-  - ant test
+  - ant tests
   - ant eclipseformat
   - ant checkstyle

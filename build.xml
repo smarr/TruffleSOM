@@ -213,6 +213,7 @@
     
     <target name="som-test" depends="compile" description="Test som script">
         <exec executable="./som" failonerror="true">
+            <arg value="-G" />
             <arg value="-cp" />
             <arg value="Smalltalk" />           
             <arg value="TestSuite/TestHarness.com" />
