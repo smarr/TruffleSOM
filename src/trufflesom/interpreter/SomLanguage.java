@@ -47,6 +47,12 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   private String testClass;
   private String testSelector;
 
+  private static Universe current;
+
+  public static Universe getCurrent() {
+    return current;
+  }
+
   public Universe getUniverse() {
     return universe;
   }
@@ -60,6 +66,7 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     testSelector = config.get(TEST_SELECTOR);
 
     universe = new Universe(this);
+    current = universe;
     return universe;
   }
 
@@ -133,7 +140,8 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   }
 
   public static Universe getCurrentContext() {
-    return getCurrentContext(SomLanguage.class);
+    return current;
+    // return getCurrentContext(SomLanguage.class);
   }
 
   public static Universe getCurrentContext(final Node node) {
