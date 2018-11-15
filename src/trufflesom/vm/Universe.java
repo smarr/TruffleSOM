@@ -349,7 +349,7 @@ public final class Universe implements IdProvider<SSymbol> {
         SArray.create(arguments)});
   }
 
-  protected void initializeObjectSystem() {
+  public void initializeObjectSystem() {
     CompilerAsserts.neverPartOfCompilation();
     if (alreadyInitialized) {
       return;
@@ -792,5 +792,11 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public boolean isObjectSystemInitialized() {
     return objectSystemInitialized;
+  }
+
+  public static Builder createContextBuilder(final String[] args) {
+    Builder builder = Context.newBuilder(SomLanguage.SOM).in(System.in).out(System.out)
+                             .allowAllAccess(true).arguments(SomLanguage.SOM, args);
+    return builder;
   }
 }
