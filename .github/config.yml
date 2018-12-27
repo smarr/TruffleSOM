@@ -1,0 +1,4 @@
+target-branch: master
+update-submodules:
+  core-lib:
+    branch: master
