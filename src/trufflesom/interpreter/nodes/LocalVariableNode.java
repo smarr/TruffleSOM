@@ -9,11 +9,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.tools.Send;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
+import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class LocalVariableNode extends ExpressionNode {
+public abstract class LocalVariableNode extends ExpressionNode implements Send {
   protected final FrameSlot slot;
   protected final Local     local;
 
@@ -24,6 +26,11 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
   public final Object getSlotIdentifier() {
     return slot.getIdentifier();
+  }
+
+  @Override
+  public final SSymbol getSelector() {
+    return local.name;
   }
 
   public abstract static class LocalVariableReadNode extends LocalVariableNode {

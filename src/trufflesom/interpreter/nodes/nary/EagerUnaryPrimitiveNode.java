@@ -56,4 +56,9 @@ public class EagerUnaryPrimitiveNode extends EagerPrimitive {
         new ExpressionNode[] {receiver}, sourceSection, universe);
     return replace(node);
   }
+
+  @Override
+  public SSymbol getSelector() {
+    return selector;
+  }
 }

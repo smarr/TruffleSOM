@@ -65,4 +65,9 @@ public final class EagerTernaryPrimitiveNode extends EagerPrimitive {
         new ExpressionNode[] {receiver, argument1, argument2}, sourceSection, universe);
     return replace(node);
   }
+
+  @Override
+  public SSymbol getSelector() {
+    return selector;
+  }
 }

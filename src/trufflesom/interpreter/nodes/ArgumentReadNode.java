@@ -6,12 +6,13 @@ import bd.inlining.ScopeAdaptationVisitor;
 import trufflesom.compiler.Variable.AccessNodeState;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.SArguments;
+import trufflesom.tools.Send;
 import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class ArgumentReadNode {
 
-  public static class LocalArgumentReadNode extends ExpressionNode {
+  public static class LocalArgumentReadNode extends ExpressionNode implements Send {
     protected final int      argumentIndex;
     protected final Argument arg;
 
@@ -37,6 +38,11 @@ public abstract class ArgumentReadNode {
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateRead(arg, this, 0);
+    }
+
+    @Override
+    public SSymbol getSelector() {
+      return arg.name;
     }
   }
 
@@ -76,7 +82,7 @@ public abstract class ArgumentReadNode {
     }
   }
 
-  public static class NonLocalArgumentReadNode extends ContextualNode {
+  public static class NonLocalArgumentReadNode extends ContextualNode implements Send {
     protected final int      argumentIndex;
     protected final Argument arg;
 
@@ -95,6 +101,11 @@ public abstract class ArgumentReadNode {
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateRead(arg, this, contextLevel);
+    }
+
+    @Override
+    public SSymbol getSelector() {
+      return arg.name;
     }
   }
 

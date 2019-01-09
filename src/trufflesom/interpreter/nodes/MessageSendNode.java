@@ -15,6 +15,7 @@ import trufflesom.interpreter.nodes.dispatch.SuperDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.tools.Send;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
@@ -55,7 +56,7 @@ public final class MessageSendNode {
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
-      implements PreevaluatedExpression {
+      implements PreevaluatedExpression, Send {
 
     @Children protected final ExpressionNode[] argumentNodes;
 
@@ -155,6 +156,11 @@ public final class MessageSendNode {
       return replace(send);
     }
 
+    @Override
+    public SSymbol getSelector() {
+      return selector;
+    }
+
   }
 
   private static final class UninitializedMessageSendNode
@@ -231,6 +237,11 @@ public final class MessageSendNode {
     @Override
     public NodeCost getCost() {
       return Cost.getCost(dispatchNode);
+    }
+
+    @Override
+    public SSymbol getSelector() {
+      return selector;
     }
   }
 }
