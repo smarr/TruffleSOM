@@ -100,6 +100,7 @@ import trufflesom.primitives.reflection.PerformInSuperclassPrimFactory;
 import trufflesom.primitives.reflection.PerformPrimFactory;
 import trufflesom.primitives.reflection.PerformWithArgumentsInSuperclassPrimFactory;
 import trufflesom.primitives.reflection.PerformWithArgumentsPrimFactory;
+import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -118,9 +119,9 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
 
   public static SInvokable constructEmptyPrimitive(final SSymbol signature,
-      final SomLanguage lang, final SourceSection sourceSection) {
+      final SomLanguage lang, final SourceSection sourceSection, final StructuralProbe probe) {
     CompilerAsserts.neverPartOfCompilation();
-    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse());
+    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0));
     Primitive primMethodNode =
@@ -138,7 +139,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     initialize();
   }
 
-  public void loadPrimitives(final SClass clazz, final boolean displayWarning) {
+  public void loadPrimitives(final SClass clazz, final boolean displayWarning,
+      final StructuralProbe probe) {
     HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> prims =
         primitives.get(clazz.getName());
     if (prims == null) {
@@ -159,7 +161,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
       SInvokable ivk = target.lookupInvokable(e.getKey());
       assert ivk != null : "Lookup of " + e.getKey().toString() + " failed in "
           + target.getName().getString() + ". Can't install a primitive for it.";
-      SInvokable prim = constructPrimitive(e.getKey(), universe.getLanguage(), e.getValue());
+      SInvokable prim = constructPrimitive(e.getKey(), universe.getLanguage(),
+          e.getValue(), probe);
       target.addInstanceInvokable(prim);
     }
   }
@@ -186,14 +189,15 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
 
   private static SInvokable constructPrimitive(final SSymbol signature,
       final SomLanguage lang,
-      final Specializer<Universe, ExpressionNode, SSymbol> specializer) {
+      final Specializer<Universe, ExpressionNode, SSymbol> specializer,
+      final StructuralProbe probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
     final int numArgs = signature.getNumberOfSignatureArguments();
 
     Source s = SomLanguage.getSyntheticSource("primitive", specializer.getName());
     SourceSection source = s.createSection(1);
 
-    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse());
+    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
     ExpressionNode[] args = new ExpressionNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
       args[i] = new LocalArgumentReadNode(true, i).initialize(source);

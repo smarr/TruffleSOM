@@ -33,6 +33,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
+import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
@@ -42,14 +43,14 @@ public class SourcecodeCompiler {
 
   @TruffleBoundary
   public SClass compileClass(final String path, final String file,
-      final SClass systemClass, final Universe universe)
+      final SClass systemClass, final Universe universe, final StructuralProbe probe)
       throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
     FileReader stream = new FileReader(fname);
 
     File f = new File(fname);
     Source source = Source.newBuilder(f).build();
-    Parser parser = new Parser(stream, f.length(), source, universe);
+    Parser parser = new Parser(stream, f.length(), source, probe, universe);
 
     SClass result = compile(parser, systemClass, universe);
 
@@ -66,8 +67,8 @@ public class SourcecodeCompiler {
 
   @TruffleBoundary
   public SClass compileClass(final String stmt, final SClass systemClass,
-      final Universe universe) throws ProgramDefinitionError {
-    Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, universe);
+      final Universe universe, final StructuralProbe probe) throws ProgramDefinitionError {
+    Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, probe, universe);
 
     SClass result = compile(parser, systemClass, universe);
     return result;
@@ -75,7 +76,7 @@ public class SourcecodeCompiler {
 
   public SClass compile(final Parser parser, final SClass systemClass,
       final Universe universe) throws ProgramDefinitionError {
-    ClassGenerationContext cgc = new ClassGenerationContext(universe);
+    ClassGenerationContext cgc = new ClassGenerationContext(universe, parser.structuralProbe);
 
     SClass result = systemClass;
     parser.classdef(cgc);

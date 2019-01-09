@@ -31,6 +31,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -39,14 +40,18 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public final class ClassGenerationContext {
-  private final Universe universe;
+  private final Universe        universe;
+  private final StructuralProbe structuralProbe;
 
-  public ClassGenerationContext(final Universe universe) {
+  public ClassGenerationContext(final Universe universe,
+      final StructuralProbe structuralProbe) {
     this.universe = universe;
+    this.structuralProbe = structuralProbe;
   }
 
   private SSymbol                name;
   private SSymbol                superName;
+  private SourceSection          sourceSection;
   private boolean                classSide;
   private final List<Field>      instanceFields  = new ArrayList<>();
   private final List<SInvokable> instanceMethods = new ArrayList<SInvokable>();
@@ -67,6 +72,14 @@ public final class ClassGenerationContext {
 
   public SSymbol getName() {
     return name;
+  }
+
+  public void setSourceSection(final SourceSection source) {
+    sourceSection = source;
+  }
+
+  public SourceSection getSourceSection() {
+    return sourceSection;
   }
 
   public void setSuperName(final SSymbol superName) {
@@ -152,6 +165,11 @@ public final class ClassGenerationContext {
 
     SClass superMClass = superClass.getSOMClass(universe);
     resultClass.setSuperClass(superMClass);
+    resultClass.setSourceSection(sourceSection);
+
+    if (structuralProbe != null) {
+      structuralProbe.recordNewClass(resultClass);
+    }
 
     // Allocate the resulting class
     SClass result = universe.newClass(resultClass);
@@ -161,7 +179,11 @@ public final class ClassGenerationContext {
     result.setSuperClass(superClass);
     result.setInstanceFields(instanceFields);
     result.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
+    result.setSourceSection(sourceSection);
 
+    if (structuralProbe != null) {
+      structuralProbe.recordNewClass(result);
+    }
     return result;
   }
 
@@ -169,10 +191,19 @@ public final class ClassGenerationContext {
   public void assembleSystemClass(final SClass systemClass) {
     systemClass.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
     systemClass.setInstanceFields(instanceFields);
+
+    if (structuralProbe != null) {
+      structuralProbe.recordNewClass(systemClass);
+    }
+
     // class-bound == class-instance-bound
     SClass superMClass = systemClass.getSOMClass(universe);
     superMClass.setInstanceInvokables(SArray.create(classMethods.toArray(new Object[0])));
     superMClass.setInstanceFields(classFields);
+
+    if (structuralProbe != null) {
+      structuralProbe.recordNewClass(superMClass);
+    }
   }
 
   @Override

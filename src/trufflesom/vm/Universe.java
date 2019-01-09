@@ -50,6 +50,7 @@ import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.primitives.Primitives;
+import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
@@ -602,7 +603,7 @@ public final class Universe implements IdProvider<SSymbol> {
     // Load primitives if class defines them, or try to load optional
     // primitives defined for system classes.
     if (result.hasPrimitives() || isSystemClass) {
-      primitives.loadPrimitives(result, !isSystemClass);
+      primitives.loadPrimitives(result, !isSystemClass, null);
     }
   }
 
@@ -633,8 +634,8 @@ public final class Universe implements IdProvider<SSymbol> {
     for (String cpEntry : classPath) {
       try {
         // Load the class from a file and return the loaded class
-        SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(cpEntry,
-            name.getString(), systemClass, this);
+        SClass result = compiler.compileClass(cpEntry, name.getString(),
+            systemClass, this, systemClassProbe);
         if (printAST) {
           Disassembler.dump(result.getSOMClass(this));
           Disassembler.dump(result);
@@ -656,7 +657,7 @@ public final class Universe implements IdProvider<SSymbol> {
   public SClass loadShellClass(final String stmt) throws IOException {
     try {
       // Load the class from a stream and return the loaded class
-      SClass result = compiler.compileClass(stmt, null, this);
+      SClass result = compiler.compileClass(stmt, null, this, null);
       if (printAST) {
         Disassembler.dump(result);
       }
@@ -740,6 +741,10 @@ public final class Universe implements IdProvider<SSymbol> {
     return inlinableNodes;
   }
 
+  public void setSystemClassProbe(final StructuralProbe probe) {
+    systemClassProbe = probe;
+  }
+
   public final SClass objectClass;
   public final SClass classClass;
   public final SClass metaclassClass;
@@ -772,6 +777,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
   private String[]                  classPath;
   @CompilationFinal private boolean printAST;
+  private StructuralProbe           systemClassProbe;
 
   private final SomLanguage language;
 

@@ -55,6 +55,7 @@ import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SInvokable;
@@ -83,27 +84,32 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
   private final List<SMethod> embeddedBlockMethods;
 
+  private final StructuralProbe structuralProbe;
+
   private final Universe universe;
 
-  public MethodGenerationContext(final ClassGenerationContext holderGenc) {
-    this(holderGenc, null, holderGenc.getUniverse(), false);
+  public MethodGenerationContext(final ClassGenerationContext holderGenc,
+      final StructuralProbe structuralProbe) {
+    this(holderGenc, null, holderGenc.getUniverse(), false, structuralProbe);
   }
 
-  public MethodGenerationContext(final Universe universe) {
-    this(null, null, universe, false);
+  public MethodGenerationContext(final Universe universe,
+      final StructuralProbe structuralProbe) {
+    this(null, null, universe, false, structuralProbe);
   }
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc) {
-    this(holderGenc, outerGenc, holderGenc.getUniverse(), true);
+    this(holderGenc, outerGenc, holderGenc.getUniverse(), true, outerGenc.structuralProbe);
   }
 
   private MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc, final Universe universe,
-      final boolean isBlockMethod) {
+      final boolean isBlockMethod, final StructuralProbe structuralProbe) {
     this.holderGenc = holderGenc;
     this.outerGenc = outerGenc;
     this.blockMethod = isBlockMethod;
+    this.structuralProbe = structuralProbe;
 
     LexicalScope outer = (outerGenc != null) ? outerGenc.getCurrentLexicalScope() : null;
     this.currentScope = new LexicalScope(new FrameDescriptor(Nil.nilObject), outer);
@@ -181,7 +187,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
   public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection) {
     if (primitive) {
       return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage(),
-          sourceSection);
+          sourceSection, structuralProbe);
     }
 
     if (needsToCatchNonLocalReturn()) {
@@ -236,6 +242,10 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
     Argument argument = new Argument(arg, arguments.size(), source);
     arguments.put(arg, argument);
+
+    if (structuralProbe != null) {
+      structuralProbe.recordNewVariable(argument);
+    }
   }
 
   public void addArgumentIfAbsent(final SSymbol arg, final SourceSection source) {
@@ -259,6 +269,10 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     l.init(currentScope.getFrameDescriptor().addFrameSlot(l));
     assert !locals.containsKey(local);
     locals.put(local, l);
+
+    if (structuralProbe != null) {
+      structuralProbe.recordNewVariable(l);
+    }
     return l;
   }
 
