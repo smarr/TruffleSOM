@@ -184,7 +184,8 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     return cls + ">>" + signature.toString();
   }
 
-  public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection) {
+  public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection,
+      final SourceSection fullSourceSection) {
     if (primitive) {
       return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage(),
           sourceSection, structuralProbe);
@@ -199,7 +200,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
             body, currentScope, (ExpressionNode) body.deepCopy(), holderGenc.getLanguage());
 
     SInvokable meth = Universe.newMethod(signature, truffleMethod, false,
-        embeddedBlockMethods.toArray(new SMethod[0]));
+        embeddedBlockMethods.toArray(new SMethod[0]), fullSourceSection);
 
     // return the method - the holder field is to be set later on!
     return meth;

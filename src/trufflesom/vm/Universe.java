@@ -458,11 +458,11 @@ public final class Universe implements IdProvider<SSymbol> {
   @TruffleBoundary
   public static SInvokable newMethod(final SSymbol signature,
       final Invokable truffleInvokable, final boolean isPrimitive,
-      final SMethod[] embeddedBlocks) {
+      final SMethod[] embeddedBlocks, final SourceSection sourceSection) {
     if (isPrimitive) {
       return new SPrimitive(signature, truffleInvokable);
     } else {
-      return new SMethod(signature, truffleInvokable, embeddedBlocks);
+      return new SMethod(signature, truffleInvokable, embeddedBlocks, sourceSection);
     }
   }
 

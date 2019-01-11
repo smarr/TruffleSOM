@@ -30,6 +30,7 @@ import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInv
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.Invokable;
 import trufflesom.vm.Universe;
@@ -37,7 +38,8 @@ import trufflesom.vm.Universe;
 
 public abstract class SInvokable extends SAbstractObject {
 
-  public SInvokable(final SSymbol signature, final Invokable invokable) {
+  public SInvokable(final SSymbol signature, final Invokable invokable,
+      final SourceSection source) {
     this.signature = signature;
 
     this.invokable = invokable;
@@ -46,11 +48,13 @@ public abstract class SInvokable extends SAbstractObject {
 
   public static final class SMethod extends SInvokable {
     private final SMethod[] embeddedBlocks;
+    private SourceSection   sourceSection;
 
     public SMethod(final SSymbol signature, final Invokable invokable,
-        final SMethod[] embeddedBlocks) {
-      super(signature, invokable);
+        final SMethod[] embeddedBlocks, final SourceSection source) {
+      super(signature, invokable, source);
       this.embeddedBlocks = embeddedBlocks;
+      sourceSection = source;
     }
 
     public SMethod[] getEmbeddedBlocks() {
@@ -69,18 +73,30 @@ public abstract class SInvokable extends SAbstractObject {
     public SClass getSOMClass(final Universe universe) {
       return universe.methodClass;
     }
+
+    @Override
+    public SourceSection getSourceSection() {
+      return sourceSection;
+    }
   }
 
   public static final class SPrimitive extends SInvokable {
     public SPrimitive(final SSymbol signature, final Invokable invokable) {
-      super(signature, invokable);
+      super(signature, invokable, null);
     }
 
     @Override
     public SClass getSOMClass(final Universe universe) {
       return universe.primitiveClass;
     }
+
+    @Override
+    public SourceSection getSourceSection() {
+      return null;
+    }
   }
+
+  public abstract SourceSection getSourceSection();
 
   public final RootCallTarget getCallTarget() {
     return callTarget;

@@ -110,7 +110,9 @@ public class Parser {
   private String text;
   private Symbol nextSym;
 
-  private SourceSection lastMethodsSourceSection;
+  private SourceCoordinate lastCoordinate;
+  private SourceSection    lastMethodsSourceSection;
+  private SourceSection    lastFullMethodsSourceSection;
 
   private static final List<Symbol> singleOpSyms        = new ArrayList<Symbol>();
   private static final List<Symbol> binaryOpSyms        = new ArrayList<Symbol>();
@@ -243,7 +245,8 @@ public class Parser {
       MethodGenerationContext mgenc = new MethodGenerationContext(cgenc, structuralProbe);
 
       ExpressionNode methodBody = method(mgenc);
-      SInvokable instanceMethod = mgenc.assemble(methodBody, lastMethodsSourceSection);
+      SInvokable instanceMethod =
+          mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection);
 
       if (structuralProbe != null) {
         structuralProbe.recordNewInstanceMethod(instanceMethod);
@@ -259,7 +262,8 @@ public class Parser {
         MethodGenerationContext mgenc = new MethodGenerationContext(cgenc, structuralProbe);
 
         ExpressionNode methodBody = method(mgenc);
-        SInvokable classMethod = mgenc.assemble(methodBody, lastMethodsSourceSection);
+        SInvokable classMethod =
+            mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection);
 
         if (structuralProbe != null) {
           structuralProbe.recordNewClassMethod(classMethod);
@@ -381,6 +385,7 @@ public class Parser {
 
   private ExpressionNode method(final MethodGenerationContext mgenc)
       throws ProgramDefinitionError {
+    lastCoordinate = getCoordinate();
     pattern(mgenc);
     expect(Equal);
     if (sym == Primitive) {
@@ -388,7 +393,8 @@ public class Parser {
       primitiveBlock();
       return null;
     } else {
-      return methodBlock(mgenc);
+      ExpressionNode methodBlock = methodBlock(mgenc);
+      return methodBlock;
     }
   }
 
@@ -442,6 +448,7 @@ public class Parser {
     SourceCoordinate coord = getCoordinate();
     ExpressionNode methodBody = blockContents(mgenc);
     lastMethodsSourceSection = getSource(coord);
+    lastFullMethodsSourceSection = getSource(lastCoordinate);
     expect(EndTerm);
 
     return methodBody;
@@ -634,7 +641,8 @@ public class Parser {
 
         ExpressionNode blockBody = nestedBlock(bgenc);
 
-        SMethod blockMethod = (SMethod) bgenc.assemble(blockBody, lastMethodsSourceSection);
+        SMethod blockMethod =
+            (SMethod) bgenc.assemble(blockBody, lastMethodsSourceSection, null);
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {

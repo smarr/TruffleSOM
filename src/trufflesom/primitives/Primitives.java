@@ -128,7 +128,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
         new Primitive(signature.getString(), sourceSection, primNode,
             mgen.getCurrentLexicalScope().getFrameDescriptor(),
             (ExpressionNode) primNode.deepCopy(), lang);
-    SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
+    SInvokable prim =
+        Universe.newMethod(signature, primMethodNode, true, new SMethod[0], null);
     return prim;
   }
 
@@ -209,7 +210,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     Primitive primMethodNode = new Primitive(signature.getString(), source, primNode,
         mgen.getCurrentLexicalScope().getFrameDescriptor(),
         (ExpressionNode) primNode.deepCopy(), lang);
-    return Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
+    return Universe.newMethod(signature, primMethodNode, true, new SMethod[0], null);
   }
 
   @Override
