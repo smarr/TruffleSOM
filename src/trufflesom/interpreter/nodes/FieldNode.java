@@ -91,7 +91,7 @@ public abstract class FieldNode extends ExpressionNode {
   @NodeChild(value = "value", type = ExpressionNode.class)
   public abstract static class FieldWriteNode extends FieldNode
       implements PreevaluatedExpression {
-    @Child private AbstractWriteFieldNode write;
+    @Child public AbstractWriteFieldNode write;
 
     public FieldWriteNode(final int fieldIndex) {
       write = FieldAccessorNode.createWrite(fieldIndex);
