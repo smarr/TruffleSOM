@@ -140,13 +140,17 @@
     </target>
 
     <target name="truffle-libs" depends="core-lib">
+        <travis target="env" start="Truffle Lib" />
         <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
             <arg value="build"/>
             <arg value="--no-native"/>
         </exec>
+        <travis target="env" />
     </target>
 
     <target name="bd-libs"> <!-- implicit dependency on truffle-libs -->
+        <travis target="env" start="Black Diamonds" />
+
         <ant dir="${bd.dir}" useNativeBasedir="true" target="libs-junit" inheritAll="false">
             <property name="force.java8"   value="${is.atLeastJava9}" />
         </ant>
@@ -156,6 +160,8 @@
             <property name="truffle.build" value="${truffle.build}" />
             <property name="force.java8"   value="${is.atLeastJava9}" />
         </ant>
+
+        <travis target="env" />
     </target>
 
     <target name="ideinit" depends="core-lib">
