@@ -1,4 +1,7 @@
-<project name="som" basedir="." default="compile">
+<project name="som" basedir="." default="compile"
+    xmlns:unless="ant:unless"
+    xmlns:if="ant:if"
+    xmlns:jacoco="antlib:org.jacoco.ant">
 
     <property name="src.dir"     value="src"/>
     <property name="src_gen.dir" value="src_gen"/>
