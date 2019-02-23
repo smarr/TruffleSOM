@@ -1,6 +1,7 @@
 package trufflesom.compiler;
 
 import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
+import static trufflesom.interpreter.SNodeFactory.createArgumentWrite;
 import static trufflesom.interpreter.SNodeFactory.createLocalVarRead;
 import static trufflesom.interpreter.SNodeFactory.createSuperRead;
 import static trufflesom.interpreter.SNodeFactory.createVariableWrite;
@@ -115,6 +116,13 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
         final SourceSection source) {
       AccessNodeState holder = (AccessNodeState) state;
       return createSuperRead(this, contextLevel, holder.holderClass, holder.classSide, source);
+    }
+
+    @Override
+    public ExpressionNode getWriteNode(final int contextLevel,
+        final ExpressionNode valueExpr, final SourceSection source) {
+      transferToInterpreterAndInvalidate("Variable.getWriteNode");
+      return createArgumentWrite(this, contextLevel, valueExpr, source);
     }
   }
 

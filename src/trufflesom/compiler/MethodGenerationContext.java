@@ -336,7 +336,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
   public ExpressionNode getLocalWriteNode(final SSymbol variableName,
       final ExpressionNode valExpr, final SourceSection source) {
-    Local variable = getLocal(variableName);
+    Variable variable = getVariable(variableName);
     return variable.getWriteNode(getContextLevel(variableName), valExpr, source);
   }
 

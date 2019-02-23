@@ -60,7 +60,7 @@ public class SomTests {
         {"Preliminary"},
         {"Reflection"},
         {"SelfBlock"},
-        {"SpecialSelectorsTest"},
+        {"SpecialSelectors"},
         {"Super"},
 
         {"Set"},
