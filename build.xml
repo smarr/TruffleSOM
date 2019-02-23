@@ -70,21 +70,19 @@
     
     <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
         <travis target="env" start="clobber" />
-
-        <exec executable="${mx.cmd}" dir="${sdk.dir}" failonerror="true">
-            <arg value="ideclean"/>
-        </exec>
-        <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
-            <arg value="ideclean"/>
+        
+        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+          <arg value="--dynamicimports"/>
+          <arg value="../sdk"/>
+          <arg value="ideclean"/>
         </exec>
         
         <exec executable="${mx.cmd}" dir="${truffle.dir}">
-            <arg value="clean"/>
+          <arg value="--dynamicimports"/>
+          <arg value="../sdk"/>
+          <arg value="clean"/>
         </exec>
-        <exec executable="${mx.cmd}" dir="${sdk.dir}">
-            <arg value="clean"/>
-        </exec>
-        
+
         <ant dir="${bd.dir}" useNativeBasedir="true" target="clean" inheritAll="false" />
         
         <travis target="env" />
@@ -165,11 +163,10 @@
     </target>
 
     <target name="ideinit" depends="core-lib">
-        <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
-            <arg value="eclipseinit"/>
-        </exec>
-        <exec executable="${mx.cmd}" dir="${sdk.dir}" failonerror="true">
-            <arg value="eclipseinit"/>
+        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+          <arg value="--dynamicimports"/>
+          <arg value="../sdk"/>
+          <arg value="eclipseinit"/>
         </exec>
     </target>
 
