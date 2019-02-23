@@ -48,7 +48,6 @@ public class BasicInterpreterTests {
         {"MethodCall", "test", 42, Long.class},
         {"MethodCall", "test2", 42, Long.class},
 
-        {"NonLocalReturn", "test", "NonLocalReturn", SClass.class},
         {"NonLocalReturn", "test1", 42, Long.class},
         {"NonLocalReturn", "test2", 43, Long.class},
         {"NonLocalReturn", "test3", 3, Long.class},
@@ -105,6 +104,8 @@ public class BasicInterpreterTests {
 
         {"NonLocalVars", "writeDifferentTypes", 3.75, Double.class},
 
+        {"Regressions", "testSymbolEquality", 1, Long.class},
+        {"Regressions", "testSymbolReferenceEquality", 1, Long.class}
     });
   }
 
