@@ -40,6 +40,42 @@ public abstract class ArgumentReadNode {
     }
   }
 
+  public static class LocalArgumentWriteNode extends ExpressionNode {
+    protected final int      argumentIndex;
+    protected final Argument arg;
+
+    @Child protected ExpressionNode valueNode;
+
+    public LocalArgumentWriteNode(final Argument arg, final ExpressionNode valueNode) {
+      assert arg.index >= 0;
+      this.arg = arg;
+      this.argumentIndex = arg.index;
+      this.valueNode = valueNode;
+    }
+
+    /** Only to be used in primitives. */
+    public LocalArgumentWriteNode(final boolean useInPrim, final int idx,
+        final ExpressionNode valueNode) {
+      assert idx >= 0;
+      this.arg = null;
+      this.argumentIndex = idx;
+      assert useInPrim;
+      this.valueNode = valueNode;
+    }
+
+    @Override
+    public final Object executeGeneric(final VirtualFrame frame) {
+      Object value = valueNode.executeGeneric(frame);
+      SArguments.setArg(frame, argumentIndex, value);
+      return value;
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateWrite(arg, this, valueNode, 0);
+    }
+  }
+
   public static class NonLocalArgumentReadNode extends ContextualNode {
     protected final int      argumentIndex;
     protected final Argument arg;
@@ -59,6 +95,35 @@ public abstract class ArgumentReadNode {
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateRead(arg, this, contextLevel);
+    }
+  }
+
+  public static class NonLocalArgumentWriteNode extends ContextualNode {
+    protected final int      argumentIndex;
+    protected final Argument arg;
+
+    @Child protected ExpressionNode valueNode;
+
+    public NonLocalArgumentWriteNode(final Argument arg, final int contextLevel,
+        final ExpressionNode valueNode) {
+      super(contextLevel);
+      assert contextLevel > 0;
+      this.arg = arg;
+      this.argumentIndex = arg.index;
+
+      this.valueNode = valueNode;
+    }
+
+    @Override
+    public final Object executeGeneric(final VirtualFrame frame) {
+      Object value = valueNode.executeGeneric(frame);
+      SArguments.setArg(determineContext(frame), argumentIndex, value);
+      return value;
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateWrite(arg, this, valueNode, contextLevel);
     }
   }
 

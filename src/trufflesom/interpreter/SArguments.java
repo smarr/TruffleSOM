@@ -1,8 +1,8 @@
 package trufflesom.interpreter;
 
-import trufflesom.vmobjects.SArray;
-
 import com.oracle.truffle.api.frame.Frame;
+
+import trufflesom.vmobjects.SArray;
 
 
 public final class SArguments {
@@ -15,6 +15,10 @@ public final class SArguments {
 
   public static Object arg(final Frame frame, final int index) {
     return args(frame)[index];
+  }
+
+  public static void setArg(final Frame frame, final int index, final Object value) {
+    args(frame)[index] = value;
   }
 
   public static Object rcvr(final Frame frame) {

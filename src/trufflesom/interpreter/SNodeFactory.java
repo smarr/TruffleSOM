@@ -8,8 +8,10 @@ import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import trufflesom.interpreter.nodes.ContextualNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -83,14 +85,22 @@ public final class SNodeFactory {
   }
 
   public static ContextualNode createVariableWrite(final Local variable,
-      final int contextLevel,
-      final ExpressionNode exp, final SourceSection source) {
+      final int contextLevel, final ExpressionNode exp, final SourceSection source) {
     return new UninitializedVariableWriteNode(variable, contextLevel, exp).initialize(source);
   }
 
   public static LocalVariableWriteNode createLocalVariableWrite(
       final Local var, final ExpressionNode exp, final SourceSection source) {
     return LocalVariableWriteNodeGen.create(var, exp).initialize(source);
+  }
+
+  public static ExpressionNode createArgumentWrite(final Argument variable,
+      final int contextLevel, final ExpressionNode exp, final SourceSection source) {
+    if (contextLevel == 0) {
+      return new LocalArgumentWriteNode(variable, exp).initialize(source);
+    } else {
+      return new NonLocalArgumentWriteNode(variable, contextLevel, exp).initialize(source);
+    }
   }
 
   public static SequenceNode createSequence(final List<ExpressionNode> exps,
