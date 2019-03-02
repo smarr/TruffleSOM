@@ -27,6 +27,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.tools.Send;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.Association;
 import trufflesom.vm.constants.Nil;
@@ -34,12 +35,17 @@ import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class GlobalNode extends ExpressionNode {
+public abstract class GlobalNode extends ExpressionNode implements Send {
 
   protected final SSymbol globalName;
 
   public GlobalNode(final SSymbol globalName) {
     this.globalName = globalName;
+  }
+
+  @Override
+  public final SSymbol getSelector() {
+    return globalName;
   }
 
   public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
