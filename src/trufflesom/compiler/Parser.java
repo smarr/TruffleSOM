@@ -959,7 +959,7 @@ public class Parser {
     } while (sym == Colon);
   }
 
-  private ExpressionNode variableRead(final MethodGenerationContext mgenc,
+  protected ExpressionNode variableRead(final MethodGenerationContext mgenc,
       final SSymbol variableName, final SourceSection source) {
     // we need to handle super special here
     if (universe.symSuper == variableName) {
