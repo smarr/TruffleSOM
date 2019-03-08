@@ -16,13 +16,13 @@
 
     <property name="checkstyle.version" value="8.11" />
 
-    <property environment="env"/>
-
     <property name="mx.cmd" value="../../mx/mx" />
 
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
-    
+
+    <property environment="env"/>
+
     <macrodef name="travis">
         <attribute name="target" />
         <attribute name="start" default="" />
@@ -60,16 +60,16 @@
     <travis target="env" />
 
     <target name="clean" description="Remove build directories and generated code">
-        <travis target="env" start="clean" />
-        
+        <travis target="clean" start="clean" />
+
         <delete dir="${build.dir}"/>
         <delete dir="${src_gen.dir}"/>
         
-        <travis target="env" />
+        <travis target="clean" />
     </target>
-    
+
     <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
-        <travis target="env" start="clobber" />
+        <travis target="clobber" start="clobber" />
         
         <exec executable="${mx.cmd}" dir="${truffle.dir}">
           <arg value="--dynamicimports"/>
@@ -85,11 +85,11 @@
 
         <ant dir="${bd.dir}" useNativeBasedir="true" target="clean" inheritAll="false" />
         
-        <travis target="env" />
+        <travis target="clobber" />
     </target>
 
     <target name="eclipseformat">
-      <travis target="env" start="eclipseformat" />
+      <travis target="eclipseformat" start="eclipseformat" />
       
       <pathconvert pathsep=" " property="javafiles">
         <fileset dir="${src.dir}">
@@ -122,7 +122,7 @@
           <arg value="HEAD" />
       </exec>
       
-      <travis target="env" />
+      <travis target="eclipseformat" />
     </target>
     
     <target name="check-core-lib-available">
@@ -138,16 +138,16 @@
     </target>
 
     <target name="truffle-libs" depends="core-lib">
-        <travis target="env" start="Truffle Lib" />
+        <travis target="truffle-libs" start="Build Truffle" />
         <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
             <arg value="build"/>
             <arg value="--no-native"/>
         </exec>
-        <travis target="env" />
+        <travis target="truffle-libs" />
     </target>
 
     <target name="bd-libs"> <!-- implicit dependency on truffle-libs -->
-        <travis target="env" start="Black Diamonds" />
+        <travis target="bd-libs" start="Build Black Diamonds" />
 
         <ant dir="${bd.dir}" useNativeBasedir="true" target="libs-junit" inheritAll="false">
             <property name="force.java8"   value="${is.atLeastJava9}" />
@@ -159,7 +159,7 @@
             <property name="force.java8"   value="${is.atLeastJava9}" />
         </ant>
 
-        <travis target="env" />
+        <travis target="bd-libs" />
     </target>
 
     <target name="ideinit" depends="core-lib">
@@ -185,7 +185,7 @@
             usetimestamp="true"
             dest="${lib.dir}/checkstyle-${checkstyle.version}-all.jar" />
     </target>
-    
+
     <target name="checkstyle" depends="checkstyle-jar" description="Check Code with Checkstyle">
         <taskdef resource="com/puppycrawl/tools/checkstyle/ant/checkstyle-ant-task.properties" classpath="${lib.dir}/checkstyle-${checkstyle.version}-all.jar" />
         <checkstyle config=".checkstyle_checks.xml">
@@ -195,7 +195,7 @@
     </target>
 
     <target name="compile" depends="libs" description="Compile TruffleSOM">
-        <travis target="env" start="compile" />
+        <travis target="compile" start="compile" />
         
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${classes.dir}" />
@@ -215,7 +215,7 @@
           <classpath refid="project.classpath" />
         </javac>
         
-        <travis target="env" />
+        <travis target="compile" />
     </target>
 
     <target name="jar" depends="compile" description="Package as JAR">
@@ -223,7 +223,7 @@
     </target>
 
     <target name="test" depends="compile" description="Execute tests">
-        <travis target="env" start="test" />
+        <travis target="test" start="test" />
 
         <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed"
             outputtoformatters="true">
@@ -246,11 +246,11 @@
         </java>
         <fail message="Basic tests failed." if="test.failed" />
 
-        <travis target="env" />
+        <travis target="test" />
     </target>
     
     <target name="som-test" depends="compile" description="Test som script">
-        <travis target="env" start="SOM Test" />
+        <travis target="som-test" start="SOM Test" />
 
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
@@ -260,7 +260,7 @@
             <arg value="TestSuite/EmptyTest.som" />
         </exec>
 
-        <travis target="env" />
+        <travis target="som-test" />
     </target>
 
     <target name="tests" depends="test, som-test" />
