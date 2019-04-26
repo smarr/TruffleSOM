@@ -169,6 +169,14 @@
           <arg value="eclipseinit"/>
         </exec>
     </target>
+    
+    <target name="ideclean" depends="core-lib">
+        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+          <arg value="--dynamicimports"/>
+          <arg value="../sdk"/>
+          <arg value="ideclean"/>
+        </exec>
+    </target>
 
     <target name="libs" depends="core-lib,truffle-libs,bd-libs">
         <get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar"

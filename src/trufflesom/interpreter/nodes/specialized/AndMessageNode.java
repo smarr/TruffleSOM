@@ -31,14 +31,13 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     protected final NodeFactory<BinaryExpressionNode> boolFact;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public AndOrSplzr(final Primitive prim,
-        final NodeFactory<ExpressionNode> fact, final Universe universe) {
-      this(prim, fact, (NodeFactory) AndBoolMessageNodeFactory.getInstance(), universe);
+    public AndOrSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact) {
+      this(prim, fact, (NodeFactory) AndBoolMessageNodeFactory.getInstance());
     }
 
     protected AndOrSplzr(final Primitive prim, final NodeFactory<ExpressionNode> msgFact,
-        final NodeFactory<BinaryExpressionNode> boolFact, final Universe universe) {
-      super(prim, msgFact, universe);
+        final NodeFactory<BinaryExpressionNode> boolFact) {
+      super(prim, msgFact);
       this.boolFact = boolFact;
     }
 
@@ -56,7 +55,7 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     @Override
     public final ExpressionNode create(final Object[] arguments,
         final ExpressionNode[] argNodes, final SourceSection section,
-        final boolean eagerWrapper) {
+        final boolean eagerWrapper, final Universe universe) {
       EagerlySpecializableNode node;
       if (argNodes[1] instanceof BlockNode) {
         node = (EagerlySpecializableNode) fact.createNode(

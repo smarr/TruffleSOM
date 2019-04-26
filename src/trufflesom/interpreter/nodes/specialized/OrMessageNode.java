@@ -13,7 +13,6 @@ import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import trufflesom.interpreter.nodes.specialized.OrMessageNode.OrSplzr;
 import trufflesom.interpreter.nodes.specialized.OrMessageNodeFactory.OrBoolMessageNodeFactory;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -25,9 +24,8 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 public abstract class OrMessageNode extends BinaryExpressionNode {
   public static final class OrSplzr extends AndOrSplzr {
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public OrSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact,
-        final Universe universe) {
-      super(prim, fact, (NodeFactory) OrBoolMessageNodeFactory.getInstance(), universe);
+    public OrSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact) {
+      super(prim, fact, (NodeFactory) OrBoolMessageNodeFactory.getInstance());
     }
   }
 
