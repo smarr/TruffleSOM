@@ -131,6 +131,10 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     return getCurrentContext(SomLanguage.class);
   }
 
+  public static Universe getCurrentContext(final Node node) {
+    return node.getRootNode().getLanguage(SomLanguage.class).getUniverse();
+  }
+
   @Override
   protected OptionDescriptors getOptionDescriptors() {
     return new SomLanguageOptionDescriptors();

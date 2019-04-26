@@ -76,7 +76,7 @@ public final class Method extends Invokable {
       final int appliesTo, final boolean cloneAdaptedAsUninitialized,
       final boolean outerScopeChanged) {
     ExpressionNode adaptedBody = ScopeAdaptationVisitor.adapt(uninitializedBody, adaptedScope,
-        appliesTo, outerScopeChanged);
+        appliesTo, outerScopeChanged, getLanguage(SomLanguage.class));
 
     ExpressionNode uninit;
     if (cloneAdaptedAsUninitialized) {
@@ -110,6 +110,6 @@ public final class Method extends Invokable {
   public ExpressionNode inline(final MethodGenerationContext mgenc, final SMethod outer) {
     mgenc.mergeIntoScope(currentLexicalScope, outer);
     return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc.getCurrentLexicalScope(), 0,
-        true);
+        true, getLanguage(SomLanguage.class));
   }
 }

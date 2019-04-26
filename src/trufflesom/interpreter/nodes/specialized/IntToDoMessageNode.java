@@ -29,9 +29,8 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
 
   public static class ToDoSplzr extends Specializer<Universe, ExpressionNode, SSymbol> {
-    public ToDoSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact,
-        final Universe universe) {
-      super(prim, fact, universe);
+    public ToDoSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact) {
+      super(prim, fact);
     }
 
     @Override

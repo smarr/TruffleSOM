@@ -109,6 +109,11 @@ import trufflesom.vmobjects.SSymbol;
 
 public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbol> {
 
+  private static List<Specializer<Universe, ExpressionNode, SSymbol>> specializer =
+      initSpecializers();
+
+  private final Universe universe;
+
   /** Primitives for class and method name. */
   private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
 
@@ -127,7 +132,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   }
 
   public Primitives(final Universe universe) {
-    super(universe, universe);
+    super(universe);
+    this.universe = universe;
     this.primitives = new HashMap<>();
     initialize();
   }
@@ -145,7 +151,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     for (Entry<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> e : prims.entrySet()) {
       SClass target;
       if (e.getValue().classSide()) {
-        target = clazz.getSOMClass(context);
+        target = clazz.getSOMClass(universe);
       } else {
         target = clazz;
       }
@@ -153,20 +159,20 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
       SInvokable ivk = target.lookupInvokable(e.getKey());
       assert ivk != null : "Lookup of " + e.getKey().toString() + " failed in "
           + target.getName().getString() + ". Can't install a primitive for it.";
-      SInvokable prim = constructPrimitive(e.getKey(), context.getLanguage(), e.getValue());
+      SInvokable prim = constructPrimitive(e.getKey(), universe.getLanguage(), e.getValue());
       target.addInstanceInvokable(prim);
     }
   }
 
   @Override
-  protected void registerPrimitive(final bd.primitives.Primitive prim,
+  protected void registerPrimitive(
       final Specializer<Universe, ExpressionNode, SSymbol> specializer) {
-    String className = prim.className();
-    String primName = prim.primitive();
+    String className = specializer.getPrimitive().className();
+    String primName = specializer.getPrimitive().primitive();
 
     if (!("".equals(primName)) && !("".equals(className))) {
-      SSymbol clazz = context.symbolFor(className);
-      SSymbol signature = context.symbolFor(primName);
+      SSymbol clazz = ids.getId(className);
+      SSymbol signature = ids.getId(primName);
       HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> primsForClass =
           primitives.computeIfAbsent(clazz, s -> new HashMap<>());
       assert !primsForClass.containsKey(signature) : className
@@ -193,7 +199,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
       args[i] = new LocalArgumentReadNode(true, i).initialize(source);
     }
 
-    ExpressionNode primNode = specializer.create(null, args, source, false);
+    ExpressionNode primNode =
+        specializer.create(null, args, source, false, lang.getUniverse());
 
     Primitive primMethodNode = new Primitive(signature.getString(), source, primNode,
         mgen.getCurrentLexicalScope().getFrameDescriptor(),
@@ -202,66 +209,69 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   }
 
   @Override
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  protected List<NodeFactory<? extends ExpressionNode>> getFactories() {
-    List<NodeFactory<? extends ExpressionNode>> allFactories = new ArrayList<>();
+  protected List<Specializer<Universe, ExpressionNode, SSymbol>> getSpecializers() {
+    return specializer;
+  }
 
-    allFactories.addAll(BlockPrimsFactory.getFactories());
-    allFactories.addAll(DoublePrimsFactory.getFactories());
-    allFactories.addAll(IntegerPrimsFactory.getFactories());
-    allFactories.addAll(StringPrimsFactory.getFactories());
-    allFactories.addAll((List) SystemPrimsFactory.getFactories());
-    allFactories.addAll(ClassPrimsFactory.getFactories());
-    allFactories.addAll(MethodPrimsFactory.getFactories());
-    allFactories.addAll((List) ObjectPrimsFactory.getFactories());
+  private static List<Specializer<Universe, ExpressionNode, SSymbol>> initSpecializers() {
+    List<Specializer<Universe, ExpressionNode, SSymbol>> allFactories = new ArrayList<>();
 
-    allFactories.add(AdditionPrimFactory.getInstance());
-    allFactories.add(BitXorPrimFactory.getInstance());
-    allFactories.add(CosPrimFactory.getInstance());
-    allFactories.add(DividePrimFactory.getInstance());
-    allFactories.add(DoubleDivPrimFactory.getInstance());
-    allFactories.add(GreaterThanPrimFactory.getInstance());
-    allFactories.add(LessThanOrEqualPrimFactory.getInstance());
-    allFactories.add(LessThanPrimFactory.getInstance());
-    allFactories.add(LogicAndPrimFactory.getInstance());
-    allFactories.add(ModuloPrimFactory.getInstance());
-    allFactories.add(MultiplicationPrimFactory.getInstance());
-    allFactories.add(RemainderPrimFactory.getInstance());
-    allFactories.add(SinPrimFactory.getInstance());
-    allFactories.add(SqrtPrimFactory.getInstance());
-    allFactories.add(SubtractionPrimFactory.getInstance());
+    addAll(allFactories, BlockPrimsFactory.getFactories());
+    addAll(allFactories, DoublePrimsFactory.getFactories());
+    addAll(allFactories, IntegerPrimsFactory.getFactories());
+    addAll(allFactories, StringPrimsFactory.getFactories());
+    addAll(allFactories, SystemPrimsFactory.getFactories());
+    addAll(allFactories, ClassPrimsFactory.getFactories());
+    addAll(allFactories, MethodPrimsFactory.getFactories());
+    addAll(allFactories, ObjectPrimsFactory.getFactories());
 
-    allFactories.add(AtPrimFactory.getInstance());
-    allFactories.add(AtPutPrimFactory.getInstance());
-    allFactories.add(CopyPrimFactory.getInstance());
-    allFactories.add(DoIndexesPrimFactory.getInstance());
-    allFactories.add(DoPrimFactory.getInstance());
-    allFactories.add(NewPrimFactory.getInstance());
-    allFactories.add(PutAllNodeFactory.getInstance());
+    add(allFactories, AdditionPrimFactory.getInstance());
+    add(allFactories, BitXorPrimFactory.getInstance());
+    add(allFactories, CosPrimFactory.getInstance());
+    add(allFactories, DividePrimFactory.getInstance());
+    add(allFactories, DoubleDivPrimFactory.getInstance());
+    add(allFactories, GreaterThanPrimFactory.getInstance());
+    add(allFactories, LessThanOrEqualPrimFactory.getInstance());
+    add(allFactories, LessThanPrimFactory.getInstance());
+    add(allFactories, LogicAndPrimFactory.getInstance());
+    add(allFactories, ModuloPrimFactory.getInstance());
+    add(allFactories, MultiplicationPrimFactory.getInstance());
+    add(allFactories, RemainderPrimFactory.getInstance());
+    add(allFactories, SinPrimFactory.getInstance());
+    add(allFactories, SqrtPrimFactory.getInstance());
+    add(allFactories, SubtractionPrimFactory.getInstance());
 
-    allFactories.add(AsStringPrimFactory.getInstance());
-    allFactories.add(EqualsEqualsPrimFactory.getInstance());
-    allFactories.add(EqualsPrimFactory.getInstance());
-    allFactories.add(HashPrimFactory.getInstance());
-    allFactories.add(LengthPrimFactory.getInstance());
-    allFactories.add(NewObjectPrimFactory.getInstance());
-    allFactories.add(UnequalsPrimFactory.getInstance());
+    add(allFactories, AtPrimFactory.getInstance());
+    add(allFactories, AtPutPrimFactory.getInstance());
+    add(allFactories, CopyPrimFactory.getInstance());
+    add(allFactories, DoIndexesPrimFactory.getInstance());
+    add(allFactories, DoPrimFactory.getInstance());
+    add(allFactories, NewPrimFactory.getInstance());
+    add(allFactories, PutAllNodeFactory.getInstance());
 
-    allFactories.add(AndMessageNodeFactory.getInstance());
-    allFactories.add(IntToDoMessageNodeFactory.getInstance());
-    allFactories.add(IntToByDoMessageNodeFactory.getInstance());
-    allFactories.add(IntDownToDoMessageNodeFactory.getInstance());
-    allFactories.add(OrMessageNodeFactory.getInstance());
-    allFactories.add(IfTrueIfFalseMessageNodeFactory.getInstance());
-    allFactories.add(NotMessageNodeFactory.getInstance());
+    add(allFactories, AsStringPrimFactory.getInstance());
+    add(allFactories, EqualsEqualsPrimFactory.getInstance());
+    add(allFactories, EqualsPrimFactory.getInstance());
+    add(allFactories, HashPrimFactory.getInstance());
+    add(allFactories, LengthPrimFactory.getInstance());
+    add(allFactories, NewObjectPrimFactory.getInstance());
+    add(allFactories, UnequalsPrimFactory.getInstance());
 
-    allFactories.add(GlobalPrimFactory.getInstance());
-    allFactories.add(HasGlobalPrimFactory.getInstance());
-    allFactories.add(ObjectSizePrimFactory.getInstance());
-    allFactories.add(PerformInSuperclassPrimFactory.getInstance());
-    allFactories.add(PerformPrimFactory.getInstance());
-    allFactories.add(PerformWithArgumentsInSuperclassPrimFactory.getInstance());
-    allFactories.add(PerformWithArgumentsPrimFactory.getInstance());
+    add(allFactories, AndMessageNodeFactory.getInstance());
+    add(allFactories, IntToDoMessageNodeFactory.getInstance());
+    add(allFactories, IntToByDoMessageNodeFactory.getInstance());
+    add(allFactories, IntDownToDoMessageNodeFactory.getInstance());
+    add(allFactories, OrMessageNodeFactory.getInstance());
+    add(allFactories, IfTrueIfFalseMessageNodeFactory.getInstance());
+    add(allFactories, NotMessageNodeFactory.getInstance());
+
+    add(allFactories, GlobalPrimFactory.getInstance());
+    add(allFactories, HasGlobalPrimFactory.getInstance());
+    add(allFactories, ObjectSizePrimFactory.getInstance());
+    add(allFactories, PerformInSuperclassPrimFactory.getInstance());
+    add(allFactories, PerformPrimFactory.getInstance());
+    add(allFactories, PerformWithArgumentsInSuperclassPrimFactory.getInstance());
+    add(allFactories, PerformWithArgumentsPrimFactory.getInstance());
 
     return allFactories;
   }

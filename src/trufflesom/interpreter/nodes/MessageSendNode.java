@@ -33,7 +33,7 @@ public final class MessageSendNode {
     }
 
     EagerlySpecializableNode newNode = (EagerlySpecializableNode) specializer.create(null,
-        arguments, source, !specializer.noWrapper());
+        arguments, source, !specializer.noWrapper(), universe);
 
     if (specializer.noWrapper()) {
       return newNode;
@@ -127,7 +127,7 @@ public final class MessageSendNode {
         boolean noWrapper = specializer.noWrapper();
         EagerlySpecializableNode newNode =
             (EagerlySpecializableNode) specializer.create(arguments, argumentNodes,
-                sourceSection, !noWrapper);
+                sourceSection, !noWrapper, universe);
         if (noWrapper) {
           return replace(newNode);
         } else {
