@@ -23,6 +23,7 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import org.graalvm.polyglot.Value;
@@ -77,6 +78,21 @@ public class SomTests {
     this.testName = testName;
   }
 
+  public static Object readValue(final Value val) {
+    Field f;
+    try {
+      f = val.getClass().getDeclaredField("receiver");
+    } catch (NoSuchFieldException | SecurityException e) {
+      throw new RuntimeException(e);
+    }
+    f.setAccessible(true);
+    try {
+      return f.get(val);
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Test
   public void testSomeTest() {
     Value returnCode = Universe.eval(
@@ -84,8 +100,10 @@ public class SomTests {
     if (returnCode.isNumber()) {
       assertEquals(0, returnCode.asInt());
     } else {
+      SObject obj = (SObject) readValue(returnCode);
+
       assertEquals("System",
-          returnCode.as(SObject.class).getSOMClass(null).getName().getString());
+          obj.getSOMClass(null).getName().getString());
     }
   }
 }

@@ -13,12 +13,14 @@ import com.oracle.truffle.api.Option;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.SomExit;
+import trufflesom.vmobjects.SAbstractObject;
 
 
 @TruffleLanguage.Registration(id = "som", name = "som", version = "0.1.0",
@@ -124,6 +126,9 @@ public class SomLanguage extends TruffleLanguage<Universe> {
 
   @Override
   protected boolean isObjectOfLanguage(final Object object) {
+    if (object instanceof SAbstractObject) {
+      return true;
+    }
     throw new NotYetImplementedException();
   }
 

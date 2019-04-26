@@ -23,6 +23,7 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static trufflesom.tests.SomTests.readValue;
 
 import java.util.Arrays;
 
@@ -137,9 +138,13 @@ public class BasicInterpreterTests {
 
   protected void assertEqualsSOMValue(final Object expectedResult, final Object actualResult) {
     if (resultType == Long.class) {
-      long expected = (int) expectedResult;
-      long actual = (long) actualResult;
-      assertEquals(expected, actual);
+      if (actualResult instanceof Long) {
+        long expected = (int) expectedResult;
+        long actual = (long) actualResult;
+        assertEquals(expected, actual);
+      } else {
+        fail("Expected integer result, but got: " + actualResult.toString());
+      }
       return;
     }
 
@@ -152,14 +157,14 @@ public class BasicInterpreterTests {
 
     if (resultType == SClass.class) {
       String expected = (String) expectedResult;
-      String actual = ((SClass) actualResult).getName().getString();
+      String actual = ((SClass) readValue((Value) actualResult)).getName().getString();
       assertEquals(expected, actual);
       return;
     }
 
     if (resultType == SSymbol.class) {
       String expected = (String) expectedResult;
-      String actual = ((SSymbol) actualResult).getString();
+      String actual = ((SSymbol) readValue((Value) actualResult)).getString();
       assertEquals(expected, actual);
       return;
     }
