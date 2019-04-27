@@ -27,6 +27,7 @@ package trufflesom.vm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -506,8 +507,8 @@ public final class Universe implements IdProvider<SSymbol> {
     }
 
     // Initialize the array of instance fields
-    systemClass.setInstanceFields(SArray.create(new Object[0]));
-    systemClass.getSOMClass(this).setInstanceFields(SArray.create(new Object[0]));
+    systemClass.setInstanceFields(Arrays.asList());
+    systemClass.getSOMClass(this).setInstanceFields(Arrays.asList());
 
     // Initialize the array of instance invokables
     systemClass.setInstanceInvokables(SArray.create(new Object[0]));

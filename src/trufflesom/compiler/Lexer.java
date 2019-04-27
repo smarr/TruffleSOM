@@ -48,7 +48,9 @@ public final class Lexer {
   }
 
   private static class LexerState {
-    LexerState() {}
+    LexerState() {
+      startCoord = SourceCoordinate.createEmpty();
+    }
 
     LexerState(final LexerState old) {
       lineNumber = old.lineNumber;

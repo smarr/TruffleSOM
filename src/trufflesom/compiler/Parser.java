@@ -127,7 +127,9 @@ public final class Parser {
 
   @Override
   public String toString() {
-    return "Parser(" + source.getName() + ", " + this.getCoordinate().toString() + ")";
+    String name = source.getName();
+    String coord = getCoordinate().toString();
+    return "Parser(" + name + ", " + coord + ")";
   }
 
   public static class ParseError extends ProgramDefinitionError {
@@ -266,8 +268,9 @@ public final class Parser {
             " could not be loaded", NONE, this);
       }
 
-      cgenc.setInstanceFieldsOfSuper(superClass.getInstanceFields());
-      cgenc.setClassFieldsOfSuper(superClass.getSOMClass(universe).getInstanceFields());
+      cgenc.setInstanceFieldsOfSuper(superClass.getInstanceFieldDefinitions());
+      cgenc.setClassFieldsOfSuper(
+          superClass.getSOMClass(universe).getInstanceFieldDefinitions());
     }
   }
 
@@ -313,8 +316,9 @@ public final class Parser {
       throws ProgramDefinitionError {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
+        SourceCoordinate coord = getCoordinate();
         String var = variable();
-        cgenc.addInstanceField(universe.symbolFor(var));
+        cgenc.addInstanceField(universe.symbolFor(var), getSource(coord));
       }
       expect(Or);
     }
@@ -323,8 +327,9 @@ public final class Parser {
   private void classFields(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
+        SourceCoordinate coord = getCoordinate();
         String var = variable();
-        cgenc.addClassField(universe.symbolFor(var));
+        cgenc.addClassField(universe.symbolFor(var), getSource(coord));
       }
       expect(Or);
     }

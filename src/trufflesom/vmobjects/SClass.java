@@ -27,6 +27,7 @@ package trufflesom.vmobjects;
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -34,6 +35,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+import trufflesom.compiler.Field;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SInvokable.SPrimitive;
@@ -81,18 +83,30 @@ public final class SClass extends SObject {
     name = value;
   }
 
+  public Field[] getInstanceFieldDefinitions() {
+    return instanceFieldDefinitions;
+  }
+
   public SArray getInstanceFields() {
     return instanceFields;
   }
 
-  public void setInstanceFields(final SArray fields) {
     transferToInterpreterAndInvalidate("SClass.setInstanceFields");
-    instanceFields = fields;
-    if (layoutForInstances == null ||
-        instanceFields.getObjectStorage(
-            storageType).length != layoutForInstances.getNumberOfFields()) {
-      layoutForInstances = new ObjectLayout(
-          fields.getObjectStorage(storageType).length, this);
+  public void setInstanceFields(final List<Field> fields) {
+    instanceFieldDefinitions = fields.toArray(new Field[0]);
+
+    // collect field names
+    Object[] fieldNames = new Object[fields.size()];
+    for (Field f : fields) {
+      fieldNames[f.getIndex()] = f.getName();
+    }
+
+    instanceFields = SArray.create(fieldNames);
+
+    // Check and possibly update layout
+    if (layoutForInstances == null
+        || fields.size() != layoutForInstances.getNumberOfFields()) {
+      layoutForInstances = new ObjectLayout(fields.size(), this);
     }
   }
 
@@ -260,6 +274,8 @@ public final class SClass extends SObject {
   @CompilationFinal private SSymbol name;
   @CompilationFinal private SArray  instanceInvokables;
   @CompilationFinal private SArray  instanceFields;
+
+  @CompilationFinal(dimensions = 1) private Field[] instanceFieldDefinitions;
 
   @CompilationFinal private ObjectLayout layoutForInstances;
 }

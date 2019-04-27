@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.profiles.ValueProfile;
+import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.Universe;
@@ -39,8 +39,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public final class ClassGenerationContext {
-  private static final ValueProfile storageType = ValueProfile.createClassProfile();
-  private final Universe            universe;
+  private final Universe universe;
 
   public ClassGenerationContext(final Universe universe) {
     this.universe = universe;
@@ -49,9 +48,9 @@ public final class ClassGenerationContext {
   private SSymbol                name;
   private SSymbol                superName;
   private boolean                classSide;
-  private final List<SSymbol>    instanceFields  = new ArrayList<SSymbol>();
+  private final List<Field>      instanceFields  = new ArrayList<>();
   private final List<SInvokable> instanceMethods = new ArrayList<SInvokable>();
-  private final List<SSymbol>    classFields     = new ArrayList<SSymbol>();
+  private final List<Field>      classFields     = new ArrayList<>();
   private final List<SInvokable> classMethods    = new ArrayList<SInvokable>();
 
   public SomLanguage getLanguage() {
@@ -74,15 +73,15 @@ public final class ClassGenerationContext {
     this.superName = superName;
   }
 
-  public void setInstanceFieldsOfSuper(final SArray fieldNames) {
-    for (int i = 0; i < fieldNames.getObjectStorage(storageType).length; i++) {
-      instanceFields.add((SSymbol) fieldNames.getObjectStorage(storageType)[i]);
+  public void setInstanceFieldsOfSuper(final Field[] fields) {
+    for (Field f : fields) {
+      instanceFields.add(f);
     }
   }
 
-  public void setClassFieldsOfSuper(final SArray fieldNames) {
-    for (int i = 0; i < fieldNames.getObjectStorage(storageType).length; i++) {
-      classFields.add((SSymbol) fieldNames.getObjectStorage(storageType)[i]);
+  public void setClassFieldsOfSuper(final Field[] fields) {
+    for (Field f : fields) {
+      classFields.add(f);
     }
   }
 
@@ -98,24 +97,36 @@ public final class ClassGenerationContext {
     classMethods.add(meth);
   }
 
-  public void addInstanceField(final SSymbol field) {
-    instanceFields.add(field);
+  public void addInstanceField(final SSymbol name, final SourceSection source) {
+    Field f = new Field(instanceFields.size(), name, source);
+    instanceFields.add(f);
   }
 
-  public void addClassField(final SSymbol field) {
-    classFields.add(field);
+  public void addClassField(final SSymbol name, final SourceSection source) {
+    Field f = new Field(classFields.size(), name, source);
+    classFields.add(f);
   }
 
-  public boolean hasField(final SSymbol field) {
-    return (isClassSide() ? classFields : instanceFields).contains(field);
-  }
+  public boolean hasField(final SSymbol fieldName) {
+    List<Field> fields = (isClassSide() ? classFields : instanceFields);
 
-  public byte getFieldIndex(final SSymbol field) {
-    if (isClassSide()) {
-      return (byte) classFields.indexOf(field);
-    } else {
-      return (byte) instanceFields.indexOf(field);
+    for (Field f : fields) {
+      if (f.getName() == fieldName) {
+        return true;
+      }
     }
+    return false;
+  }
+
+  public byte getFieldIndex(final SSymbol fieldName) {
+    List<Field> fields = (isClassSide() ? classFields : instanceFields);
+
+    for (Field f : fields) {
+      if (f.getName() == fieldName) {
+        return (byte) f.getIndex();
+      }
+    }
+    return -1;
   }
 
   public boolean isClassSide() {
@@ -134,8 +145,7 @@ public final class ClassGenerationContext {
     SClass resultClass = universe.newClass(universe.metaclassClass);
 
     // Initialize the class of the resulting class
-    resultClass.setInstanceFields(
-        SArray.create(classFields.toArray(new Object[0])));
+    resultClass.setInstanceFields(classFields);
     resultClass.setInstanceInvokables(
         SArray.create(classMethods.toArray(new Object[0])));
     resultClass.setName(universe.symbolFor(ccname));
@@ -149,26 +159,20 @@ public final class ClassGenerationContext {
     // Initialize the resulting class
     result.setName(name);
     result.setSuperClass(superClass);
-    result.setInstanceFields(
-        SArray.create(instanceFields.toArray(new Object[0])));
-    result.setInstanceInvokables(
-        SArray.create(instanceMethods.toArray(new Object[0])));
+    result.setInstanceFields(instanceFields);
+    result.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
 
     return result;
   }
 
   @TruffleBoundary
   public void assembleSystemClass(final SClass systemClass) {
-    systemClass.setInstanceInvokables(
-        SArray.create(instanceMethods.toArray(new Object[0])));
-    systemClass.setInstanceFields(
-        SArray.create(instanceFields.toArray(new Object[0])));
+    systemClass.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
+    systemClass.setInstanceFields(instanceFields);
     // class-bound == class-instance-bound
     SClass superMClass = systemClass.getSOMClass(universe);
-    superMClass.setInstanceInvokables(
-        SArray.create(classMethods.toArray(new Object[0])));
-    superMClass.setInstanceFields(
-        SArray.create(classFields.toArray(new Object[0])));
+    superMClass.setInstanceInvokables(SArray.create(classMethods.toArray(new Object[0])));
+    superMClass.setInstanceFields(classFields);
   }
 
   @Override
