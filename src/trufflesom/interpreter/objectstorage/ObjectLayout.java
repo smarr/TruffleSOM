@@ -1,13 +1,13 @@
 package trufflesom.interpreter.objectstorage;
 
-import trufflesom.interpreter.objectstorage.StorageLocation.UnwrittenStorageLocation;
-import trufflesom.vmobjects.SClass;
-import trufflesom.vmobjects.SObject;
-
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+
+import trufflesom.interpreter.objectstorage.StorageLocation.UnwrittenStorageLocation;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SObject;
 
 
 public final class ObjectLayout {
@@ -86,6 +86,10 @@ public final class ObjectLayout {
 
   public ObjectLayout withGeneralizedField(final long fieldIndex) {
     return withGeneralizedField((int) fieldIndex);
+  }
+
+  public void invalidate() {
+    latestLayoutForClass.invalidate();
   }
 
   public ObjectLayout withGeneralizedField(final int fieldIndex) {

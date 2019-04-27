@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Field;
 
-import trufflesom.tools.SourceCoordinate;
+import bd.source.SourceCoordinate;
 
 
 public final class Lexer {
@@ -48,7 +48,9 @@ public final class Lexer {
   }
 
   private static class LexerState {
-    LexerState() {}
+    LexerState() {
+      startCoord = SourceCoordinate.createEmpty();
+    }
 
     LexerState(final LexerState old) {
       lineNumber = old.lineNumber;
@@ -134,8 +136,8 @@ public final class Lexer {
   }
 
   public static SourceCoordinate createSourceCoordinate(final LexerState state) {
-    return new SourceCoordinate(state.lineNumber, state.bufPointer + 1,
-        state.charsRead + state.bufPointer);
+    int charIdx = state.charsRead + state.bufPointer;
+    return SourceCoordinate.create(state.lineNumber, state.bufPointer + 1, charIdx);
   }
 
   public SourceCoordinate getStartCoordinate() {
