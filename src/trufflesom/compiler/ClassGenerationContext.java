@@ -113,11 +113,17 @@ public final class ClassGenerationContext {
   public void addInstanceField(final SSymbol name, final SourceSection source) {
     Field f = new Field(instanceFields.size(), name, source);
     instanceFields.add(f);
+    if (structuralProbe != null) {
+      structuralProbe.recordNewInstanceField(f);
+    }
   }
 
   public void addClassField(final SSymbol name, final SourceSection source) {
     Field f = new Field(classFields.size(), name, source);
     classFields.add(f);
+    if (structuralProbe != null) {
+      structuralProbe.recordNewClassField(f);
+    }
   }
 
   public boolean hasField(final SSymbol fieldName) {

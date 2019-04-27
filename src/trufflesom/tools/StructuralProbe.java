@@ -6,8 +6,7 @@ import java.util.Set;
 
 import org.graalvm.collections.EconomicMap;
 
-import com.oracle.truffle.api.source.SourceSection;
-
+import trufflesom.compiler.Field;
 import trufflesom.compiler.Variable;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -113,26 +112,8 @@ public class StructuralProbe {
 
   private static Field lookupField(final String name, final Set<Field> fields) {
     return fields.stream()
-                 .filter(f -> f.getSymbol().getString().equals(name))
+                 .filter(f -> f.getName().getString().equals(name))
                  .findFirst()
                  .orElse(null);
-  }
-
-  public static final class Field {
-    private final SSymbol       symbol;
-    private final SourceSection sourceSection;
-
-    public Field(final SSymbol symbol, final SourceSection sourceSection) {
-      this.symbol = symbol;
-      this.sourceSection = sourceSection;
-    }
-
-    public SSymbol getSymbol() {
-      return symbol;
-    }
-
-    public SourceSection getSourceSection() {
-      return sourceSection;
-    }
   }
 }

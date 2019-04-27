@@ -87,7 +87,6 @@ import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
 import trufflesom.tools.StructuralProbe;
-import trufflesom.tools.StructuralProbe.Field;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -343,13 +342,7 @@ public class Parser {
       while (isIdentifier(sym)) {
         SourceCoordinate coord = getCoordinate();
         String var = variable();
-        SSymbol instanceField = universe.symbolFor(var);
-
-        if (structuralProbe != null) {
-          Field field = new Field(instanceField, getSource(coord));
-          structuralProbe.recordNewInstanceField(field);
-        }
-        cgenc.addInstanceField(instanceField, getSource(coord));
+        cgenc.addInstanceField(universe.symbolFor(var), getSource(coord));
       }
       expect(Or);
     }
@@ -360,13 +353,7 @@ public class Parser {
       while (isIdentifier(sym)) {
         SourceCoordinate coord = getCoordinate();
         String var = variable();
-        SSymbol classField = universe.symbolFor(var);
-
-        if (structuralProbe != null) {
-          Field field = new Field(classField, getSource(coord));
-          structuralProbe.recordNewClassField(field);
-        }
-        cgenc.addClassField(classField, getSource(coord));
+        cgenc.addClassField(universe.symbolFor(var), getSource(coord));
       }
       expect(Or);
     }
