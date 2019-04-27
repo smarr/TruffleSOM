@@ -73,6 +73,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.InlinableNodes;
 import bd.source.SourceCoordinate;
+import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Lexer.Peek;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
@@ -86,7 +87,6 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
-import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -103,7 +103,7 @@ public class Parser {
 
   private final InlinableNodes<SSymbol> inlinableNodes;
 
-  protected final StructuralProbe structuralProbe;
+  protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
   private Symbol sym;
   private String text;
@@ -212,7 +212,8 @@ public class Parser {
   }
 
   public Parser(final Reader reader, final long fileSize, final Source source,
-      final StructuralProbe structuralProbe, final Universe universe) {
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe,
+      final Universe universe) {
     this.universe = universe;
     this.source = source;
     this.inlinableNodes = universe.getInlinableNodes();
@@ -248,7 +249,7 @@ public class Parser {
           mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection);
 
       if (structuralProbe != null) {
-        structuralProbe.recordNewInstanceMethod(instanceMethod);
+        structuralProbe.recordNewMethod(instanceMethod.getSignature(), instanceMethod);
       }
       cgenc.addInstanceMethod(instanceMethod);
     }
@@ -265,7 +266,7 @@ public class Parser {
             mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection);
 
         if (structuralProbe != null) {
-          structuralProbe.recordNewClassMethod(classMethod);
+          structuralProbe.recordNewMethod(classMethod.getSignature(), classMethod);
         }
         cgenc.addClassMethod(classMethod);
       }

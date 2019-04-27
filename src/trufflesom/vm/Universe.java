@@ -44,13 +44,15 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.InlinableNodes;
+import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Disassembler;
+import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;
+import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.primitives.Primitives;
-import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
@@ -741,7 +743,8 @@ public final class Universe implements IdProvider<SSymbol> {
     return inlinableNodes;
   }
 
-  public void setSystemClassProbe(final StructuralProbe probe) {
+  public void setSystemClassProbe(
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     systemClassProbe = probe;
   }
 
@@ -777,7 +780,8 @@ public final class Universe implements IdProvider<SSymbol> {
 
   private String[]                  classPath;
   @CompilationFinal private boolean printAST;
-  private StructuralProbe           systemClassProbe;
+
+  private StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> systemClassProbe;
 
   private final SomLanguage language;
 

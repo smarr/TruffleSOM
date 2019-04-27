@@ -38,7 +38,10 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.PrimitiveLoader;
 import bd.primitives.Specializer;
+import bd.tools.structure.StructuralProbe;
+import trufflesom.compiler.Field;
 import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Primitive;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
@@ -100,7 +103,6 @@ import trufflesom.primitives.reflection.PerformInSuperclassPrimFactory;
 import trufflesom.primitives.reflection.PerformPrimFactory;
 import trufflesom.primitives.reflection.PerformWithArgumentsInSuperclassPrimFactory;
 import trufflesom.primitives.reflection.PerformWithArgumentsPrimFactory;
-import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -119,7 +121,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
 
   public static SInvokable constructEmptyPrimitive(final SSymbol signature,
-      final SomLanguage lang, final SourceSection sourceSection, final StructuralProbe probe) {
+      final SomLanguage lang, final SourceSection sourceSection,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
 
@@ -141,7 +144,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   }
 
   public void loadPrimitives(final SClass clazz, final boolean displayWarning,
-      final StructuralProbe probe) {
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> prims =
         primitives.get(clazz.getName());
     if (prims == null) {
@@ -191,7 +194,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   private static SInvokable constructPrimitive(final SSymbol signature,
       final SomLanguage lang,
       final Specializer<Universe, ExpressionNode, SSymbol> specializer,
-      final StructuralProbe probe) {
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
     final int numArgs = signature.getNumberOfSignatureArguments();
 

@@ -42,6 +42,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.ScopeBuilder;
 import bd.inlining.nodes.Inlinable;
+import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Variable.AccessNodeState;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
@@ -55,9 +56,9 @@ import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
-import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
@@ -84,17 +85,17 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
   private final List<SMethod> embeddedBlockMethods;
 
-  private final StructuralProbe structuralProbe;
+  private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
   private final Universe universe;
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
-      final StructuralProbe structuralProbe) {
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
     this(holderGenc, null, holderGenc.getUniverse(), false, structuralProbe);
   }
 
   public MethodGenerationContext(final Universe universe,
-      final StructuralProbe structuralProbe) {
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
     this(null, null, universe, false, structuralProbe);
   }
 
@@ -105,7 +106,8 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
   private MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc, final Universe universe,
-      final boolean isBlockMethod, final StructuralProbe structuralProbe) {
+      final boolean isBlockMethod,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
     this.holderGenc = holderGenc;
     this.outerGenc = outerGenc;
     this.blockMethod = isBlockMethod;

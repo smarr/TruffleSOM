@@ -30,8 +30,8 @@ import java.util.List;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
-import trufflesom.tools.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -40,11 +40,12 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public final class ClassGenerationContext {
-  private final Universe        universe;
-  private final StructuralProbe structuralProbe;
+  private final Universe universe;
+
+  private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
   public ClassGenerationContext(final Universe universe,
-      final StructuralProbe structuralProbe) {
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
     this.universe = universe;
     this.structuralProbe = structuralProbe;
   }
@@ -114,7 +115,7 @@ public final class ClassGenerationContext {
     Field f = new Field(instanceFields.size(), name, source);
     instanceFields.add(f);
     if (structuralProbe != null) {
-      structuralProbe.recordNewInstanceField(f);
+      structuralProbe.recordNewSlot(f);
     }
   }
 
@@ -122,7 +123,7 @@ public final class ClassGenerationContext {
     Field f = new Field(classFields.size(), name, source);
     classFields.add(f);
     if (structuralProbe != null) {
-      structuralProbe.recordNewClassField(f);
+      structuralProbe.recordNewSlot(f);
     }
   }
 

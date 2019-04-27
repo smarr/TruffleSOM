@@ -33,9 +33,10 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
-import trufflesom.tools.StructuralProbe;
+import bd.tools.structure.StructuralProbe;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -43,7 +44,8 @@ public class SourcecodeCompiler {
 
   @TruffleBoundary
   public SClass compileClass(final String path, final String file,
-      final SClass systemClass, final Universe universe, final StructuralProbe probe)
+      final SClass systemClass, final Universe universe,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
     FileReader stream = new FileReader(fname);
@@ -67,7 +69,9 @@ public class SourcecodeCompiler {
 
   @TruffleBoundary
   public SClass compileClass(final String stmt, final SClass systemClass,
-      final Universe universe, final StructuralProbe probe) throws ProgramDefinitionError {
+      final Universe universe,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
+      throws ProgramDefinitionError {
     Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, probe, universe);
 
     SClass result = compile(parser, systemClass, universe);
