@@ -10,14 +10,15 @@ import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
+import bd.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Local;
-import trufflesom.tools.Send;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class NonLocalVariableNode extends ContextualNode implements Send {
+public abstract class NonLocalVariableNode extends ContextualNode
+    implements Invocation<SSymbol> {
 
   protected final FrameSlot slot;
   protected final Local     local;
@@ -29,7 +30,7 @@ public abstract class NonLocalVariableNode extends ContextualNode implements Sen
   }
 
   @Override
-  public SSymbol getSelector() {
+  public SSymbol getInvocationIdentifier() {
     return local.name;
   }
 

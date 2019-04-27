@@ -63,7 +63,7 @@ public final class EagerBinaryPrimitiveNode extends EagerPrimitive {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public SSymbol getInvocationIdentifier() {
     return selector;
   }
 }

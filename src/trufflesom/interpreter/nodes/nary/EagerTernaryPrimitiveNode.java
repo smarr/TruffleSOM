@@ -67,7 +67,7 @@ public final class EagerTernaryPrimitiveNode extends EagerPrimitive {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public SSymbol getInvocationIdentifier() {
     return selector;
   }
 }

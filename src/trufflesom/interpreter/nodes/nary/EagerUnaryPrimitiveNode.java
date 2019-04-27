@@ -58,7 +58,7 @@ public class EagerUnaryPrimitiveNode extends EagerPrimitive {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public SSymbol getInvocationIdentifier() {
     return selector;
   }
 }

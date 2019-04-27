@@ -3,16 +3,17 @@ package trufflesom.interpreter.nodes;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
+import bd.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.AccessNodeState;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.SArguments;
-import trufflesom.tools.Send;
 import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class ArgumentReadNode {
 
-  public static class LocalArgumentReadNode extends ExpressionNode implements Send {
+  public static class LocalArgumentReadNode extends ExpressionNode
+      implements Invocation<SSymbol> {
     protected final int      argumentIndex;
     protected final Argument arg;
 
@@ -41,7 +42,7 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    public SSymbol getSelector() {
+    public SSymbol getInvocationIdentifier() {
       return arg.name;
     }
   }
@@ -82,7 +83,8 @@ public abstract class ArgumentReadNode {
     }
   }
 
-  public static class NonLocalArgumentReadNode extends ContextualNode implements Send {
+  public static class NonLocalArgumentReadNode extends ContextualNode
+      implements Invocation<SSymbol> {
     protected final int      argumentIndex;
     protected final Argument arg;
 
@@ -104,7 +106,7 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    public SSymbol getSelector() {
+    public SSymbol getInvocationIdentifier() {
       return arg.name;
     }
   }
