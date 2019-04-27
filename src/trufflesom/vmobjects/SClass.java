@@ -91,7 +91,6 @@ public final class SClass extends SObject {
     return instanceFields;
   }
 
-    transferToInterpreterAndInvalidate("SClass.setInstanceFields");
   public void setInstanceFields(final List<Field> fields) {
     instanceFieldDefinitions = fields.toArray(new Field[0]);
 
@@ -106,6 +105,9 @@ public final class SClass extends SObject {
     // Check and possibly update layout
     if (layoutForInstances == null
         || fields.size() != layoutForInstances.getNumberOfFields()) {
+      if (layoutForInstances != null) {
+        layoutForInstances.invalidate();
+      }
       layoutForInstances = new ObjectLayout(fields.size(), this);
     }
   }
