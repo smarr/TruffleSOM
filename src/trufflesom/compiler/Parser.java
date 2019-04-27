@@ -72,6 +72,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.InlinableNodes;
+import bd.source.SourceCoordinate;
 import trufflesom.compiler.Lexer.Peek;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
@@ -85,7 +86,6 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
-import trufflesom.tools.SourceCoordinate;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
