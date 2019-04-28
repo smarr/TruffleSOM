@@ -170,7 +170,7 @@ public final class ClassGenerationContext {
         SArray.create(classMethods.toArray(new Object[0])));
     resultClass.setName(universe.symbolFor(ccname));
 
-    SClass superMClass = superClass.getSOMClass(universe);
+    SClass superMClass = superClass == null ? null : superClass.getSOMClass(universe);
     resultClass.setSuperClass(superMClass);
     resultClass.setSourceSection(sourceSection);
 

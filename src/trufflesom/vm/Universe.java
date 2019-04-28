@@ -163,6 +163,7 @@ public final class Universe implements IdProvider<SSymbol> {
     this.inlinableNodes = new InlinableNodes<>(this, Primitives.getInlinableNodes(),
         Primitives.getInlinableFactories());
 
+    symNil = symbolFor("nil");
     symSelf = symbolFor("self");
     symBlockSelf = symbolFor("$blockSelf");
     symSuper = symbolFor("super");
@@ -585,6 +586,10 @@ public final class Universe implements IdProvider<SSymbol> {
   @TruffleBoundary
   public SClass loadClass(final SSymbol name) {
     // Check if the requested class is already in the dictionary of globals
+    if (name == symNil) {
+      return null;
+    }
+
     SClass result = (SClass) getGlobal(name);
     if (result != null) {
       return result;
@@ -772,6 +777,7 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal private SClass falseClass;
   @CompilationFinal private SClass systemClass;
 
+  public final SSymbol symNil;
   public final SSymbol symSelf;
   public final SSymbol symBlockSelf;
   public final SSymbol symFrameOnStack;
