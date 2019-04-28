@@ -182,6 +182,9 @@ public class Parser {
       return msg;
     }
 
+    /**
+     * Used by Language Server.
+     */
     public SourceCoordinate getSourceCoordinate() {
       return sourceCoordinate;
     }
