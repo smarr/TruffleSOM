@@ -34,6 +34,7 @@ import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
 import bd.tools.structure.StructuralProbe;
+import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -42,9 +43,14 @@ import trufflesom.vmobjects.SSymbol;
 
 public class SourcecodeCompiler {
 
+  private final SomLanguage language;
+
+  public SourcecodeCompiler(final SomLanguage language) {
+    this.language = language;
+  }
+
   @TruffleBoundary
-  public SClass compileClass(final String path, final String file,
-      final SClass systemClass, final Universe universe,
+  public SClass compileClass(final String path, final String file, final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
@@ -52,9 +58,9 @@ public class SourcecodeCompiler {
 
     File f = new File(fname);
     Source source = Source.newBuilder(f).build();
-    Parser parser = new Parser(stream, f.length(), source, probe, universe);
+    Parser parser = new Parser(stream, f.length(), source, probe, language.getUniverse());
 
-    SClass result = compile(parser, systemClass, universe);
+    SClass result = compile(parser, systemClass, language.getUniverse());
 
     SSymbol cname = result.getName();
     String cnameC = cname.getString();
@@ -69,12 +75,12 @@ public class SourcecodeCompiler {
 
   @TruffleBoundary
   public SClass compileClass(final String stmt, final SClass systemClass,
-      final Universe universe,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws ProgramDefinitionError {
-    Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, probe, universe);
+    Parser parser =
+        new Parser(new StringReader(stmt), stmt.length(), null, probe, language.getUniverse());
 
-    SClass result = compile(parser, systemClass, universe);
+    SClass result = compile(parser, systemClass, language.getUniverse());
     return result;
   }
 

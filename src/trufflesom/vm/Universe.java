@@ -135,7 +135,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public Universe(final SomLanguage language) {
     this.language = language;
-    this.compiler = new SourcecodeCompiler();
+    this.compiler = new SourcecodeCompiler(language);
     this.globals = new HashMap<SSymbol, Association>();
     this.symbolTable = new HashMap<>();
     this.alreadyInitialized = false;
@@ -642,8 +642,8 @@ public final class Universe implements IdProvider<SSymbol> {
     for (String cpEntry : classPath) {
       try {
         // Load the class from a file and return the loaded class
-        SClass result = compiler.compileClass(cpEntry, name.getString(),
-            systemClass, this, systemClassProbe);
+        SClass result =
+            compiler.compileClass(cpEntry, name.getString(), systemClass, systemClassProbe);
         if (printAST) {
           Disassembler.dump(result.getSOMClass(this));
           Disassembler.dump(result);
@@ -665,7 +665,7 @@ public final class Universe implements IdProvider<SSymbol> {
   public SClass loadShellClass(final String stmt) throws IOException {
     try {
       // Load the class from a stream and return the loaded class
-      SClass result = compiler.compileClass(stmt, null, this, null);
+      SClass result = compiler.compileClass(stmt, null, null);
       if (printAST) {
         Disassembler.dump(result);
       }
