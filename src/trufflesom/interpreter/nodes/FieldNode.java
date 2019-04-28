@@ -91,10 +91,14 @@ public abstract class FieldNode extends ExpressionNode {
   @NodeChild(value = "value", type = ExpressionNode.class)
   public abstract static class FieldWriteNode extends FieldNode
       implements PreevaluatedExpression {
-    @Child public AbstractWriteFieldNode write;
+    @Child private AbstractWriteFieldNode write;
 
     public FieldWriteNode(final int fieldIndex) {
       write = FieldAccessorNode.createWrite(fieldIndex);
+    }
+
+    public int getFieldIndex() {
+      return write.getFieldIndex();
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,
