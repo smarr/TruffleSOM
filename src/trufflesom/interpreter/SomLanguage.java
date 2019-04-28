@@ -47,12 +47,6 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   private String testClass;
   private String testSelector;
 
-  private static Universe current;
-
-  public static Universe getCurrent() {
-    return current;
-  }
-
   public Universe getUniverse() {
     return universe;
   }
@@ -66,8 +60,25 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     testSelector = config.get(TEST_SELECTOR);
 
     universe = new Universe(this);
-    current = universe;
     return universe;
+  }
+
+  @Override
+  protected void initializeContext(final Universe universe) throws Exception {
+    current = this;
+  }
+
+  @Override
+  protected void disposeContext(final Universe universe) {
+    current = null;
+  }
+
+  /** This is used by the Language Server to get to an initialized instance easily. */
+  private static SomLanguage current;
+
+  /** This is used by the Language Server to get to an initialized instance easily. */
+  public static SomLanguage getCurrent() {
+    return current;
   }
 
   public static Source getSyntheticSource(final String text, final String name) {
@@ -168,8 +179,7 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   }
 
   public static Universe getCurrentContext() {
-    return current;
-    // return getCurrentContext(SomLanguage.class);
+    return getCurrentContext(SomLanguage.class);
   }
 
   public static Universe getCurrentContext(final Node node) {
