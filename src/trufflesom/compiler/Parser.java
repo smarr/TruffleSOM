@@ -381,8 +381,7 @@ public class Parser {
       primitiveBlock();
       return null;
     } else {
-      ExpressionNode methodBlock = methodBlock(mgenc);
-      return methodBlock;
+      return methodBlock(mgenc);
     }
   }
 
