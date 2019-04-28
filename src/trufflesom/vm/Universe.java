@@ -461,8 +461,9 @@ public final class Universe implements IdProvider<SSymbol> {
   public static SInvokable newMethod(final SSymbol signature,
       final Invokable truffleInvokable, final boolean isPrimitive,
       final SMethod[] embeddedBlocks, final SourceSection sourceSection) {
+    assert sourceSection != null : "All elements have a lexical representation and thus, are expected to have a source section";
     if (isPrimitive) {
-      return new SPrimitive(signature, truffleInvokable);
+      return new SPrimitive(signature, truffleInvokable, sourceSection);
     } else {
       return new SMethod(signature, truffleInvokable, embeddedBlocks, sourceSection);
     }

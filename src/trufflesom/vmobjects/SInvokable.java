@@ -27,6 +27,9 @@ package trufflesom.vmobjects;
 
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
@@ -41,6 +44,7 @@ public abstract class SInvokable extends SAbstractObject {
   public SInvokable(final SSymbol signature, final Invokable invokable,
       final SourceSection source) {
     this.signature = signature;
+    this.sourceSection = source;
 
     this.invokable = invokable;
     this.callTarget = invokable.createCallTarget();
@@ -48,13 +52,11 @@ public abstract class SInvokable extends SAbstractObject {
 
   public static final class SMethod extends SInvokable {
     private final SMethod[] embeddedBlocks;
-    private SourceSection   sourceSection;
 
     public SMethod(final SSymbol signature, final Invokable invokable,
         final SMethod[] embeddedBlocks, final SourceSection source) {
       super(signature, invokable, source);
       this.embeddedBlocks = embeddedBlocks;
-      sourceSection = source;
     }
 
     public SMethod[] getEmbeddedBlocks() {
@@ -75,14 +77,24 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SourceSection getSourceSection() {
-      return sourceSection;
+    public String getIdentifier() {
+      if (holder != null) {
+        return holder.getName().getString() + "." + signature.getString();
+      } else if (invokable.getSourceSection() != null) {
+        // TODO find a better solution than charIndex
+        Path absolute = Paths.get(invokable.getSourceSection().getSource().getURI());
+        return absolute.toString() + ":" + invokable.getSourceSection().getCharIndex() + ":"
+            + signature.getString();
+      } else {
+        return signature.toString();
+      }
     }
   }
 
   public static final class SPrimitive extends SInvokable {
-    public SPrimitive(final SSymbol signature, final Invokable invokable) {
-      super(signature, invokable, null);
+    public SPrimitive(final SSymbol signature, final Invokable invokable,
+        final SourceSection source) {
+      super(signature, invokable, source);
     }
 
     @Override
@@ -91,12 +103,23 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SourceSection getSourceSection() {
-      return null;
+    public String getIdentifier() {
+      if (holder != null) {
+        return holder.getName().getString() + "." + signature.getString();
+      } else if (invokable.getSourceSection() != null) {
+        // TODO find a better solution than charIndex
+        Path absolute = Paths.get(invokable.getSourceSection().getSource().getURI());
+        return absolute.toString() + ":" + invokable.getSourceSection().getCharIndex() + ":"
+            + signature.getString();
+      } else {
+        return signature.toString();
+      }
     }
   }
 
-  public abstract SourceSection getSourceSection();
+  public final SourceSection getSourceSection() {
+    return sourceSection;
+  }
 
   public final RootCallTarget getCallTarget() {
     return callTarget;
@@ -143,9 +166,12 @@ public abstract class SInvokable extends SAbstractObject {
         + ")";
   }
 
-  // Private variable holding Truffle runtime information
-  private final Invokable          invokable;
-  private final RootCallTarget     callTarget;
-  private final SSymbol            signature;
-  @CompilationFinal private SClass holder;
+  public abstract String getIdentifier();
+
+  private final SourceSection  sourceSection;
+  protected final Invokable    invokable;
+  private final RootCallTarget callTarget;
+  protected final SSymbol      signature;
+
+  @CompilationFinal protected SClass holder;
 }

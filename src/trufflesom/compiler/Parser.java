@@ -382,6 +382,7 @@ public class Parser {
 
   private void primitiveBlock() throws ParseError {
     expect(Primitive);
+    lastMethodsSourceSection = lastFullMethodsSourceSection = getSource(lastCoordinate);
   }
 
   private void pattern(final MethodGenerationContext mgenc) throws ProgramDefinitionError {
@@ -623,8 +624,8 @@ public class Parser {
 
         ExpressionNode blockBody = nestedBlock(bgenc);
 
-        SMethod blockMethod =
-            (SMethod) bgenc.assemble(blockBody, lastMethodsSourceSection, null);
+        SMethod blockMethod = (SMethod) bgenc.assemble(
+            blockBody, lastMethodsSourceSection, lastMethodsSourceSection);
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {

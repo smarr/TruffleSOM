@@ -33,7 +33,6 @@ import java.util.Map.Entry;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.PrimitiveLoader;
@@ -132,7 +131,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
             mgen.getCurrentLexicalScope().getFrameDescriptor(),
             (ExpressionNode) primNode.deepCopy(), lang);
     SInvokable prim =
-        Universe.newMethod(signature, primMethodNode, true, new SMethod[0], null);
+        Universe.newMethod(signature, primMethodNode, true, new SMethod[0], sourceSection);
     return prim;
   }
 
@@ -165,8 +164,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
       SInvokable ivk = target.lookupInvokable(e.getKey());
       assert ivk != null : "Lookup of " + e.getKey().toString() + " failed in "
           + target.getName().getString() + ". Can't install a primitive for it.";
-      SInvokable prim = constructPrimitive(e.getKey(), universe.getLanguage(),
-          e.getValue(), probe);
+      SInvokable prim = constructPrimitive(
+          e.getKey(), ivk.getSourceSection(), universe.getLanguage(), e.getValue(), probe);
       target.addInstanceInvokable(prim);
     }
   }
@@ -192,14 +191,11 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   }
 
   private static SInvokable constructPrimitive(final SSymbol signature,
-      final SomLanguage lang,
+      final SourceSection source, final SomLanguage lang,
       final Specializer<Universe, ExpressionNode, SSymbol> specializer,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
     final int numArgs = signature.getNumberOfSignatureArguments();
-
-    Source s = SomLanguage.getSyntheticSource("primitive", specializer.getName());
-    SourceSection source = s.createSection(1);
 
     MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
     ExpressionNode[] args = new ExpressionNode[numArgs];
@@ -213,7 +209,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     Primitive primMethodNode = new Primitive(signature.getString(), source, primNode,
         mgen.getCurrentLexicalScope().getFrameDescriptor(),
         (ExpressionNode) primNode.deepCopy(), lang);
-    return Universe.newMethod(signature, primMethodNode, true, new SMethod[0], null);
+    return Universe.newMethod(signature, primMethodNode, true, new SMethod[0], source);
   }
 
   @Override

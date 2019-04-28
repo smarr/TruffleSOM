@@ -75,7 +75,7 @@ public class BlockNode extends LiteralNode {
         inliner.getScope(blockIvk), inliner.contextLevel + 1, true,
         inliner.outerScopeChanged());
     SMethod method = (SMethod) Universe.newMethod(blockMethod.getSignature(), adapted, false,
-        blockMethod.getEmbeddedBlocks(), null);
+        blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
     replace(createNode(method));
   }
 
