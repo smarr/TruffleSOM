@@ -248,13 +248,9 @@ public class Parser {
       MethodGenerationContext mgenc = new MethodGenerationContext(cgenc, structuralProbe);
 
       ExpressionNode methodBody = method(mgenc);
-      SInvokable instanceMethod =
-          mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection);
 
-      if (structuralProbe != null) {
-        structuralProbe.recordNewMethod(instanceMethod.getSignature(), instanceMethod);
-      }
-      cgenc.addInstanceMethod(instanceMethod);
+      cgenc.addInstanceMethod(
+          mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection));
     }
 
     if (accept(Separator)) {
@@ -265,13 +261,9 @@ public class Parser {
         MethodGenerationContext mgenc = new MethodGenerationContext(cgenc, structuralProbe);
 
         ExpressionNode methodBody = method(mgenc);
-        SInvokable classMethod =
-            mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection);
 
-        if (structuralProbe != null) {
-          structuralProbe.recordNewMethod(classMethod.getSignature(), classMethod);
-        }
-        cgenc.addClassMethod(classMethod);
+        cgenc.addClassMethod(mgenc.assemble(
+            methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection));
       }
     }
     expect(EndTerm);

@@ -204,6 +204,11 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     SInvokable meth = Universe.newMethod(signature, truffleMethod, false,
         embeddedBlockMethods.toArray(new SMethod[0]), fullSourceSection);
 
+    if (structuralProbe != null) {
+      String id = meth.getIdentifier();
+      structuralProbe.recordNewMethod(universe.symbolFor(id), meth);
+    }
+
     // return the method - the holder field is to be set later on!
     return meth;
   }
