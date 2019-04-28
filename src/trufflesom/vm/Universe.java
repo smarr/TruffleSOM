@@ -788,6 +788,9 @@ public final class Universe implements IdProvider<SSymbol> {
   private String[]                  classPath;
   @CompilationFinal private boolean printAST;
 
+  /**
+   * A {@link StructuralProbe} that is used when loading the system classes.
+   */
   private StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> systemClassProbe;
 
   private final SomLanguage language;
