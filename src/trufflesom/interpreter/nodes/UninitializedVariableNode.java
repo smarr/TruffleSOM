@@ -88,5 +88,9 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     public String toString() {
       return "UninitVarWrite(" + variable.toString() + ")";
     }
+
+    public Local getLocal() {
+      return variable;
+    }
   }
 }

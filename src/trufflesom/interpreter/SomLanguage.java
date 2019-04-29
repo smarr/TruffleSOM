@@ -27,8 +27,8 @@ import trufflesom.vmobjects.SAbstractObject;
     mimeType = SomLanguage.MIME_TYPE)
 public class SomLanguage extends TruffleLanguage<Universe> {
 
-  protected static final String MIME_TYPE = "application/x-som-smalltalk";
-  public static final String    SOM       = "som";
+  public static final String MIME_TYPE = "application/x-som-smalltalk";
+  public static final String SOM       = "som";
 
   @Option(help = "SOM's classpath", category = OptionCategory.USER) //
   protected static final OptionKey<String> CLASS_PATH = new OptionKey<>("");
@@ -63,16 +63,39 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     return universe;
   }
 
+  @Override
+  protected void initializeContext(final Universe universe) throws Exception {
+    current = this;
+  }
+
+  @Override
+  protected void disposeContext(final Universe universe) {
+    current = null;
+  }
+
+  /** This is used by the Language Server to get to an initialized instance easily. */
+  private static SomLanguage current;
+
+  /** This is used by the Language Server to get to an initialized instance easily. */
+  public static SomLanguage getCurrent() {
+    return current;
+  }
+
   public static Source getSyntheticSource(final String text, final String name) {
     return Source.newBuilder(text).internal().name(name).mimeType(SomLanguage.MIME_TYPE)
                  .build();
   }
 
   private static final String START_STR = "START";
+  private static final String INIT_STR  = "INIT";
 
   /** Marker source used to start execution with command line arguments. */
   public static final org.graalvm.polyglot.Source START =
       org.graalvm.polyglot.Source.newBuilder(SOM, START_STR, START_STR).internal(true)
+                                 .buildLiteral();
+
+  public static final org.graalvm.polyglot.Source INIT =
+      org.graalvm.polyglot.Source.newBuilder(SOM, INIT_STR, INIT_STR).internal(true)
                                  .buildLiteral();
 
   private class StartInterpretation extends RootNode {
@@ -101,8 +124,23 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     }
   }
 
+  private static class InitializeContext extends RootNode {
+    protected InitializeContext(final SomLanguage lang) {
+      super(lang, null);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      return true;
+    }
+  }
+
   private CallTarget createStartCallTarget() {
     return Truffle.getRuntime().createCallTarget(new StartInterpretation());
+  }
+
+  private CallTarget createInitCallTarget() {
+    return Truffle.getRuntime().createCallTarget(new InitializeContext(this));
   }
 
   private static boolean isStartSource(final Source source) {
@@ -111,11 +149,19 @@ public class SomLanguage extends TruffleLanguage<Universe> {
         source.getCharacters().equals(START_STR);
   }
 
+  private static boolean isInitSource(final Source source) {
+    return source.isInternal() &&
+        source.getName().equals(INIT_STR) &&
+        source.getCharacters().equals(INIT_STR);
+  }
+
   @Override
   protected CallTarget parse(final ParsingRequest request) throws IOException {
     Source code = request.getSource();
     if (isStartSource(code)) {
       return createStartCallTarget();
+    } else if (isInitSource(code)) {
+      return createInitCallTarget();
     } else {
       // This is currently not supported.
       // The only execution mode is using the parameters to the engine and the magic

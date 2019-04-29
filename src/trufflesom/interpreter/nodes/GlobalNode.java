@@ -25,6 +25,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.tools.nodes.Invocation;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.vm.Universe;
@@ -34,12 +35,17 @@ import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class GlobalNode extends ExpressionNode {
+public abstract class GlobalNode extends ExpressionNode implements Invocation<SSymbol> {
 
   protected final SSymbol globalName;
 
   public GlobalNode(final SSymbol globalName) {
     this.globalName = globalName;
+  }
+
+  @Override
+  public final SSymbol getInvocationIdentifier() {
+    return globalName;
   }
 
   public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {

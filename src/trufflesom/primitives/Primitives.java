@@ -33,12 +33,14 @@ import java.util.Map.Entry;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.PrimitiveLoader;
 import bd.primitives.Specializer;
+import bd.tools.structure.StructuralProbe;
+import trufflesom.compiler.Field;
 import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Primitive;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
@@ -118,16 +120,18 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
 
   public static SInvokable constructEmptyPrimitive(final SSymbol signature,
-      final SomLanguage lang, final SourceSection sourceSection) {
+      final SomLanguage lang, final SourceSection sourceSection,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation();
-    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse());
+    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0));
     Primitive primMethodNode =
         new Primitive(signature.getString(), sourceSection, primNode,
             mgen.getCurrentLexicalScope().getFrameDescriptor(),
             (ExpressionNode) primNode.deepCopy(), lang);
-    SInvokable prim = Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
+    SInvokable prim =
+        Universe.newMethod(signature, primMethodNode, true, new SMethod[0], sourceSection);
     return prim;
   }
 
@@ -138,7 +142,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     initialize();
   }
 
-  public void loadPrimitives(final SClass clazz, final boolean displayWarning) {
+  public void loadPrimitives(final SClass clazz, final boolean displayWarning,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> prims =
         primitives.get(clazz.getName());
     if (prims == null) {
@@ -159,7 +164,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
       SInvokable ivk = target.lookupInvokable(e.getKey());
       assert ivk != null : "Lookup of " + e.getKey().toString() + " failed in "
           + target.getName().getString() + ". Can't install a primitive for it.";
-      SInvokable prim = constructPrimitive(e.getKey(), universe.getLanguage(), e.getValue());
+      SInvokable prim = constructPrimitive(
+          e.getKey(), ivk.getSourceSection(), universe.getLanguage(), e.getValue(), probe);
       target.addInstanceInvokable(prim);
     }
   }
@@ -185,15 +191,13 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   }
 
   private static SInvokable constructPrimitive(final SSymbol signature,
-      final SomLanguage lang,
-      final Specializer<Universe, ExpressionNode, SSymbol> specializer) {
+      final SourceSection source, final SomLanguage lang,
+      final Specializer<Universe, ExpressionNode, SSymbol> specializer,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
     final int numArgs = signature.getNumberOfSignatureArguments();
 
-    Source s = SomLanguage.getSyntheticSource("primitive", specializer.getName());
-    SourceSection source = s.createSection(1);
-
-    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse());
+    MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
     ExpressionNode[] args = new ExpressionNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
       args[i] = new LocalArgumentReadNode(true, i).initialize(source);
@@ -205,7 +209,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     Primitive primMethodNode = new Primitive(signature.getString(), source, primNode,
         mgen.getCurrentLexicalScope().getFrameDescriptor(),
         (ExpressionNode) primNode.deepCopy(), lang);
-    return Universe.newMethod(signature, primMethodNode, true, new SMethod[0]);
+    return Universe.newMethod(signature, primMethodNode, true, new SMethod[0], source);
   }
 
   @Override

@@ -97,6 +97,10 @@ public abstract class FieldNode extends ExpressionNode {
       write = FieldAccessorNode.createWrite(fieldIndex);
     }
 
+    public int getFieldIndex() {
+      return write.getFieldIndex();
+    }
+
     public final Object executeEvaluated(final VirtualFrame frame,
         final SObject self, final Object value) {
       return write.write(self, value);

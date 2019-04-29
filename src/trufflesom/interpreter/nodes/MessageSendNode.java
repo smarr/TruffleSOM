@@ -7,6 +7,7 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Specializer;
+import bd.tools.nodes.Invocation;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
@@ -55,7 +56,7 @@ public final class MessageSendNode {
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
-      implements PreevaluatedExpression {
+      implements PreevaluatedExpression, Invocation<SSymbol> {
 
     @Children protected final ExpressionNode[] argumentNodes;
 
@@ -155,6 +156,11 @@ public final class MessageSendNode {
       return replace(send);
     }
 
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return selector;
+    }
+
   }
 
   private static final class UninitializedMessageSendNode
@@ -231,6 +237,11 @@ public final class MessageSendNode {
     @Override
     public NodeCost getCost() {
       return Cost.getCost(dispatchNode);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return selector;
     }
   }
 }

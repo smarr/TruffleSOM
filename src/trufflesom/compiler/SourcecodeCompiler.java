@@ -33,25 +33,34 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
+import bd.tools.structure.StructuralProbe;
+import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class SourcecodeCompiler {
+public class SourcecodeCompiler {
+
+  private final SomLanguage language;
+
+  public SourcecodeCompiler(final SomLanguage language) {
+    this.language = language;
+  }
 
   @TruffleBoundary
-  public static SClass compileClass(final String path, final String file,
-      final SClass systemClass, final Universe universe)
-      throws IOException {
+  public SClass compileClass(final String path, final String file, final SClass systemClass,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
+      throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
     FileReader stream = new FileReader(fname);
 
     File f = new File(fname);
     Source source = Source.newBuilder(f).build();
-    Parser parser = new Parser(stream, f.length(), source, universe);
+    Parser parser = new Parser(stream, f.length(), source, probe, language.getUniverse());
 
-    SClass result = compile(parser, systemClass, universe);
+    SClass result = compile(parser, systemClass, language.getUniverse());
 
     SSymbol cname = result.getName();
     String cnameC = cname.getString();
@@ -65,24 +74,22 @@ public final class SourcecodeCompiler {
   }
 
   @TruffleBoundary
-  public static SClass compileClass(final String stmt, final SClass systemClass,
-      final Universe universe) {
-    Parser parser = new Parser(new StringReader(stmt), stmt.length(), null, universe);
+  public SClass compileClass(final String stmt, final SClass systemClass,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
+      throws ProgramDefinitionError {
+    Parser parser =
+        new Parser(new StringReader(stmt), stmt.length(), null, probe, language.getUniverse());
 
-    SClass result = compile(parser, systemClass, universe);
+    SClass result = compile(parser, systemClass, language.getUniverse());
     return result;
   }
 
-  private static SClass compile(final Parser parser, final SClass systemClass,
-      final Universe universe) {
-    ClassGenerationContext cgc = new ClassGenerationContext(universe);
+  public SClass compile(final Parser parser, final SClass systemClass,
+      final Universe universe) throws ProgramDefinitionError {
+    ClassGenerationContext cgc = new ClassGenerationContext(universe, parser.structuralProbe);
 
     SClass result = systemClass;
-    try {
-      parser.classdef(cgc);
-    } catch (ProgramDefinitionError pe) {
-      Universe.errorExit(pe.toString());
-    }
+    parser.classdef(cgc);
 
     if (systemClass == null) {
       result = cgc.assemble();

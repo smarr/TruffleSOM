@@ -34,6 +34,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.profiles.ValueProfile;
+import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.compiler.Field;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
@@ -44,6 +45,7 @@ import trufflesom.vmobjects.SInvokable.SPrimitive;
 public final class SClass extends SObject {
 
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
+  private SourceSection             sourceSection;
 
   public SClass(final int numberOfFields) {
     // Initialize this class by calling the super constructor with the given
@@ -81,6 +83,14 @@ public final class SClass extends SObject {
   public void setName(final SSymbol value) {
     transferToInterpreterAndInvalidate("SClass.setName");
     name = value;
+  }
+
+  public SourceSection getSourceSection() {
+    return sourceSection;
+  }
+
+  public void setSourceSection(final SourceSection source) {
+    sourceSection = source;
   }
 
   public Field[] getInstanceFieldDefinitions() {

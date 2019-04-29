@@ -42,8 +42,13 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.IdProvider;
+import bd.basic.ProgramDefinitionError;
 import bd.inlining.InlinableNodes;
+import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Disassembler;
+import trufflesom.compiler.Field;
+import trufflesom.compiler.SourcecodeCompiler;
+import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
@@ -130,6 +135,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public Universe(final SomLanguage language) {
     this.language = language;
+    this.compiler = new SourcecodeCompiler(language);
     this.globals = new HashMap<SSymbol, Association>();
     this.symbolTable = new HashMap<>();
     this.alreadyInitialized = false;
@@ -157,6 +163,7 @@ public final class Universe implements IdProvider<SSymbol> {
     this.inlinableNodes = new InlinableNodes<>(this, Primitives.getInlinableNodes(),
         Primitives.getInlinableFactories());
 
+    symNil = symbolFor("nil");
     symSelf = symbolFor("self");
     symBlockSelf = symbolFor("$blockSelf");
     symSuper = symbolFor("super");
@@ -346,7 +353,7 @@ public final class Universe implements IdProvider<SSymbol> {
         SArray.create(arguments)});
   }
 
-  protected void initializeObjectSystem() {
+  public void initializeObjectSystem() {
     CompilerAsserts.neverPartOfCompilation();
     if (alreadyInitialized) {
       return;
@@ -454,11 +461,12 @@ public final class Universe implements IdProvider<SSymbol> {
   @TruffleBoundary
   public static SInvokable newMethod(final SSymbol signature,
       final Invokable truffleInvokable, final boolean isPrimitive,
-      final SMethod[] embeddedBlocks) {
+      final SMethod[] embeddedBlocks, final SourceSection sourceSection) {
+    assert sourceSection != null : "All elements have a lexical representation and thus, are expected to have a source section";
     if (isPrimitive) {
-      return new SPrimitive(signature, truffleInvokable);
+      return new SPrimitive(signature, truffleInvokable, sourceSection);
     } else {
-      return new SMethod(signature, truffleInvokable, embeddedBlocks);
+      return new SMethod(signature, truffleInvokable, embeddedBlocks, sourceSection);
     }
   }
 
@@ -578,6 +586,10 @@ public final class Universe implements IdProvider<SSymbol> {
   @TruffleBoundary
   public SClass loadClass(final SSymbol name) {
     // Check if the requested class is already in the dictionary of globals
+    if (name == symNil) {
+      return null;
+    }
+
     SClass result = (SClass) getGlobal(name);
     if (result != null) {
       return result;
@@ -599,7 +611,7 @@ public final class Universe implements IdProvider<SSymbol> {
     // Load primitives if class defines them, or try to load optional
     // primitives defined for system classes.
     if (result.hasPrimitives() || isSystemClass) {
-      primitives.loadPrimitives(result, !isSystemClass);
+      primitives.loadPrimitives(result, !isSystemClass, null);
     }
   }
 
@@ -621,12 +633,17 @@ public final class Universe implements IdProvider<SSymbol> {
 
   @TruffleBoundary
   private SClass loadClass(final SSymbol name, final SClass systemClass) {
+    // Skip if classPath is not set
+    if (classPath == null) {
+      return null;
+    }
+
     // Try loading the class from all different paths
     for (String cpEntry : classPath) {
       try {
         // Load the class from a file and return the loaded class
-        SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(cpEntry,
-            name.getString(), systemClass, this);
+        SClass result =
+            compiler.compileClass(cpEntry, name.getString(), systemClass, systemClassProbe);
         if (printAST) {
           Disassembler.dump(result.getSOMClass(this));
           Disassembler.dump(result);
@@ -635,6 +652,8 @@ public final class Universe implements IdProvider<SSymbol> {
 
       } catch (IOException e) {
         // Continue trying different paths
+      } catch (ProgramDefinitionError e) {
+        Universe.errorExit(e.toString());
       }
     }
 
@@ -644,13 +663,16 @@ public final class Universe implements IdProvider<SSymbol> {
 
   @TruffleBoundary
   public SClass loadShellClass(final String stmt) throws IOException {
-    // Load the class from a stream and return the loaded class
-    SClass result = trufflesom.compiler.SourcecodeCompiler.compileClass(stmt, null,
-        this);
-    if (printAST) {
-      Disassembler.dump(result);
+    try {
+      // Load the class from a stream and return the loaded class
+      SClass result = compiler.compileClass(stmt, null, null);
+      if (printAST) {
+        Disassembler.dump(result);
+      }
+      return result;
+    } catch (ProgramDefinitionError e) {
+      return null;
     }
-    return result;
   }
 
   @TruffleBoundary
@@ -727,6 +749,11 @@ public final class Universe implements IdProvider<SSymbol> {
     return inlinableNodes;
   }
 
+  public void setSystemClassProbe(
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+    systemClassProbe = probe;
+  }
+
   public final SClass objectClass;
   public final SClass classClass;
   public final SClass metaclassClass;
@@ -750,6 +777,7 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal private SClass falseClass;
   @CompilationFinal private SClass systemClass;
 
+  public final SSymbol symNil;
   public final SSymbol symSelf;
   public final SSymbol symBlockSelf;
   public final SSymbol symFrameOnStack;
@@ -760,7 +788,14 @@ public final class Universe implements IdProvider<SSymbol> {
   private String[]                  classPath;
   @CompilationFinal private boolean printAST;
 
+  /**
+   * A {@link StructuralProbe} that is used when loading the system classes.
+   */
+  private StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> systemClassProbe;
+
   private final SomLanguage language;
+
+  private final SourcecodeCompiler compiler;
 
   private final HashMap<String, SSymbol> symbolTable;
 
@@ -777,5 +812,11 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public boolean isObjectSystemInitialized() {
     return objectSystemInitialized;
+  }
+
+  public static Builder createContextBuilder(final String[] args) {
+    Builder builder = Context.newBuilder(SomLanguage.SOM).in(System.in).out(System.out)
+                             .allowAllAccess(true).arguments(SomLanguage.SOM, args);
+    return builder;
   }
 }
