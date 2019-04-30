@@ -132,6 +132,11 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
             (ExpressionNode) primNode.deepCopy(), lang);
     SInvokable prim =
         Universe.newMethod(signature, primMethodNode, true, new SMethod[0], sourceSection);
+
+    if (probe != null) {
+      String id = prim.getIdentifier();
+      probe.recordNewMethod(lang.getUniverse().symbolFor(id), prim);
+    }
     return prim;
   }
 
