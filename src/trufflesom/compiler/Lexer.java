@@ -266,6 +266,9 @@ public final class Lexer {
       case 'f':
         state.text.append("\f");
         break;
+      case '0':
+        state.text.append("\0");
+        break;
       case '\'':
         state.text.append("'");
         break;
