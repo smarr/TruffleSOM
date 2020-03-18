@@ -70,4 +70,106 @@ public class StringPrims {
       return doString(receiver.getString(), start, end);
     }
   }
+
+  @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "isWhiteSpace")
+  public abstract static class IsWhiteSpacePrim extends UnarySystemOperation {
+    @Specialization(guards = "receiver.length() == 1")
+    public final boolean doChar(final String receiver) {
+      return Character.isWhitespace(receiver.charAt(0));
+    }
+
+    @Specialization(guards = "receiver.getString().length() == 1")
+    public final boolean doChar(final SSymbol receiver) {
+      return doChar(receiver.getString());
+    }
+
+    @Specialization(guards = "receiver.length() != 1")
+    public final boolean doString(final String receiver) {
+      for (int i = 0; i < receiver.length(); i++) {
+        if (!Character.isWhitespace(receiver.charAt(i))) {
+          return false;
+        }
+      }
+
+      if (receiver.length() > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    @Specialization(guards = "receiver.getString().length() != 1")
+    public final boolean doSSymbol(final SSymbol receiver) {
+      return doString(receiver.getString());
+    }
+  }
+
+  @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "isLetters")
+  public abstract static class IsLettersPrim extends UnarySystemOperation {
+    @Specialization(guards = "receiver.length() == 1")
+    public final boolean doChar(final String receiver) {
+      return Character.isLetter(receiver.charAt(0));
+    }
+
+    @Specialization(guards = "receiver.getString().length() == 1")
+    public final boolean doChar(final SSymbol receiver) {
+      return doChar(receiver.getString());
+    }
+
+    @Specialization(guards = "receiver.length() != 1")
+    public final boolean doString(final String receiver) {
+      for (int i = 0; i < receiver.length(); i++) {
+        if (!Character.isLetter(receiver.charAt(i))) {
+          return false;
+        }
+      }
+
+      if (receiver.length() > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    @Specialization(guards = "receiver.getString().length() != 1")
+    public final boolean doSSymbol(final SSymbol receiver) {
+      return doString(receiver.getString());
+    }
+  }
+
+  @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "isDigits")
+  public abstract static class IsDigitsPrim extends UnarySystemOperation {
+    @Specialization(guards = "receiver.length() == 1")
+    public final boolean doChar(final String receiver) {
+      return Character.isDigit(receiver.charAt(0));
+    }
+
+    @Specialization(guards = "receiver.getString().length() == 1")
+    public final boolean doChar(final SSymbol receiver) {
+      return doChar(receiver.getString());
+    }
+
+    @Specialization(guards = "receiver.length() != 1")
+    public final boolean doString(final String receiver) {
+      for (int i = 0; i < receiver.length(); i++) {
+        if (!Character.isDigit(receiver.charAt(i))) {
+          return false;
+        }
+      }
+
+      if (receiver.length() > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    @Specialization(guards = "receiver.getString().length() != 1")
+    public final boolean doSSymbol(final SSymbol receiver) {
+      return doString(receiver.getString());
+    }
+  }
 }
