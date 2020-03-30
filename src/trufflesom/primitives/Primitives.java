@@ -47,6 +47,7 @@ import trufflesom.interpreter.Primitive;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.specialized.AndBoolMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.AndMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
@@ -60,6 +61,7 @@ import trufflesom.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.NotMessageNodeFactory;
+import trufflesom.interpreter.nodes.specialized.OrBoolMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.OrMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileFalsePrimitiveNodeFactory;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
@@ -277,10 +279,12 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     add(allFactories, UnequalsPrimFactory.getInstance());
 
     add(allFactories, AndMessageNodeFactory.getInstance());
+    add(allFactories, AndBoolMessageNodeFactory.getInstance());
     add(allFactories, IntToDoMessageNodeFactory.getInstance());
     add(allFactories, IntToByDoMessageNodeFactory.getInstance());
     add(allFactories, IntDownToDoMessageNodeFactory.getInstance());
     add(allFactories, OrMessageNodeFactory.getInstance());
+    add(allFactories, OrBoolMessageNodeFactory.getInstance());
     add(allFactories, IfTrueIfFalseMessageNodeFactory.getInstance());
     add(allFactories, NotMessageNodeFactory.getInstance());
 
