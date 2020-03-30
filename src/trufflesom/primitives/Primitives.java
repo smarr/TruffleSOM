@@ -134,7 +134,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
 
-    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0));
+    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0), signature)
+                                       .initialize(sourceSection, false);
     Primitive primMethodNode =
         new Primitive(signature.getString(), sourceSection, primNode,
             mgen.getCurrentLexicalScope().getFrameDescriptor(),

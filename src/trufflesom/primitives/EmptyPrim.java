@@ -5,17 +5,21 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SSymbol;
 
 
 public final class EmptyPrim extends UnaryExpressionNode {
   @Child private ExpressionNode receiver;
 
-  private EmptyPrim(final ExpressionNode receiver) {
+  private final SSymbol signature;
+
+  private EmptyPrim(final ExpressionNode receiver, final SSymbol signature) {
     this.receiver = receiver;
+    this.signature = signature;
   }
 
   public EmptyPrim(final EmptyPrim node) {
-    this(node.receiver);
+    this(node.receiver, node.signature);
   }
 
   @Override
@@ -25,11 +29,12 @@ public final class EmptyPrim extends UnaryExpressionNode {
 
   @Override
   public Object executeEvaluated(final VirtualFrame frame, final Object receiver) {
-    Universe.println("Warning: undefined primitive called");
+    Universe.errorExit(
+        "Warning: undefined primitive called: " + signature + " at: " + getSourceSection());
     return null;
   }
 
-  public static EmptyPrim create(final ExpressionNode receiver) {
-    return new EmptyPrim(receiver);
+  public static EmptyPrim create(final ExpressionNode receiver, final SSymbol signature) {
+    return new EmptyPrim(receiver, signature);
   }
 }
