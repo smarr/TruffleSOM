@@ -4,8 +4,6 @@ stages:
 
 variables:
   PYTHONUNBUFFERED: "true"
-  JVMCI_BIN: /home/gitlab-runner/.local/graal-core/bin/java
-  JVMCI_HOME: /home/gitlab-runner/.local/graal-core/
   JVMCI_VERSION_CHECK: ignore
   ECLIPSE_EXE: /home/gitlab-runner/.local/eclipse/eclipse
   JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
@@ -26,4 +24,4 @@ benchmark_job:
   allow_failure: true
   script:
     - ${ANT} jar
-    - rebench --without-nice --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c core-lib/codespeed.conf TruffleSOM
+    - rebench --without-nice --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf TruffleSOM
