@@ -3,25 +3,8 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="src.dir"     value="src"/>
-    <property name="src_gen.dir" value="src_gen"/>
-    <property name="test.dir"    value="tests"/>
-    <property name="lib.dir"     location="libs" />
-    <property name="bd.dir"      value="${lib.dir}/black-diamonds/"/>
-    <property name="sdk.dir"     value="${lib.dir}/truffle/sdk" />
-    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
-    <property name="truffle.dir"   location="${lib.dir}/truffle/truffle" />
-    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
-    <property name="junit.version" value="4.12" />
-
-    <property name="checkstyle.version" value="8.11" />
-
-    <property name="mx.cmd" value="../../mx/mx" />
-
-    <property name="build.dir"   value="build"/>
-    <property name="classes.dir" value="${build.dir}/classes"/>
-
-    <property environment="env"/>
+    <property name="jvmci.version" value="jvmci-0.48" />
+    <property name="jdk8.version"  value="172" />
 
     <macrodef name="travis">
         <attribute name="target" />
@@ -31,6 +14,52 @@
             <echo message="travis_fold:end:@{target}${line.separator}"             if:blank="@{start}" if:true="${env.TRAVIS}" />
         </sequential>
     </macrodef>
+
+    <condition property="is.atLeastJava9" value="true" else="false">
+      <or>
+        <matches string="${java.version}" pattern="^9"/>
+        <matches string="${java.version}" pattern="^1[0-9]"/>
+      </or>
+    </condition>
+    <condition property="kernel" value="darwin-amd64" else="linux-amd64">
+        <os family="mac"/>
+    </condition>
+    <condition property="home.ext" value="/Contents/Home" else="">
+        <os family="mac"/>
+    </condition>
+
+    <travis target="env" start="Environment" />
+    <echo>
+        ant.java.version: ${ant.java.version}
+        java.version:     ${java.version}
+        is.atLeastJava9:  ${is.atLeastJava9}
+        kernel:           ${kernel}
+        env.TRAVIS:       ${env.TRAVIS}
+    </echo>
+    <travis target="env" />
+
+    <property name="src.dir"     value="src"/>
+    <property name="src_gen.dir" value="src_gen"/>
+    <property name="test.dir"    value="tests"/>
+    <property name="lib.dir"     location="libs" />
+    <property name="bd.dir"      value="${lib.dir}/black-diamonds/"/>
+    <property name="sdk.dir"     value="${lib.dir}/truffle/sdk" />
+    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
+    <property name="truffle.dir"   location="${lib.dir}/truffle/truffle" />
+    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
+    <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
+    <property name="compiler.build" location="${truffle.dir}/mxbuild/dists" />
+    <property name="junit.version" value="4.12" />
+
+    <property name="checkstyle.version" value="8.11" />
+    <property name="jvmci.home"  location="${lib.dir}/jvmci${home.ext}" />
+
+    <property name="mx.cmd" value="../../mx/mx" />
+
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+
+    <property environment="env"/>
 
     <path id="project.classpath">
         <pathelement location="${classes.dir}" />
@@ -44,53 +73,48 @@
         <pathelement location="${truffle.build}/truffle-dsl-processor.jar" />
     </path>
 
-    <condition property="is.atLeastJava9" value="true" else="false">
-      <or>
-        <matches string="${java.version}" pattern="^9"/>
-        <matches string="${java.version}" pattern="^1[0-9]"/>
-      </or>
+    <available file="${jvmci.home}"  type="dir" property="jvmci.home.present" />
+
+    <condition property="truffle.and.jvmci.present">
+      <and>
+        <available file="${truffle.dir}" />
+        <available file="${jvmci.home}" />
+       </and>
     </condition>
-    
-    <travis target="env" start="Environment" />
-    <echo>
-        ant.java.version: ${ant.java.version}
-        java.version:     ${java.version}
-        is.atLeastJava9:  ${is.atLeastJava9}
-    </echo>
-    <travis target="env" />
 
     <target name="clean" description="Remove build directories and generated code">
         <travis target="clean" start="clean" />
 
         <delete dir="${build.dir}"/>
         <delete dir="${src_gen.dir}"/>
-        
+
         <travis target="clean" />
     </target>
 
     <target name="clobber" description="Do clean, and also clean truffle build" depends="clean">
         <travis target="clobber" start="clobber" />
-        
+
         <exec executable="${mx.cmd}" dir="${truffle.dir}">
           <arg value="--dynamicimports"/>
           <arg value="../sdk"/>
           <arg value="ideclean"/>
         </exec>
-        
-        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+
+        <exec executable="${mx.cmd}" dir="${compiler.dir}">
           <arg value="--dynamicimports"/>
           <arg value="../sdk"/>
           <arg value="clean"/>
+          <env key="JAVA_HOME" value="${jvmci.home}" />
         </exec>
 
         <ant dir="${bd.dir}" useNativeBasedir="true" target="clean" inheritAll="false" />
-        
+
         <travis target="clobber" />
     </target>
 
     <target name="eclipseformat">
       <travis target="eclipseformat" start="eclipseformat" />
-      
+
       <pathconvert pathsep=" " property="javafiles">
         <fileset dir="${src.dir}">
           <include name="**/*.java"/>
@@ -121,10 +145,10 @@
           <arg value="--quiet" />
           <arg value="HEAD" />
       </exec>
-      
+
       <travis target="eclipseformat" />
     </target>
-    
+
     <target name="check-core-lib-available">
         <available file="core-lib/.git" property="core-lib.present"/>
     </target>
@@ -137,11 +161,12 @@
       </exec>
     </target>
 
-    <target name="truffle-libs" depends="core-lib">
+    <target name="truffle-libs" depends="jvmci-libs,core-lib">
         <travis target="truffle-libs" start="Build Truffle" />
-        <exec executable="${mx.cmd}" dir="${truffle.dir}" failonerror="true">
+        <exec executable="${mx.cmd}" dir="${compiler.dir}" failonerror="true">
             <arg value="build"/>
             <arg value="--no-native"/>
+            <env key="JAVA_HOME" value="${jvmci.home}" />
         </exec>
         <travis target="truffle-libs" />
     </target>
@@ -163,19 +188,34 @@
     </target>
 
     <target name="ideinit" depends="core-lib">
-        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+        <exec executable="${mx.cmd}" dir="${compiler.dir}">
+          <env key="JAVA_HOME" value="${jvmci.home}" />
           <arg value="--dynamicimports"/>
           <arg value="../sdk"/>
           <arg value="eclipseinit"/>
         </exec>
     </target>
-    
+
     <target name="ideclean" depends="core-lib">
-        <exec executable="${mx.cmd}" dir="${truffle.dir}">
+        <exec executable="${mx.cmd}" dir="${compiler.dir}">
           <arg value="--dynamicimports"/>
           <arg value="../sdk"/>
           <arg value="ideclean"/>
         </exec>
+    </target>
+
+    <target name="jvmci-libs" unless="skip.libs">
+        <get src="https://github.com/graalvm/openjdk8-jvmci-builder/releases/download/${jvmci.version}/openjdk-8u${jdk8.version}-${jvmci.version}-${kernel}.tar.gz"
+             usetimestamp="true"
+             dest="${lib.dir}/jvmci.tar.gz" />
+        <mkdir dir="${lib.dir}/jvmci" />
+        <exec executable="tar" dir="${basedir}" failonerror="true">
+          <arg line="-C ${lib.dir}/jvmci -xzf ${lib.dir}/jvmci.tar.gz --strip 1"/>
+        </exec>
+    </target>
+
+    <target name="jvmci-home">
+        <echo>${jvmci.home}</echo>
     </target>
 
     <target name="libs" depends="core-lib,truffle-libs,bd-libs">
@@ -204,7 +244,7 @@
 
     <target name="compile" depends="libs" description="Compile TruffleSOM">
         <travis target="compile" start="compile" />
-        
+
         <mkdir dir="${build.dir}"/>
         <mkdir dir="${classes.dir}" />
         <mkdir dir="${src_gen.dir}" />
@@ -222,7 +262,7 @@
         <javac includeantruntime="false" srcdir="${test.dir}" destdir="${classes.dir}" debug="true">
           <classpath refid="project.classpath" />
         </javac>
-        
+
         <travis target="compile" />
     </target>
 
@@ -256,14 +296,14 @@
 
         <travis target="test" />
     </target>
-    
+
     <target name="som-test" depends="compile" description="Test som script">
         <travis target="som-test" start="SOM Test" />
 
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
             <arg value="-cp" />
-            <arg value="Smalltalk" />           
+            <arg value="Smalltalk" />
             <arg value="TestSuite/TestHarness.com" />
             <arg value="TestSuite/EmptyTest.som" />
         </exec>
