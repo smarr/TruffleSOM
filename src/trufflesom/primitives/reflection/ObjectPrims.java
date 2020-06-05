@@ -1,5 +1,7 @@
 package trufflesom.primitives.reflection;
 
+import java.math.BigInteger;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
@@ -7,7 +9,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
@@ -15,8 +16,11 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
-import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SInvokable.SPrimitive;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -106,15 +110,68 @@ public final class ObjectPrims {
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "class")
   public abstract static class ClassPrim extends UnarySystemOperation {
+
+    public abstract SClass executeEvaluated(Object rcvr);
+
     @Specialization
-    public final SClass doSAbstractObject(final SAbstractObject receiver) {
-      return receiver.getSOMClass(universe);
+    public final SClass getSomClass(final SArray receiver) {
+      return universe.arrayClass;
+    }
+
+    @Specialization
+    public final SClass getSomClass(final SBlock receiver) {
+      return receiver.getSOMClass();
+    }
+
+    @Specialization
+    public final SClass getSomClass(final SObject receiver) {
+      return receiver.getSOMClass();
+    }
+
+    @Specialization
+    public final SClass getSomClass(final SMethod receiver) {
+      return universe.methodClass;
+    }
+
+    @Specialization
+    public final SClass getSomClass(final SPrimitive receiver) {
+      return universe.primitiveClass;
+    }
+
+    @Specialization
+    public final SClass getSomClass(final SSymbol receiver) {
+      return universe.symbolClass;
+    }
+
+    @Specialization(guards = "receiver")
+    public final SClass getTrueClass(final boolean receiver) {
+      return universe.getTrueClass();
+    }
+
+    @Specialization(guards = "!receiver")
+    public final SClass getFalseClass(final boolean receiver) {
+      return universe.getFalseClass();
+    }
+
+    @Specialization
+    public final SClass getSomClass(final long receiver) {
+      return universe.integerClass;
+    }
+
+    @Specialization
+    public final SClass getSomClass(final BigInteger receiver) {
+      return universe.integerClass;
+    }
+
+    @Specialization
+    public final SClass getSomClass(final String receiver) {
+      return universe.stringClass;
     }
 
     @TruffleBoundary
     @Specialization
-    public final SClass doObject(final Object receiver) {
-      return Types.getClassOf(receiver, universe);
+    public final SClass getSomClass(final double receiver) {
+      return universe.doubleClass;
     }
   }
 

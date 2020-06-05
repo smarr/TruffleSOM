@@ -57,6 +57,10 @@ public final class SBlock extends SAbstractObject {
     return blockClass;
   }
 
+  public SClass getSOMClass() {
+    return blockClass;
+  }
+
   public Object getOuterSelf() {
     return SArguments.rcvr(getContext());
   }

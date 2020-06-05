@@ -210,6 +210,10 @@ public class SObject extends SAbstractObject {
     return clazz;
   }
 
+  public final SClass getSOMClass() {
+    return clazz;
+  }
+
   public final long getFieldIndex(final SSymbol fieldName) {
     return clazz.lookupFieldIndex(fieldName);
   }
