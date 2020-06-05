@@ -9,6 +9,7 @@ variables:
   JVMCI_VERSION_CHECK: ignore
   ECLIPSE_EXE: /home/gitlab-runner/.local/eclipse/eclipse
   JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+  ANT: "ant -e"
 
 before_script:
   - git submodule update --init
@@ -17,12 +18,12 @@ build_and_test_job:
   stage: build-and-test
   tags: [benchmarks, infinity]
   script:
-    - make test
+    - ${ANT} tests
 
 benchmark_job:
   stage: benchmark
   tags: [benchmarks, infinity]
   allow_failure: true
   script:
-    - make
-    - export EXP=`if [[ "$CI_BUILD_REF_NAME" = "master" ]]; then echo ""; else echo "-exp"; fi`; rebench -d --without-nice -c --commit-id="$CI_BUILD_REF" --environment="Infinity Ubuntu" --project=TruffleSOM --branch=master core-lib/codespeed.conf TruffleSOM${EXP}
+    - ${ANT} jar
+    - rebench --without-nice --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c core-lib/codespeed.conf TruffleSOM
