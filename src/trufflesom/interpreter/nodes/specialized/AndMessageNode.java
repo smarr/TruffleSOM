@@ -1,6 +1,7 @@
 package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -17,7 +18,6 @@ import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -57,7 +57,6 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
       EagerlySpecializableNode node;
       if (argNodes[1] instanceof BlockNode) {
         node = (EagerlySpecializableNode) fact.createNode(
-            ((BlockNode) argNodes[1]).getMethod(),
             eagerWrapper ? null : argNodes[0],
             eagerWrapper ? null : argNodes[1]);
       } else {
@@ -71,25 +70,18 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     }
   }
 
-  private final SInvokable      blockMethod;
-  @Child private DirectCallNode blockValueSend;
-
-  public AndMessageNode(final SMethod blockMethod) {
-    this.blockMethod = blockMethod;
-    blockValueSend = Truffle.getRuntime().createDirectCallNode(
-        blockMethod.getCallTarget());
+  public static final DirectCallNode callNode(final SBlock block) {
+    return Truffle.getRuntime().createDirectCallNode(block.getMethod().getCallTarget());
   }
 
-  protected final boolean isSameBlock(final SBlock argument) {
-    return argument.getMethod() == blockMethod;
-  }
-
-  @Specialization(guards = "isSameBlock(argument)")
-  public final boolean doAnd(final boolean receiver, final SBlock argument) {
+  @Specialization(guards = "argument.getMethod() == blockMethod")
+  public final boolean doAnd(final boolean receiver, final SBlock argument,
+      @Cached("argument.getMethod()") final SInvokable blockMethod,
+      @Cached("callNode(argument)") final DirectCallNode send) {
     if (receiver == false) {
       return false;
     } else {
-      return (boolean) blockValueSend.call(new Object[] {argument});
+      return (boolean) send.call(new Object[] {argument});
     }
   }
 }

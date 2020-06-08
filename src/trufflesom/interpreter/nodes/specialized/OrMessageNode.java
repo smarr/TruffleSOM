@@ -1,6 +1,7 @@
 package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -13,7 +14,6 @@ import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import trufflesom.interpreter.nodes.specialized.OrMessageNode.OrSplzr;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SInvokable.SMethod;
 
 
 @GenerateNodeFactory
@@ -27,25 +27,18 @@ public abstract class OrMessageNode extends BinaryExpressionNode {
     }
   }
 
-  private final SInvokable      blockMethod;
-  @Child private DirectCallNode blockValueSend;
-
-  public OrMessageNode(final SMethod blockMethod) {
-    this.blockMethod = blockMethod;
-    blockValueSend = Truffle.getRuntime().createDirectCallNode(
-        blockMethod.getCallTarget());
+  public static final DirectCallNode callNode(final SBlock block) {
+    return Truffle.getRuntime().createDirectCallNode(block.getMethod().getCallTarget());
   }
 
-  protected final boolean isSameBlock(final SBlock argument) {
-    return argument.getMethod() == blockMethod;
-  }
-
-  @Specialization(guards = "isSameBlock(argument)")
-  public final boolean doOr(final boolean receiver, final SBlock argument) {
+  @Specialization(guards = "argument.getMethod() == blockMethod")
+  public final boolean doOr(final boolean receiver, final SBlock argument,
+      @Cached("argument.getMethod()") final SInvokable blockMethod,
+      @Cached("callNode(argument)") final DirectCallNode send) {
     if (receiver) {
       return true;
     } else {
-      return (boolean) blockValueSend.call(new Object[] {argument});
+      return (boolean) send.call(new Object[] {argument});
     }
   }
 }
