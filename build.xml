@@ -242,7 +242,7 @@
         </checkstyle>
     </target>
 
-    <target name="compile" depends="libs" description="Compile TruffleSOM">
+    <target name="som-compile" description="Compile TruffleSOM, without dependencies">
         <travis target="compile" start="compile" />
 
         <mkdir dir="${build.dir}"/>
@@ -264,6 +264,9 @@
         </javac>
 
         <travis target="compile" />
+    </target>
+
+    <target name="compile" depends="libs,som-compile" description="Compile TruffleSOM">
     </target>
 
     <target name="jar" depends="compile" description="Package as JAR">
