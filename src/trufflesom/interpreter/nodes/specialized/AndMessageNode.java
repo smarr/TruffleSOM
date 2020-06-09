@@ -4,7 +4,6 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -15,7 +14,6 @@ import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
 import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
-import trufflesom.interpreter.nodes.specialized.AndMessageNodeFactory.AndBoolMessageNodeFactory;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
@@ -88,15 +86,6 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
       return false;
     } else {
       return (boolean) blockValueSend.call(new Object[] {argument});
-    }
-  }
-
-  @GenerateNodeFactory
-  public abstract static class AndBoolMessageNode extends BinaryExpressionNode {
-    @Specialization
-    public final boolean doAnd(final VirtualFrame frame, final boolean receiver,
-        final boolean argument) {
-      return receiver && argument;
     }
   }
 }
