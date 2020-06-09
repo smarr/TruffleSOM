@@ -57,10 +57,14 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
       EagerlySpecializableNode node;
       if (argNodes[1] instanceof BlockNode) {
         node = (EagerlySpecializableNode) fact.createNode(
-            ((BlockNode) argNodes[1]).getMethod(), argNodes[0], argNodes[1]);
+            ((BlockNode) argNodes[1]).getMethod(),
+            eagerWrapper ? null : argNodes[0],
+            eagerWrapper ? null : argNodes[1]);
       } else {
         assert arguments == null || arguments[1] instanceof Boolean;
-        node = boolFact.createNode(argNodes[0], argNodes[1]);
+        node = boolFact.createNode(
+            eagerWrapper ? null : argNodes[0],
+            eagerWrapper ? null : argNodes[1]);
       }
       node.initialize(section, eagerWrapper);
       return node;
