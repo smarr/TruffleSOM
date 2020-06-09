@@ -3,8 +3,8 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="jvmci.version" value="jvmci-0.48" />
-    <property name="jdk8.version"  value="172" />
+    <property name="jvmci.version" value="jvmci-19.3-b04" />
+    <property name="jdk8.version"  value="232" />
 
     <macrodef name="travis">
         <attribute name="target" />
@@ -38,17 +38,17 @@
     </echo>
     <travis target="env" />
 
-    <property name="src.dir"     value="src"/>
-    <property name="src_gen.dir" value="src_gen"/>
-    <property name="test.dir"    value="tests"/>
+    <property name="src.dir"     location="src"/>
+    <property name="src_gen.dir" location="src_gen"/>
+    <property name="test.dir"    location="tests"/>
     <property name="lib.dir"     location="libs" />
-    <property name="bd.dir"      value="${lib.dir}/black-diamonds/"/>
-    <property name="sdk.dir"     value="${lib.dir}/truffle/sdk" />
-    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
+    <property name="bd.dir"      location="${lib.dir}/black-diamonds/"/>
+    <property name="sdk.dir"     location="${lib.dir}/truffle/sdk" />
+    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists/jdk1.8" />
     <property name="truffle.dir"   location="${lib.dir}/truffle/truffle" />
-    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
+    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists/jdk1.8" />
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
-    <property name="compiler.build" location="${truffle.dir}/mxbuild/dists" />
+    <property name="compiler.build" location="${truffle.dir}/mxbuild/dists/jdk1.8" />
     <property name="junit.version" value="4.12" />
 
     <property name="checkstyle.version" value="8.11" />

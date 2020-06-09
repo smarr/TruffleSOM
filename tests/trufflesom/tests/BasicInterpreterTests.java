@@ -36,6 +36,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
@@ -117,7 +118,9 @@ public class BasicInterpreterTests {
         {"Regressions", "testSymbolEquality", 1, Long.class},
         {"Regressions", "testSymbolReferenceEquality", 1, Long.class},
 
-        {"NumberOfTests", "numberOfTests", 51, Long.class}
+        {"BinaryOperation", "test", 3 + 8, Long.class},
+
+        {"NumberOfTests", "numberOfTests", 52, Long.class}
     });
   }
 
@@ -173,7 +176,7 @@ public class BasicInterpreterTests {
 
   @Test
   public void testBasicInterpreterBehavior() {
-    Builder builder = Context.newBuilder();
+    Builder builder = Universe.createContextBuilder();
     builder.option("som.CLASS_PATH", "Smalltalk:TestSuite/BasicInterpreterTests");
     builder.option("som.TEST_CLASS", testClass);
     builder.option("som.TEST_SELECTOR", testSelector);

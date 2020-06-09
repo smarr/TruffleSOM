@@ -26,9 +26,9 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
 import bd.inlining.nodes.Inlinable;
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.PreevaluatedExpression;
 
 
 @NodeInfo(cost = NodeCost.NONE)

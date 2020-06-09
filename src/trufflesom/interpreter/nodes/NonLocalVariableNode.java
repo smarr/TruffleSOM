@@ -4,6 +4,7 @@ import static trufflesom.interpreter.TruffleCompiler.transferToInterpreter;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
@@ -20,12 +21,14 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class NonLocalVariableNode extends ContextualNode
     implements Invocation<SSymbol> {
 
-  protected final FrameSlot slot;
-  protected final Local     local;
+  protected final FrameSlot       slot;
+  protected final Local           local;
+  protected final FrameDescriptor descriptor;
 
   private NonLocalVariableNode(final int contextLevel, final Local local) {
     super(contextLevel);
     this.local = local;
+    this.descriptor = local.getFrameDescriptor();
     this.slot = local.getSlot();
   }
 
@@ -84,7 +87,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
     }
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
-      return slot.getKind() == FrameSlotKind.Illegal;
+      return descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal;
     }
 
     @Override
@@ -128,45 +131,45 @@ public abstract class NonLocalVariableNode extends ContextualNode
     }
 
     protected final boolean isBoolKind(final VirtualFrame frame) {
-      if (slot.getKind() == FrameSlotKind.Boolean) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Boolean) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeBoolToUninit");
-        slot.setKind(FrameSlotKind.Boolean);
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Boolean);
         return true;
       }
       return false;
     }
 
     protected final boolean isLongKind(final VirtualFrame frame) {
-      if (slot.getKind() == FrameSlotKind.Long) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Long) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeIntToUninit");
-        slot.setKind(FrameSlotKind.Long);
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Long);
         return true;
       }
       return false;
     }
 
     protected final boolean isDoubleKind(final VirtualFrame frame) {
-      if (slot.getKind() == FrameSlotKind.Double) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Double) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
         transferToInterpreter("LocalVar.writeDoubleToUninit");
-        slot.setKind(FrameSlotKind.Double);
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Double);
         return true;
       }
       return false;
     }
 
     protected final void ensureObjectKind() {
-      if (slot.getKind() != FrameSlotKind.Object) {
+      if (descriptor.getFrameSlotKind(slot) != FrameSlotKind.Object) {
         transferToInterpreter("LocalVar.writeObjectToUninit");
-        slot.setKind(FrameSlotKind.Object);
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Object);
       }
     }
 

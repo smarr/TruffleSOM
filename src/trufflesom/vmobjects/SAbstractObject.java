@@ -1,23 +1,20 @@
 package trufflesom.vmobjects;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.interop.ForeignAccess;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 
-import trufflesom.interop.SAbstractObjectInteropMessagesForeign;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
 import trufflesom.vm.Universe;
 
 
+@ExportLibrary(InteropLibrary.class)
 public abstract class SAbstractObject implements TruffleObject {
 
   public abstract SClass getSOMClass(Universe universe);
-
-  @Override
-  public final ForeignAccess getForeignAccess() {
-    return SAbstractObjectInteropMessagesForeign.ACCESS;
-  }
 
   @Override
   public String toString() {
@@ -53,10 +50,9 @@ public abstract class SAbstractObject implements TruffleObject {
     return send("escapedBlock:", arguments, universe);
   }
 
-  /**
-   * Used by Truffle interop.
-   */
-  public static boolean isInstance(final TruffleObject obj) {
-    return obj instanceof SAbstractObject;
+  @ExportMessage
+  public final boolean isNull() {
+    // can't be null, because our Nil.nilObject is `null`, which is a dynamic object
+    return false;
   }
 }

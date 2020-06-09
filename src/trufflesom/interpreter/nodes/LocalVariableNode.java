@@ -2,6 +2,7 @@ package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
@@ -16,12 +17,17 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class LocalVariableNode extends ExpressionNode implements Invocation<SSymbol> {
-  protected final FrameSlot slot;
-  protected final Local     local;
+  protected final FrameSlot       slot;
+  protected final FrameDescriptor descriptor;
+  protected final Local           local;
 
+  // TODO: We currently assume that there is a 1:1 mapping between lexical contexts
+  // and frame descriptors, which is apparently not strictly true anymore in Truffle 1.0.0.
+  // Generally, we also need to revise everything in this area and address issue SOMns#240.
   private LocalVariableNode(final Local local) {
     this.local = local;
     this.slot = local.getSlot();
+    this.descriptor = local.getFrameDescriptor();
   }
 
   public final Object getSlotIdentifier() {
@@ -87,7 +93,7 @@ public abstract class LocalVariableNode extends ExpressionNode implements Invoca
     }
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
-      return slot.getKind() == FrameSlotKind.Illegal;
+      return descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal;
     }
 
     @Override
@@ -129,18 +135,18 @@ public abstract class LocalVariableNode extends ExpressionNode implements Invoca
 
     @Specialization(replaces = {"writeBoolean", "writeLong", "writeDouble"})
     public final Object writeGeneric(final VirtualFrame frame, final Object expValue) {
-      slot.setKind(FrameSlotKind.Object);
+      descriptor.setFrameSlotKind(slot, FrameSlotKind.Object);
       frame.setObject(slot, expValue);
       return expValue;
     }
 
     // uses expValue to make sure guard is not converted to assertion
     protected final boolean isBoolKind(final boolean expValue) {
-      if (slot.getKind() == FrameSlotKind.Boolean) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Boolean) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
-        slot.setKind(FrameSlotKind.Boolean);
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Boolean);
         return true;
       }
       return false;
@@ -148,11 +154,11 @@ public abstract class LocalVariableNode extends ExpressionNode implements Invoca
 
     // uses expValue to make sure guard is not converted to assertion
     protected final boolean isLongKind(final long expValue) {
-      if (slot.getKind() == FrameSlotKind.Long) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Long) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
-        slot.setKind(FrameSlotKind.Long);
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Long);
         return true;
       }
       return false;
@@ -160,11 +166,11 @@ public abstract class LocalVariableNode extends ExpressionNode implements Invoca
 
     // uses expValue to make sure guard is not converted to assertion
     protected final boolean isDoubleKind(final double expValue) {
-      if (slot.getKind() == FrameSlotKind.Double) {
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Double) {
         return true;
       }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
-        slot.setKind(FrameSlotKind.Double);
+      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Double);
         return true;
       }
       return false;

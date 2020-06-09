@@ -3,8 +3,8 @@ package trufflesom.interpreter.nodes.nary;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.EagerlySpecializable;
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.PreevaluatedExpression;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 

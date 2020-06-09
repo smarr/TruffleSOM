@@ -57,7 +57,7 @@ public class SourcecodeCompiler {
     FileReader stream = new FileReader(fname);
 
     File f = new File(fname);
-    Source source = Source.newBuilder(f).build();
+    Source source = SomLanguage.getSource(f);
     Parser parser = new Parser(stream, f.length(), source, probe, language.getUniverse());
 
     SClass result = compile(parser, systemClass, language.getUniverse());

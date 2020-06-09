@@ -146,7 +146,8 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
       frameOnStack = new Internal(universe.symFrameOnStack);
       frameOnStack.init(
-          currentScope.getFrameDescriptor().addFrameSlot(frameOnStack, FrameSlotKind.Object));
+          currentScope.getFrameDescriptor().addFrameSlot(frameOnStack, FrameSlotKind.Object),
+          currentScope.getFrameDescriptor());
       currentScope.addVariable(frameOnStack);
     }
     return frameOnStack;
@@ -274,7 +275,9 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
   public Local addLocal(final SSymbol local, final SourceSection source) {
     Local l = new Local(local, source);
-    l.init(currentScope.getFrameDescriptor().addFrameSlot(l));
+    l.init(
+        currentScope.getFrameDescriptor().addFrameSlot(l),
+        currentScope.getFrameDescriptor());
     assert !locals.containsKey(local);
     locals.put(local, l);
 
