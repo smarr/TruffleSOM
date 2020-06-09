@@ -100,7 +100,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       }
 
       Local l = new Local(name, source);
-      l.init(descriptor.addFrameSlot(l));
+      l.init(descriptor.addFrameSlot(l), descriptor);
       return l;
     }
 
@@ -128,13 +128,15 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
   public static final class Local extends Variable {
     @CompilationFinal private transient FrameSlot slot;
+    @CompilationFinal private FrameDescriptor     descriptor;
 
     Local(final SSymbol name, final SourceSection source) {
       super(name, source);
     }
 
-    public void init(final FrameSlot slot) {
+    public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
       this.slot = slot;
+      this.descriptor = descriptor;
     }
 
     @Override
@@ -150,7 +152,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @Override
     public Local split(final FrameDescriptor descriptor) {
       Local newLocal = new Local(name, source);
-      newLocal.init(descriptor.addFrameSlot(newLocal));
+      newLocal.init(descriptor.addFrameSlot(newLocal), descriptor);
       return newLocal;
     }
 
@@ -166,18 +168,25 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
       return createVariableWrite(this, contextLevel, valueExpr, source);
     }
+
+    public FrameDescriptor getFrameDescriptor() {
+      return descriptor;
+    }
   }
 
   public static final class Internal extends Variable {
-    @CompilationFinal private FrameSlot slot;
+    @CompilationFinal private FrameSlot       slot;
+    @CompilationFinal private FrameDescriptor descriptor;
 
     public Internal(final SSymbol name) {
       super(name, null);
     }
 
-    public void init(final FrameSlot slot) {
+    public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
       assert this.slot == null && slot != null;
+
       this.slot = slot;
+      this.descriptor = descriptor;
     }
 
     public FrameSlot getSlot() {
@@ -195,8 +204,10 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @Override
     public Variable split(final FrameDescriptor descriptor) {
       Internal newInternal = new Internal(name);
-      assert slot.getKind() == FrameSlotKind.Object : "We only have the on stack marker currently, so, we expect those not to specialize";
-      newInternal.init(descriptor.addFrameSlot(newInternal, slot.getKind()));
+
+      assert this.descriptor.getFrameSlotKind(
+          slot) == FrameSlotKind.Object : "We only have the on stack marker currently, so, we expect those not to specialize";
+      newInternal.init(descriptor.addFrameSlot(newInternal, FrameSlotKind.Object), descriptor);
       return newInternal;
     }
 

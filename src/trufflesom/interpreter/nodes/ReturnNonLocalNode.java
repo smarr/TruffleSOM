@@ -22,7 +22,6 @@
 package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -184,7 +183,6 @@ public final class ReturnNonLocalNode extends ContextualNode {
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       FrameOnStackMarker marker = new FrameOnStackMarker();
-      frameOnStackMarker.setKind(FrameSlotKind.Object);
       frame.setObject(frameOnStackMarker, marker);
 
       try {
