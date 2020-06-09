@@ -7,6 +7,7 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Specializer;
+import bd.primitives.nodes.PreevaluatedExpression;
 import bd.tools.nodes.Invocation;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
