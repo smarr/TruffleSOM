@@ -118,7 +118,9 @@ public class BasicInterpreterTests {
         {"Regressions", "testSymbolEquality", 1, Long.class},
         {"Regressions", "testSymbolReferenceEquality", 1, Long.class},
 
-        {"NumberOfTests", "numberOfTests", 51, Long.class}
+        {"BinaryOperation", "test", 3 + 8, Long.class},
+
+        {"NumberOfTests", "numberOfTests", 52, Long.class}
     });
   }
 
