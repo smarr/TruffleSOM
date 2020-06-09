@@ -1,5 +1,6 @@
 package trufflesom.interpreter;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.graalvm.options.OptionCategory;
@@ -28,7 +29,7 @@ import trufflesom.vmobjects.SAbstractObject;
 public class SomLanguage extends TruffleLanguage<Universe> {
 
   public static final String MIME_TYPE = "application/x-som-smalltalk";
-  public static final String SOM       = "som";
+  public static final String LANG_ID   = "som";
 
   @Option(help = "SOM's classpath", category = OptionCategory.USER) //
   protected static final OptionKey<String> CLASS_PATH = new OptionKey<>("");
@@ -82,7 +83,15 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   }
 
   public static Source getSyntheticSource(final String text, final String name) {
-    return Source.newBuilder(text).internal().name(name).mimeType(SomLanguage.MIME_TYPE)
+    return Source.newBuilder(LANG_ID, text, name)
+                 .internal(true)
+                 .mimeType(MIME_TYPE)
+                 .build();
+  }
+
+  public static Source getSource(final File file) throws IOException {
+    return Source.newBuilder(LANG_ID, file.toURI().toURL())
+                 .mimeType(MIME_TYPE)
                  .build();
   }
 
@@ -91,11 +100,11 @@ public class SomLanguage extends TruffleLanguage<Universe> {
 
   /** Marker source used to start execution with command line arguments. */
   public static final org.graalvm.polyglot.Source START =
-      org.graalvm.polyglot.Source.newBuilder(SOM, START_STR, START_STR).internal(true)
+      org.graalvm.polyglot.Source.newBuilder(LANG_ID, START_STR, START_STR).internal(true)
                                  .buildLiteral();
 
   public static final org.graalvm.polyglot.Source INIT =
-      org.graalvm.polyglot.Source.newBuilder(SOM, INIT_STR, INIT_STR).internal(true)
+      org.graalvm.polyglot.Source.newBuilder(LANG_ID, INIT_STR, INIT_STR).internal(true)
                                  .buildLiteral();
 
   private class StartInterpretation extends RootNode {

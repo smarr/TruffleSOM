@@ -115,9 +115,17 @@ public final class Universe implements IdProvider<SSymbol> {
     }
   }
 
+  public static Builder createContextBuilder() {
+    Builder builder = Context.newBuilder(SomLanguage.LANG_ID)
+                             .in(System.in)
+                             .out(System.out)
+                             .allowAllAccess(true);
+    return builder;
+  }
+
   public static Value eval(final String[] arguments) {
-    Builder builder = Context.newBuilder();
-    builder.arguments(SomLanguage.SOM, arguments);
+    Builder builder = createContextBuilder();
+    builder.arguments(SomLanguage.LANG_ID, arguments);
 
     Context context = builder.build();
 
@@ -812,11 +820,5 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public boolean isObjectSystemInitialized() {
     return objectSystemInitialized;
-  }
-
-  public static Builder createContextBuilder(final String[] args) {
-    Builder builder = Context.newBuilder(SomLanguage.SOM).in(System.in).out(System.out)
-                             .allowAllAccess(true).arguments(SomLanguage.SOM, args);
-    return builder;
   }
 }

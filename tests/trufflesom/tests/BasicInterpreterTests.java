@@ -36,6 +36,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
@@ -173,7 +174,7 @@ public class BasicInterpreterTests {
 
   @Test
   public void testBasicInterpreterBehavior() {
-    Builder builder = Context.newBuilder();
+    Builder builder = Universe.createContextBuilder();
     builder.option("som.CLASS_PATH", "Smalltalk:TestSuite/BasicInterpreterTests");
     builder.option("som.TEST_CLASS", testClass);
     builder.option("som.TEST_SELECTOR", testSelector);
