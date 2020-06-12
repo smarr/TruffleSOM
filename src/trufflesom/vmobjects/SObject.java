@@ -25,6 +25,7 @@
 package trufflesom.vmobjects;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.DynamicObjectFactory;
 import com.oracle.truffle.api.object.Layout;
@@ -54,6 +55,7 @@ public final class SObject {
     return LAYOUT.createShape(SOBJECT_TYPE, clazz);
   }
 
+  @TruffleBoundary
   public static DynamicObject create(final DynamicObject instanceClass) {
     CompilerAsserts.neverPartOfCompilation("Basic create without factory caching");
     DynamicObjectFactory factory = SClass.getFactory(instanceClass);
