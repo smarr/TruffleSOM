@@ -59,7 +59,7 @@ public class TruffleAccessor {
     AbstractValueImpl valImpl = (AbstractValueImpl) implField.get(actualResult);
 
     Field langCtxField =
-        valImpl.getClass().getSuperclass().getSuperclass().getDeclaredField("languageContext");
+        valImpl.getClass().getSuperclass().getDeclaredField("languageContext");
     langCtxField.setAccessible(true);
 
     Object languageContext = langCtxField.get(valImpl);
