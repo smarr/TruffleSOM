@@ -294,12 +294,14 @@ public final class Lexer {
     state.incPtr();
 
     while (currentChar() != '\'') {
-      lexStringChar();
       while (endOfBuffer()) {
         if (fillBuffer() == -1) {
           return;
         }
         state.text.append('\n');
+      }
+      if (currentChar() != '\'') {
+        lexStringChar();
       }
     }
 
