@@ -23,5 +23,5 @@ benchmark_job:
   tags: [benchmarks, infinity]
   allow_failure: true
   script:
-    - ${ANT} jar
+    - ${ANT} compile
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf TruffleSOM
