@@ -154,9 +154,9 @@ GRAAL_JAVA_9_FLAGS = [
 SOM_ARGS = ['trufflesom.vm.Universe']
 
 # == Compiler Settings
-TWEAK_INLINING = ['-Dgraal.TruffleCompilationThreshold=191',
-                  '-Dgraal.TruffleInliningMaxCallerSize=10000',
-                  '-Dgraal.TruffleSplittingMaxCalleeSize=100000']
+TWEAK_INLINING = ['-Dpolyglot.engine.CompilationThreshold=191',
+                  '-Dpolyglot.engine.InliningMaxCallerSize=10000',
+                  '-Dpolyglot.engine.SplittingMaxCalleeSize=100000']
 
 GRAAL_JVMCI_FLAGS = ['-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
 
@@ -200,39 +200,39 @@ if args.debug:
     flags += ['-Xdebug',
               '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000']
 if not args.interpreter and (args.igv or args.igv_to_file):
-    flags += ['-Dgraal.Dump=Truffle,TruffleTree:2']
+    flags += ['-Dpolyglot.engine.Dump=Truffle,TruffleTree:2']
 if  not args.interpreter and args.only_igv:
-    flags += ['-Dgraal.MethodFilter=' + args.only_igv]
+    flags += ['-Dpolyglot.engine.MethodFilter=' + args.only_igv]
 if not args.interpreter and args.igv_to_file:
-    flags += ['-Dgraal.PrintIdealGraphFile=true']
+    flags += ['-Dpolyglot.engine.PrintIdealGraphFile=true']
 if args.low_level:
     flags += ['-XX:+UnlockDiagnosticVMOptions', '-XX:+LogCompilation',
               '-XX:+TraceDeoptimization']
 if not args.interpreter and (args.graal_profile or args.graal_profile_allocations or args.graal_profile_timed):
-    flags += ['-XX:JVMCICounterSize=5000', '-Dgraal.ProfileCompiledMethods=true',
+    flags += ['-XX:JVMCICounterSize=5000', '-Dpolyglot.engine.ProfileCompiledMethods=true',
               '-DProfileCompiledMethodsPhase.WITH_SECTION_HEADER=true']
     if args.graal_profile_allocations:
-        flags += ['-Dgraal.ProfileAllocations=true']
+        flags += ['-Dpolyglot.engine.ProfileAllocations=true']
     if args.graal_profile_timed:
-        flags += ['-Dgraal.TimedDynamicCounters=1000']
+        flags += ['-Dpolyglot.engine.TimedDynamicCounters=1000']
     if args.graal_profile:
-        flags += ['-Dgraal.BenchmarkDynamicCounters=out,completed,total']
+        flags += ['-Dpolyglot.engine.BenchmarkDynamicCounters=out,completed,total']
 
 if not args.interpreter and args.graal_branch_profile:
-    flags += ['-Dgraal.TruffleInstrumentBranches=true',
-              '-Dgraal.TruffleInstrumentBranchesFilter=*',
-              '-Dgraal.TruffleInstrumentBranchesPerInlineSite=true']
+    flags += ['-Dpolyglot.engine.InstrumentBranches=true',
+              '-Dpolyglot.engine.InstrumentBranchesFilter=*',
+              '-Dpolyglot.engine.InstrumentBranchesPerInlineSite=true']
 
 if not args.interpreter and args.perf_warnings:
-    flags += ['-Dgraal.TruffleCompilationExceptionsAreFatal=true',
-              '-Dgraal.TraceTrufflePerformanceWarnings=true',
-              '-Dgraal.TraceTruffleCompilation=true',
-              '-Dgraal.TraceTruffleCompilationDetails=true']
+    flags += ['-Dpolyglot.engine.CompilationExceptionsAreFatal=true',
+              '-Dpolyglot.engine.TracePerformanceWarnings=all',
+              '-Dpolyglot.engine.TraceCompilation=true',
+              '-Dpolyglot.engine.TraceCompilationDetails=true']
 if not args.interpreter and args.trace_invalidation:
-    flags += ['-Dgraal.TraceTruffleTransferToInterpreter=true',
-              '-Dgraal.TraceTruffleAssumptions=true']
+    flags += ['-Dpolyglot.engine.TraceTransferToInterpreter=true',
+              '-Dpolyglot.engine.TraceAssumptions=true']
 if not args.interpreter and args.only_compile:
-    flags.append("-Dgraal.TruffleCompileOnly=%s" % args.only_compile)
+    flags.append("-Dpolyglot.engine.CompileOnly=%s" % args.only_compile)
 if args.visual_vm:
     flags += ['-agentpath:/Users/smarr/Downloads/visualvm_138/profiler/lib/deployed/jdk16/mac/libprofilerinterface.jnilib=/Users/smarr/Downloads/visualvm_138/profiler/lib,5140']
 if args.assert_:
@@ -240,13 +240,13 @@ if args.assert_:
 else:
     flags += ['-dsa', '-da']
 if not args.interpreter and not args.background_compilation:
-    flags += ['-Dgraal.TruffleBackgroundCompilation=false']
+    flags += ['-Dpolyglot.engine.BackgroundCompilation=false']
 if not args.interpreter and args.no_compilation:
-    flags.append('-Dgraal.TruffleCompileOnly=__FAKE_METHOD_NON_EXISTING__')
+    flags.append('-Dpolyglot.engine.CompileOnly=__FAKE_METHOD_NON_EXISTING__')
 if not args.interpreter and args.no_trace and not args.perf_warnings:
-    flags += ['-Dgraal.TraceTruffleInlining=false', '-Dgraal.TraceTruffleCompilation=false']
+    flags += ['-Dpolyglot.engine.TraceInlining=false', '-Dpolyglot.engine.TraceCompilation=false']
 if not args.interpreter and not args.graph_pe:
-    flags += ['-Dgraal.GraphPE=false']
+    flags += ['-Dpolyglot.engine.GraphPE=false']
 if args.threads:
     flags += ['-Dsom.threads=%s' % args.threads ]
 if args.java_interpreter:
