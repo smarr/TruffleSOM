@@ -47,6 +47,7 @@
     <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists/jdk1.8" />
     <property name="truffle.dir"   location="${lib.dir}/truffle/truffle" />
     <property name="truffle.build" location="${truffle.dir}/mxbuild/dists/jdk1.8" />
+    <property name="vm.dir"        location="${lib.dir}/truffle/vm" />
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
     <property name="compiler.build" location="${truffle.dir}/mxbuild/dists/jdk1.8" />
     <property name="junit.version" value="4.12" />
@@ -170,6 +171,20 @@
         </exec>
         <travis target="truffle-libs" />
     </target>
+    
+    <target name="libgraal-jdk" depends="jvmci-libs,core-lib">
+        <travis target="libgraal-jdk" start="Build LibGraal-enabled JDK" />
+        <exec executable="${mx.cmd}" dir="${vm.dir}" failonerror="true">
+            <env key="JAVA_HOME" value="${jvmci.home}" />
+            <!-- REM: This needs to match ./som -->
+            <env key="DYNAMIC_IMPORTS" value="/substratevm,/tools,/truffle,/sdk,/compiler" />
+            <env key="FORCE_BASH_LAUNCHERS" value="true" />
+            <env key="DISABLE_LIBPOLYGLOT" value="true" />
+            <env key="EXCLUDE_COMPONENTS" value="svmag,nju,nic,ni,nil" />
+            <arg line="build"/>
+        </exec>
+        <travis target="libgraal-jdk" />
+    </target>
 
     <target name="bd-libs"> <!-- implicit dependency on truffle-libs -->
         <travis target="bd-libs" start="Build Black Diamonds" />
@@ -218,7 +233,7 @@
         <echo>${jvmci.home}</echo>
     </target>
 
-    <target name="libs" depends="core-lib,truffle-libs,bd-libs">
+    <target name="libs" depends="core-lib,bd-libs">
         <get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar"
             usetimestamp="true"
             dest="${lib.dir}/junit-${junit.version}.jar" />
@@ -266,14 +281,17 @@
         <travis target="compile" />
     </target>
 
-    <target name="compile" depends="libs,som-compile" description="Compile TruffleSOM">
+    <target name="compile-for-jar" depends="truffle-libs,libs,som-compile" description="Compile TruffleSOM without LibGraal">
+    </target>
+    
+    <target name="compile" depends="libs,libgraal-jdk,som-compile" description="Compile TruffleSOM with LibGraal">
     </target>
 
-    <target name="jar" depends="compile" description="Package as JAR">
+    <target name="jar" depends="compile-for-jar" description="Package as JAR">
         <jar destfile="${build.dir}/som.jar" basedir="${classes.dir}"></jar>
     </target>
 
-    <target name="test" depends="compile" description="Execute tests">
+    <target name="test" depends="compile-for-jar" description="Execute tests">
         <travis target="test" start="test" />
 
         <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed"
@@ -300,11 +318,12 @@
         <travis target="test" />
     </target>
 
-    <target name="som-test" depends="compile" description="Test som script">
+    <target name="som-test" depends="compile-for-jar" description="Test som script">
         <travis target="som-test" start="SOM Test" />
 
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
+            <arg value="--no-libgraal" />
             <arg value="-cp" />
             <arg value="Smalltalk" />
             <arg value="TestSuite/TestHarness.com" />
