@@ -24,4 +24,4 @@ benchmark_job:
   allow_failure: true
   script:
     - ${ANT} jar
-    - rebench --without-nice --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf TruffleSOM
+    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf TruffleSOM
