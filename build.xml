@@ -284,7 +284,7 @@
     <target name="compile-for-jar" depends="truffle-libs,libs,som-compile" description="Compile TruffleSOM without LibGraal">
     </target>
     
-    <target name="compile" depends="libs,libgraal-jdk,som-compile" description="Compile TruffleSOM with LibGraal">
+    <target name="compile" depends="libgraal-jdk,libs,som-compile" description="Compile TruffleSOM with LibGraal">
     </target>
 
     <target name="jar" depends="compile-for-jar" description="Package as JAR">
