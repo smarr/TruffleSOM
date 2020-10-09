@@ -191,7 +191,6 @@ public final class ReturnNonLocalNode extends ContextualNode {
         nonLocalReturnHandler.enter();
         if (!e.reachedTarget(marker)) {
           doPropagate.enter();
-          marker.frameNoLongerOnStack();
           throw e;
         } else {
           doCatch.enter();
