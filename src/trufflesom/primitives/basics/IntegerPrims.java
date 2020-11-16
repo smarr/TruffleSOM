@@ -31,6 +31,7 @@ public abstract class IntegerPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitSignedValue")
+  @Primitive(selector = "as32BitSignedValue")
   public abstract static class As32BitSignedValue extends UnaryExpressionNode {
     @Specialization
     public final long doLong(final long receiver) {
@@ -40,6 +41,7 @@ public abstract class IntegerPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitUnsignedValue")
+  @Primitive(selector = "as32BitUnsignedValue")
   public abstract static class As32BitUnsignedValue extends UnaryExpressionNode {
     @Specialization
     public final long doLong(final long receiver) {
@@ -103,11 +105,52 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "min:")
+  @Primitive(selector = "min:")
+  public abstract static class MinIntPrim extends ArithmeticPrim {
+    @Specialization
+    public final long doLong(final long receiver, final long right) {
+      return Math.min(receiver, right);
+    }
+
+    @Specialization
+    public BigInteger doLongBig(final long left, final BigInteger right) {
+      return BigInteger.valueOf(left).min(right);
+    }
+
+    @Specialization
+    public BigInteger doBigLong(final BigInteger left, final long right) {
+      return left.min(BigInteger.valueOf(right));
+    }
+
+    @Specialization
+    public BigInteger doBig(final BigInteger left, final BigInteger right) {
+      return left.min(right);
+    }
+  }
+
+  @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "max:")
+  @Primitive(selector = "max:")
   public abstract static class MaxIntPrim extends ArithmeticPrim {
     @Specialization
     public final long doLong(final long receiver, final long right) {
       return Math.max(receiver, right);
+    }
+
+    @Specialization
+    public BigInteger doLongBig(final long left, final BigInteger right) {
+      return BigInteger.valueOf(left).max(right);
+    }
+
+    @Specialization
+    public BigInteger doBigLong(final BigInteger left, final long right) {
+      return left.max(BigInteger.valueOf(right));
+    }
+
+    @Specialization
+    public BigInteger doBig(final BigInteger left, final BigInteger right) {
+      return left.max(right);
     }
   }
 

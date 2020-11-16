@@ -17,7 +17,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.object"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.dsl.processor"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.object"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.object.basic"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.profiles"/>
 	<classpathentry kind="src" path="/BlackDiamonds"/>
 	<classpathentry kind="output" path="build/classes"/>
