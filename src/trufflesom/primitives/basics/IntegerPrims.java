@@ -31,6 +31,7 @@ public abstract class IntegerPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitSignedValue")
+  @Primitive(selector = "as32BitSignedValue")
   public abstract static class As32BitSignedValue extends UnaryExpressionNode {
     @Specialization
     public final long doLong(final long receiver) {
@@ -40,6 +41,7 @@ public abstract class IntegerPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitUnsignedValue")
+  @Primitive(selector = "as32BitUnsignedValue")
   public abstract static class As32BitUnsignedValue extends UnaryExpressionNode {
     @Specialization
     public final long doLong(final long receiver) {
