@@ -105,6 +105,31 @@ public abstract class IntegerPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "min:")
+  @Primitive(selector = "min:")
+  public abstract static class MinIntPrim extends ArithmeticPrim {
+    @Specialization
+    public final long doLong(final long receiver, final long right) {
+      return Math.min(receiver, right);
+    }
+
+    @Specialization
+    public BigInteger doLongBig(final long left, final BigInteger right) {
+      return BigInteger.valueOf(left).min(right);
+    }
+
+    @Specialization
+    public BigInteger doBigLong(final BigInteger left, final long right) {
+      return left.min(BigInteger.valueOf(right));
+    }
+
+    @Specialization
+    public BigInteger doBig(final BigInteger left, final BigInteger right) {
+      return left.min(right);
+    }
+  }
+
+  @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "max:")
   @Primitive(selector = "max:")
   public abstract static class MaxIntPrim extends ArithmeticPrim {
