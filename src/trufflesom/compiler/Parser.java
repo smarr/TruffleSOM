@@ -769,12 +769,12 @@ public class Parser {
       default:
         boolean isNegative = isNegativeNumber();
         if (sym == Integer) {
-          long value = literalInteger(isNegative);
-          if (value < Long.MIN_VALUE || value > Long.MAX_VALUE) {
+          Object value = literalInteger(isNegative);
+          if (value instanceof BigInteger) {
             return new BigIntegerLiteralNode(
-                BigInteger.valueOf(value)).initialize(getSource(coord));
+                (BigInteger) value).initialize(getSource(coord));
           } else {
-            return new IntegerLiteralNode(value).initialize(getSource(coord));
+            return new IntegerLiteralNode((Long) value).initialize(getSource(coord));
           }
         } else {
           if (sym != Double) {
@@ -783,6 +783,38 @@ public class Parser {
           }
           return new DoubleLiteralNode(literalDouble(isNegative)).initialize(getSource(coord));
         }
+    }
+  }
+
+  private Object getObjectForCurrentLiteral() throws ParseError {
+    switch (sym) {
+      case Pound:
+        peekForNextSymbolFromLexerIfNecessary();
+
+        if (nextSym == NewTerm) {
+          return literalArray();
+        } else {
+          return literalSymbol();
+        }
+      case STString:
+        return literalString();
+      case Minus:
+        boolean isNegative = isNegativeNumber();
+        if (sym == Integer) {
+          return literalInteger(isNegative);
+        } else if (sym == Double) {
+          return literalDouble(isNegativeNumber());
+        }
+        throw new ParseError("Could not parse literal array value", sym, this);
+      case Integer:
+        return literalInteger(isNegativeNumber());
+      case Double:
+        return literalDouble(isNegativeNumber());
+      case Identifier:
+        expect(Identifier);
+        return universe.getGlobal(universe.symbolFor(new String(text)));
+      default:
+        throw new ParseError("Could not parse literal array value", NONE, this);
     }
   }
 
@@ -795,7 +827,7 @@ public class Parser {
     return isNegative;
   }
 
-  private long literalInteger(final boolean isNegative) throws ParseError {
+  private Object literalInteger(final boolean isNegative) throws ParseError {
     try {
       long i = Long.parseLong(text);
       if (isNegative) {
@@ -804,8 +836,17 @@ public class Parser {
       expect(Integer);
       return i;
     } catch (NumberFormatException e) {
-      throw new ParseError("Could not parse integer. Expected a number but " +
-          "got '" + text + "'", NONE, this);
+      try {
+        BigInteger big = new BigInteger(text);
+        if (isNegative) {
+          big = big.negate();
+        }
+        expect(Integer);
+        return big;
+      } catch (NumberFormatException e2) {
+        throw new ParseError("Could not parse integer. Expected a number but " +
+            "got '" + text + "'", NONE, this);
+      }
     }
   }
 
@@ -844,30 +885,6 @@ public class Parser {
     }
     expect(EndTerm);
     return SArray.create(literals.toArray());
-  }
-
-  private Object getObjectForCurrentLiteral() throws ParseError {
-    switch (sym) {
-      case Pound:
-        peekForNextSymbolFromLexerIfNecessary();
-
-        if (nextSym == NewTerm) {
-          return literalArray();
-        } else {
-          return literalSymbol();
-        }
-      case STString:
-        return literalString();
-      case Integer:
-        return literalInteger(isNegativeNumber());
-      case Double:
-        return literalDouble(isNegativeNumber());
-      case Identifier:
-        expect(Identifier);
-        return universe.getGlobal(universe.symbolFor(new String(text)));
-      default:
-        throw new ParseError("Could not parse literal array value", NONE, this);
-    }
   }
 
   private String literalString() throws ParseError {
