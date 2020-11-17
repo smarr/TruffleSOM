@@ -37,6 +37,11 @@ public abstract class IntegerPrims {
     public final long doLong(final long receiver) {
       return (int) receiver;
     }
+
+    @Specialization
+    public final long doBig(final BigInteger receiver) {
+      return receiver.intValue();
+    }
   }
 
   @GenerateNodeFactory
@@ -46,6 +51,11 @@ public abstract class IntegerPrims {
     @Specialization
     public final long doLong(final long receiver) {
       return Integer.toUnsignedLong((int) receiver);
+    }
+
+    @Specialization
+    public final long doBig(final BigInteger receiver) {
+      return Integer.toUnsignedLong(receiver.intValue());
     }
   }
 
@@ -171,11 +181,16 @@ public abstract class IntegerPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "abs", selector = "abs",
-      receiverType = Long.class)
+      receiverType = {Long.class, BigInteger.class})
   public abstract static class AbsPrim extends UnaryExpressionNode {
     @Specialization
     public final long doLong(final long receiver) {
       return Math.abs(receiver);
+    }
+
+    @Specialization
+    public final BigInteger doBig(final BigInteger receiver) {
+      return receiver.abs();
     }
   }
 }
