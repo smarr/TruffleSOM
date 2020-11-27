@@ -183,9 +183,21 @@ public abstract class IntegerPrims {
   @Primitive(className = "Integer", primitive = "abs", selector = "abs",
       receiverType = {Long.class, BigInteger.class})
   public abstract static class AbsPrim extends UnaryExpressionNode {
-    @Specialization
+    protected static final boolean minLong(final long receiver) {
+      return receiver == Long.MIN_VALUE;
+    }
+
+    /**
+     * Math.abs(MIN_VALUE) == MIN_VALUE, which is wrong.
+     */
+    @Specialization(guards = "!minLong(receiver)")
     public final long doLong(final long receiver) {
       return Math.abs(receiver);
+    }
+
+    @Specialization(guards = "minLong(receiver)")
+    public final BigInteger doLongMinValue(final long receiver) {
+      return BigInteger.valueOf(Long.MIN_VALUE).abs();
     }
 
     @Specialization
