@@ -51,6 +51,16 @@ public abstract class MultiplicationPrim extends ArithmeticPrim {
 
   @Specialization
   public final double doDouble(final double left, final long right) {
-    return doDouble(left, (double) right);
+    return left * right;
+  }
+
+  @Specialization
+  public final Object doDouble(final BigInteger left, final double right) {
+    return left.doubleValue() * right;
+  }
+
+  @Specialization
+  public final Object doDouble(final double left, final BigInteger right) {
+    return left * right.doubleValue();
   }
 }
