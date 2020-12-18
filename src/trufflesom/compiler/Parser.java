@@ -803,7 +803,7 @@ public class Parser {
         if (sym == Integer) {
           return literalInteger(isNegative);
         } else if (sym == Double) {
-          return literalDouble(isNegativeNumber());
+          return literalDouble(isNegative);
         }
         throw new ParseError("Could not parse literal array value", sym, this);
       case Integer:
