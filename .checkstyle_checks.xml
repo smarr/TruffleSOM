@@ -33,9 +33,6 @@
       <property name="format" value="^[A-Z][_a-zA-Z0-9]*$"/>
     </module>
     <module name="RedundantImport"/>
-    <module name="LineLength">
-      <property name="max" value="250"/>
-    </module>
     <module name="MethodParamPad"/>
     <module name="NoWhitespaceAfter">
       <property name="tokens" value="ARRAY_INIT,BNOT,DEC,DOT,INC,LNOT,UNARY_MINUS,UNARY_PLUS"/>
@@ -154,6 +151,9 @@
       <property name="onCommentFormat" value="Checkstyle: resume"/>
       <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Disable all checks"/>
     </module>
+  </module>
+  <module name="LineLength">
+    <property name="max" value="250"/>
   </module>
   <module name="SuppressionFilter">
     <property name="file" value="${basedir}/.checkstyle_suppressions.xml"/>

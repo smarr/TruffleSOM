@@ -53,7 +53,8 @@
     <property name="truffle.build" location="${truffle.dir}/mxbuild/dists/jdk1.8" />
     <property name="junit.version" value="4.12" />
 
-    <property name="checkstyle.version" value="8.11" />
+    <property name="checkstyle.version" value="8.36" />
+
     <property name="jvmci.home"  location="${lib.dir}/jvmci${home.ext}" />
 
     <property name="mx.cmd" value="../../mx/mx" />
