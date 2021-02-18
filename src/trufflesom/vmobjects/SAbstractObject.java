@@ -1,6 +1,7 @@
 package trufflesom.vmobjects;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
@@ -38,12 +39,14 @@ public abstract class SAbstractObject implements TruffleObject {
     return invokable.invoke(arguments);
   }
 
+  @TruffleBoundary
   public static final Object sendUnknownGlobal(final Object receiver,
       final SSymbol globalName, final Universe universe) {
     Object[] arguments = {receiver, globalName};
     return send("unknownGlobal:", arguments, universe);
   }
 
+  @TruffleBoundary
   public static final Object sendEscapedBlock(final Object receiver,
       final SBlock block, final Universe universe) {
     Object[] arguments = {receiver, block};

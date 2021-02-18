@@ -2,12 +2,12 @@ package trufflesom.interpreter.nodes.dispatch;
 
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
+
 import trufflesom.primitives.basics.BlockPrims.ValuePrimitiveNode;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
-
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
 
 
 public final class UninitializedValuePrimDispatchNode

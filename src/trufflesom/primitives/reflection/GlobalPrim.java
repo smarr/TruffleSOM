@@ -1,5 +1,6 @@
 package trufflesom.primitives.reflection;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
@@ -59,6 +60,7 @@ public abstract class GlobalPrim extends BinarySystemOperation {
       return specialize(argument).getGlobal(frame, argument);
     }
 
+    @TruffleBoundary
     private GetGlobalNode specialize(final SSymbol argument) {
       if (depth < INLINE_CACHE_SIZE) {
         return replace(new CachedGetGlobal(argument, depth, sourceSection, universe));

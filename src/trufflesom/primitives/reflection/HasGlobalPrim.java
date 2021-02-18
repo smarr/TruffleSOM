@@ -1,5 +1,6 @@
 package trufflesom.primitives.reflection;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
@@ -50,6 +51,7 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
     }
 
     @Override
+    @TruffleBoundary
     public boolean hasGlobal(final SSymbol argument) {
       boolean hasGlobal = universe.hasGlobal(argument);
 
