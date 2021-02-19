@@ -62,7 +62,6 @@ import static trufflesom.interpreter.SNodeFactory.createGlobalRead;
 import static trufflesom.interpreter.SNodeFactory.createMessageSend;
 import static trufflesom.interpreter.SNodeFactory.createSequence;
 
-import java.io.Reader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +86,7 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
+import trufflesom.primitives.Primitives;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -151,7 +151,7 @@ public class Parser {
       super(message);
       this.sourceCoordinate = parser.getCoordinate();
       this.text = parser.text;
-      this.rawBuffer = parser.lexer.getRawBuffer();
+      this.rawBuffer = parser.lexer.getCurrentLine();
       this.fileName = parser.source.getName();
       this.expected = expected;
       this.found = parser.sym;
@@ -214,22 +214,24 @@ public class Parser {
     }
   }
 
-  public Parser(final Reader reader, final long fileSize, final Source source,
+  public Parser(final String content, final Source source,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe,
       final Universe universe) {
     this.universe = universe;
     this.source = source;
-    this.inlinableNodes = universe.getInlinableNodes();
+    this.inlinableNodes = Primitives.inlinableNodes;
     this.structuralProbe = structuralProbe;
 
     sym = NONE;
-    lexer = new Lexer(reader, fileSize);
+    lexer = new Lexer(content);
     nextSym = NONE;
     getSymbolFromLexer();
   }
 
   protected SourceCoordinate getCoordinate() {
-    return lexer.getStartCoordinate();
+    SourceCoordinate coord = lexer.getStartCoordinate();
+    // getSource(coord);
+    return coord;
   }
 
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
@@ -362,8 +364,8 @@ public class Parser {
 
   protected SourceSection getSource(final SourceCoordinate coord) {
     assert lexer.getNumberOfCharactersRead() - coord.charIndex >= 0;
-    return source.createSection(coord.startLine, coord.startColumn,
-        lexer.getNumberOfCharactersRead() - coord.charIndex);
+    return source.createSection(coord.charIndex,
+        Math.max(lexer.getNumberOfNonWhiteCharsRead() - coord.charIndex, 0));
   }
 
   private ExpressionNode method(final MethodGenerationContext mgenc)

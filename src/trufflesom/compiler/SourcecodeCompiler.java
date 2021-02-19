@@ -25,9 +25,7 @@
 package trufflesom.compiler;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
@@ -54,11 +52,10 @@ public class SourcecodeCompiler {
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
-    FileReader stream = new FileReader(fname);
-
     File f = new File(fname);
     Source source = SomLanguage.getSource(f);
-    Parser parser = new Parser(stream, f.length(), source, probe, language.getUniverse());
+    Parser parser = new Parser(source.getCharacters().toString(), source, probe,
+        language.getUniverse());
 
     SClass result = compile(parser, systemClass, language.getUniverse());
 
@@ -77,8 +74,7 @@ public class SourcecodeCompiler {
   public SClass compileClass(final String stmt, final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws ProgramDefinitionError {
-    Parser parser =
-        new Parser(new StringReader(stmt), stmt.length(), null, probe, language.getUniverse());
+    Parser parser = new Parser(stmt, null, probe, language.getUniverse());
 
     SClass result = compile(parser, systemClass, language.getUniverse());
     return result;
