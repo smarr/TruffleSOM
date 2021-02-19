@@ -72,6 +72,8 @@
     <path id="common.cp">
         <pathelement location="${classes.dir}" />
         <pathelement location="${bd.dir}/build/classes" />
+
+        <pathelement location="${svm.build}/svm-core.jar" />
     </path>
     
     <path id="som.cp">
@@ -368,6 +370,43 @@
         <travis target="som-test" />
     </target>
 
-    <target name="tests" depends="test, som-test" />
+    <target name="native-tests" depends="native">
+      <travis target="native-tests" start="Run TruffleSOM native image Tests" />
 
+      <exec executable="${src.dir}/../som-native" failonerror="true">
+          <arg value="-cp" />
+          <arg value="Smalltalk" />
+          <arg value="TestSuite/TestHarness.com" />
+      </exec>
+
+      <travis target="native-tests" />
+    </target>
+    
+    <target name="tests" depends="test,som-test" />
+    
+    <target name="native" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native"></target>
+
+    <target name="compile-native">
+      <travis target="native" start="Build Native Image" />
+
+      <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">
+        <env key="JAVA_HOME" value="${jvmci.home}" />
+        <arg line="native-image" />
+        <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
+        <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
+
+        <!-- <arg line="-H:+PrintRuntimeCompileMethods" /> -->
+        <!-- <arg line="-H:+PrintMethodHistogram" />
+             <arg line="-H:+RuntimeAssertions" />
+             <arg line="-H:+EnforceMaxRuntimeCompileMethods" /> -->
+
+        <arg line="-cp ${ant.refid:common.cp}" />
+        <arg line="trufflesom.vm.Universe" />
+        <arg line="som-native" />
+      </exec>
+
+      <move file="${svm.dir}/som-native" todir="${src.dir}/../" />
+
+      <travis target="native" />
+    </target>
 </project>
