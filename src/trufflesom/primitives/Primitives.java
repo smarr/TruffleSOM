@@ -35,6 +35,8 @@ import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.basic.IdProvider;
+import bd.inlining.InlinableNodes;
 import bd.primitives.PrimitiveLoader;
 import bd.primitives.Specializer;
 import bd.tools.structure.StructuralProbe;
@@ -110,6 +112,9 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, SSymbol> {
+
+  public static final InlinableNodes<SSymbol> inlinableNodes;
+  private static final StaticSymbolProvider   idProvider;
 
   private static List<Specializer<Universe, ExpressionNode, SSymbol>> specializer =
       initSpecializers();
@@ -303,5 +308,37 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     factories.add(IntToDoInlinedLiteralsNodeFactory.getInstance());
 
     return factories;
+  }
+
+  private static class StaticSymbolProvider implements IdProvider<SSymbol> {
+    private final HashMap<String, SSymbol> symbolTable = new HashMap<>();
+
+    @Override
+    public SSymbol getId(final String id) {
+      String interned = id.intern();
+      // Lookup the symbol in the symbol table
+      SSymbol result = symbolTable.get(interned);
+      if (result != null) {
+        return result;
+      }
+
+      result = new SSymbol(interned);
+      symbolTable.put(interned, result);
+      return result;
+    }
+
+    public void addSymbols(final HashMap<String, SSymbol> symbolTable) {
+      symbolTable.putAll(this.symbolTable);
+    }
+  }
+
+  public static void initializeStaticSymbols(final HashMap<String, SSymbol> symbolTable) {
+    idProvider.addSymbols(symbolTable);
+  }
+
+  static {
+    idProvider = new StaticSymbolProvider();
+    inlinableNodes =
+        new InlinableNodes<>(idProvider, getInlinableNodes(), getInlinableFactories());
   }
 }
