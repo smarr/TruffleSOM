@@ -51,6 +51,7 @@ import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -123,6 +124,8 @@ public final class Universe implements IdProvider<SSymbol> {
   }
 
   public static Value eval(final String[] arguments) {
+    StorageAnalyzer.initAccessors();
+
     Builder builder = createContextBuilder();
     builder.arguments(SomLanguage.LANG_ID, arguments);
 

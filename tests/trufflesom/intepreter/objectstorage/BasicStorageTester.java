@@ -4,7 +4,9 @@ import java.util.Arrays;
 
 import org.junit.Ignore;
 
+import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.interpreter.objectstorage.StorageLocation;
+import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 
@@ -27,12 +29,14 @@ public class BasicStorageTester {
   }
 
   public static void main(final String[] args) {
-    System.out.println("BasicStorageTester start tests.");
-    System.out.println();
+    StorageAnalyzer.initAccessors();
+
+    Universe.println("BasicStorageTester start tests.");
+    Universe.println();
+
+    testDirectStorage();
 
     SObject obj = new STestObject(100);
-
-    testDirectStorage(obj);
 
     testDirectDouble(obj);
     testDirectLong(obj);
@@ -57,32 +61,34 @@ public class BasicStorageTester {
       testObject(objObj, i, i);
     }
 
-    System.out.println("BasicStorageTester completed.");
+    Universe.println("BasicStorageTester completed.");
 
     if (someAssertionsFailed) {
-      System.out.println("Some tests failed.");
+      Universe.println("Some tests failed.");
       System.exit(1);
     }
   }
 
-  private static void testDirectStorage(final SObject obj) {
-    System.out.println("\nStart testDirectStorage");
-    System.out.println("\nLong Fields");
+  private static void testDirectStorage() {
+    SObject obj = new STestObject(5);
+    Universe.println("\nStart testDirectStorage");
+    Universe.println("\nLong Fields");
     for (int i = 0; i < SObject.NUM_PRIMITIVE_FIELDS; i++) {
       testLong(obj, i, i).debugPrint(obj);
     }
 
-    System.out.println("\nDouble Fields");
+    obj = new STestObject(5);
+    Universe.println("\nDouble Fields");
     for (int i = 0; i < SObject.NUM_PRIMITIVE_FIELDS; i++) {
       testDouble(obj, i, i).debugPrint(obj);
     }
 
-    System.out.println("\nObject Fields");
+    Universe.println("\nObject Fields");
     for (int i = 0; i < SObject.NUM_PRIMITIVE_FIELDS; i++) {
       testObject(obj, i, i).debugPrint(obj);
     }
 
-    System.out.println("Done testDirectStorage");
+    Universe.println("Done testDirectStorage");
   }
 
   private static void testDirectDouble(final SObject obj) {
@@ -199,28 +205,28 @@ public class BasicStorageTester {
 
   public static void assertNil(final Object actual) {
     if (Nil.nilObject != actual) {
-      System.out.println("Assert failed. Expected nil, but got actual: " + actual);
+      Universe.println("Assert failed. Expected nil, but got actual: " + actual);
       someAssertionsFailed = true;
     }
   }
 
   public static void assertEquals(final long expected, final long actual) {
     if (expected != actual) {
-      System.out.println("Assert failed. Expected: " + expected + " actual: " + actual);
+      Universe.println("Assert failed. Expected: " + expected + " actual: " + actual);
       someAssertionsFailed = true;
     }
   }
 
   public static void assertEquals(final double expected, final double actual) {
     if (expected != actual) {
-      System.out.println("Assert failed. Expected: " + expected + " actual: " + actual);
+      Universe.println("Assert failed. Expected: " + expected + " actual: " + actual);
       someAssertionsFailed = true;
     }
   }
 
   public static void assertIs(final Object expected, final Object actual) {
     if (expected != actual) {
-      System.out.println("Assert failed. Expected: " + expected + " actual: " + actual);
+      Universe.println("Assert failed. Expected: " + expected + " actual: " + actual);
       someAssertionsFailed = true;
     }
   }

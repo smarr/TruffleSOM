@@ -223,21 +223,6 @@ public class SObject extends SAbstractObject {
     return new SObject(numFields);
   }
 
-  private static final long FIRST_OBJECT_FIELD_OFFSET = getFirstObjectFieldOffset();
-  private static final long FIRST_PRIM_FIELD_OFFSET   = getFirstPrimFieldOffset();
-  private static final long OBJECT_FIELD_LENGTH       = getObjectFieldLength();
-  private static final long PRIM_FIELD_LENGTH         = getPrimFieldLength();
-
-  public static long getObjectFieldOffset(final int fieldIndex) {
-    assert 0 <= fieldIndex && fieldIndex < NUM_OBJECT_FIELDS;
-    return FIRST_OBJECT_FIELD_OFFSET + fieldIndex * OBJECT_FIELD_LENGTH;
-  }
-
-  public static long getPrimitiveFieldOffset(final int fieldIndex) {
-    assert 0 <= fieldIndex && fieldIndex < NUM_PRIMITIVE_FIELDS;
-    return FIRST_PRIM_FIELD_OFFSET + fieldIndex * PRIM_FIELD_LENGTH;
-  }
-
   public static int getPrimitiveFieldMask(final int fieldIndex) {
     assert 0 <= fieldIndex && fieldIndex < 32; // this limits the number of object fields for
                                                // the moment...
@@ -294,26 +279,6 @@ public class SObject extends SAbstractObject {
 
     StorageLocation location = getLocation(index);
     location.write(this, value);
-  }
-
-  private static long getFirstObjectFieldOffset() {
-    CompilerAsserts.neverPartOfCompilation("SObject.getFirstObjectFieldOffset()");
-    try {
-      final Field firstField = SObject.class.getDeclaredField("field1");
-      return StorageLocation.getFieldOffset(firstField);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static long getFirstPrimFieldOffset() {
-    CompilerAsserts.neverPartOfCompilation("SObject.getFirstPrimFieldOffset()");
-    try {
-      final Field firstField = SObject.class.getDeclaredField("primField1");
-      return StorageLocation.getFieldOffset(firstField);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private static long getObjectFieldLength() {
