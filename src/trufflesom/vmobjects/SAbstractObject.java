@@ -26,7 +26,7 @@ public abstract class SAbstractObject implements TruffleObject {
     return "a " + clazz.getName().getString();
   }
 
-  public static final Object send(
+  private static Object send(
       final String selectorString,
       final Object[] arguments, final Universe universe) {
     CompilerAsserts.neverPartOfCompilation("SAbstractObject.send()");
