@@ -18,6 +18,7 @@ build_and_test_job:
   tags: [benchmarks, infinity]
   script:
     - ${ANT} tests
+    - ${ANT} native-obj-storage-test
 
 benchmark_job:
   stage: benchmark

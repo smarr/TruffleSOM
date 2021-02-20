@@ -409,4 +409,25 @@
 
       <travis target="native" />
     </target>
+    
+    <target name="native-obj-storage-test" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native-obj-storage-test"></target>
+
+    <target name="compile-native-obj-storage-test">
+      <travis target="native" start="Build Native Image" />
+
+      <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">
+        <env key="JAVA_HOME" value="${jvmci.home}" />
+        <arg line="native-image" />
+        <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
+        <arg line="-cp ${ant.refid:common.cp}" />
+        <arg line="trufflesom.intepreter.objectstorage.BasicStorageTester" />
+        <arg line="som-obj-storage-tester" />
+      </exec>
+
+      <move file="${svm.dir}/som-obj-storage-tester" todir="${src.dir}/../" />
+            
+      <exec executable="${src.dir}/../som-obj-storage-tester" failonerror="true" />
+
+      <travis target="native" />
+    </target>
 </project>

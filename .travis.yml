@@ -18,3 +18,4 @@ script:
   - $ANT tests
   - $ANT eclipseformat
   - $ANT checkstyle
+  - $ANT native-obj-storage-test

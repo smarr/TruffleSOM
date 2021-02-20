@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+import sun.misc.Unsafe;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -17,7 +18,6 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteLongFieldNode
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteObjectFieldNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
-import sun.misc.Unsafe;
 
 
 public abstract class StorageLocation {
@@ -141,6 +141,11 @@ public abstract class StorageLocation {
       throw new RuntimeException("we should not get here, should we?");
       // return new UninitializedWriteFieldNode(fieldIndex);
     }
+
+    @Override
+    public void debugPrint(final SObject obj) {
+      System.out.println("UnwrittenStorageLocation: fieldIdx=" + this.fieldIndex);
+    }
   }
 
   public abstract static class AbstractObjectStorageLocation extends StorageLocation {
@@ -191,6 +196,12 @@ public abstract class StorageLocation {
       assert value != null;
       unsafe.putObject(obj, fieldOffset, value);
     }
+
+    @Override
+    public void debugPrint(final SObject obj) {
+      System.out.println("ObjectDirectStorageLocation: fieldIdx=" + this.fieldIndex
+          + " fieldOffset=" + fieldOffset);
+    }
   }
 
   public static final class ObjectArrayStorageLocation extends AbstractObjectStorageLocation {
@@ -218,6 +229,12 @@ public abstract class StorageLocation {
       assert value != null;
       Object[] arr = obj.getExtensionObjFields();
       arr[extensionIndex] = value;
+    }
+
+    @Override
+    public void debugPrint(final SObject obj) {
+      System.out.println("ObjectArrayStorageLocation: fieldIdx=" + this.fieldIndex
+          + " fieldOffset=" + extensionIndex);
     }
   }
 
@@ -307,6 +324,12 @@ public abstract class StorageLocation {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
       return new WriteDoubleFieldNode(fieldIndex, layout, next);
     }
+
+    @Override
+    public void debugPrint(final SObject obj) {
+      System.out.println("DoubleDirectStorageLocation: fieldIdx=" + this.fieldIndex
+          + " primMask=" + mask + " fieldOffset=" + offset);
+    }
   }
 
   public static final class LongDirectStoreLocation extends PrimitiveDirectStoreLocation
@@ -365,6 +388,12 @@ public abstract class StorageLocation {
         final ObjectLayout layout, final AbstractWriteFieldNode next) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
       return new WriteLongFieldNode(fieldIndex, layout, next);
+    }
+
+    @Override
+    public void debugPrint(final SObject obj) {
+      System.out.println("LongDirectStorageLocation: fieldIdx=" + this.fieldIndex
+          + " primMask=" + mask + " fieldOffset=" + offset);
     }
   }
 
@@ -437,6 +466,12 @@ public abstract class StorageLocation {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
       return new WriteLongFieldNode(fieldIndex, layout, next);
     }
+
+    @Override
+    public void debugPrint(final SObject obj) {
+      System.out.println("LongArrayStorageLocation: fieldIdx=" + this.fieldIndex
+          + " primMask=" + mask + " extensionIndex=" + extensionIndex);
+    }
   }
 
   public static final class DoubleArrayStoreLocation extends PrimitiveArrayStoreLocation
@@ -504,5 +539,13 @@ public abstract class StorageLocation {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
       return new WriteDoubleFieldNode(fieldIndex, layout, next);
     }
+
+    @Override
+    public void debugPrint(final SObject obj) {
+      System.out.println("DoubleArrayStorageLocation: fieldIdx=" + this.fieldIndex
+          + " primMask=" + mask + " extensionIndex=" + extensionIndex);
+    }
   }
+
+  public abstract void debugPrint(SObject obj);
 }
