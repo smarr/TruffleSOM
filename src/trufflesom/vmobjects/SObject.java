@@ -48,20 +48,20 @@ public class SObject extends SAbstractObject {
   public static final int NUM_PRIMITIVE_FIELDS = 5;
   public static final int NUM_OBJECT_FIELDS    = 5;
 
-  @SuppressWarnings("unused") private long primField1;
-  @SuppressWarnings("unused") private long primField2;
-  @SuppressWarnings("unused") private long primField3;
-  @SuppressWarnings("unused") private long primField4;
-  @SuppressWarnings("unused") private long primField5;
+  protected long primField1;
+  protected long primField2;
+  protected long primField3;
+  protected long primField4;
+  protected long primField5;
 
-  @SuppressWarnings("unused") private Object field1;
-  @SuppressWarnings("unused") private Object field2;
-  @SuppressWarnings("unused") private Object field3;
-  @SuppressWarnings("unused") private Object field4;
-  @SuppressWarnings("unused") private Object field5;
+  protected Object field1;
+  protected Object field2;
+  protected Object field3;
+  protected Object field4;
+  protected Object field5;
 
-  @CompilationFinal(dimensions = 0) private long[]   extensionPrimFields;
-  @CompilationFinal(dimensions = 0) private Object[] extensionObjFields;
+  @CompilationFinal(dimensions = 0) protected long[]   extensionPrimFields;
+  @CompilationFinal(dimensions = 0) protected Object[] extensionObjFields;
 
   // we manage the layout entirely in the class, but need to keep a copy here
   // to know in case the layout changed that we can update the instances lazily
@@ -223,21 +223,6 @@ public class SObject extends SAbstractObject {
     return new SObject(numFields);
   }
 
-  private static final long FIRST_OBJECT_FIELD_OFFSET = getFirstObjectFieldOffset();
-  private static final long FIRST_PRIM_FIELD_OFFSET   = getFirstPrimFieldOffset();
-  private static final long OBJECT_FIELD_LENGTH       = getObjectFieldLength();
-  private static final long PRIM_FIELD_LENGTH         = getPrimFieldLength();
-
-  public static long getObjectFieldOffset(final int fieldIndex) {
-    assert 0 <= fieldIndex && fieldIndex < NUM_OBJECT_FIELDS;
-    return FIRST_OBJECT_FIELD_OFFSET + fieldIndex * OBJECT_FIELD_LENGTH;
-  }
-
-  public static long getPrimitiveFieldOffset(final int fieldIndex) {
-    assert 0 <= fieldIndex && fieldIndex < NUM_PRIMITIVE_FIELDS;
-    return FIRST_PRIM_FIELD_OFFSET + fieldIndex * PRIM_FIELD_LENGTH;
-  }
-
   public static int getPrimitiveFieldMask(final int fieldIndex) {
     assert 0 <= fieldIndex && fieldIndex < 32; // this limits the number of object fields for
                                                // the moment...
@@ -294,26 +279,6 @@ public class SObject extends SAbstractObject {
 
     StorageLocation location = getLocation(index);
     location.write(this, value);
-  }
-
-  private static long getFirstObjectFieldOffset() {
-    CompilerAsserts.neverPartOfCompilation("SObject.getFirstObjectFieldOffset()");
-    try {
-      final Field firstField = SObject.class.getDeclaredField("field1");
-      return StorageLocation.getFieldOffset(firstField);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static long getFirstPrimFieldOffset() {
-    CompilerAsserts.neverPartOfCompilation("SObject.getFirstPrimFieldOffset()");
-    try {
-      final Field firstField = SObject.class.getDeclaredField("primField1");
-      return StorageLocation.getFieldOffset(firstField);
-    } catch (NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private static long getObjectFieldLength() {

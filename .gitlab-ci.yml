@@ -17,13 +17,13 @@ build_and_test_job:
   stage: build-and-test
   tags: [benchmarks, infinity]
   script:
-    - ${ANT} tests
+    - ${ANT} tests native-obj-storage-test native-tests
 
 benchmark_job:
   stage: benchmark
   tags: [benchmarks, infinity]
   allow_failure: true
   script:
-    - ${ANT} compile
+    - ${ANT} compile native
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf TruffleSOM
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --report-completion rebench.conf

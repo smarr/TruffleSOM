@@ -1,5 +1,6 @@
 package trufflesom.primitives.basics;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
@@ -72,6 +73,8 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "fullGC")
   public abstract static class FullGCPrim extends UnarySystemOperation {
+
+    @TruffleBoundary
     @Specialization(guards = "receiver == universe.getSystemObject()")
     public final Object doSObject(final SObject receiver) {
       System.gc();

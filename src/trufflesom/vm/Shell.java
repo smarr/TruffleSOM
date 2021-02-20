@@ -28,6 +28,8 @@ package trufflesom.vm;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -42,6 +44,7 @@ public class Shell {
     this.universe = universe;
   }
 
+  @TruffleBoundary
   public Object start() {
     BufferedReader in;
     String stmt;

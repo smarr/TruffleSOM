@@ -15,6 +15,6 @@ install:
       printf "travis_fold:end:downloads\n"
 
 script:
-  - $ANT tests
+  - $ANT tests native-obj-storage-test
   - $ANT eclipseformat
   - $ANT checkstyle

@@ -43,7 +43,6 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
-import bd.inlining.InlinableNodes;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Disassembler;
 import trufflesom.compiler.Field;
@@ -52,6 +51,7 @@ import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -124,6 +124,8 @@ public final class Universe implements IdProvider<SSymbol> {
   }
 
   public static Value eval(final String[] arguments) {
+    StorageAnalyzer.initAccessors();
+
     Builder builder = createContextBuilder();
     builder.arguments(SomLanguage.LANG_ID, arguments);
 
@@ -146,6 +148,7 @@ public final class Universe implements IdProvider<SSymbol> {
     this.compiler = new SourcecodeCompiler(language);
     this.globals = new HashMap<SSymbol, Association>();
     this.symbolTable = new HashMap<>();
+    Primitives.initializeStaticSymbols(this.symbolTable);
     this.alreadyInitialized = false;
 
     this.blockClasses = new SClass[4];
@@ -168,8 +171,6 @@ public final class Universe implements IdProvider<SSymbol> {
     booleanClass = newSystemClass();
 
     this.primitives = new Primitives(this);
-    this.inlinableNodes = new InlinableNodes<>(this, Primitives.getInlinableNodes(),
-        Primitives.getInlinableFactories());
 
     symNil = symbolFor("nil");
     symSelf = symbolFor("self");
@@ -361,6 +362,7 @@ public final class Universe implements IdProvider<SSymbol> {
         SArray.create(arguments)});
   }
 
+  @TruffleBoundary
   public void initializeObjectSystem() {
     CompilerAsserts.neverPartOfCompilation();
     if (alreadyInitialized) {
@@ -448,7 +450,9 @@ public final class Universe implements IdProvider<SSymbol> {
       return result;
     }
 
-    return newSymbol(interned);
+    result = new SSymbol(interned);
+    symbolTable.put(interned, result);
+    return result;
   }
 
   @Override
@@ -490,12 +494,6 @@ public final class Universe implements IdProvider<SSymbol> {
 
     // Setup the metaclass hierarchy
     result.getSOMClass(null).setClass(result);
-    return result;
-  }
-
-  private SSymbol newSymbol(final String string) {
-    SSymbol result = new SSymbol(string);
-    symbolTable.put(string, result);
     return result;
   }
 
@@ -753,10 +751,6 @@ public final class Universe implements IdProvider<SSymbol> {
     return primitives;
   }
 
-  public InlinableNodes<SSymbol> getInlinableNodes() {
-    return inlinableNodes;
-  }
-
   public void setSystemClassProbe(
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     systemClassProbe = probe;
@@ -811,8 +805,6 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal(dimensions = 1) private final SClass[] blockClasses;
 
   private final Primitives primitives;
-
-  private final InlinableNodes<SSymbol> inlinableNodes;
 
   @CompilationFinal private boolean alreadyInitialized;
 

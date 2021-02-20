@@ -3,6 +3,7 @@ package trufflesom.primitives.reflection;
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.Node;
 
 import trufflesom.interpreter.nodes.dispatch.DispatchChain;
@@ -39,6 +40,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       super(depth, universe);
     }
 
+    @TruffleBoundary
     private IndexDispatch specialize(final SClass clazz, final int index, final boolean read) {
       transferToInterpreterAndInvalidate("Initialize a dispatch node.");
 
@@ -108,6 +110,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       }
     }
 
+    @TruffleBoundary
     @Override
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
       CompilerAsserts.neverPartOfCompilation();
@@ -136,6 +139,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
+    @TruffleBoundary
     public Object executeDispatch(final SObject obj, final int index) {
       CompilerAsserts.neverPartOfCompilation();
       throw new RuntimeException("This should be never reached.");
@@ -163,11 +167,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
+    @TruffleBoundary
     public Object executeDispatch(final SObject obj, final int index) {
       return obj.getField(index);
     }
 
     @Override
+    @TruffleBoundary
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
       obj.setField(index, value);
       return value;

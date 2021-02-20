@@ -1,6 +1,7 @@
 package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -70,6 +71,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningTwoBlocks"})
+  @TruffleBoundary
   public final Object doIfTrueIfFalse(final boolean receiver, final SBlock trueBlock,
       final SBlock falseBlock) {
     CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.10");
@@ -101,6 +103,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningTrueValue"})
+  @TruffleBoundary
   public final Object doIfTrueIfFalseTrueValue(final boolean receiver, final Object trueValue,
       final SBlock falseBlock) {
     if (condProf.profile(receiver)) {
@@ -112,6 +115,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   }
 
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningFalseValue"})
+  @TruffleBoundary
   public final Object doIfTrueIfFalseFalseValue(final boolean receiver, final SBlock trueBlock,
       final Object falseValue) {
     if (condProf.profile(receiver)) {

@@ -1,6 +1,7 @@
 package trufflesom.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
@@ -25,9 +26,8 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
     call = Truffle.getRuntime().createIndirectCallNode();
   }
 
-  @Override
-  public Object executeDispatch(
-      final VirtualFrame frame, final Object[] arguments) {
+  @TruffleBoundary
+  private Object dispatch(final Object[] arguments) {
     Object rcvr = arguments[0];
     SClass rcvrClass = Types.getClassOf(rcvr, universe);
     SInvokable method = rcvrClass.lookupInvokable(selector);
@@ -45,6 +45,12 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
       target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
     }
     return call.call(target, args);
+  }
+
+  @Override
+  public Object executeDispatch(
+      final VirtualFrame frame, final Object[] arguments) {
+    return dispatch(arguments);
   }
 
   @Override

@@ -1,6 +1,7 @@
 package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -20,6 +21,7 @@ public abstract class PerformInSuperclassPrim extends TernaryExpressionNode {
   @Child private IndirectCallNode call = Truffle.getRuntime().createIndirectCallNode();
 
   @Specialization
+  @TruffleBoundary
   public final Object doSAbstractObject(final SAbstractObject receiver, final SSymbol selector,
       final SClass clazz) {
     CompilerAsserts.neverPartOfCompilation("PerformInSuperclassPrim");
