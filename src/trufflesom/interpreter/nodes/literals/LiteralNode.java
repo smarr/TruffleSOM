@@ -32,8 +32,8 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 @NodeInfo(cost = NodeCost.NONE)
-public abstract class LiteralNode extends ExpressionNode implements PreevaluatedExpression,
-    Inlinable<MethodGenerationContext> {
+public abstract class LiteralNode extends ExpressionNode
+    implements PreevaluatedExpression, Inlinable<MethodGenerationContext> {
   @Override
   public final Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
     return executeGeneric(frame);

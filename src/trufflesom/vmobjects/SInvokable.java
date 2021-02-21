@@ -150,8 +150,7 @@ public abstract class SInvokable extends SAbstractObject {
     return callTarget.call(arguments);
   }
 
-  public final Object invoke(final IndirectCallNode node,
-      final Object[] arguments) {
+  public final Object invoke(final IndirectCallNode node, final Object[] arguments) {
     return node.call(callTarget, arguments);
   }
 

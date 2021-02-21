@@ -38,7 +38,6 @@ import org.graalvm.polyglot.Value;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.IdProvider;
@@ -55,7 +54,6 @@ import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
-import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -454,11 +452,6 @@ public final class Universe implements IdProvider<SSymbol> {
   @Override
   public SSymbol getId(final String id) {
     return symbolFor(id);
-  }
-
-  public static SBlock newBlock(final SMethod method, final SClass blockClass,
-      final MaterializedFrame context) {
-    return new SBlock(method, blockClass, context);
   }
 
   @TruffleBoundary

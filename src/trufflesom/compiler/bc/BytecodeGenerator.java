@@ -40,7 +40,6 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
-import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
@@ -110,8 +109,7 @@ public class BytecodeGenerator {
     emit2(mgenc, SEND, mgenc.findLiteralIndex(msg));
   }
 
-  public void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc,
-      final SAbstractObject lit) {
+  public void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final Object lit) {
     emit2(mgenc, PUSH_CONSTANT, mgenc.findLiteralIndex(lit));
   }
 
