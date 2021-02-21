@@ -26,7 +26,6 @@ package trufflesom.vmobjects;
 
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -279,43 +278,5 @@ public class SObject extends SAbstractObject {
 
     StorageLocation location = getLocation(index);
     location.write(this, value);
-  }
-
-  private static long getObjectFieldLength() {
-    CompilerAsserts.neverPartOfCompilation("getObjectFieldLength()");
-
-    try {
-      long dist = getFieldDistance("field1", "field2");
-      // this can go wrong if the VM rearranges fields to fill holes in the
-      // memory layout of the object structure
-      assert dist == 4
-          || dist == 8 : "We expect these fields to be adjecent and either 32 or 64bit appart.";
-      return dist;
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static long getPrimFieldLength() {
-    CompilerAsserts.neverPartOfCompilation("getPrimFieldLength()");
-
-    try {
-      long dist = getFieldDistance("primField1", "primField2");
-      // this can go wrong if the VM rearranges fields to fill holes in the
-      // memory layout of the object structure
-      assert dist == 8 : "We expect these fields to be adjecent and 64bit appart.";
-      return dist;
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static long getFieldDistance(final String field1, final String field2)
-      throws NoSuchFieldException,
-      IllegalAccessException {
-    final Field firstField = SObject.class.getDeclaredField(field1);
-    final Field secondField = SObject.class.getDeclaredField(field2);
-    return StorageLocation.getFieldOffset(secondField)
-        - StorageLocation.getFieldOffset(firstField);
   }
 }
