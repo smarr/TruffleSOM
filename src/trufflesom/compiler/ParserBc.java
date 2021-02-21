@@ -271,12 +271,10 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         break;
       }
       case STString: {
-        Object str = literalString();
+        String str = literalString();
 
-        // TODO: I added the cast here, just to avoid changing the API for the moment, but,
-        // this can't work
-        mgenc.addLiteralIfAbsent((SAbstractObject) str, this);
-        bcGen.emitPUSHCONSTANT(mgenc, (SAbstractObject) str);
+        mgenc.addLiteralIfAbsent(str, this);
+        bcGen.emitPUSHCONSTANT(mgenc, str);
         break;
       }
       default: {
@@ -297,10 +295,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       lit = literalDouble(isNegative);
     }
 
-    // TODO: I added the cast here, just to avoid changing the API for the moment, but, this
-    // can't work
-    mgenc.addLiteralIfAbsent((SAbstractObject) lit, this);
-    bcGen.emitPUSHCONSTANT(mgenc, (SAbstractObject) lit);
+    mgenc.addLiteralIfAbsent(lit, this);
+    bcGen.emitPUSHCONSTANT(mgenc, lit);
   }
 
   private void literalArray(final BytecodeMethodGenContext mgenc) throws ParseError {
@@ -325,11 +321,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     long i = 1;
 
     while (sym != EndTerm) {
-      Object pushIndex = i;
-      // TODO: I added the cast here, just to avoid changing the API for the moment, but, this
-      // can't work
-      mgenc.addLiteralIfAbsent((SAbstractObject) pushIndex, this);
-      bcGen.emitPUSHCONSTANT(mgenc, (SAbstractObject) pushIndex);
+      mgenc.addLiteralIfAbsent(i, this);
+      bcGen.emitPUSHCONSTANT(mgenc, i);
       literal(mgenc);
       bcGen.emitSEND(mgenc, atPutMessage);
       i += 1;
@@ -365,7 +358,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
             new BytecodeMethodGenContext(mgenc.getHolder(), mgenc);
         nestedBlock(bgenc);
 
-        SMethod blockMethod = bgenc.assemble(universe);
+        SMethod blockMethod = (SMethod) bgenc.assemble(
+            null, lastMethodsSourceSection, lastMethodsSourceSection);
+        mgenc.addEmbeddedBlockMethod(blockMethod);
         mgenc.addLiteral(blockMethod, this);
         bcGen.emitPUSHBLOCK(mgenc, blockMethod);
         break;

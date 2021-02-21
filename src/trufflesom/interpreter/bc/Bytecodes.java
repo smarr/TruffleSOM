@@ -26,6 +26,8 @@ package trufflesom.interpreter.bc;
 
 import java.util.stream.Stream;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+
 
 public class Bytecodes {
 
@@ -83,7 +85,7 @@ public class Bytecodes {
   }
 
   // Static array holding lengths of each bytecode
-  private static final int[] BYTECODE_LENGTH = new int[] {
+  @CompilationFinal(dimensions = 1) private static final int[] BYTECODE_LENGTH = new int[] {
       1, // HALT
       1, // DUP
       3, // PUSH_LOCAL

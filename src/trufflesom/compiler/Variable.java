@@ -193,15 +193,15 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public void emitPop(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
-      bcGen.emitPOPLOCAL(mgenc, (byte) mgenc.getLocalIndex(this),
-          (byte) mgenc.getContextLevel(name));
+      int contextLevel = mgenc.getContextLevel(name);
+      bcGen.emitPOPLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
     }
 
     @Override
     protected void emitPush(final BytecodeGenerator bcGen,
         final BytecodeMethodGenContext mgenc) {
-      bcGen.emitPUSHLOCAL(mgenc, (byte) mgenc.getLocalIndex(this),
-          (byte) mgenc.getContextLevel(name));
+      int contextLevel = mgenc.getContextLevel(name);
+      bcGen.emitPUSHLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
     }
   }
 

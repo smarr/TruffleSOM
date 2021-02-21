@@ -88,7 +88,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
 
   public final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
-  private final Universe universe;
+  protected final Universe universe;
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -188,13 +188,18 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     return cls + ">>" + signature.toString();
   }
 
-  public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection,
-      final SourceSection fullSourceSection) {
+  public final SInvokable assemble(final ExpressionNode body,
+      final SourceSection sourceSection, final SourceSection fullSourceSection) {
     if (primitive) {
       return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage(),
           sourceSection, structuralProbe);
     }
 
+    return assembleMethod(body, sourceSection, fullSourceSection);
+  }
+
+  protected SInvokable assembleMethod(ExpressionNode body, final SourceSection sourceSection,
+      final SourceSection fullSourceSection) {
     if (needsToCatchNonLocalReturn()) {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarker());
     }
