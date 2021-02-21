@@ -14,7 +14,10 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.NodeState;
+import trufflesom.compiler.bc.BytecodeGenerator;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 
@@ -40,6 +43,10 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
   @Override
   public abstract ExpressionNode getReadNode(int contextLevel, SourceSection source);
+
+  protected abstract void emitPop(BytecodeGenerator bcGen, BytecodeMethodGenContext mgenc);
+
+  protected abstract void emitPush(BytecodeGenerator bcGen, BytecodeMethodGenContext mgenc);
 
   public abstract Variable split(FrameDescriptor descriptor);
 
@@ -124,6 +131,17 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
       return createArgumentWrite(this, contextLevel, valueExpr, source);
     }
+
+    @Override
+    public void emitPop(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      bcGen.emitPOPARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(name));
+    }
+
+    @Override
+    protected void emitPush(final BytecodeGenerator bcGen,
+        final BytecodeMethodGenContext mgenc) {
+      bcGen.emitPUSHARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(name));
+    }
   }
 
   public static final class Local extends Variable {
@@ -172,6 +190,19 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     public FrameDescriptor getFrameDescriptor() {
       return descriptor;
     }
+
+    @Override
+    public void emitPop(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      bcGen.emitPOPLOCAL(mgenc, (byte) mgenc.getLocalIndex(this),
+          (byte) mgenc.getContextLevel(name));
+    }
+
+    @Override
+    protected void emitPush(final BytecodeGenerator bcGen,
+        final BytecodeMethodGenContext mgenc) {
+      bcGen.emitPUSHLOCAL(mgenc, (byte) mgenc.getLocalIndex(this),
+          (byte) mgenc.getContextLevel(name));
+    }
   }
 
   public static final class Internal extends Variable {
@@ -215,6 +246,16 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     public Local splitToMergeIntoOuterScope(final Universe universe,
         final FrameDescriptor descriptor) {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void emitPop(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      throw new NotYetImplementedException();
+    }
+
+    @Override
+    public void emitPush(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      throw new NotYetImplementedException();
     }
   }
 }

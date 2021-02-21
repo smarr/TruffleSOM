@@ -469,6 +469,18 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     return loopIdx;
   }
 
+  public boolean isFinished() {
+    throw new UnsupportedOperationException(
+        "You'll need the BytecodeMethodGenContext. "
+            + "This method should only be used when creating bytecodes.");
+  }
+
+  public void markFinished() {
+    throw new UnsupportedOperationException(
+        "You'll need the BytecodeMethodGenContext. "
+            + "This method should only be used when creating bytecodes.");
+  }
+
   /**
    * @return number of explicit arguments,
    *         i.e., excluding the implicit 'self' argument
