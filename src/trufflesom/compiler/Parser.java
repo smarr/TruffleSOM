@@ -32,6 +32,7 @@ import static trufflesom.compiler.Symbol.Colon;
 import static trufflesom.compiler.Symbol.Comma;
 import static trufflesom.compiler.Symbol.Div;
 import static trufflesom.compiler.Symbol.Double;
+import static trufflesom.compiler.Symbol.EndBlock;
 import static trufflesom.compiler.Symbol.EndTerm;
 import static trufflesom.compiler.Symbol.Equal;
 import static trufflesom.compiler.Symbol.Identifier;
@@ -43,6 +44,7 @@ import static trufflesom.compiler.Symbol.Minus;
 import static trufflesom.compiler.Symbol.Mod;
 import static trufflesom.compiler.Symbol.More;
 import static trufflesom.compiler.Symbol.NONE;
+import static trufflesom.compiler.Symbol.NewBlock;
 import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.Not;
 import static trufflesom.compiler.Symbol.OperatorSequence;
@@ -361,11 +363,41 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
   }
 
-  protected abstract ExpressionNode methodBlock(MGenC mgenc) throws ProgramDefinitionError;
+  protected ExpressionNode methodBlock(final MGenC mgenc) throws ProgramDefinitionError {
+    expect(NewTerm);
+    SourceCoordinate coord = getCoordinate();
+    ExpressionNode methodBody = blockContents(mgenc);
+    lastMethodsSourceSection = getSource(coord);
+    lastFullMethodsSourceSection = getSource(lastCoordinate);
+    expect(EndTerm);
+
+    return methodBody;
+  }
 
   private void primitiveBlock() throws ParseError {
     expect(Primitive);
     lastMethodsSourceSection = lastFullMethodsSourceSection = getSource(lastCoordinate);
+  }
+
+  protected ExpressionNode nestedBlock(final MGenC mgenc) throws ProgramDefinitionError {
+    expect(NewBlock);
+    SourceCoordinate coord = getCoordinate();
+
+    mgenc.addArgumentIfAbsent(universe.symBlockSelf, getEmptySource());
+
+    if (sym == Colon) {
+      blockPattern(mgenc);
+    }
+
+    mgenc.setSignature(createBlockSignature(mgenc));
+
+    ExpressionNode expressions = blockContents(mgenc);
+
+    lastMethodsSourceSection = getSource(coord);
+
+    expect(EndBlock);
+
+    return expressions;
   }
 
   private void pattern(final MGenC mgenc) throws ProgramDefinitionError {

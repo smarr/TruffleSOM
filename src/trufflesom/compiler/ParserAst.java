@@ -1,7 +1,6 @@
 package trufflesom.compiler;
 
 import static trufflesom.compiler.Symbol.Assign;
-import static trufflesom.compiler.Symbol.Colon;
 import static trufflesom.compiler.Symbol.Double;
 import static trufflesom.compiler.Symbol.EndBlock;
 import static trufflesom.compiler.Symbol.EndTerm;
@@ -10,7 +9,6 @@ import static trufflesom.compiler.Symbol.Identifier;
 import static trufflesom.compiler.Symbol.Integer;
 import static trufflesom.compiler.Symbol.Keyword;
 import static trufflesom.compiler.Symbol.NONE;
-import static trufflesom.compiler.Symbol.NewBlock;
 import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
@@ -65,19 +63,6 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   protected MethodGenerationContext createMGenC(final ClassGenerationContext cgenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
     return new MethodGenerationContext(cgenc, structuralProbe);
-  }
-
-  @Override
-  protected ExpressionNode methodBlock(final MethodGenerationContext mgenc)
-      throws ProgramDefinitionError {
-    expect(NewTerm);
-    SourceCoordinate coord = getCoordinate();
-    ExpressionNode methodBody = blockContents(mgenc);
-    lastMethodsSourceSection = getSource(coord);
-    lastFullMethodsSourceSection = getSource(lastCoordinate);
-    expect(EndTerm);
-
-    return methodBody;
   }
 
   @Override
@@ -404,27 +389,5 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       operand = unaryMessage(operand);
     }
     return operand;
-  }
-
-  private ExpressionNode nestedBlock(final MethodGenerationContext mgenc)
-      throws ProgramDefinitionError {
-    expect(NewBlock);
-    SourceCoordinate coord = getCoordinate();
-
-    mgenc.addArgumentIfAbsent(universe.symBlockSelf, getEmptySource());
-
-    if (sym == Colon) {
-      blockPattern(mgenc);
-    }
-
-    mgenc.setSignature(createBlockSignature(mgenc));
-
-    ExpressionNode expressions = blockContents(mgenc);
-
-    lastMethodsSourceSection = getSource(coord);
-
-    expect(EndBlock);
-
-    return expressions;
   }
 }

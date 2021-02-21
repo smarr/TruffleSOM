@@ -1,7 +1,6 @@
 package trufflesom.compiler;
 
 import static trufflesom.compiler.Symbol.Assign;
-import static trufflesom.compiler.Symbol.Colon;
 import static trufflesom.compiler.Symbol.Double;
 import static trufflesom.compiler.Symbol.EndBlock;
 import static trufflesom.compiler.Symbol.EndTerm;
@@ -9,7 +8,6 @@ import static trufflesom.compiler.Symbol.Exit;
 import static trufflesom.compiler.Symbol.Identifier;
 import static trufflesom.compiler.Symbol.Integer;
 import static trufflesom.compiler.Symbol.Keyword;
-import static trufflesom.compiler.Symbol.NewBlock;
 import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
@@ -53,8 +51,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
   @Override
   protected ExpressionNode methodBlock(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
-    expect(NewTerm);
-    blockContents(mgenc);
+    super.methodBlock(mgenc);
+
     // if no return has been generated so far, we can be sure there was no .
     // terminating the last expression, so the last expression's value must
     // be
@@ -66,7 +64,6 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       mgenc.markFinished();
     }
 
-    expect(EndTerm);
     return null;
   }
 
@@ -392,22 +389,13 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     return superSend;
   }
 
-  private void nestedBlock(final BytecodeMethodGenContext mgenc)
+  @Override
+  protected ExpressionNode nestedBlock(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
-    mgenc.addArgumentIfAbsent(universe.symBlockSelf, getEmptySource());
+    super.nestedBlock(mgenc);
 
-    expect(NewBlock);
-    if (sym == Colon) {
-      blockPattern(mgenc);
-    }
-
-    mgenc.setSignature(createBlockSignature(mgenc));
-
-    blockContents(mgenc);
-
-    // if no return has been generated, we can be sure that the last
-    // expression
-    // in the block was not terminated by ., and can generate a return
+    // if no return has been generated, we can be sure that the last expression in the block
+    // was not terminated by ., and can generate a return
     if (!mgenc.isFinished()) {
       if (!mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
@@ -419,7 +407,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       mgenc.markFinished();
     }
 
-    expect(EndBlock);
+    return null;
   }
 
   private void genPushVariable(final BytecodeMethodGenContext mgenc, final SSymbol var)
