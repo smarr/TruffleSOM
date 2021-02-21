@@ -54,7 +54,7 @@ public class SourcecodeCompiler {
     String fname = path + File.separator + file + ".som";
     File f = new File(fname);
     Source source = SomLanguage.getSource(f);
-    Parser parser = new Parser(source.getCharacters().toString(), source, probe,
+    Parser parser = new ParserAst(source.getCharacters().toString(), source, probe,
         language.getUniverse());
 
     SClass result = compile(parser, systemClass, language.getUniverse());
@@ -74,7 +74,7 @@ public class SourcecodeCompiler {
   public SClass compileClass(final String stmt, final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws ProgramDefinitionError {
-    Parser parser = new Parser(stmt, null, probe, language.getUniverse());
+    Parser parser = new ParserAst(stmt, null, probe, language.getUniverse());
 
     SClass result = compile(parser, systemClass, language.getUniverse());
     return result;

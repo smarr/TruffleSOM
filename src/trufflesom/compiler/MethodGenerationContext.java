@@ -64,28 +64,29 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class MethodGenerationContext implements ScopeBuilder<MethodGenerationContext> {
+public class MethodGenerationContext implements ScopeBuilder<MethodGenerationContext> {
 
-  private final ClassGenerationContext  holderGenc;
-  private final MethodGenerationContext outerGenc;
-  private final boolean                 blockMethod;
+  protected final ClassGenerationContext  holderGenc;
+  protected final MethodGenerationContext outerGenc;
+  private final boolean                   blockMethod;
 
-  private SSymbol signature;
-  private boolean primitive;
-  private boolean needsToCatchNonLocalReturn;
-  private boolean throwsNonLocalReturn;      // does directly or indirectly a non-local return
+  protected SSymbol signature;
+  private boolean   primitive;
+  private boolean   needsToCatchNonLocalReturn;
+  private boolean   throwsNonLocalReturn;      // does directly or indirectly a non-local
+                                               // return
 
   private boolean accessesVariablesOfOuterScope;
 
-  private final LinkedHashMap<SSymbol, Argument> arguments;
-  private final LinkedHashMap<SSymbol, Local>    locals;
+  protected final LinkedHashMap<SSymbol, Argument> arguments;
+  protected final LinkedHashMap<SSymbol, Local>    locals;
 
   private Internal           frameOnStack;
   private final LexicalScope currentScope;
 
   private final List<SMethod> embeddedBlockMethods;
 
-  private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
+  public final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
   private final Universe universe;
 
@@ -104,7 +105,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     this(holderGenc, outerGenc, holderGenc.getUniverse(), true, outerGenc.structuralProbe);
   }
 
-  private MethodGenerationContext(final ClassGenerationContext holderGenc,
+  protected MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc, final Universe universe,
       final boolean isBlockMethod,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -312,7 +313,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     return level;
   }
 
-  private int getContextLevel(final SSymbol varName) {
+  public int getContextLevel(final SSymbol varName) {
     if (locals.containsKey(varName) || arguments.containsKey(varName)) {
       return 0;
     }
