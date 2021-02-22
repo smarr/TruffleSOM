@@ -217,7 +217,7 @@ public class BytecodeLoopNode extends ExpressionNode {
   }
 
   private SClass getHolder() {
-    throw new NotYetImplementedException();
+    return ((Invokable) getRootNode()).getHolder();
   }
 
   private void doSuperSend(final VirtualFrame frame, final int bytecodeIndex) {
