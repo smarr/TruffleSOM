@@ -29,6 +29,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
 import trufflesom.interpreter.SArguments;
+import trufflesom.interpreter.Types;
 import trufflesom.interpreter.bc.Frame;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
@@ -41,7 +42,6 @@ import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
-import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -228,7 +228,8 @@ public class BytecodeLoopNode extends ExpressionNode {
     SInvokable invokable = holderSuper.lookupInvokable(signature);
 
     int numberOfArguments = signature.getNumberOfSignatureArguments();
-    Object[] callArgs = Frame.getCallArguments(frame, numberOfArguments);
+    Object[] callArgs =
+        Frame.popCallArguments(frame, numberOfArguments, stackPointer, stackVar);
     performInvoke(frame, signature, invokable, callArgs);
   }
 
@@ -256,9 +257,10 @@ public class BytecodeLoopNode extends ExpressionNode {
     SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
 
     int numberOfArguments = signature.getNumberOfSignatureArguments();
-    Object[] callArgs = Frame.getCallArguments(frame, numberOfArguments);
+    Object[] callArgs =
+        Frame.popCallArguments(frame, numberOfArguments, stackPointer, stackVar);
 
-    SClass rcvrClass = ((SObject) callArgs[0]).getSOMClass(universe);
+    SClass rcvrClass = Types.getClassOf(callArgs[0], universe);
     SInvokable invokable = rcvrClass.lookupInvokable(signature);
     performInvoke(frame, signature, invokable, callArgs);
   }

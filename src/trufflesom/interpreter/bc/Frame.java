@@ -5,7 +5,6 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
 
@@ -40,9 +39,15 @@ public class Frame {
     frame.setInt(stackPointer, stackIndex);
   }
 
-  public static Object[] getCallArguments(final VirtualFrame frame,
-      final int numberOfArguments) {
-    throw new NotYetImplementedException();
+  public static Object[] popCallArguments(final VirtualFrame frame,
+      final int numberOfArguments, final FrameSlot stackPointer, final FrameSlot stackVar) {
+    Object[] stack = (Object[]) frame.getValue(stackVar);
+    int sp = getStackPointer(frame, stackPointer);
+    Object[] callArguments = new Object[numberOfArguments];
+
+    System.arraycopy(stack, sp - numberOfArguments + 1, callArguments, 0, numberOfArguments);
+    setStackPointer(frame, sp - numberOfArguments, stackPointer);
+    return callArguments;
   }
 
   public static void push(final VirtualFrame frame, final Object value,
