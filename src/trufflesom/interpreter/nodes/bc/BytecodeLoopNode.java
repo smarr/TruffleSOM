@@ -46,7 +46,7 @@ public class BytecodeLoopNode extends ExpressionNode {
 
   @CompilationFinal(dimensions = 1) private final byte[]      bytecodes;
   @CompilationFinal(dimensions = 1) private final FrameSlot[] locals;
-  @CompilationFinal(dimensions = 1) private final Object[]    literals;
+  @CompilationFinal(dimensions = 1) private final Object[]    literalsAndConstants;
 
   private final IndirectCallNode indirectCallNode;
 
@@ -57,7 +57,7 @@ public class BytecodeLoopNode extends ExpressionNode {
       final Object[] literals, final int maxStackDepth, final Universe universe) {
     this.bytecodes = bytecodes;
     this.locals = locals;
-    this.literals = literals;
+    this.literalsAndConstants = literals;
     this.maxStackDepth = maxStackDepth;
     this.universe = universe;
     this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode();
@@ -111,7 +111,7 @@ public class BytecodeLoopNode extends ExpressionNode {
 
         case PUSH_BLOCK: {
           byte literalIdx = bytecodes[bytecodeIndex + 1];
-          SMethod blockMethod = (SMethod) literals[literalIdx];
+          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
           Frame.push(frame,
               new SBlock(blockMethod,
                   universe.getBlockClass(blockMethod.getNumberOfArguments()),
@@ -127,7 +127,7 @@ public class BytecodeLoopNode extends ExpressionNode {
 
         case PUSH_GLOBAL: {
           byte literalIdx = bytecodes[bytecodeIndex + 1];
-          SSymbol globalName = (SSymbol) literals[literalIdx];
+          SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
 
           Object global = universe.getGlobal(globalName);
 
@@ -204,7 +204,7 @@ public class BytecodeLoopNode extends ExpressionNode {
 
   private void doSuperSend(final VirtualFrame frame, final int bytecodeIndex) {
     byte literalIdx = bytecodes[bytecodeIndex + 1];
-    SSymbol signature = (SSymbol) literals[literalIdx];
+    SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
 
     SClass holderSuper = (SClass) getHolder().getSuperClass();
     SInvokable invokable = holderSuper.lookupInvokable(signature);
@@ -235,7 +235,7 @@ public class BytecodeLoopNode extends ExpressionNode {
 
   private void doSend(final VirtualFrame frame, final int bytecodeIndex) {
     byte literalIdx = bytecodes[bytecodeIndex + 1];
-    SSymbol signature = (SSymbol) literals[literalIdx];
+    SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
 
     int numberOfArguments = signature.getNumberOfSignatureArguments();
     Object[] callArgs = Frame.getCallArguments(frame, numberOfArguments);
@@ -243,6 +243,26 @@ public class BytecodeLoopNode extends ExpressionNode {
     SClass rcvrClass = ((SObject) callArgs[0]).getSOMClass(universe);
     SInvokable invokable = rcvrClass.lookupInvokable(signature);
     performInvoke(frame, signature, invokable, callArgs);
+  }
+
+  public int getNumberOfLocals() {
+    return locals.length;
+  }
+
+  public int getMaximumNumberOfStackElements() {
+    return maxStackDepth;
+  }
+
+  public int getNumberOfBytecodes() {
+    return bytecodes.length;
+  }
+
+  public byte getBytecode(final int idx) {
+    return bytecodes[idx];
+  }
+
+  public Object getConstant(final int idx) {
+    return literalsAndConstants[idx];
   }
 
 }

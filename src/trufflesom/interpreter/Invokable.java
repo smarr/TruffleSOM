@@ -9,6 +9,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
@@ -19,6 +20,8 @@ public abstract class Invokable extends RootNode {
   @Child protected ExpressionNode expressionOrSequence;
 
   protected final ExpressionNode uninitializedBody;
+
+  protected SClass holder;
 
   protected Invokable(final String name, final SourceSection sourceSection,
       final FrameDescriptor frameDescriptor,
@@ -59,4 +62,12 @@ public abstract class Invokable extends RootNode {
   }
 
   public abstract void propagateLoopCountThroughoutLexicalScope(long count);
+
+  public SClass getHolder() {
+    return holder;
+  }
+
+  public void setHolder(final SClass holder) {
+    this.holder = holder;
+  }
 }

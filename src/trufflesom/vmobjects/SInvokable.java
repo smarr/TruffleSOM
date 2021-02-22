@@ -140,6 +140,7 @@ public abstract class SInvokable extends SAbstractObject {
   public void setHolder(final SClass value) {
     transferToInterpreterAndInvalidate("SMethod.setHolder");
     holder = value;
+    invokable.setHolder(value);
   }
 
   public final int getNumberOfArguments() {
