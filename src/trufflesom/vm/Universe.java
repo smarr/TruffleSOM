@@ -178,6 +178,8 @@ public final class Universe implements IdProvider<SSymbol> {
     // Name for the frameOnStack slot,
     // starting with ! to make it a name that's not possible in Smalltalk
     symFrameOnStack = symbolFor("!frameOnStack");
+    symStackVar = symbolFor("!stackVar");
+    symStackPointer = symbolFor("!stackPointer");
   }
 
   public static final class SomExit extends ThreadDeath {
@@ -762,6 +764,8 @@ public final class Universe implements IdProvider<SSymbol> {
   public final SSymbol symSelf;
   public final SSymbol symBlockSelf;
   public final SSymbol symFrameOnStack;
+  public final SSymbol symStackVar;
+  public final SSymbol symStackPointer;
   public final SSymbol symSuper;
 
   private final HashMap<SSymbol, Association> globals;

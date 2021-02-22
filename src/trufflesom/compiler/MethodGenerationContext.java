@@ -81,8 +81,8 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
   protected final LinkedHashMap<SSymbol, Argument> arguments;
   protected final LinkedHashMap<SSymbol, Local>    locals;
 
-  private Internal           frameOnStack;
-  private final LexicalScope currentScope;
+  private Internal             frameOnStack;
+  protected final LexicalScope currentScope;
 
   private final List<SMethod> embeddedBlockMethods;
 

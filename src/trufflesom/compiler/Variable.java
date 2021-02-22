@@ -257,5 +257,14 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     public void emitPush(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
       throw new NotYetImplementedException();
     }
+
+    @Override
+    public boolean equals(final Object o) {
+      assert o != null;
+      if (o == this) {
+        return true;
+      }
+      return false;
+    }
   }
 }

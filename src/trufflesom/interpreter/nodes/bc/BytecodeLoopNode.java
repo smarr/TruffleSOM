@@ -18,6 +18,8 @@ import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
+import java.util.Arrays;
+
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -32,6 +34,7 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
@@ -53,18 +56,30 @@ public class BytecodeLoopNode extends ExpressionNode {
   private final int      maxStackDepth;
   private final Universe universe;
 
+  private final FrameSlot stackVar;
+  private final FrameSlot stackPointer;
+
   public BytecodeLoopNode(final byte[] bytecodes, final FrameSlot[] locals,
-      final Object[] literals, final int maxStackDepth, final Universe universe) {
+      final Object[] literals, final int maxStackDepth, final FrameSlot stackVar,
+      final FrameSlot stackPointer, final Universe universe) {
     this.bytecodes = bytecodes;
     this.locals = locals;
     this.literalsAndConstants = literals;
     this.maxStackDepth = maxStackDepth;
     this.universe = universe;
     this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode();
+
+    this.stackVar = stackVar;
+    this.stackPointer = stackPointer;
   }
 
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
+    Object[] stack = new Object[maxStackDepth];
+    Arrays.fill(stack, Nil.nilObject);
+    frame.setObject(stackVar, stack);
+    frame.setInt(stackPointer, -1);
+
     int bytecodeIndex = 0;
 
     while (true) {
@@ -76,11 +91,11 @@ public class BytecodeLoopNode extends ExpressionNode {
 
       switch (bytecode) {
         case HALT: {
-          return Frame.getStackElement(frame, 0);
+          return Frame.getStackElement(frame, 0, stackPointer, stackVar);
         }
 
         case DUP: {
-          Frame.duplicateTopOfStack(frame);
+          Frame.duplicateTopOfStack(frame, stackPointer, stackVar);
           break;
         }
 
@@ -90,7 +105,7 @@ public class BytecodeLoopNode extends ExpressionNode {
 
           assert contextIdx == 0 : "TODO: walk context chain";
           FrameSlot slot = locals[localIdx];
-          Frame.push(frame, frame.getValue(slot));
+          Frame.push(frame, frame.getValue(slot), stackPointer, stackVar);
           break;
         }
 
@@ -99,13 +114,13 @@ public class BytecodeLoopNode extends ExpressionNode {
           byte contextIdx = bytecodes[bytecodeIndex + 2];
 
           assert contextIdx == 0 : "TODO: walk context chain";
-          Frame.push(frame, Frame.getArgument(frame, argIdx));
+          Frame.push(frame, Frame.getArgument(frame, argIdx), stackPointer, stackVar);
           break;
         }
 
         case PUSH_FIELD: {
           byte fieldIdx = bytecodes[bytecodeIndex + 1];
-          Frame.push(frame, Frame.getSelf(frame).getField(fieldIdx));
+          Frame.push(frame, Frame.getSelf(frame).getField(fieldIdx), stackPointer, stackVar);
           break;
         }
 
@@ -115,13 +130,14 @@ public class BytecodeLoopNode extends ExpressionNode {
           Frame.push(frame,
               new SBlock(blockMethod,
                   universe.getBlockClass(blockMethod.getNumberOfArguments()),
-                  frame.materialize()));
+                  frame.materialize()),
+              stackPointer, stackVar);
           break;
         }
 
         case PUSH_CONSTANT: {
           byte literalIdx = bytecodes[bytecodeIndex + 1];
-          Frame.push(frame, literals[literalIdx]);
+          Frame.push(frame, literalsAndConstants[literalIdx], stackPointer, stackVar);
           break;
         }
 
@@ -132,7 +148,7 @@ public class BytecodeLoopNode extends ExpressionNode {
           Object global = universe.getGlobal(globalName);
 
           if (global != null) {
-            Frame.push(frame, global);
+            Frame.push(frame, global, stackPointer, stackVar);
           } else {
             // Send 'unknownGlobal:' to self
             SAbstractObject.sendUnknownGlobal(Frame.getSelf(frame), globalName, universe);
@@ -141,7 +157,7 @@ public class BytecodeLoopNode extends ExpressionNode {
         }
 
         case POP: {
-          Frame.pop(frame);
+          Frame.pop(frame, stackPointer);
           break;
         }
 
@@ -151,7 +167,7 @@ public class BytecodeLoopNode extends ExpressionNode {
           assert contextIdx == 0 : "TODO: walk context chain";
 
           FrameSlot slot = locals[localIdx];
-          frame.setObject(slot, Frame.popValue(frame));
+          frame.setObject(slot, Frame.popValue(frame, stackPointer, stackVar));
           break;
         }
 
@@ -160,13 +176,15 @@ public class BytecodeLoopNode extends ExpressionNode {
           byte contextIdx = bytecodes[bytecodeIndex + 2];
           assert contextIdx == 0 : "TODO: walk context chain";
 
-          Frame.setArgument(frame, argIdx, Frame.popValue(frame));
+          Frame.setArgument(frame, argIdx, Frame.popValue(frame, stackPointer, stackVar));
           break;
         }
 
         case POP_FIELD: {
           byte fieldIdx = bytecodes[bytecodeIndex + 1];
-          Frame.getSelf(frame).setField(fieldIdx, Frame.popValue(frame));
+          Frame.getSelf(frame).setField(
+              fieldIdx,
+              Frame.popValue(frame, stackPointer, stackVar));
           break;
         }
 
@@ -181,7 +199,7 @@ public class BytecodeLoopNode extends ExpressionNode {
         }
 
         case RETURN_LOCAL: {
-          return Frame.popValue(frame);
+          return Frame.popValue(frame, stackPointer, stackVar);
         }
 
         case RETURN_NON_LOCAL: {
@@ -224,11 +242,11 @@ public class BytecodeLoopNode extends ExpressionNode {
       CallTarget callTarget = CachedDnuNode.getDnuCallTarget(getHolder(), universe);
       result = indirectCallNode.call(callTarget, callArgs[0], signature, argumentsArray);
     }
-    Frame.push(frame, result);
+    Frame.push(frame, result, stackPointer, stackVar);
   }
 
   private void doReturnNonLocal(final VirtualFrame frame) {
-    Object result = Frame.popValue(frame);
+    Object result = Frame.popValue(frame, stackPointer, stackVar);
 
     throw new NotYetImplementedException();
   }
