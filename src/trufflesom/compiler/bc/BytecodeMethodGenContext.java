@@ -183,8 +183,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         currentScope.getFrameDescriptor().addFrameSlot(stackPointer, FrameSlotKind.Int),
         currentScope.getFrameDescriptor());
 
-    ExpressionNode body = new BytecodeLoopNode(bytecodes, localsArr, literalsArr,
-        computeStackDepth(), stackVar.getSlot(), stackPointer.getSlot(), universe);
+    FrameSlot frameOnStackMarker =
+        needsToCatchNonLocalReturn() ? getFrameOnStackMarker().getSlot() : null;
+
+    ExpressionNode body = new BytecodeLoopNode(
+        bytecodes, localsArr, literalsArr, computeStackDepth(),
+        stackVar.getSlot(), stackPointer.getSlot(), frameOnStackMarker,
+        universe);
     body.initialize(sourceSection);
 
     return super.assembleMethod(body, sourceSection, fullSourceSection);

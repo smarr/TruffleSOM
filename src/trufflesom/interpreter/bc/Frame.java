@@ -5,6 +5,7 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SObject;
 
 
@@ -88,5 +89,9 @@ public class Frame {
 
   public static SObject getSelf(final VirtualFrame frame) {
     return (SObject) frame.getArguments()[0];
+  }
+
+  public static SBlock getSelfBlock(final VirtualFrame frame) {
+    return (SBlock) frame.getArguments()[0];
   }
 }
