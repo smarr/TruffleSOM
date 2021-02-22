@@ -173,15 +173,17 @@ public class Disassembler {
         }
 
         case PUSH_BLOCK: {
-          Universe.errorPrint("block: (index: " + m.getBytecode(b + 1) + ") ");
-          dumpMethod((SMethod) m.getConstant(b), indent + "\t");
+          int idx = m.getBytecode(b + 1);
+          Universe.errorPrint("block: (index: " + idx + ") ");
+          dumpMethod((SMethod) m.getConstant(idx), indent + "\t");
           break;
         }
 
         case PUSH_CONSTANT: {
-          Object constant = m.getConstant(b);
+          int idx = m.getBytecode(b + 1);
+          Object constant = m.getConstant(idx);
           SClass constantClass = Types.getClassOf(constant, u);
-          Universe.errorPrintln("(index: " + m.getBytecode(b + 1) + ") value: "
+          Universe.errorPrintln("(index: " + idx + ") value: "
               + "("
               + constantClass.getName().toString()
               + ") "
@@ -190,8 +192,9 @@ public class Disassembler {
         }
 
         case PUSH_GLOBAL: {
-          Universe.errorPrintln("(index: " + m.getBytecode(b + 1) + ") value: "
-              + ((SSymbol) m.getConstant(b)).toString());
+          int idx = m.getBytecode(b + 1);
+          Universe.errorPrintln("(index: " + idx + ") value: "
+              + ((SSymbol) m.getConstant(idx)).toString());
           break;
         }
 
@@ -216,14 +219,16 @@ public class Disassembler {
         }
 
         case SEND: {
-          Universe.errorPrintln("(index: " + m.getBytecode(b + 1)
-              + ") signature: " + ((SSymbol) m.getConstant(b)).toString());
+          int idx = m.getBytecode(b + 1);
+          Universe.errorPrintln("(index: " + idx
+              + ") signature: " + ((SSymbol) m.getConstant(idx)).toString());
           break;
         }
 
         case SUPER_SEND: {
-          Universe.errorPrintln("(index: " + m.getBytecode(b + 1)
-              + ") signature: " + ((SSymbol) m.getConstant(b)).toString());
+          int idx = m.getBytecode(b + 1);
+          Universe.errorPrintln("(index: " + idx
+              + ") signature: " + ((SSymbol) m.getConstant(idx)).toString());
           break;
         }
 
