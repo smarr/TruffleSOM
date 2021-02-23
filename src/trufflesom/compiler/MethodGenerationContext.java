@@ -73,8 +73,9 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
   protected SSymbol signature;
   private boolean   primitive;
   private boolean   needsToCatchNonLocalReturn;
-  private boolean   throwsNonLocalReturn;      // does directly or indirectly a non-local
-                                               // return
+
+  // does directly or indirectly a non-local return
+  protected boolean throwsNonLocalReturn;
 
   private boolean accessesVariablesOfOuterScope;
 
@@ -154,7 +155,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     return frameOnStack;
   }
 
-  public void makeCatchNonLocalReturn() {
+  public void makeOuterCatchNonLocalReturn() {
     throwsNonLocalReturn = true;
 
     MethodGenerationContext ctx = markOuterContextsToRequireContextAndGetRootContext();
@@ -388,7 +389,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
 
   public ReturnNonLocalNode getNonLocalReturn(final ExpressionNode expr,
       final SourceSection source) {
-    makeCatchNonLocalReturn();
+    makeOuterCatchNonLocalReturn();
     return createNonLocalReturn(expr, getFrameOnStackMarker(),
         getOuterSelfContextLevel(), source, holderGenc.getUniverse());
   }

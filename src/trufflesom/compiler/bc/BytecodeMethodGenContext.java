@@ -184,7 +184,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         currentScope.getFrameDescriptor());
 
     FrameSlot frameOnStackMarker =
-        needsToCatchNonLocalReturn() ? getFrameOnStackMarker().getSlot() : null;
+        throwsNonLocalReturn ? getFrameOnStackMarker().getSlot() : null;
 
     ExpressionNode body = new BytecodeLoopNode(
         bytecodes, localsArr, literalsArr, computeStackDepth(),
