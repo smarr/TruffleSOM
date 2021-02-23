@@ -45,9 +45,8 @@ public abstract class WhileCache extends BinaryExpressionNode {
   @Specialization(replaces = "doCached")
   public final SObject doUncached(final VirtualFrame frame, final SBlock loopCondition,
       final SBlock loopBody) {
-    CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch"); // no caching, direct
-                                                                          // invokes, no loop
-                                                                          // count reporting...
+    // no caching, direct invokes, no loop count reporting...
+    CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch");
 
     Object conditionResult = loopCondition.getMethod().invoke(new Object[] {loopCondition});
 
