@@ -90,14 +90,14 @@ public class Bytecodes {
       1, // DUP
       3, // PUSH_LOCAL
       3, // PUSH_ARGUMENT
-      2, // PUSH_FIELD
+      3, // PUSH_FIELD
       2, // PUSH_BLOCK
       2, // PUSH_CONSTANT
       2, // PUSH_GLOBAL
       1, // POP
       3, // POP_LOCAL
       3, // POP_ARGUMENT
-      2, // POP_FIELD
+      3, // POP_FIELD
       2, // SEND
       2, // SUPER_SEND
       1, // RETURN_LOCAL

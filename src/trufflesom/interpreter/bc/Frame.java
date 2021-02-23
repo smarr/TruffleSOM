@@ -94,4 +94,8 @@ public class Frame {
   public static SBlock getSelfBlock(final VirtualFrame frame) {
     return (SBlock) frame.getArguments()[0];
   }
+
+  public static Object getSelfBlockOrObject(final VirtualFrame frame) {
+    return frame.getArguments()[0];
+  }
 }

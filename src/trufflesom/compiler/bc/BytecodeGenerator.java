@@ -79,7 +79,7 @@ public class BytecodeGenerator {
 
   public void emitPUSHFIELD(final BytecodeMethodGenContext mgenc, final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
-    emit2(mgenc, PUSH_FIELD, mgenc.getFieldIndex(fieldName));
+    emit3(mgenc, PUSH_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
   }
 
   public void emitPUSHGLOBAL(final BytecodeMethodGenContext mgenc, final SSymbol global) {
@@ -98,7 +98,7 @@ public class BytecodeGenerator {
 
   public void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
-    emit2(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName));
+    emit3(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
   }
 
   public void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {

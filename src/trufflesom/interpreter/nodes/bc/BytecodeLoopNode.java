@@ -84,10 +84,15 @@ public class BytecodeLoopNode extends ExpressionNode {
   }
 
   @ExplodeLoop
-  private MaterializedFrame determineOuterContext(final VirtualFrame frame) {
+  private VirtualFrame determineOuterContext(final VirtualFrame frame) {
     // TODO: change bytecode format to include the context level
-    SBlock self = Frame.getSelfBlock(frame);
+    Object object = Frame.getSelfBlockOrObject(frame);
 
+    if (!(object instanceof SBlock)) {
+      return frame;
+    }
+
+    SBlock self = (SBlock) object;
     MaterializedFrame outer = self.getContext();
 
     while (true) {
@@ -173,7 +178,15 @@ public class BytecodeLoopNode extends ExpressionNode {
 
         case PUSH_FIELD: {
           byte fieldIdx = bytecodes[bytecodeIndex + 1];
-          Frame.push(frame, Frame.getSelf(frame).getField(fieldIdx), stackPointer, stackVar);
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          Frame.push(frame, Frame.getSelf(currentOrContext).getField(fieldIdx), stackPointer,
+              stackVar);
           break;
         }
 
@@ -204,8 +217,11 @@ public class BytecodeLoopNode extends ExpressionNode {
             Frame.push(frame, global, stackPointer, stackVar);
           } else {
             // Send 'unknownGlobal:' to self
+
+            VirtualFrame outer = determineOuterContext(frame);
+
             Object handlerResult =
-                SAbstractObject.sendUnknownGlobal(Frame.getSelf(frame), globalName, universe);
+                SAbstractObject.sendUnknownGlobal(Frame.getSelf(outer), globalName, universe);
             Frame.push(frame, handlerResult, stackPointer, stackVar);
           }
           break;
@@ -246,7 +262,14 @@ public class BytecodeLoopNode extends ExpressionNode {
 
         case POP_FIELD: {
           byte fieldIdx = bytecodes[bytecodeIndex + 1];
-          Frame.getSelf(frame).setField(
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          Frame.getSelf(currentOrContext).setField(
               fieldIdx,
               Frame.popValue(frame, stackPointer, stackVar));
           break;
