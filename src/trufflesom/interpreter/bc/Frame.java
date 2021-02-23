@@ -40,6 +40,12 @@ public class Frame {
     frame.setInt(stackPointer, stackIndex);
   }
 
+  public static void resetStackPointer(final VirtualFrame frame,
+      final FrameSlot stackPointer) {
+    frame.setInt(stackPointer, -1); // pointer points to outside the stack
+    // System.out.println("[reset] sp: 0");
+  }
+
   public static Object[] popCallArguments(final VirtualFrame frame,
       final int numberOfArguments, final FrameSlot stackPointer, final FrameSlot stackVar) {
     Object[] stack = (Object[]) frame.getValue(stackVar);

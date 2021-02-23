@@ -7,12 +7,14 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 
 import bd.primitives.Primitive;
+import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
 
@@ -28,11 +30,10 @@ public abstract class BlockPrims {
   public abstract static class RestartPrim extends UnaryExpressionNode {
     @Specialization
     public SAbstractObject doSBlock(final SBlock receiver) {
-      CompilerDirectives.transferToInterpreter();
-      // TruffleSOM intrinsifies #whileTrue: and #whileFalse:
-      throw new RuntimeException("This primitive is not supported anymore! "
-          + "Something went wrong with the intrinsification of "
-          + "#whileTrue:/#whileFalse:?");
+      assert VmSettings.UseBcInterp : "This primitive is not supported in the AST interpreter "
+          + "Perhaps something went wrong with the intrinsification of "
+          + "#whileTrue:/#whileFalse:?";
+      throw new RestartLoopException();
     }
   }
 

@@ -36,6 +36,7 @@ import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.bc.Frame;
+import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
 import trufflesom.vm.Universe;
@@ -129,13 +130,14 @@ public class BytecodeLoopNode extends ExpressionNode {
     // which I believe we obey)
     // Arrays.fill(stack, Nil.nilObject);
     frame.setObject(stackVar, stack);
-    frame.setInt(stackPointer, -1);
+    Frame.resetStackPointer(frame, stackPointer);
 
     int bytecodeIndex = 0;
 
     while (true) {
       byte bytecode = bytecodes[bytecodeIndex];
-      int bytecodeLength = getBytecodeLength(bytecode);
+      final int bytecodeLength = getBytecodeLength(bytecode);
+      int nextBytecodeIndex = bytecodeIndex + bytecodeLength;
 
       CompilerAsserts.partialEvaluationConstant(bytecodeIndex);
       CompilerAsserts.partialEvaluationConstant(bytecode);
@@ -276,12 +278,22 @@ public class BytecodeLoopNode extends ExpressionNode {
         }
 
         case SEND: {
-          doSend(frame, bytecodeIndex);
+          try {
+            doSend(frame, bytecodeIndex);
+          } catch (RestartLoopException e) {
+            nextBytecodeIndex = 0;
+            Frame.resetStackPointer(frame, stackPointer);
+          }
           break;
         }
 
         case SUPER_SEND: {
-          doSuperSend(frame, bytecodeIndex);
+          try {
+            doSuperSend(frame, bytecodeIndex);
+          } catch (RestartLoopException e) {
+            nextBytecodeIndex = 0;
+            Frame.resetStackPointer(frame, stackPointer);
+          }
           break;
         }
 
@@ -299,7 +311,7 @@ public class BytecodeLoopNode extends ExpressionNode {
           break;
       }
 
-      bytecodeIndex = bytecodeIndex + bytecodeLength;
+      bytecodeIndex = nextBytecodeIndex;
     }
   }
 
