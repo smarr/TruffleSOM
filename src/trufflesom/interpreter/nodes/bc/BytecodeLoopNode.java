@@ -204,7 +204,9 @@ public class BytecodeLoopNode extends ExpressionNode {
             Frame.push(frame, global, stackPointer, stackVar);
           } else {
             // Send 'unknownGlobal:' to self
-            SAbstractObject.sendUnknownGlobal(Frame.getSelf(frame), globalName, universe);
+            Object handlerResult =
+                SAbstractObject.sendUnknownGlobal(Frame.getSelf(frame), globalName, universe);
+            Frame.push(frame, handlerResult, stackPointer, stackVar);
           }
           break;
         }
