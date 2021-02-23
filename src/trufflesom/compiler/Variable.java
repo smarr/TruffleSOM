@@ -31,6 +31,10 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     this.source = source;
   }
 
+  public final SSymbol getName() {
+    return name;
+  }
+
   /** Gets the name including lexical location. */
   public final SSymbol getQualifiedName(final Universe u) {
     return u.symbolFor(name.getString() + Universe.getLocationQualifier(source));

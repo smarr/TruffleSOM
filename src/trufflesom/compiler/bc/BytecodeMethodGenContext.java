@@ -18,6 +18,7 @@ import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -45,7 +46,8 @@ import trufflesom.vmobjects.SSymbol;
 
 public class BytecodeMethodGenContext extends MethodGenerationContext {
 
-  private final List<Object> literals;
+  private final List<Object>                  literals;
+  private final LinkedHashMap<SSymbol, Local> outerVars;
 
   private final ArrayList<Byte> bytecode;
   private boolean               finished;
@@ -72,6 +74,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     super(holderGenc, outerGenc, universe, isBlockMethod, structuralProbe);
     literals = new ArrayList<>();
     bytecode = new ArrayList<>();
+    outerVars = new LinkedHashMap<>();
   }
 
   public byte getMaxContextLevel() {
@@ -145,20 +148,35 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     literals.set(index, newVal);
   }
 
-  public byte getLocalIndex(final Local local, final int contextLevel) {
-    int ctxLevel = contextLevel;
-    while (ctxLevel > 0) {
-      return ((BytecodeMethodGenContext) outerGenc).getLocalIndex(local, contextLevel - 1);
-    }
-
+  private byte getPositionIn(final Local local, final LinkedHashMap<SSymbol, Local> map) {
     byte i = 0;
-    for (Local l : locals.values()) {
+    for (Local l : map.values()) {
       if (l == local) {
         return i;
       }
       i += 1;
     }
     return -1;
+  }
+
+  /**
+   * Record the access, and also manage the tracking of outer access.
+   */
+  public byte getLocalIndex(final Local local, final int contextLevel) {
+    if (contextLevel == 0) {
+      return getPositionIn(local, locals);
+    }
+
+    // we already got it, and it's in our outerVar list/map
+    if (outerVars.containsValue(local)) {
+      return (byte) (getPositionIn(local, outerVars) + locals.size());
+    }
+
+    int size = outerVars.size();
+    outerVars.put(local.getName(), local);
+    assert getPositionIn(local, outerVars) == size;
+
+    return (byte) (size + locals.size());
   }
 
   @Override
@@ -172,11 +190,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     Object[] literalsArr = literals.toArray();
-    FrameSlot[] localsArr = new FrameSlot[locals.size()];
+    FrameSlot[] localsAndOuters = new FrameSlot[locals.size() + outerVars.size()];
 
     i = 0;
     for (Local l : locals.values()) {
-      localsArr[i] = l.getSlot();
+      localsAndOuters[i] = l.getSlot();
+      i += 1;
+    }
+
+    for (Local l : outerVars.values()) {
+      localsAndOuters[i] = l.getSlot();
       i += 1;
     }
 
@@ -194,7 +217,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         throwsNonLocalReturn ? getFrameOnStackMarker().getSlot() : null;
 
     ExpressionNode body = new BytecodeLoopNode(
-        bytecodes, localsArr, literalsArr, computeStackDepth(),
+        bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),
         stackVar.getSlot(), stackPointer.getSlot(), frameOnStackMarker,
         universe);
     body.initialize(sourceSection);

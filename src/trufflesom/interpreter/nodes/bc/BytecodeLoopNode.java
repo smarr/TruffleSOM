@@ -52,11 +52,12 @@ public class BytecodeLoopNode extends ExpressionNode {
   private static final ValueProfile frameType = ValueProfile.createClassProfile();
 
   @CompilationFinal(dimensions = 1) private final byte[]      bytecodes;
-  @CompilationFinal(dimensions = 1) private final FrameSlot[] locals;
+  @CompilationFinal(dimensions = 1) private final FrameSlot[] localsAndOuters;
   @CompilationFinal(dimensions = 1) private final Object[]    literalsAndConstants;
 
   private final IndirectCallNode indirectCallNode;
 
+  private final int      numLocals;
   private final int      maxStackDepth;
   private final Universe universe;
 
@@ -64,12 +65,14 @@ public class BytecodeLoopNode extends ExpressionNode {
   private final FrameSlot stackPointer;
   private final FrameSlot frameOnStackMarker;
 
-  public BytecodeLoopNode(final byte[] bytecodes, final FrameSlot[] locals,
+  public BytecodeLoopNode(final byte[] bytecodes, final int numLocals,
+      final FrameSlot[] localsAndOuters,
       final Object[] literals, final int maxStackDepth, final FrameSlot stackVar,
       final FrameSlot stackPointer, final FrameSlot frameOnStackMarker,
       final Universe universe) {
     this.bytecodes = bytecodes;
-    this.locals = locals;
+    this.numLocals = numLocals;
+    this.localsAndOuters = localsAndOuters;
     this.literalsAndConstants = literals;
     this.maxStackDepth = maxStackDepth;
     this.universe = universe;
@@ -150,7 +153,7 @@ public class BytecodeLoopNode extends ExpressionNode {
           if (contextIdx > 0) {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
-          FrameSlot slot = locals[localIdx];
+          FrameSlot slot = localsAndOuters[localIdx];
           Frame.push(frame, currentOrContext.getValue(slot), stackPointer, stackVar);
           break;
         }
@@ -220,7 +223,7 @@ public class BytecodeLoopNode extends ExpressionNode {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          FrameSlot slot = locals[localIdx];
+          FrameSlot slot = localsAndOuters[localIdx];
           currentOrContext.setObject(slot, Frame.popValue(frame, stackPointer, stackVar));
           break;
         }
@@ -337,7 +340,7 @@ public class BytecodeLoopNode extends ExpressionNode {
   }
 
   public int getNumberOfLocals() {
-    return locals.length;
+    return numLocals;
   }
 
   public int getMaximumNumberOfStackElements() {
