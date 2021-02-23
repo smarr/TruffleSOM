@@ -2,12 +2,10 @@ package trufflesom.primitives.basics;
 
 import java.math.BigInteger;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -18,17 +16,6 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "=")
 public abstract class EqualsPrim extends BinarySystemOperation {
 
-  @CompilationFinal private SObject trueObject;
-  @CompilationFinal private SObject falseObject;
-
-  @Override
-  public BinarySystemOperation initialize(final Universe universe) {
-    super.initialize(universe);
-    this.trueObject = universe.getTrueObject();
-    this.falseObject = universe.getFalseObject();
-    return this;
-  }
-
   @Specialization
   public final boolean doBoolean(final boolean left, final boolean right) {
     return left == right;
@@ -36,8 +23,7 @@ public abstract class EqualsPrim extends BinarySystemOperation {
 
   @Specialization
   public final boolean doBoolean(final boolean left, final SObject right) {
-    return (left && right == trueObject) ||
-        (!left && right == falseObject);
+    return false;
   }
 
   @Specialization
