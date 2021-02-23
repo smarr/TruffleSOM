@@ -262,7 +262,7 @@ public class BytecodeLoopNode extends ExpressionNode {
         }
 
         case RETURN_NON_LOCAL: {
-          doReturnNonLocal(frame);
+          doReturnNonLocal(frame, bytecodeIndex);
           break;
         }
 
@@ -305,10 +305,11 @@ public class BytecodeLoopNode extends ExpressionNode {
     Frame.push(frame, result, stackPointer, stackVar);
   }
 
-  private void doReturnNonLocal(final VirtualFrame frame) {
+  private void doReturnNonLocal(final VirtualFrame frame, final int bytecodeIndex) {
+    byte contextIdx = bytecodes[bytecodeIndex + 1];
     Object result = Frame.popValue(frame, stackPointer, stackVar);
 
-    MaterializedFrame ctx = determineOuterContext(frame);
+    MaterializedFrame ctx = determineContext(frame, contextIdx);
     FrameOnStackMarker marker =
         (FrameOnStackMarker) FrameUtil.getObjectSafe(ctx, frameOnStackMarker);
 

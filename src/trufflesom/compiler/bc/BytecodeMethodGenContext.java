@@ -74,6 +74,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode = new ArrayList<>();
   }
 
+  public byte getMaxContextLevel() {
+    if (outerGenc != null) {
+      return (byte) (1 + ((BytecodeMethodGenContext) outerGenc).getMaxContextLevel());
+    }
+    return 0;
+  }
+
   public boolean hasField(final SSymbol fieldName) {
     return holderGenc.hasField(fieldName);
   }

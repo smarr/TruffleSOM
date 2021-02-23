@@ -101,6 +101,6 @@ public class Bytecodes {
       2, // SEND
       2, // SUPER_SEND
       1, // RETURN_LOCAL
-      1 // RETURN_NON_LOCAL
+      2 // RETURN_NON_LOCAL
   };
 }
