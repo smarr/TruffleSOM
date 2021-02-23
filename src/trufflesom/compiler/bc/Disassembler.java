@@ -35,6 +35,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
@@ -166,9 +167,11 @@ public class Disassembler {
 
         case PUSH_FIELD: {
           int idx = m.getBytecode(b + 1);
+          int ctx = m.getBytecode(b + 2);
           String fieldName = ((SSymbol) clazz.getInstanceFields()
                                              .debugGetObject(idx)).getString();
-          Universe.errorPrintln("(index: " + idx + ") field: " + fieldName);
+          Universe.errorPrintln("(index: " + idx
+              + ", context: " + ctx + ") field: " + fieldName);
           break;
         }
 
@@ -212,9 +215,11 @@ public class Disassembler {
 
         case POP_FIELD: {
           int idx = m.getBytecode(b + 1);
+          int ctx = m.getBytecode(b + 2);
           String fieldName = ((SSymbol) clazz.getInstanceFields()
                                              .debugGetObject(idx)).getString();
-          Universe.errorPrintln("(index: " + idx + ") field: " + fieldName);
+          Universe.errorPrintln("(index: " + idx
+              + ", context: " + ctx + ") field: " + fieldName);
           break;
         }
 
@@ -229,6 +234,11 @@ public class Disassembler {
           int idx = m.getBytecode(b + 1);
           Universe.errorPrintln("(index: " + idx
               + ") signature: " + ((SSymbol) m.getConstant(idx)).toString());
+          break;
+        }
+
+        case RETURN_NON_LOCAL: {
+          Universe.errorPrintln("context: " + m.getBytecode(b + 1));
           break;
         }
 
