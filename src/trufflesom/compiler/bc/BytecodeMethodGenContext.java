@@ -203,18 +203,18 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       i += 1;
     }
 
-    Internal stackVar = new Internal(universe.symStackVar);
+    Internal stackVar = new Internal(universe.symStackVar, sourceSection);
     stackVar.init(
         currentScope.getFrameDescriptor().addFrameSlot(stackVar, FrameSlotKind.Object),
         currentScope.getFrameDescriptor());
 
-    Internal stackPointer = new Internal(universe.symStackPointer);
+    Internal stackPointer = new Internal(universe.symStackPointer, sourceSection);
     stackPointer.init(
         currentScope.getFrameDescriptor().addFrameSlot(stackPointer, FrameSlotKind.Int),
         currentScope.getFrameDescriptor());
 
     FrameSlot frameOnStackMarker =
-        throwsNonLocalReturn ? getFrameOnStackMarker().getSlot() : null;
+        throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
 
     ExpressionNode body = new BytecodeLoopNode(
         bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),

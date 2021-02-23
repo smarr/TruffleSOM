@@ -7,6 +7,8 @@ import static trufflesom.interpreter.SNodeFactory.createSuperRead;
 import static trufflesom.interpreter.SNodeFactory.createVariableWrite;
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
+import java.util.Objects;
+
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -74,6 +76,11 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     assert source == null || !source.equals(
         var.source) : "Why are there multiple objects for this source section? might need to fix comparison above";
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, source);
   }
 
   public static final class AccessNodeState implements NodeState {
@@ -213,8 +220,8 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @CompilationFinal private FrameSlot       slot;
     @CompilationFinal private FrameDescriptor descriptor;
 
-    public Internal(final SSymbol name) {
-      super(name, null);
+    public Internal(final SSymbol name, final SourceSection source) {
+      super(name, source);
     }
 
     public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
@@ -238,7 +245,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public Variable split(final FrameDescriptor descriptor) {
-      Internal newInternal = new Internal(name);
+      Internal newInternal = new Internal(name, source);
 
       assert this.descriptor.getFrameSlotKind(
           slot) == FrameSlotKind.Object : "We only have the on stack marker currently, so, we expect those not to specialize";
@@ -268,7 +275,16 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       if (o == this) {
         return true;
       }
-      return false;
+      if (!(o instanceof Variable)) {
+        return false;
+      }
+      Variable var = (Variable) o;
+      return var.source == source && name == var.name;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, source);
     }
   }
 }

@@ -138,15 +138,15 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     return currentScope;
   }
 
-  public Internal getFrameOnStackMarker() {
+  public Internal getFrameOnStackMarker(final SourceSection source) {
     if (outerGenc != null) {
-      return outerGenc.getFrameOnStackMarker();
+      return outerGenc.getFrameOnStackMarker(source);
     }
 
     if (frameOnStack == null) {
       assert needsToCatchNonLocalReturn;
 
-      frameOnStack = new Internal(universe.symFrameOnStack);
+      frameOnStack = new Internal(universe.symFrameOnStack, source);
       frameOnStack.init(
           currentScope.getFrameDescriptor().addFrameSlot(frameOnStack, FrameSlotKind.Object),
           currentScope.getFrameDescriptor());
@@ -202,7 +202,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
   protected SInvokable assembleMethod(ExpressionNode body, final SourceSection sourceSection,
       final SourceSection fullSourceSection) {
     if (needsToCatchNonLocalReturn()) {
-      body = createCatchNonLocalReturn(body, getFrameOnStackMarker());
+      body = createCatchNonLocalReturn(body, getFrameOnStackMarker(sourceSection));
     }
 
     Method truffleMethod =
@@ -390,7 +390,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
   public ReturnNonLocalNode getNonLocalReturn(final ExpressionNode expr,
       final SourceSection source) {
     makeOuterCatchNonLocalReturn();
-    return createNonLocalReturn(expr, getFrameOnStackMarker(),
+    return createNonLocalReturn(expr, getFrameOnStackMarker(source),
         getOuterSelfContextLevel(), source, holderGenc.getUniverse());
   }
 
