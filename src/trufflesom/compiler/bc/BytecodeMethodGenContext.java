@@ -143,7 +143,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   public void updateLiteral(final SAbstractObject oldVal, final byte index,
-      final SAbstractObject newVal) {
+      final Object newVal) {
     assert literals.get(index) == oldVal;
     literals.set(index, newVal);
   }

@@ -24,7 +24,6 @@ import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.Universe;
-import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -322,16 +321,19 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     long i = 1;
 
     while (sym != EndTerm) {
+      bcGen.emitDUP(mgenc); // dup the array for having it on the stack after the #at:put:
+
       mgenc.addLiteralIfAbsent(i, this);
       bcGen.emitPUSHCONSTANT(mgenc, i);
       literal(mgenc);
       bcGen.emitSEND(mgenc, atPutMessage);
+      bcGen.emitPOP(mgenc);
       i += 1;
     }
 
     // replace the placeholder with the actual array size
     Object size = i - 1;
-    mgenc.updateLiteral(arraySizePlaceholder, arraySizeLiteralIndex, (SAbstractObject) size);
+    mgenc.updateLiteral(arraySizePlaceholder, arraySizeLiteralIndex, size);
     expect(EndTerm);
   }
 
