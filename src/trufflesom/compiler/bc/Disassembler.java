@@ -35,6 +35,8 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.Q_PUSH_GLOBAL;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
@@ -194,6 +196,7 @@ public class Disassembler {
           break;
         }
 
+        case Q_PUSH_GLOBAL:
         case PUSH_GLOBAL: {
           int idx = m.getBytecode(b + 1);
           Universe.errorPrintln("(index: " + idx + ") value: "
@@ -223,6 +226,7 @@ public class Disassembler {
           break;
         }
 
+        case Q_SEND:
         case SEND: {
           int idx = m.getBytecode(b + 1);
           Universe.errorPrintln("(index: " + idx

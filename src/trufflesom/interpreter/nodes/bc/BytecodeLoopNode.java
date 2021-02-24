@@ -12,6 +12,8 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.Q_PUSH_GLOBAL;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
@@ -41,6 +43,9 @@ import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
@@ -59,6 +64,8 @@ public class BytecodeLoopNode extends ExpressionNode {
   @CompilationFinal(dimensions = 1) private final byte[]      bytecodes;
   @CompilationFinal(dimensions = 1) private final FrameSlot[] localsAndOuters;
   @CompilationFinal(dimensions = 1) private final Object[]    literalsAndConstants;
+
+  @Children private ExpressionNode[] quickened;
 
   private final IndirectCallNode indirectCallNode;
 
@@ -216,26 +223,20 @@ public class BytecodeLoopNode extends ExpressionNode {
         }
 
         case PUSH_GLOBAL: {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+
           byte literalIdx = bytecodes[bytecodeIndex + 1];
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
 
-          Object global = universe.getGlobal(globalName);
+          GlobalNode quickened = GlobalNode.create(globalName, universe, sourceSection);
+          quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quickened);
 
-          if (global != null) {
-            stackPointer += 1;
-            stack[stackPointer] = global;
-          } else {
-            CompilerDirectives.transferToInterpreter();
-            // Send 'unknownGlobal:' to self
+          // TODO: what's the correct semantics here? the outer or the closed self? normally,
+          // I'd expect the outer
+          // determineOuterContext(frame);
 
-            VirtualFrame outer = determineOuterContext(frame);
-
-            Object handlerResult =
-                SAbstractObject.sendUnknownGlobal(
-                    outer.getArguments()[0], globalName, universe);
-            stackPointer += 1;
-            stack[stackPointer] = handlerResult;
-          }
+          stackPointer += 1;
+          stack[stackPointer] = quickened.executeGeneric(frame);
           break;
         }
 
@@ -295,17 +296,22 @@ public class BytecodeLoopNode extends ExpressionNode {
         }
 
         case SEND: {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
           try {
             byte literalIdx = bytecodes[bytecodeIndex + 1];
             SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
             int numberOfArguments = signature.getNumberOfSignatureArguments();
+
+            GenericMessageSendNode quickened =
+                MessageSendNode.createGeneric(signature, null, sourceSection, universe);
+            quickenBytecode(bytecodeIndex, Q_SEND, quickened);
 
             Object[] callArgs = new Object[numberOfArguments];
             System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
                 numberOfArguments);
             stackPointer -= numberOfArguments;
 
-            Object result = doSend(signature, callArgs);
+            Object result = quickened.doPreEvaluated(frame, callArgs);
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -367,6 +373,45 @@ public class BytecodeLoopNode extends ExpressionNode {
           break;
         }
 
+        case Q_PUSH_GLOBAL: {
+          stackPointer += 1;
+          stack[stackPointer] = quickened[bytecodeIndex].executeGeneric(frame);
+          break;
+        }
+
+        case Q_SEND: {
+          GenericMessageSendNode node = (GenericMessageSendNode) quickened[bytecodeIndex];
+
+          int numberOfArguments =
+              node.getInvocationIdentifier().getNumberOfSignatureArguments();
+
+          Object[] callArgs = new Object[numberOfArguments];
+          System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
+              numberOfArguments);
+          stackPointer -= numberOfArguments;
+
+          try {
+            Object result = node.doPreEvaluated(frame, callArgs);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          } catch (RestartLoopException e) {
+            nextBytecodeIndex = 0;
+            stackPointer = -1;
+          } catch (EscapedBlockException e) {
+            CompilerDirectives.transferToInterpreter();
+            VirtualFrame outer = determineOuterContext(frame);
+            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            Object result =
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          }
+
+          break;
+        }
+
         default:
           Universe.errorPrintln("Nasty bug in interpreter");
           break;
@@ -374,6 +419,15 @@ public class BytecodeLoopNode extends ExpressionNode {
 
       bytecodeIndex = nextBytecodeIndex;
     }
+  }
+
+  private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,
+      final ExpressionNode quickenedNode) {
+    if (this.quickened == null) {
+      this.quickened = new ExpressionNode[bytecodes.length];
+    }
+    this.quickened[bytecodeIndex] = insert(quickenedNode);
+    bytecodes[bytecodeIndex] = quickenedBytecode;
   }
 
   private SClass getHolder() {
@@ -392,6 +446,7 @@ public class BytecodeLoopNode extends ExpressionNode {
     if (invokable != null) {
       return invokable.invoke(indirectCallNode, callArgs);
     } else {
+      CompilerDirectives.transferToInterpreter();
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(callArgs);
       CallTarget callTarget = CachedDnuNode.getDnuCallTarget(getHolder(), universe);
       return indirectCallNode.call(callTarget, callArgs[0], signature, argumentsArray);

@@ -49,13 +49,19 @@ public class Bytecodes {
   public static final byte RETURN_LOCAL     = 14;
   public static final byte RETURN_NON_LOCAL = 15;
 
+  public static final byte Q_PUSH_GLOBAL = 16;
+  public static final byte Q_SEND        = 17;
+
   private static final String[] PADDED_BYTECODE_NAMES = new String[] {
       "HALT            ", "DUP             ", "PUSH_LOCAL      ",
       "PUSH_ARGUMENT   ", "PUSH_FIELD      ", "PUSH_BLOCK      ",
       "PUSH_CONSTANT   ", "PUSH_GLOBAL     ", "POP             ",
       "POP_LOCAL       ", "POP_ARGUMENT    ", "POP_FIELD       ",
       "SEND            ", "SUPER_SEND      ", "RETURN_LOCAL    ",
-      "RETURN_NON_LOCAL"
+      "RETURN_NON_LOCAL",
+
+      "Q_PUSH_GLOBAL",
+      "Q_SEND",
   };
 
   private static final String[] BYTECODE_NAMES =
@@ -101,6 +107,9 @@ public class Bytecodes {
       2, // SEND
       2, // SUPER_SEND
       1, // RETURN_LOCAL
-      2 // RETURN_NON_LOCAL
+      2, // RETURN_NON_LOCAL
+
+      2, // Q_PUSH_GLOBAL
+      2, // Q_SEND
   };
 }
