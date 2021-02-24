@@ -1,5 +1,14 @@
+/.metadata
 build
 src_gen
 user-dict.txt
 /libs/*.jar
 /libs/jvmci/
+/libs/jvmci.tar.gz
+/graal_dumps
+/som-native
+/som-obj-storage-tester
+/workingsets.xml
+/*.launch
+/rebench.data
+/payload.json

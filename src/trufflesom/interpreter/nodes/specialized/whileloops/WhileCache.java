@@ -18,13 +18,9 @@ public abstract class WhileCache extends BinaryExpressionNode {
   public static final int INLINE_CACHE_SIZE = 6;
 
   protected final boolean predicateBool;
-  private final SObject   trueObject;
-  private final SObject   falseObject;
 
   public WhileCache(final boolean predicateBool, final Universe universe) {
     this.predicateBool = predicateBool;
-    this.trueObject = universe.getTrueObject();
-    this.falseObject = universe.getFalseObject();
   }
 
   @Specialization(limit = "INLINE_CACHE_SIZE",
@@ -40,22 +36,17 @@ public abstract class WhileCache extends BinaryExpressionNode {
   private boolean obj2bool(final Object o) {
     if (o instanceof Boolean) {
       return (boolean) o;
-    } else if (o == trueObject) {
-      CompilerAsserts.neverPartOfCompilation("obj2Bool1");
-      return true;
     } else {
-      CompilerAsserts.neverPartOfCompilation("obj2Bool2");
-      assert o == falseObject;
-      return false;
+      throw new IllegalStateException(
+          "This should not happen! There are no objects that are booleans, and we only support booleans.");
     }
   }
 
   @Specialization(replaces = "doCached")
   public final SObject doUncached(final VirtualFrame frame, final SBlock loopCondition,
       final SBlock loopBody) {
-    CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch"); // no caching, direct
-                                                                          // invokes, no loop
-                                                                          // count reporting...
+    // no caching, direct invokes, no loop count reporting...
+    CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch");
 
     Object conditionResult = loopCondition.getMethod().invoke(new Object[] {loopCondition});
 

@@ -416,18 +416,14 @@ public final class Universe implements IdProvider<SSymbol> {
     // Load the generic block class
     blockClasses[0] = loadClass(symbolFor("Block"));
 
-    // Setup the true and false objects
-    trueObject = newInstance(trueClass);
-    falseObject = newInstance(falseClass);
-
     // Load the system class and create an instance of it
     systemClass = loadClass(symbolFor("System"));
     systemObject = newInstance(systemClass);
 
     // Put special objects into the dictionary of globals
     setGlobal("nil", nilObject);
-    setGlobal("true", trueObject);
-    setGlobal("false", falseObject);
+    setGlobal("true", true);
+    setGlobal("false", false);
     setGlobal("system", systemObject);
 
     // Load the remaining block classes
@@ -723,14 +719,6 @@ public final class Universe implements IdProvider<SSymbol> {
     // Checkstyle: resume
   }
 
-  public SObject getTrueObject() {
-    return trueObject;
-  }
-
-  public SObject getFalseObject() {
-    return falseObject;
-  }
-
   public SObject getSystemObject() {
     return systemObject;
   }
@@ -771,8 +759,6 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public final SClass booleanClass;
 
-  @CompilationFinal private SObject trueObject;
-  @CompilationFinal private SObject falseObject;
   @CompilationFinal private SObject systemObject;
 
   @CompilationFinal private SClass trueClass;
