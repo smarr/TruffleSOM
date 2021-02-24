@@ -18,8 +18,6 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
-import trufflesom.interpreter.nodes.GlobalNode;
-import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import trufflesom.interpreter.nodes.MessageSendNode;
@@ -43,16 +41,6 @@ public final class SNodeFactory {
   public static FieldReadNode createFieldRead(final ExpressionNode self,
       final int fieldIndex, final SourceSection source) {
     return new FieldReadNode(self, fieldIndex).initialize(source);
-  }
-
-  public static GlobalNode createGlobalRead(final String name,
-      final Universe universe, final SourceSection source) {
-    return createGlobalRead(universe.symbolFor(name), universe, source);
-  }
-
-  public static GlobalNode createGlobalRead(final SSymbol name,
-      final Universe universe, final SourceSection source) {
-    return new UninitializedGlobalReadNode(name, source, universe);
   }
 
   public static FieldWriteNode createFieldWrite(final ExpressionNode self,

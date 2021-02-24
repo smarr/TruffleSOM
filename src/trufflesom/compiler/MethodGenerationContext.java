@@ -28,7 +28,6 @@ package trufflesom.compiler;
 import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
 import static trufflesom.interpreter.SNodeFactory.createFieldRead;
 import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
-import static trufflesom.interpreter.SNodeFactory.createGlobalRead;
 import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
 
 import java.util.ArrayList;
@@ -52,7 +51,6 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
-import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
@@ -406,11 +404,6 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     }
     return createFieldRead(getSelfRead(source),
         holderGenc.getFieldIndex(fieldName), source);
-  }
-
-  public GlobalNode getGlobalRead(final SSymbol varName,
-      final Universe universe, final SourceSection source) {
-    return createGlobalRead(varName, universe, source);
   }
 
   public FieldWriteNode getObjectFieldWrite(final SSymbol fieldName,

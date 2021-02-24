@@ -13,7 +13,6 @@ import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
 import static trufflesom.compiler.Symbol.Pound;
-import static trufflesom.interpreter.SNodeFactory.createGlobalRead;
 import static trufflesom.interpreter.SNodeFactory.createMessageSend;
 import static trufflesom.interpreter.SNodeFactory.createSequence;
 
@@ -30,6 +29,7 @@ import bd.source.SourceCoordinate;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.literals.ArrayLiteralNode;
 import trufflesom.interpreter.nodes.literals.BigIntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
@@ -102,7 +102,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private ExpressionNode createSequenceNode(final SourceCoordinate coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return createGlobalRead("nil", universe, getSource(coord));
+      return GlobalNode.create(universe.symNil, universe, getSource(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }

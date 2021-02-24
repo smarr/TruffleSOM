@@ -70,6 +70,7 @@ import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Lexer.Peek;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -662,7 +663,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
 
     // and finally assume it is a global
-    return mgenc.getGlobalRead(variableName, universe, source);
+    return GlobalNode.create(variableName, universe, source);
   }
 
   private void getSymbolFromLexer() {

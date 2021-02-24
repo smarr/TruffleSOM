@@ -35,10 +35,12 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Context.Builder;
 import org.graalvm.polyglot.Value;
 
+import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.utilities.CyclicAssumption;
 
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
@@ -81,13 +83,15 @@ public final class Universe implements IdProvider<SSymbol> {
    * SSymbol and a mutable value.
    */
   public static final class Association {
-    private final SSymbol key;
+    private final SSymbol          key;
+    private final CyclicAssumption assumption;
 
     @CompilationFinal private Object value;
 
     public Association(final SSymbol key, final Object value) {
       this.key = key;
       this.value = value;
+      this.assumption = new CyclicAssumption("Global: " + key.getString());
     }
 
     public SSymbol getKey() {
@@ -99,8 +103,12 @@ public final class Universe implements IdProvider<SSymbol> {
     }
 
     public void setValue(final Object value) {
-      TruffleCompiler.transferToInterpreterAndInvalidate("Changed global");
+      this.assumption.invalidate("updated global");
       this.value = value;
+    }
+
+    public Assumption getAssumption() {
+      return assumption.getAssumption();
     }
   }
 
