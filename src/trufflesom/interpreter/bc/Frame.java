@@ -43,7 +43,6 @@ public class Frame {
   public static void resetStackPointer(final VirtualFrame frame,
       final FrameSlot stackPointer) {
     frame.setInt(stackPointer, -1); // pointer points to outside the stack
-    // System.out.println("[reset] sp: 0");
   }
 
   public static Object[] popCallArguments(final VirtualFrame frame,
