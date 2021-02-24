@@ -20,13 +20,16 @@ import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
@@ -126,6 +129,7 @@ public class BytecodeLoopNode extends ExpressionNode {
   }
 
   @Override
+  @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
   public Object executeGeneric(final VirtualFrame frame) {
     Object[] stack = new Object[maxStackDepth];
     // TODO: verify this is not needed (shouldn't be by correct stack semantics,
@@ -220,6 +224,7 @@ public class BytecodeLoopNode extends ExpressionNode {
           if (global != null) {
             Frame.push(frame, global, stackPointer, stackVar);
           } else {
+            CompilerDirectives.transferToInterpreter();
             // Send 'unknownGlobal:' to self
 
             VirtualFrame outer = determineOuterContext(frame);
@@ -286,6 +291,7 @@ public class BytecodeLoopNode extends ExpressionNode {
             nextBytecodeIndex = 0;
             Frame.resetStackPointer(frame, stackPointer);
           } catch (EscapedBlockException e) {
+            CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = Frame.getSelf(outer);
             Object result =
@@ -302,6 +308,7 @@ public class BytecodeLoopNode extends ExpressionNode {
             nextBytecodeIndex = 0;
             Frame.resetStackPointer(frame, stackPointer);
           } catch (EscapedBlockException e) {
+            CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = Frame.getSelf(outer);
             Object result =
@@ -383,9 +390,15 @@ public class BytecodeLoopNode extends ExpressionNode {
     Object[] callArgs =
         Frame.popCallArguments(frame, numberOfArguments, stackPointer, stackVar);
 
+    SInvokable invokable = doLookup(signature, callArgs);
+    performInvoke(frame, signature, invokable, callArgs);
+  }
+
+  @TruffleBoundary
+  private SInvokable doLookup(final SSymbol signature, final Object[] callArgs) {
     SClass rcvrClass = Types.getClassOf(callArgs[0], universe);
     SInvokable invokable = rcvrClass.lookupInvokable(signature);
-    performInvoke(frame, signature, invokable, callArgs);
+    return invokable;
   }
 
   public int getNumberOfLocals() {
