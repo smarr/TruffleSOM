@@ -30,6 +30,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+import trufflesom.interpreter.EscapedBlockException;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.ReturnException;
@@ -46,6 +47,7 @@ import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -283,6 +285,12 @@ public class BytecodeLoopNode extends ExpressionNode {
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
             Frame.resetStackPointer(frame, stackPointer);
+          } catch (EscapedBlockException e) {
+            VirtualFrame outer = determineOuterContext(frame);
+            SObject sendOfBlockValueMsg = Frame.getSelf(outer);
+            Object result =
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+            Frame.push(frame, result, stackPointer, stackVar);
           }
           break;
         }
@@ -293,6 +301,12 @@ public class BytecodeLoopNode extends ExpressionNode {
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
             Frame.resetStackPointer(frame, stackPointer);
+          } catch (EscapedBlockException e) {
+            VirtualFrame outer = determineOuterContext(frame);
+            SObject sendOfBlockValueMsg = Frame.getSelf(outer);
+            Object result =
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+            Frame.push(frame, result, stackPointer, stackVar);
           }
           break;
         }
@@ -357,9 +371,7 @@ public class BytecodeLoopNode extends ExpressionNode {
       throw new ReturnException(result, marker);
     } else {
       SBlock block = (SBlock) SArguments.rcvr(frame);
-      Object self = SArguments.rcvr(ctx);
-      Object ebResult = SAbstractObject.sendEscapedBlock(self, block, universe);
-      Frame.push(frame, ebResult, stackPointer, stackVar);
+      throw new EscapedBlockException(block);
     }
   }
 
