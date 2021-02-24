@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.tools.structure.StructuralProbe;
@@ -33,7 +32,6 @@ import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserBc;
 import trufflesom.compiler.Symbol;
 import trufflesom.compiler.Variable;
-import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
@@ -203,23 +201,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       i += 1;
     }
 
-    Internal stackVar = new Internal(universe.symStackVar, sourceSection);
-    stackVar.init(
-        currentScope.getFrameDescriptor().addFrameSlot(stackVar, FrameSlotKind.Object),
-        currentScope.getFrameDescriptor());
-
-    Internal stackPointer = new Internal(universe.symStackPointer, sourceSection);
-    stackPointer.init(
-        currentScope.getFrameDescriptor().addFrameSlot(stackPointer, FrameSlotKind.Int),
-        currentScope.getFrameDescriptor());
-
     FrameSlot frameOnStackMarker =
         throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
 
     ExpressionNode body = new BytecodeLoopNode(
         bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),
-        stackVar.getSlot(), stackPointer.getSlot(), frameOnStackMarker,
-        universe);
+        frameOnStackMarker, universe);
     body.initialize(sourceSection);
 
     return super.assembleMethod(body, sourceSection, fullSourceSection);

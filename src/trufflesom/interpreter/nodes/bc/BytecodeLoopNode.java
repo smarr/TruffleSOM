@@ -39,7 +39,6 @@ import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.bc.Frame;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
@@ -67,14 +66,11 @@ public class BytecodeLoopNode extends ExpressionNode {
   private final int      maxStackDepth;
   private final Universe universe;
 
-  private final FrameSlot stackVar;
-  private final FrameSlot stackPointer;
   private final FrameSlot frameOnStackMarker;
 
   public BytecodeLoopNode(final byte[] bytecodes, final int numLocals,
       final FrameSlot[] localsAndOuters,
-      final Object[] literals, final int maxStackDepth, final FrameSlot stackVar,
-      final FrameSlot stackPointer, final FrameSlot frameOnStackMarker,
+      final Object[] literals, final int maxStackDepth, final FrameSlot frameOnStackMarker,
       final Universe universe) {
     this.bytecodes = bytecodes;
     this.numLocals = numLocals;
@@ -84,15 +80,13 @@ public class BytecodeLoopNode extends ExpressionNode {
     this.universe = universe;
     this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode();
 
-    this.stackVar = stackVar;
-    this.stackPointer = stackPointer;
     this.frameOnStackMarker = frameOnStackMarker;
   }
 
   @ExplodeLoop
   private VirtualFrame determineOuterContext(final VirtualFrame frame) {
     // TODO: change bytecode format to include the context level
-    Object object = Frame.getSelfBlockOrObject(frame);
+    Object object = frame.getArguments()[0];
 
     if (!(object instanceof SBlock)) {
       return frame;
@@ -102,7 +96,7 @@ public class BytecodeLoopNode extends ExpressionNode {
     MaterializedFrame outer = self.getContext();
 
     while (true) {
-      Object rcvr = Frame.getArgument(outer, 0);
+      Object rcvr = outer.getArguments()[0];
 
       if (rcvr instanceof SBlock) {
         outer = ((SBlock) rcvr).getContext();
@@ -115,7 +109,7 @@ public class BytecodeLoopNode extends ExpressionNode {
   @ExplodeLoop
   private MaterializedFrame determineContext(final VirtualFrame frame,
       final int contextLevel) {
-    SBlock self = Frame.getSelfBlock(frame);
+    SBlock self = (SBlock) frame.getArguments()[0];
     int i = contextLevel - 1;
 
     while (i > 0) {
@@ -132,12 +126,7 @@ public class BytecodeLoopNode extends ExpressionNode {
   @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
   public Object executeGeneric(final VirtualFrame frame) {
     Object[] stack = new Object[maxStackDepth];
-    // TODO: verify this is not needed (shouldn't be by correct stack semantics,
-    // which I believe we obey)
-    // Arrays.fill(stack, Nil.nilObject);
-    frame.setObject(stackVar, stack);
-    Frame.resetStackPointer(frame, stackPointer);
-
+    int stackPointer = -1;
     int bytecodeIndex = 0;
 
     while (true) {
@@ -150,11 +139,13 @@ public class BytecodeLoopNode extends ExpressionNode {
 
       switch (bytecode) {
         case HALT: {
-          return Frame.getStackElement(frame, 0, stackPointer, stackVar);
+          return stack[stackPointer];
         }
 
         case DUP: {
-          Frame.duplicateTopOfStack(frame, stackPointer, stackVar);
+          Object top = stack[stackPointer];
+          stackPointer += 1;
+          stack[stackPointer] = top;
           break;
         }
 
@@ -167,7 +158,10 @@ public class BytecodeLoopNode extends ExpressionNode {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
           FrameSlot slot = localsAndOuters[localIdx];
-          Frame.push(frame, currentOrContext.getValue(slot), stackPointer, stackVar);
+
+          Object value = currentOrContext.getValue(slot);
+          stackPointer += 1;
+          stack[stackPointer] = value;
           break;
         }
 
@@ -179,8 +173,10 @@ public class BytecodeLoopNode extends ExpressionNode {
           if (contextIdx > 0) {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
-          Frame.push(frame, Frame.getArgument(currentOrContext, argIdx), stackPointer,
-              stackVar);
+
+          Object value = currentOrContext.getArguments()[argIdx];
+          stackPointer += 1;
+          stack[stackPointer] = value;
           break;
         }
 
@@ -193,25 +189,29 @@ public class BytecodeLoopNode extends ExpressionNode {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Frame.push(frame, Frame.getSelf(currentOrContext).getField(fieldIdx), stackPointer,
-              stackVar);
+          Object value = ((SObject) currentOrContext.getArguments()[0]).getField(fieldIdx);
+          stackPointer += 1;
+          stack[stackPointer] = value;
           break;
         }
 
         case PUSH_BLOCK: {
           byte literalIdx = bytecodes[bytecodeIndex + 1];
           SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
-          Frame.push(frame,
-              new SBlock(blockMethod,
-                  universe.getBlockClass(blockMethod.getNumberOfArguments()),
-                  frame.materialize()),
-              stackPointer, stackVar);
+
+          Object value = new SBlock(blockMethod,
+              universe.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
+          stackPointer += 1;
+          stack[stackPointer] = value;
           break;
         }
 
         case PUSH_CONSTANT: {
           byte literalIdx = bytecodes[bytecodeIndex + 1];
-          Frame.push(frame, literalsAndConstants[literalIdx], stackPointer, stackVar);
+
+          Object value = literalsAndConstants[literalIdx];
+          stackPointer += 1;
+          stack[stackPointer] = value;
           break;
         }
 
@@ -222,7 +222,8 @@ public class BytecodeLoopNode extends ExpressionNode {
           Object global = universe.getGlobal(globalName);
 
           if (global != null) {
-            Frame.push(frame, global, stackPointer, stackVar);
+            stackPointer += 1;
+            stack[stackPointer] = global;
           } else {
             CompilerDirectives.transferToInterpreter();
             // Send 'unknownGlobal:' to self
@@ -230,14 +231,16 @@ public class BytecodeLoopNode extends ExpressionNode {
             VirtualFrame outer = determineOuterContext(frame);
 
             Object handlerResult =
-                SAbstractObject.sendUnknownGlobal(Frame.getSelf(outer), globalName, universe);
-            Frame.push(frame, handlerResult, stackPointer, stackVar);
+                SAbstractObject.sendUnknownGlobal(
+                    outer.getArguments()[0], globalName, universe);
+            stackPointer += 1;
+            stack[stackPointer] = handlerResult;
           }
           break;
         }
 
         case POP: {
-          Frame.pop(frame, stackPointer);
+          stackPointer -= 1;
           break;
         }
 
@@ -251,7 +254,11 @@ public class BytecodeLoopNode extends ExpressionNode {
           }
 
           FrameSlot slot = localsAndOuters[localIdx];
-          currentOrContext.setObject(slot, Frame.popValue(frame, stackPointer, stackVar));
+
+          Object value = stack[stackPointer];
+          stackPointer -= 1;
+
+          currentOrContext.setObject(slot, value);
           break;
         }
 
@@ -264,8 +271,10 @@ public class BytecodeLoopNode extends ExpressionNode {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Frame.setArgument(currentOrContext, argIdx,
-              Frame.popValue(frame, stackPointer, stackVar));
+          Object value = stack[stackPointer];
+          stackPointer -= 1;
+
+          currentOrContext.getArguments()[argIdx] = value;
           break;
         }
 
@@ -278,52 +287,83 @@ public class BytecodeLoopNode extends ExpressionNode {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Frame.getSelf(currentOrContext).setField(
-              fieldIdx,
-              Frame.popValue(frame, stackPointer, stackVar));
+          Object value = stack[stackPointer];
+          stackPointer -= 1;
+
+          ((SObject) currentOrContext.getArguments()[0]).setField(fieldIdx, value);
           break;
         }
 
         case SEND: {
           try {
-            doSend(frame, bytecodeIndex);
+            byte literalIdx = bytecodes[bytecodeIndex + 1];
+            SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
+            int numberOfArguments = signature.getNumberOfSignatureArguments();
+
+            Object[] callArgs = new Object[numberOfArguments];
+            System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
+                numberOfArguments);
+            stackPointer -= numberOfArguments;
+
+            Object result = doSend(signature, callArgs);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
-            Frame.resetStackPointer(frame, stackPointer);
+            stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = Frame.getSelf(outer);
+            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
-            Frame.push(frame, result, stackPointer, stackVar);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
           }
           break;
         }
 
         case SUPER_SEND: {
           try {
-            doSuperSend(frame, bytecodeIndex);
+            byte literalIdx = bytecodes[bytecodeIndex + 1];
+            SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
+            int numberOfArguments = signature.getNumberOfSignatureArguments();
+            Object[] callArgs = new Object[numberOfArguments];
+            System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
+                numberOfArguments);
+            stackPointer -= numberOfArguments;
+
+            Object result = doSuperSend(signature, callArgs);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
-            Frame.resetStackPointer(frame, stackPointer);
+            stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = Frame.getSelf(outer);
+            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
-            Frame.push(frame, result, stackPointer, stackVar);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
           }
           break;
         }
 
         case RETURN_LOCAL: {
-          return Frame.popValue(frame, stackPointer, stackVar);
+          return stack[stackPointer];
         }
 
         case RETURN_NON_LOCAL: {
-          doReturnNonLocal(frame, bytecodeIndex);
+          Object result = stack[stackPointer];
+          // stackPointer -= 1;
+          doReturnNonLocal(frame, bytecodeIndex, result);
           break;
         }
 
@@ -340,35 +380,27 @@ public class BytecodeLoopNode extends ExpressionNode {
     return ((Invokable) getRootNode()).getHolder();
   }
 
-  private void doSuperSend(final VirtualFrame frame, final int bytecodeIndex) {
-    byte literalIdx = bytecodes[bytecodeIndex + 1];
-    SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
-
+  private Object doSuperSend(final SSymbol signature, final Object[] callArgs) {
     SClass holderSuper = (SClass) getHolder().getSuperClass();
     SInvokable invokable = holderSuper.lookupInvokable(signature);
 
-    int numberOfArguments = signature.getNumberOfSignatureArguments();
-    Object[] callArgs =
-        Frame.popCallArguments(frame, numberOfArguments, stackPointer, stackVar);
-    performInvoke(frame, signature, invokable, callArgs);
+    return performInvoke(signature, invokable, callArgs);
   }
 
-  private void performInvoke(final VirtualFrame frame, final SSymbol signature,
-      final SInvokable invokable, final Object[] callArgs) {
-    Object result;
+  private Object performInvoke(final SSymbol signature, final SInvokable invokable,
+      final Object[] callArgs) {
     if (invokable != null) {
-      result = invokable.invoke(indirectCallNode, callArgs);
+      return invokable.invoke(indirectCallNode, callArgs);
     } else {
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(callArgs);
       CallTarget callTarget = CachedDnuNode.getDnuCallTarget(getHolder(), universe);
-      result = indirectCallNode.call(callTarget, callArgs[0], signature, argumentsArray);
+      return indirectCallNode.call(callTarget, callArgs[0], signature, argumentsArray);
     }
-    Frame.push(frame, result, stackPointer, stackVar);
   }
 
-  private void doReturnNonLocal(final VirtualFrame frame, final int bytecodeIndex) {
+  private void doReturnNonLocal(final VirtualFrame frame, final int bytecodeIndex,
+      final Object result) {
     byte contextIdx = bytecodes[bytecodeIndex + 1];
-    Object result = Frame.popValue(frame, stackPointer, stackVar);
 
     MaterializedFrame ctx = determineContext(frame, contextIdx);
     FrameOnStackMarker marker =
@@ -382,16 +414,9 @@ public class BytecodeLoopNode extends ExpressionNode {
     }
   }
 
-  private void doSend(final VirtualFrame frame, final int bytecodeIndex) {
-    byte literalIdx = bytecodes[bytecodeIndex + 1];
-    SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
-
-    int numberOfArguments = signature.getNumberOfSignatureArguments();
-    Object[] callArgs =
-        Frame.popCallArguments(frame, numberOfArguments, stackPointer, stackVar);
-
+  private Object doSend(final SSymbol signature, final Object[] callArgs) {
     SInvokable invokable = doLookup(signature, callArgs);
-    performInvoke(frame, signature, invokable, callArgs);
+    return performInvoke(signature, invokable, callArgs);
   }
 
   @TruffleBoundary
