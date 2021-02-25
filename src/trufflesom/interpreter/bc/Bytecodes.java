@@ -51,6 +51,9 @@ public class Bytecodes {
 
   public static final byte Q_PUSH_GLOBAL = 16;
   public static final byte Q_SEND        = 17;
+  public static final byte Q_SEND_1      = 18;
+  public static final byte Q_SEND_2      = 19;
+  public static final byte Q_SEND_3      = 20;
 
   private static final String[] PADDED_BYTECODE_NAMES = new String[] {
       "HALT            ", "DUP             ", "PUSH_LOCAL      ",
@@ -61,7 +64,7 @@ public class Bytecodes {
       "RETURN_NON_LOCAL",
 
       "Q_PUSH_GLOBAL",
-      "Q_SEND",
+      "Q_SEND", "Q_SEND_1", "Q_SEND_2", "Q_SEND_3",
   };
 
   private static final String[] BYTECODE_NAMES =
@@ -86,7 +89,6 @@ public class Bytecodes {
   }
 
   public static int getBytecodeLength(final byte bytecode) {
-    // Return the length of the given bytecode
     return BYTECODE_LENGTH[bytecode];
   }
 
@@ -111,5 +113,8 @@ public class Bytecodes {
 
       2, // Q_PUSH_GLOBAL
       2, // Q_SEND
+      2, // Q_SEND_1
+      2, // Q_SEND_2
+      2, // Q_SEND_3
   };
 }

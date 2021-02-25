@@ -14,11 +14,16 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.Q_PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_1;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_2;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_3;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
+
+import java.util.Arrays;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
@@ -35,6 +40,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+import bd.primitives.Specializer;
 import trufflesom.interpreter.EscapedBlockException;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
@@ -47,6 +53,12 @@ import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
+import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
+import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.primitives.Primitives;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SArray;
@@ -60,6 +72,7 @@ import trufflesom.vmobjects.SSymbol;
 
 public class BytecodeLoopNode extends ExpressionNode {
   private static final ValueProfile frameType = ValueProfile.createClassProfile();
+  private static final LiteralNode  dummyNode = new IntegerLiteralNode(0);
 
   @CompilationFinal(dimensions = 1) private final byte[]      bytecodes;
   @CompilationFinal(dimensions = 1) private final FrameSlot[] localsAndOuters;
@@ -127,6 +140,10 @@ public class BytecodeLoopNode extends ExpressionNode {
     // Graal needs help here to see that this is always a MaterializedFrame
     // so, we record explicitly a class profile
     return frameType.profile(self.getContext());
+  }
+
+  public void requicken(final int bytecodeIndex, final byte bytecode) {
+    bytecodes[bytecodeIndex] = bytecode;
   }
 
   @Override
@@ -302,16 +319,64 @@ public class BytecodeLoopNode extends ExpressionNode {
             SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
             int numberOfArguments = signature.getNumberOfSignatureArguments();
 
-            GenericMessageSendNode quickened =
-                MessageSendNode.createGeneric(signature, null, sourceSection, universe);
-            quickenBytecode(bytecodeIndex, Q_SEND, quickened);
-
             Object[] callArgs = new Object[numberOfArguments];
             System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
                 numberOfArguments);
             stackPointer -= numberOfArguments;
 
-            Object result = quickened.doPreEvaluated(frame, callArgs);
+            Object result = null;
+            boolean done = false;
+
+            if (numberOfArguments <= 3) {
+              Primitives prims = universe.getPrimitives();
+              ExpressionNode[] dummyArgs = new ExpressionNode[numberOfArguments];
+              Arrays.fill(dummyArgs, dummyNode);
+
+              Specializer<Universe, ExpressionNode, SSymbol> specializer =
+                  prims.getEagerSpecializer(signature, callArgs, dummyArgs);
+
+              if (specializer != null) {
+                done = true;
+                ExpressionNode quickened = specializer.create(callArgs, dummyArgs,
+                    sourceSection, !specializer.noWrapper(), universe);
+
+                if (numberOfArguments == 1) {
+                  UnaryExpressionNode q = (UnaryExpressionNode) quickened;
+                  if (!specializer.noWrapper()) {
+                    quickened = q = new UnaryPrimitiveWrapper(
+                        bytecodeIndex, signature, q, universe, sourceSection);
+                  }
+                  quickenBytecode(bytecodeIndex, Q_SEND_1, quickened);
+                  result = q.executeEvaluated(frame, callArgs[0]);
+                } else if (numberOfArguments == 2) {
+                  BinaryExpressionNode q = (BinaryExpressionNode) quickened;
+
+                  if (!specializer.noWrapper()) {
+                    quickened = q = new BinaryPrimitiveWrapper(
+                        bytecodeIndex, signature, q, universe, sourceSection);
+                  }
+                  quickenBytecode(bytecodeIndex, Q_SEND_2, quickened);
+                  result = q.executeEvaluated(frame, callArgs[0], callArgs[1]);
+                } else if (numberOfArguments == 3) {
+                  TernaryExpressionNode q = (TernaryExpressionNode) quickened;
+
+                  if (!specializer.noWrapper()) {
+                    quickened = q = new TernaryPrimitiveWrapper(
+                        bytecodeIndex, signature, q, universe, sourceSection);
+                  }
+                  quickenBytecode(bytecodeIndex, Q_SEND_3, quickened);
+                  result = q.executeEvaluated(frame, callArgs[0], callArgs[1], callArgs[2]);
+                }
+              }
+            }
+
+            if (!done) {
+              GenericMessageSendNode quickened =
+                  MessageSendNode.createGeneric(signature, null, sourceSection, universe);
+              quickenBytecode(bytecodeIndex, Q_SEND, quickened);
+
+              result = quickened.doPreEvaluated(frame, callArgs);
+            }
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -392,6 +457,96 @@ public class BytecodeLoopNode extends ExpressionNode {
 
           try {
             Object result = node.doPreEvaluated(frame, callArgs);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          } catch (RestartLoopException e) {
+            nextBytecodeIndex = 0;
+            stackPointer = -1;
+          } catch (EscapedBlockException e) {
+            CompilerDirectives.transferToInterpreter();
+            VirtualFrame outer = determineOuterContext(frame);
+            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            Object result =
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          }
+
+          break;
+        }
+
+        case Q_SEND_1: {
+          Object rcvr = stack[stackPointer];
+
+          stackPointer -= 1;
+
+          try {
+            assert quickened[bytecodeIndex] instanceof UnaryExpressionNode;
+            UnaryExpressionNode node = (UnaryExpressionNode) quickened[bytecodeIndex];
+            Object result = node.executeEvaluated(frame, rcvr);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          } catch (RestartLoopException e) {
+            nextBytecodeIndex = 0;
+            stackPointer = -1;
+          } catch (EscapedBlockException e) {
+            CompilerDirectives.transferToInterpreter();
+            VirtualFrame outer = determineOuterContext(frame);
+            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            Object result =
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          }
+
+          break;
+        }
+
+        case Q_SEND_2: {
+          Object rcvr = stack[stackPointer - 1];
+          Object arg = stack[stackPointer];
+
+          stackPointer -= 2;
+
+          try {
+            assert quickened[bytecodeIndex] instanceof BinaryExpressionNode;
+            BinaryExpressionNode node = (BinaryExpressionNode) quickened[bytecodeIndex];
+            Object result = node.executeEvaluated(frame, rcvr, arg);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          } catch (RestartLoopException e) {
+            nextBytecodeIndex = 0;
+            stackPointer = -1;
+          } catch (EscapedBlockException e) {
+            CompilerDirectives.transferToInterpreter();
+            VirtualFrame outer = determineOuterContext(frame);
+            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            Object result =
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+
+            stackPointer += 1;
+            stack[stackPointer] = result;
+          }
+
+          break;
+        }
+
+        case Q_SEND_3: {
+          Object rcvr = stack[stackPointer - 2];
+          Object arg1 = stack[stackPointer - 1];
+          Object arg2 = stack[stackPointer];
+
+          stackPointer -= 3;
+
+          try {
+            assert quickened[bytecodeIndex] instanceof TernaryExpressionNode;
+            TernaryExpressionNode node = (TernaryExpressionNode) quickened[bytecodeIndex];
+            Object result = node.executeEvaluated(frame, rcvr, arg1, arg2);
 
             stackPointer += 1;
             stack[stackPointer] = result;
