@@ -72,6 +72,9 @@ public final class SSymbol extends SAbstractObject {
     return "#" + string;
   }
 
+  /**
+   * @return number of arguments including the receiver.
+   */
   public int getNumberOfSignatureArguments() {
     return numberOfSignatureArguments;
   }
