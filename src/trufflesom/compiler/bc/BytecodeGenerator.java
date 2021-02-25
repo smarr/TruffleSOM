@@ -59,8 +59,8 @@ public class BytecodeGenerator {
     emit1(mgenc, RETURN_LOCAL);
   }
 
-  public void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc, final byte ctx) {
-    emit2(mgenc, RETURN_NON_LOCAL, ctx);
+  public void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {
+    emit2(mgenc, RETURN_NON_LOCAL, mgenc.getMaxContextLevel());
   }
 
   public void emitDUP(final BytecodeMethodGenContext mgenc) {

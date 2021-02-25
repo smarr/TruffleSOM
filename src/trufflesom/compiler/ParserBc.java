@@ -114,7 +114,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     if (mgenc.isBlockMethod()) {
       mgenc.makeOuterCatchNonLocalReturn();
-      bcGen.emitRETURNNONLOCAL(mgenc, mgenc.getMaxContextLevel());
+      bcGen.emitRETURNNONLOCAL(mgenc);
     } else {
       bcGen.emitRETURNLOCAL(mgenc);
     }
