@@ -59,7 +59,9 @@ import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeFactor
 import trufflesom.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.NotMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.OrMessageNodeFactory;
+import trufflesom.interpreter.nodes.specialized.whileloops.WhileFalsePrimitiveNodeFactory;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
+import trufflesom.interpreter.nodes.specialized.whileloops.WhileTruePrimitiveNodeFactory;
 import trufflesom.primitives.arithmetic.AdditionPrimFactory;
 import trufflesom.primitives.arithmetic.BitXorPrimFactory;
 import trufflesom.primitives.arithmetic.CosPrimFactory;
@@ -286,6 +288,9 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     add(allFactories, PerformPrimFactory.getInstance());
     add(allFactories, PerformWithArgumentsInSuperclassPrimFactory.getInstance());
     add(allFactories, PerformWithArgumentsPrimFactory.getInstance());
+
+    add(allFactories, WhileTruePrimitiveNodeFactory.getInstance());
+    add(allFactories, WhileFalsePrimitiveNodeFactory.getInstance());
 
     return allFactories;
   }
