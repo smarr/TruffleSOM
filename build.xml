@@ -331,10 +331,25 @@
     <target name="test" depends="compile-for-jar" description="Execute tests">
         <travis target="test" start="test" />
 
-        <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed"
+        <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed.ast"
             outputtoformatters="true">
             <jvmarg value="-ea" />
             <jvmarg value="-esa" />
+            <jvmarg value="-Dsom.interp=AST" />
+            <classpath refid="som.cp" />
+            <batchtest fork="yes" filtertrace="false">
+              <fileset dir="tests">
+                  <include name="**/*Test*.java"/>
+              </fileset>
+            </batchtest>
+            <formatter type="brief" usefile="false"/>
+        </junit>
+        
+        <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed.bc"
+            outputtoformatters="true">
+            <jvmarg value="-ea" />
+            <jvmarg value="-esa" />
+            <jvmarg value="-Dsom.interp=BC" />
             <classpath refid="som.cp" />
             <batchtest fork="yes" filtertrace="false">
               <fileset dir="tests">
@@ -350,7 +365,8 @@
             <jvmarg value="-esa" />
             <arg line="-cp Smalltalk TestSuite/TestHarness.som --ignore-inefficacies" />
         </java>
-        <fail message="Basic tests failed." if="test.failed" />
+        <fail message="Basic tests failed for AST interpreter." if="test.failed.ast" />
+        <fail message="Basic tests failed for BC interpreter." if="test.failed.bc" />
 
         <travis target="test" />
     </target>
@@ -361,10 +377,19 @@
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
             <arg value="--no-libgraal" />
+            <arg value="-Dsom.interp=AST" />
             <arg value="-cp" />
             <arg value="Smalltalk" />
             <arg value="TestSuite/TestHarness.com" />
-            <arg value="TestSuite/EmptyTest.som" />
+        </exec>
+        
+        <exec executable="./som" failonerror="true">
+            <arg value="-G" />
+            <arg value="--no-libgraal" />
+            <arg value="-Dsom.interp=BC" />
+            <arg value="-cp" />
+            <arg value="Smalltalk" />
+            <arg value="TestSuite/TestHarness.com" />
         </exec>
 
         <travis target="som-test" />

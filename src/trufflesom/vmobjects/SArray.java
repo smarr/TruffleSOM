@@ -342,4 +342,8 @@ public final class SArray extends SAbstractObject {
   public SClass getSOMClass(final Universe universe) {
     return universe.arrayClass;
   }
+
+  public Object debugGetObject(final int i) {
+    return ((Object[]) storage)[i];
+  }
 }

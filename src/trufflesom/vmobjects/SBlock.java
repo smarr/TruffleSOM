@@ -43,6 +43,10 @@ public final class SBlock extends SAbstractObject {
     return method;
   }
 
+  public boolean hasContext() {
+    return context != null;
+  }
+
   public MaterializedFrame getContext() {
     assert context != null;
     return context;

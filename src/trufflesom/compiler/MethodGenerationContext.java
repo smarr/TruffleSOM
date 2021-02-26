@@ -28,7 +28,6 @@ package trufflesom.compiler;
 import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
 import static trufflesom.interpreter.SNodeFactory.createFieldRead;
 import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
-import static trufflesom.interpreter.SNodeFactory.createGlobalRead;
 import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
 
 import java.util.ArrayList;
@@ -52,7 +51,6 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
-import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
@@ -64,30 +62,32 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class MethodGenerationContext implements ScopeBuilder<MethodGenerationContext> {
+public class MethodGenerationContext implements ScopeBuilder<MethodGenerationContext> {
 
-  private final ClassGenerationContext  holderGenc;
-  private final MethodGenerationContext outerGenc;
-  private final boolean                 blockMethod;
+  protected final ClassGenerationContext  holderGenc;
+  protected final MethodGenerationContext outerGenc;
+  private final boolean                   blockMethod;
 
-  private SSymbol signature;
-  private boolean primitive;
-  private boolean needsToCatchNonLocalReturn;
-  private boolean throwsNonLocalReturn;      // does directly or indirectly a non-local return
+  protected SSymbol signature;
+  private boolean   primitive;
+  private boolean   needsToCatchNonLocalReturn;
+
+  // does directly or indirectly a non-local return
+  protected boolean throwsNonLocalReturn;
 
   private boolean accessesVariablesOfOuterScope;
 
-  private final LinkedHashMap<SSymbol, Argument> arguments;
-  private final LinkedHashMap<SSymbol, Local>    locals;
+  protected final LinkedHashMap<SSymbol, Argument> arguments;
+  protected final LinkedHashMap<SSymbol, Local>    locals;
 
-  private Internal           frameOnStack;
-  private final LexicalScope currentScope;
+  private Internal             frameOnStack;
+  protected final LexicalScope currentScope;
 
   private final List<SMethod> embeddedBlockMethods;
 
-  private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
+  public final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
-  private final Universe universe;
+  protected final Universe universe;
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -104,7 +104,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     this(holderGenc, outerGenc, holderGenc.getUniverse(), true, outerGenc.structuralProbe);
   }
 
-  private MethodGenerationContext(final ClassGenerationContext holderGenc,
+  protected MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc, final Universe universe,
       final boolean isBlockMethod,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -136,15 +136,15 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     return currentScope;
   }
 
-  public Internal getFrameOnStackMarker() {
+  public Internal getFrameOnStackMarker(final SourceSection source) {
     if (outerGenc != null) {
-      return outerGenc.getFrameOnStackMarker();
+      return outerGenc.getFrameOnStackMarker(source);
     }
 
     if (frameOnStack == null) {
       assert needsToCatchNonLocalReturn;
 
-      frameOnStack = new Internal(universe.symFrameOnStack);
+      frameOnStack = new Internal(universe.symFrameOnStack, source);
       frameOnStack.init(
           currentScope.getFrameDescriptor().addFrameSlot(frameOnStack, FrameSlotKind.Object),
           currentScope.getFrameDescriptor());
@@ -153,7 +153,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     return frameOnStack;
   }
 
-  public void makeCatchNonLocalReturn() {
+  public void makeOuterCatchNonLocalReturn() {
     throwsNonLocalReturn = true;
 
     MethodGenerationContext ctx = markOuterContextsToRequireContextAndGetRootContext();
@@ -187,15 +187,20 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     return cls + ">>" + signature.toString();
   }
 
-  public SInvokable assemble(ExpressionNode body, final SourceSection sourceSection,
-      final SourceSection fullSourceSection) {
+  public final SInvokable assemble(final ExpressionNode body,
+      final SourceSection sourceSection, final SourceSection fullSourceSection) {
     if (primitive) {
       return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage(),
           sourceSection, structuralProbe);
     }
 
+    return assembleMethod(body, sourceSection, fullSourceSection);
+  }
+
+  protected SInvokable assembleMethod(ExpressionNode body, final SourceSection sourceSection,
+      final SourceSection fullSourceSection) {
     if (needsToCatchNonLocalReturn()) {
-      body = createCatchNonLocalReturn(body, getFrameOnStackMarker());
+      body = createCatchNonLocalReturn(body, getFrameOnStackMarker(sourceSection));
     }
 
     Method truffleMethod =
@@ -312,7 +317,7 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     return level;
   }
 
-  private int getContextLevel(final SSymbol varName) {
+  public int getContextLevel(final SSymbol varName) {
     if (locals.containsKey(varName) || arguments.containsKey(varName)) {
       return 0;
     }
@@ -382,8 +387,8 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
 
   public ReturnNonLocalNode getNonLocalReturn(final ExpressionNode expr,
       final SourceSection source) {
-    makeCatchNonLocalReturn();
-    return createNonLocalReturn(expr, getFrameOnStackMarker(),
+    makeOuterCatchNonLocalReturn();
+    return createNonLocalReturn(expr, getFrameOnStackMarker(source),
         getOuterSelfContextLevel(), source, holderGenc.getUniverse());
   }
 
@@ -399,11 +404,6 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
     }
     return createFieldRead(getSelfRead(source),
         holderGenc.getFieldIndex(fieldName), source);
-  }
-
-  public GlobalNode getGlobalRead(final SSymbol varName,
-      final Universe universe, final SourceSection source) {
-    return createGlobalRead(varName, universe, source);
   }
 
   public FieldWriteNode getObjectFieldWrite(final SSymbol fieldName,
@@ -466,6 +466,18 @@ public final class MethodGenerationContext implements ScopeBuilder<MethodGenerat
           universe.symbolFor("!i" + Universe.getLocationQualifier(source)), source);
     }
     return loopIdx;
+  }
+
+  public boolean isFinished() {
+    throw new UnsupportedOperationException(
+        "You'll need the BytecodeMethodGenContext. "
+            + "This method should only be used when creating bytecodes.");
+  }
+
+  public void markFinished() {
+    throw new UnsupportedOperationException(
+        "You'll need the BytecodeMethodGenContext. "
+            + "This method should only be used when creating bytecodes.");
   }
 
   /**

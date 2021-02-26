@@ -21,7 +21,10 @@
  */
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -37,6 +40,24 @@ import trufflesom.vmobjects.SSymbol;
 
 public abstract class GlobalNode extends ExpressionNode implements Invocation<SSymbol> {
 
+  public static GlobalNode create(final SSymbol globalName, final Universe universe,
+      final SourceSection source) {
+    if (globalName == universe.symNil) {
+      return new NilGlobalNode(globalName).initialize(source);
+    } else if (globalName.getString().equals("true")) {
+      return new TrueGlobalNode(globalName).initialize(source);
+    } else if (globalName.getString().equals("false")) {
+      return new FalseGlobalNode(globalName).initialize(source);
+    }
+
+    // Get the global from the universe
+    Association assoc = universe.getGlobalsAssociation(globalName);
+    if (assoc != null) {
+      return new CachedGlobalReadNode(globalName, assoc, source);
+    }
+    return new UninitializedGlobalReadNode(globalName, source, universe);
+  }
+
   protected final SSymbol globalName;
 
   public GlobalNode(final SSymbol globalName) {
@@ -48,10 +69,10 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
     return globalName;
   }
 
-  public abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
+  private abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
     protected final Universe universe;
 
-    public AbstractUninitializedGlobalReadNode(final SSymbol globalName,
+    AbstractUninitializedGlobalReadNode(final SSymbol globalName,
         final SourceSection source, final Universe universe) {
       super(globalName);
       this.universe = universe;
@@ -64,19 +85,6 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
     public Object executeGeneric(final VirtualFrame frame) {
       TruffleCompiler.transferToInterpreterAndInvalidate("Uninitialized Global Node");
 
-      // first let's check whether it is one of the well known globals
-      switch (globalName.getString()) {
-        case "true":
-          return replace((GlobalNode) new TrueGlobalNode(
-              globalName).initialize(sourceSection)).executeGeneric(frame);
-        case "false":
-          return replace((GlobalNode) new FalseGlobalNode(
-              globalName).initialize(sourceSection)).executeGeneric(frame);
-        case "nil":
-          return replace((GlobalNode) new NilGlobalNode(
-              globalName).initialize(sourceSection)).executeGeneric(frame);
-      }
-
       // Get the global from the universe
       Association assoc = universe.getGlobalsAssociation(globalName);
       if (assoc != null) {
@@ -88,9 +96,9 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
     }
   }
 
-  public static final class UninitializedGlobalReadNode
+  private static final class UninitializedGlobalReadNode
       extends AbstractUninitializedGlobalReadNode {
-    public UninitializedGlobalReadNode(final SSymbol globalName, final SourceSection source,
+    UninitializedGlobalReadNode(final SSymbol globalName, final SourceSection source,
         final Universe universe) {
       super(globalName, source, universe);
     }
@@ -120,17 +128,23 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
   }
 
   private static final class CachedGlobalReadNode extends GlobalNode {
-    private final Association assoc;
+    private final Association            assoc;
+    @CompilationFinal private Assumption assumption;
 
     private CachedGlobalReadNode(final SSymbol globalName, final Association assoc,
         final SourceSection source) {
       super(globalName);
       this.assoc = assoc;
+      this.assumption = assoc.getAssumption();
       initialize(source);
     }
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
+      if (!assumption.isValid()) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        assumption = assoc.getAssumption();
+      }
       return assoc.getValue();
     }
   }

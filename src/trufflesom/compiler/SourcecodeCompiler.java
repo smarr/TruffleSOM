@@ -34,6 +34,7 @@ import bd.basic.ProgramDefinitionError;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.Universe;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
@@ -54,8 +55,15 @@ public class SourcecodeCompiler {
     String fname = path + File.separator + file + ".som";
     File f = new File(fname);
     Source source = SomLanguage.getSource(f);
-    Parser parser = new Parser(source.getCharacters().toString(), source, probe,
-        language.getUniverse());
+
+    Parser<?> parser;
+    if (VmSettings.UseAstInterp) {
+      parser = new ParserAst(source.getCharacters().toString(), source, probe,
+          language.getUniverse());
+    } else {
+      parser = new ParserBc(source.getCharacters().toString(), source, probe,
+          language.getUniverse());
+    }
 
     SClass result = compile(parser, systemClass, language.getUniverse());
 
@@ -74,13 +82,18 @@ public class SourcecodeCompiler {
   public SClass compileClass(final String stmt, final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws ProgramDefinitionError {
-    Parser parser = new Parser(stmt, null, probe, language.getUniverse());
+    Parser<?> parser;
+    if (VmSettings.UseAstInterp) {
+      parser = new ParserAst(stmt, null, probe, language.getUniverse());
+    } else {
+      parser = new ParserBc(stmt, null, probe, language.getUniverse());
+    }
 
     SClass result = compile(parser, systemClass, language.getUniverse());
     return result;
   }
 
-  public SClass compile(final Parser parser, final SClass systemClass,
+  public SClass compile(final Parser<?> parser, final SClass systemClass,
       final Universe universe) throws ProgramDefinitionError {
     ClassGenerationContext cgc = new ClassGenerationContext(universe, parser.structuralProbe);
 

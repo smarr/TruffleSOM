@@ -62,16 +62,13 @@ public final class ReturnNonLocalNode extends ContextualNode {
     this(node.expression, node.onStackMarkerVar, node.contextLevel, node.universe);
   }
 
-  private FrameOnStackMarker getMarkerFromContext(final MaterializedFrame ctx) {
-    return (FrameOnStackMarker) FrameUtil.getObjectSafe(ctx, frameOnStackMarker);
-  }
-
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
     Object result = expression.executeGeneric(frame);
 
     MaterializedFrame ctx = determineContext(frame);
-    FrameOnStackMarker marker = getMarkerFromContext(ctx);
+    FrameOnStackMarker marker =
+        (FrameOnStackMarker) FrameUtil.getObjectSafe(ctx, frameOnStackMarker);
 
     if (marker.isOnStack()) {
       throw new ReturnException(result, marker);

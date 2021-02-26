@@ -51,6 +51,8 @@ import trufflesom.interpreter.nodes.specialized.AndMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfMessageNodeGen.IfFalseMessageNodeFactory;
+import trufflesom.interpreter.nodes.specialized.IfMessageNodeGen.IfTrueMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IntDownToDoMessageNodeFactory;
@@ -59,7 +61,9 @@ import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNodeFactor
 import trufflesom.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.NotMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.OrMessageNodeFactory;
+import trufflesom.interpreter.nodes.specialized.whileloops.WhileFalsePrimitiveNodeFactory;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
+import trufflesom.interpreter.nodes.specialized.whileloops.WhileTruePrimitiveNodeFactory;
 import trufflesom.primitives.arithmetic.AdditionPrimFactory;
 import trufflesom.primitives.arithmetic.BitXorPrimFactory;
 import trufflesom.primitives.arithmetic.CosPrimFactory;
@@ -286,6 +290,11 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     add(allFactories, PerformPrimFactory.getInstance());
     add(allFactories, PerformWithArgumentsInSuperclassPrimFactory.getInstance());
     add(allFactories, PerformWithArgumentsPrimFactory.getInstance());
+
+    add(allFactories, WhileTruePrimitiveNodeFactory.getInstance());
+    add(allFactories, WhileFalsePrimitiveNodeFactory.getInstance());
+    add(allFactories, IfTrueMessageNodeFactory.getInstance());
+    add(allFactories, IfFalseMessageNodeFactory.getInstance());
 
     return allFactories;
   }

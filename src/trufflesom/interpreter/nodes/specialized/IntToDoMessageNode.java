@@ -25,7 +25,7 @@ import trufflesom.vmobjects.SSymbol;
 
 @GenerateNodeFactory
 @Primitive(selector = "to:do:", noWrapper = true, disabled = true,
-    specializer = ToDoSplzr.class, inParser = false)
+    specializer = ToDoSplzr.class, inParser = false, requiresArguments = true)
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
 
   public static class ToDoSplzr extends Specializer<Universe, ExpressionNode, SSymbol> {
@@ -44,8 +44,8 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
   private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;
 
-  public IntToDoMessageNode(final ExpressionNode orignialNode, final SBlock block) {
-    blockMethod = block.getMethod();
+  public IntToDoMessageNode(final Object[] args) {
+    blockMethod = ((SBlock) args[2]).getMethod();
     valueSend = Truffle.getRuntime().createDirectCallNode(blockMethod.getCallTarget());
   }
 

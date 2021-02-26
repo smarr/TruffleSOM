@@ -56,7 +56,7 @@ public class BlockNode extends LiteralNode {
       CompilerDirectives.transferToInterpreter();
       setBlockClass();
     }
-    return Universe.newBlock(blockMethod, blockClass, null);
+    return new SBlock(blockMethod, blockClass, null);
   }
 
   @Override
@@ -100,7 +100,7 @@ public class BlockNode extends LiteralNode {
         CompilerDirectives.transferToInterpreter();
         setBlockClass();
       }
-      return Universe.newBlock(blockMethod, blockClass, frame.materialize());
+      return new SBlock(blockMethod, blockClass, frame.materialize());
     }
 
     @Override

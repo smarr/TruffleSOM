@@ -31,7 +31,7 @@ public abstract class NewPrim extends BinarySystemOperation {
     public boolean matches(final Object[] args, final ExpressionNode[] argNodes) {
       if (universe == null) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
-        universe = SomLanguage.getCurrentContext(argNodes[0]);
+        universe = SomLanguage.getCurrentContext();
       }
       return args[0] == universe.arrayClass;
     }

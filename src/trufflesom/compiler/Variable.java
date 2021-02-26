@@ -7,6 +7,8 @@ import static trufflesom.interpreter.SNodeFactory.createSuperRead;
 import static trufflesom.interpreter.SNodeFactory.createVariableWrite;
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
+import java.util.Objects;
+
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -14,7 +16,10 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.NodeState;
+import trufflesom.compiler.bc.BytecodeGenerator;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 
@@ -26,6 +31,10 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
   Variable(final SSymbol name, final SourceSection source) {
     this.name = name;
     this.source = source;
+  }
+
+  public final SSymbol getName() {
+    return name;
   }
 
   /** Gets the name including lexical location. */
@@ -40,6 +49,10 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
   @Override
   public abstract ExpressionNode getReadNode(int contextLevel, SourceSection source);
+
+  protected abstract void emitPop(BytecodeGenerator bcGen, BytecodeMethodGenContext mgenc);
+
+  protected abstract void emitPush(BytecodeGenerator bcGen, BytecodeMethodGenContext mgenc);
 
   public abstract Variable split(FrameDescriptor descriptor);
 
@@ -63,6 +76,11 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     assert source == null || !source.equals(
         var.source) : "Why are there multiple objects for this source section? might need to fix comparison above";
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, source);
   }
 
   public static final class AccessNodeState implements NodeState {
@@ -124,6 +142,17 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
       return createArgumentWrite(this, contextLevel, valueExpr, source);
     }
+
+    @Override
+    public void emitPop(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      bcGen.emitPOPARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(name));
+    }
+
+    @Override
+    protected void emitPush(final BytecodeGenerator bcGen,
+        final BytecodeMethodGenContext mgenc) {
+      bcGen.emitPUSHARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(name));
+    }
   }
 
   public static final class Local extends Variable {
@@ -172,14 +201,27 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     public FrameDescriptor getFrameDescriptor() {
       return descriptor;
     }
+
+    @Override
+    public void emitPop(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      int contextLevel = mgenc.getContextLevel(name);
+      bcGen.emitPOPLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
+    }
+
+    @Override
+    protected void emitPush(final BytecodeGenerator bcGen,
+        final BytecodeMethodGenContext mgenc) {
+      int contextLevel = mgenc.getContextLevel(name);
+      bcGen.emitPUSHLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
+    }
   }
 
   public static final class Internal extends Variable {
     @CompilationFinal private FrameSlot       slot;
     @CompilationFinal private FrameDescriptor descriptor;
 
-    public Internal(final SSymbol name) {
-      super(name, null);
+    public Internal(final SSymbol name, final SourceSection source) {
+      super(name, source);
     }
 
     public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
@@ -203,7 +245,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public Variable split(final FrameDescriptor descriptor) {
-      Internal newInternal = new Internal(name);
+      Internal newInternal = new Internal(name, source);
 
       assert this.descriptor.getFrameSlotKind(
           slot) == FrameSlotKind.Object : "We only have the on stack marker currently, so, we expect those not to specialize";
@@ -215,6 +257,34 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     public Local splitToMergeIntoOuterScope(final Universe universe,
         final FrameDescriptor descriptor) {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void emitPop(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      throw new NotYetImplementedException();
+    }
+
+    @Override
+    public void emitPush(final BytecodeGenerator bcGen, final BytecodeMethodGenContext mgenc) {
+      throw new NotYetImplementedException();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+      assert o != null;
+      if (o == this) {
+        return true;
+      }
+      if (!(o instanceof Variable)) {
+        return false;
+      }
+      Variable var = (Variable) o;
+      return var.source == source && name == var.name;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(name, source);
     }
   }
 }
