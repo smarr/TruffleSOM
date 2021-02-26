@@ -1,9 +1,9 @@
 package trufflesom.interpreter.nodes.specialized.whileloops;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.vm.Universe;
@@ -43,8 +43,8 @@ public abstract class WhileCache extends BinaryExpressionNode {
   }
 
   @Specialization(replaces = "doCached")
-  public final SObject doUncached(final VirtualFrame frame, final SBlock loopCondition,
-      final SBlock loopBody) {
+  @TruffleBoundary
+  public final SObject doUncached(final SBlock loopCondition, final SBlock loopBody) {
     // no caching, direct invokes, no loop count reporting...
     CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch");
 
