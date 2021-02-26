@@ -38,6 +38,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
 import bd.primitives.Specializer;
@@ -58,6 +59,9 @@ import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
@@ -78,7 +82,7 @@ public class BytecodeLoopNode extends ExpressionNode {
   @CompilationFinal(dimensions = 1) private final FrameSlot[] localsAndOuters;
   @CompilationFinal(dimensions = 1) private final Object[]    literalsAndConstants;
 
-  @Children private ExpressionNode[] quickened;
+  @Children private Node[] quickened;
 
   private final IndirectCallNode indirectCallNode;
 
@@ -213,7 +217,18 @@ public class BytecodeLoopNode extends ExpressionNode {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Object value = ((SObject) currentOrContext.getArguments()[0]).getField(fieldIdx);
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          if (this.quickened == null) {
+            this.quickened = new Node[bytecodes.length];
+          }
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(fieldIdx));
+          }
+
+          Object value = ((AbstractReadFieldNode) node).read(obj);
           stackPointer += 1;
           stack[stackPointer] = value;
           break;
@@ -308,7 +323,18 @@ public class BytecodeLoopNode extends ExpressionNode {
           Object value = stack[stackPointer];
           stackPointer -= 1;
 
-          ((SObject) currentOrContext.getArguments()[0]).setField(fieldIdx, value);
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          if (this.quickened == null) {
+            this.quickened = new Node[bytecodes.length];
+          }
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(fieldIdx));
+          }
+
+          ((AbstractWriteFieldNode) node).write(obj, value);
           break;
         }
 
@@ -440,7 +466,7 @@ public class BytecodeLoopNode extends ExpressionNode {
 
         case Q_PUSH_GLOBAL: {
           stackPointer += 1;
-          stack[stackPointer] = quickened[bytecodeIndex].executeGeneric(frame);
+          stack[stackPointer] = ((GlobalNode) quickened[bytecodeIndex]).executeGeneric(frame);
           break;
         }
 
@@ -579,7 +605,7 @@ public class BytecodeLoopNode extends ExpressionNode {
   private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,
       final ExpressionNode quickenedNode) {
     if (this.quickened == null) {
-      this.quickened = new ExpressionNode[bytecodes.length];
+      this.quickened = new Node[bytecodes.length];
     }
     this.quickened[bytecodeIndex] = insert(quickenedNode);
     bytecodes[bytecodeIndex] = quickenedBytecode;
@@ -622,11 +648,6 @@ public class BytecodeLoopNode extends ExpressionNode {
       SBlock block = (SBlock) SArguments.rcvr(frame);
       throw new EscapedBlockException(block);
     }
-  }
-
-  private Object doSend(final SSymbol signature, final Object[] callArgs) {
-    SInvokable invokable = doLookup(signature, callArgs);
-    return performInvoke(signature, invokable, callArgs);
   }
 
   @TruffleBoundary
