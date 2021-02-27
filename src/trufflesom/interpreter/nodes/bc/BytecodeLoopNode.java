@@ -19,6 +19,7 @@ import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_2;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_3;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
@@ -462,6 +463,10 @@ public class BytecodeLoopNode extends ExpressionNode {
           // stackPointer -= 1;
           doReturnNonLocal(frame, bytecodeIndex, result);
           break;
+        }
+
+        case RETURN_SELF: {
+          return frame.getArguments()[0];
         }
 
         case Q_PUSH_GLOBAL: {

@@ -37,6 +37,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
@@ -57,6 +58,10 @@ public class BytecodeGenerator {
 
   public void emitRETURNLOCAL(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, RETURN_LOCAL);
+  }
+
+  public void emitRETURNSELF(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, RETURN_SELF);
   }
 
   public void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {

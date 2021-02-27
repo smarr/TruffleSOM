@@ -14,6 +14,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
@@ -265,6 +266,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         }
         case RETURN_LOCAL:
         case RETURN_NON_LOCAL:
+        case RETURN_SELF:
           i++;
           break;
         default:
