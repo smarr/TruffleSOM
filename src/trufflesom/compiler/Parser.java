@@ -80,7 +80,7 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected final Universe universe;
-  private final Lexer      lexer;
+  protected final Lexer    lexer;
   private final Source     source;
 
   protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;

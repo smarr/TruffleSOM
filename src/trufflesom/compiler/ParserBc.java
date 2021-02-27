@@ -213,6 +213,19 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     SSymbol msg = binarySelector();
     mgenc.addLiteralIfAbsent(msg, this);
 
+    boolean isPossibleIncOrDec = msg == universe.symPlus || msg == universe.symMinus;
+    if (isPossibleIncOrDec) {
+      if (sym == Integer && text.equals("1")) {
+        expect(Integer);
+        if (msg == universe.symPlus) {
+          bcGen.emitINC(mgenc);
+        } else {
+          bcGen.emitDEC(mgenc);
+        }
+        return;
+      }
+    }
+
     binaryOperand(mgenc);
 
     if (superSend) {

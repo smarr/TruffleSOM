@@ -24,7 +24,9 @@
  */
 package trufflesom.compiler.bc;
 
+import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
+import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -46,6 +48,14 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public class BytecodeGenerator {
+
+  public void emitINC(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, INC);
+  }
+
+  public void emitDEC(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, DEC);
+  }
 
   public void emitPOP(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, POP);

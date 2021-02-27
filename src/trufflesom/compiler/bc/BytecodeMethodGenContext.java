@@ -1,7 +1,9 @@
 package trufflesom.compiler.bc;
 
+import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
+import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -264,6 +266,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           i += 2;
           break;
         }
+        case INC:
+        case DEC:
         case RETURN_LOCAL:
         case RETURN_NON_LOCAL:
         case RETURN_SELF:

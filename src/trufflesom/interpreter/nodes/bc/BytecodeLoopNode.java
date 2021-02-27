@@ -1,7 +1,9 @@
 package trufflesom.interpreter.nodes.bc;
 
+import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
+import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -64,6 +66,7 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SArray;
@@ -467,6 +470,41 @@ public class BytecodeLoopNode extends ExpressionNode {
 
         case RETURN_SELF: {
           return frame.getArguments()[0];
+        }
+
+        case INC: {
+          Object top = stack[stackPointer];
+          if (top instanceof Long) {
+            try {
+              stack[stackPointer] = Math.addExact((Long) top, 1L);
+            } catch (ArithmeticException e) {
+              CompilerDirectives.transferToInterpreterAndInvalidate();
+              throw new NotYetImplementedException();
+            }
+          } else {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            if (top instanceof Double) {
+              stack[stackPointer] = ((Double) top) + 1.0d;
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+          break;
+        }
+
+        case DEC: {
+          Object top = stack[stackPointer];
+          if (top instanceof Long) {
+            stack[stackPointer] = ((Long) top) - 1;
+          } else {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            if (top instanceof Double) {
+              stack[stackPointer] = ((Double) top) - 1.0d;
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+          break;
         }
 
         case Q_PUSH_GLOBAL: {

@@ -187,6 +187,9 @@ public final class Universe implements IdProvider<SSymbol> {
     symBlockSelf = symbolFor("$blockSelf");
     symSuper = symbolFor("super");
 
+    symPlus = symbolFor("+");
+    symMinus = symbolFor("-");
+
     // Name for the frameOnStack slot,
     // starting with ! to make it a name that's not possible in Smalltalk
     symFrameOnStack = symbolFor("!frameOnStack");
@@ -775,6 +778,9 @@ public final class Universe implements IdProvider<SSymbol> {
   public final SSymbol symBlockSelf;
   public final SSymbol symFrameOnStack;
   public final SSymbol symSuper;
+
+  public final SSymbol symPlus;
+  public final SSymbol symMinus;
 
   private final HashMap<SSymbol, Association> globals;
 
