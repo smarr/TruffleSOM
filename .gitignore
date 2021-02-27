@@ -6,7 +6,7 @@ user-dict.txt
 /libs/jvmci/
 /libs/jvmci.tar.gz
 /graal_dumps
-/som-native
+/som-native*
 /som-obj-storage-tester
 /workingsets.xml
 /*.launch
