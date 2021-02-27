@@ -63,8 +63,11 @@ public class Bytecodes {
       "SEND            ", "SUPER_SEND      ", "RETURN_LOCAL    ",
       "RETURN_NON_LOCAL",
 
-      "Q_PUSH_GLOBAL",
-      "Q_SEND", "Q_SEND_1", "Q_SEND_2", "Q_SEND_3",
+      "Q_PUSH_GLOBAL   ",
+      "Q_SEND          ",
+      "Q_SEND_1        ",
+      "Q_SEND_2        ",
+      "Q_SEND_3        ",
   };
 
   private static final String[] BYTECODE_NAMES =
