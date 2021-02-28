@@ -115,7 +115,12 @@ public class BytecodeGenerator {
 
   public void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
-    emit3(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
+
+    byte fieldIndex = mgenc.getFieldIndex(fieldName);
+    byte ctxLevel = mgenc.getMaxContextLevel();
+    if (!mgenc.optimizePushIncPopSequence(fieldIndex, ctxLevel)) {
+      emit3(mgenc, POP_FIELD, fieldIndex, ctxLevel);
+    }
   }
 
   public void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {

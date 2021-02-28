@@ -25,6 +25,12 @@ public abstract class FieldAccessorNode extends Node {
     return new UninitializedWriteFieldNode(fieldIndex);
   }
 
+  public static IncrementLongFieldNode createIncrement(final int fieldIndex,
+      final SObject obj) {
+    final ObjectLayout layout = obj.getObjectLayout();
+    return new IncrementLongFieldNode(fieldIndex, layout);
+  }
+
   private FieldAccessorNode(final int fieldIndex) {
     this.fieldIndex = fieldIndex;
   }
@@ -273,6 +279,46 @@ public abstract class FieldAccessorNode extends Node {
         throws InvalidAssumptionException {
       layout.checkIsLatest();
       return layout == obj.getObjectLayout();
+    }
+  }
+
+  public static final class IncrementLongFieldNode extends FieldAccessorNode {
+    protected final ObjectLayout      layout;
+    private final LongStorageLocation storage;
+
+    @Child protected IncrementLongFieldNode nextInCache;
+
+    public IncrementLongFieldNode(final int fieldIndex, final ObjectLayout layout) {
+      super(fieldIndex);
+      this.layout = layout;
+      this.storage = (LongStorageLocation) layout.getStorageLocation(fieldIndex);
+    }
+
+    protected boolean hasExpectedLayout(final SObject obj)
+        throws InvalidAssumptionException {
+      layout.checkIsLatest();
+      return layout == obj.getObjectLayout();
+    }
+
+    public void increment(final SObject obj) {
+      try {
+        if (hasExpectedLayout(obj)) {
+          storage.increment(obj);
+        } else {
+          ensureNext(obj);
+          nextInCache.increment(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        ensureNext(obj);
+        replace(nextInCache).increment(obj);
+      }
+    }
+
+    private void ensureNext(final SObject obj) {
+      if (nextInCache == null) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        nextInCache = new IncrementLongFieldNode(fieldIndex, obj.getObjectLayout());
+      }
     }
   }
 

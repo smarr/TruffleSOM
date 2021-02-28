@@ -4,6 +4,7 @@ import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -244,6 +245,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   public boolean optimizeDupPopPopSequence() {
     final int size = bytecode.size();
+    assert Bytecodes.getBytecodeLength(POP_LOCAL) == Bytecodes.getBytecodeLength(POP_FIELD);
+    assert Bytecodes.getBytecodeLength(POP_LOCAL) == 3;
+    assert Bytecodes.getBytecodeLength(DUP) == 1;
+
     if (size - 4 < 0) {
       return false;
     }
@@ -252,9 +257,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     final byte dupCandidate = lastThreeBytecodes[1];
 
     if ((popCandidate == POP_LOCAL || popCandidate == POP_FIELD) && dupCandidate == DUP) {
-      assert Bytecodes.getBytecodeLength(POP_LOCAL) == Bytecodes.getBytecodeLength(POP_FIELD);
-      assert Bytecodes.getBytecodeLength(POP_LOCAL) == 3;
-      assert Bytecodes.getBytecodeLength(DUP) == 1;
 
       // remove the DUP bytecode
       bytecode.remove(size - 4);
@@ -262,6 +264,37 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       lastThreeBytecodes[0] = -1;
       lastThreeBytecodes[1] = -1;
       lastThreeBytecodes[2] = popCandidate;
+      return true;
+    }
+    return false;
+  }
+
+  public boolean optimizePushIncPopSequence(final byte fieldIdx, final byte ctxLevel) {
+    final int size = bytecode.size();
+
+    assert Bytecodes.getBytecodeLength(PUSH_FIELD) == 3;
+    assert Bytecodes.getBytecodeLength(INC) == 1;
+
+    if (size - 4 < 0) {
+      return false;
+    }
+
+    final byte incCandidate = lastThreeBytecodes[2];
+    final byte pushCandidate = lastThreeBytecodes[1];
+    final byte pushFieldIdx = bytecode.get(size - 3);
+    final byte pushCtxLevel = bytecode.get(size - 2);
+
+    if (incCandidate == INC && pushCandidate == PUSH_FIELD &&
+        fieldIdx == pushFieldIdx && pushCtxLevel == ctxLevel) {
+      // remove the INC bytecode
+      bytecode.remove(size - 1);
+
+      // replace the PUSH_FIELD bytecode by INC_FIELD
+      bytecode.set(size - 4, INC_FIELD);
+
+      lastThreeBytecodes[0] = -1;
+      lastThreeBytecodes[1] = -1;
+      lastThreeBytecodes[2] = INC_FIELD;
       return true;
     }
     return false;
