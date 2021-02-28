@@ -58,7 +58,9 @@ public class BytecodeGenerator {
   }
 
   public void emitPOP(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, POP);
+    if (!mgenc.optimizeDupPopPopSequence()) {
+      emit1(mgenc, POP);
+    }
   }
 
   public void emitPUSHARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
@@ -138,14 +140,14 @@ public class BytecodeGenerator {
 
   private void emit2(final BytecodeMethodGenContext mgenc, final byte code, final byte idx) {
     mgenc.addBytecode(code);
-    mgenc.addBytecode(idx);
+    mgenc.addBytecodeArgument(idx);
   }
 
   private void emit3(final BytecodeMethodGenContext mgenc, final byte code, final byte idx,
       final byte ctx) {
     mgenc.addBytecode(code);
-    mgenc.addBytecode(idx);
-    mgenc.addBytecode(ctx);
+    mgenc.addBytecodeArgument(idx);
+    mgenc.addBytecodeArgument(ctx);
   }
 
 }

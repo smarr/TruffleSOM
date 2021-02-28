@@ -36,6 +36,7 @@ import trufflesom.compiler.ParserBc;
 import trufflesom.compiler.Symbol;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.vm.Universe;
@@ -51,7 +52,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private final LinkedHashMap<SSymbol, Local> outerVars;
 
   private final ArrayList<Byte> bytecode;
-  private boolean               finished;
+  private final byte[]          lastThreeBytecodes;
+
+  private boolean finished;
 
   public BytecodeMethodGenContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -76,6 +79,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     literals = new ArrayList<>();
     bytecode = new ArrayList<>();
     outerVars = new LinkedHashMap<>();
+    lastThreeBytecodes = new byte[3];
   }
 
   public byte getMaxContextLevel() {
@@ -99,6 +103,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   public void addBytecode(final byte code) {
     bytecode.add(code);
+    lastThreeBytecodes[0] = lastThreeBytecodes[1];
+    lastThreeBytecodes[1] = lastThreeBytecodes[2];
+    lastThreeBytecodes[2] = code;
+  }
+
+  public void addBytecodeArgument(final byte code) {
+    bytecode.add(code);
   }
 
   @Override
@@ -115,8 +126,24 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return !bytecode.isEmpty();
   }
 
-  public void removeLastBytecode() {
-    bytecode.remove(bytecode.size() - 1);
+  /**
+   * Remove the last POP bytecode, if it's there. It may have been optimized out by
+   * {@link #optimizeDupPopPopSequence()}.
+   */
+  public void removeLastPopForBlockLocalReturn() {
+    if (lastThreeBytecodes[2] == POP) {
+      int idx = bytecode.size() - 1;
+      bytecode.remove(idx);
+    } else if ((lastThreeBytecodes[2] == POP_FIELD || lastThreeBytecodes[2] == POP_LOCAL)
+        && lastThreeBytecodes[1] == -1) {
+      // we just removed the DUP and didn't emit the POP using optimizeDupPopPopSequence()
+      // so, to make blocks work, we need to reintroduce the DUP
+      assert Bytecodes.getBytecodeLength(POP_LOCAL) == Bytecodes.getBytecodeLength(POP_FIELD);
+      assert Bytecodes.getBytecodeLength(POP_LOCAL) == 3;
+      assert bytecode.get(bytecode.size() - 3) == POP_LOCAL
+          || bytecode.get(bytecode.size() - 3) == POP_FIELD;
+      bytecode.add(bytecode.size() - 3, DUP);
+    }
   }
 
   public boolean addLiteralIfAbsent(final Object lit, final ParserBc parser)
@@ -213,6 +240,31 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     body.initialize(sourceSection);
 
     return super.assembleMethod(body, sourceSection, fullSourceSection);
+  }
+
+  public boolean optimizeDupPopPopSequence() {
+    final int size = bytecode.size();
+    if (size - 4 < 0) {
+      return false;
+    }
+
+    final byte popCandidate = lastThreeBytecodes[2];
+    final byte dupCandidate = lastThreeBytecodes[1];
+
+    if ((popCandidate == POP_LOCAL || popCandidate == POP_FIELD) && dupCandidate == DUP) {
+      assert Bytecodes.getBytecodeLength(POP_LOCAL) == Bytecodes.getBytecodeLength(POP_FIELD);
+      assert Bytecodes.getBytecodeLength(POP_LOCAL) == 3;
+      assert Bytecodes.getBytecodeLength(DUP) == 1;
+
+      // remove the DUP bytecode
+      bytecode.remove(size - 4);
+
+      lastThreeBytecodes[0] = -1;
+      lastThreeBytecodes[1] = -1;
+      lastThreeBytecodes[2] = popCandidate;
+      return true;
+    }
+    return false;
   }
 
   private int computeStackDepth() {

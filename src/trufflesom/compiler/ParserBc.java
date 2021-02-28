@@ -75,9 +75,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       if (seenPeriod) {
         // a POP has been generated which must be elided (blocks always
         // return the value of the last expression, regardless of
-        // whether it
-        // was terminated with a . or not)
-        mgenc.removeLastBytecode();
+        // whether it was terminated with a . or not)
+        mgenc.removeLastPopForBlockLocalReturn();
       }
       if (mgenc.isBlockMethod() && !mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
@@ -107,6 +106,22 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
   @Override
   protected ExpressionNode result(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
+    // try to parse a `^ self` to emit RETURN_SELF
+    if (!mgenc.isBlockMethod() && sym == Identifier) {
+      if (text.equals("self")) {
+        peekForNextSymbolFromLexerIfNecessary();
+        if (nextSym == Period || nextSym == EndTerm) {
+          expect(Identifier);
+
+          bcGen.emitRETURNSELF(mgenc);
+          mgenc.markFinished();
+
+          accept(Period);
+          return null;
+        }
+      }
+    }
+
     expression(mgenc);
 
     if (mgenc.isBlockMethod()) {
