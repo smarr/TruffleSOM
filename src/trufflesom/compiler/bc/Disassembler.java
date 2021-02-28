@@ -37,6 +37,9 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.Q_PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_1;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_2;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_3;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
@@ -227,6 +230,9 @@ public class Disassembler {
         }
 
         case Q_SEND:
+        case Q_SEND_1:
+        case Q_SEND_2:
+        case Q_SEND_3:
         case SEND: {
           int idx = m.getBytecode(b + 1);
           Universe.errorPrintln("(index: " + idx
