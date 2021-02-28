@@ -503,7 +503,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected ExpressionNode expression(final MGenC mgenc)
       throws ProgramDefinitionError {
-    peekForNextSymbolFromLexer();
+    peekForNextSymbolFromLexerIfNecessary();
 
     if (nextSym == Assign) {
       return assignation(mgenc);
