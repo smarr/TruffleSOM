@@ -159,12 +159,14 @@ public class Disassembler {
         continue;
       }
       switch (bytecode) {
+        case POP_LOCAL:
         case PUSH_LOCAL: {
           Universe.errorPrintln("local: " + m.getBytecode(b + 1) + ", context: "
               + m.getBytecode(b + 2));
           break;
         }
 
+        case POP_ARGUMENT:
         case PUSH_ARGUMENT: {
           Universe.errorPrintln("argument: " + m.getBytecode(b + 1) + ", context "
               + m.getBytecode(b + 2));
@@ -172,6 +174,7 @@ public class Disassembler {
         }
 
         case INC_FIELD:
+        case POP_FIELD:
         case PUSH_FIELD: {
           int idx = m.getBytecode(b + 1);
           int ctx = m.getBytecode(b + 2);
@@ -194,9 +197,7 @@ public class Disassembler {
           Object constant = m.getConstant(idx);
           SClass constantClass = Types.getClassOf(constant, u);
           Universe.errorPrintln("(index: " + idx + ") value: "
-              + "("
-              + constantClass.getName().toString()
-              + ") "
+              + "(" + constantClass.getName().toString() + ") "
               + constant.toString());
           break;
         }
@@ -209,39 +210,11 @@ public class Disassembler {
           break;
         }
 
-        case POP_LOCAL: {
-          Universe.errorPrintln("local: " + m.getBytecode(b + 1) + ", context: "
-              + m.getBytecode(b + 2));
-          break;
-        }
-
-        case POP_ARGUMENT: {
-          Universe.errorPrintln("argument: " + m.getBytecode(b + 1)
-              + ", context: " + m.getBytecode(b + 2));
-          break;
-        }
-
-        case POP_FIELD: {
-          int idx = m.getBytecode(b + 1);
-          int ctx = m.getBytecode(b + 2);
-          String fieldName = ((SSymbol) clazz.getInstanceFields()
-                                             .debugGetObject(idx)).getString();
-          Universe.errorPrintln("(index: " + idx
-              + ", context: " + ctx + ") field: " + fieldName);
-          break;
-        }
-
         case Q_SEND:
         case Q_SEND_1:
         case Q_SEND_2:
         case Q_SEND_3:
-        case SEND: {
-          int idx = m.getBytecode(b + 1);
-          Universe.errorPrintln("(index: " + idx
-              + ") signature: " + ((SSymbol) m.getConstant(idx)).toString());
-          break;
-        }
-
+        case SEND:
         case SUPER_SEND: {
           int idx = m.getBytecode(b + 1);
           Universe.errorPrintln("(index: " + idx
