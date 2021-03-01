@@ -27,7 +27,9 @@ import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
@@ -752,8 +754,12 @@ public class BytecodeLoopNode extends ExpressionNode {
     return bytecodes.length;
   }
 
-  public byte getBytecode(final int idx) {
-    return bytecodes[idx];
+  public List<Byte> getBytecodes() {
+    List<Byte> list = new ArrayList<>(bytecodes.length);
+    for (byte b : bytecodes) {
+      list.add(b);
+    }
+    return list;
   }
 
   public Object getConstant(final int idx) {

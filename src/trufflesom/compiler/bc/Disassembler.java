@@ -47,6 +47,8 @@ import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 import static trufflesom.interpreter.bc.Bytecodes.getPaddedBytecodeName;
 
+import java.util.List;
+
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
@@ -125,18 +127,27 @@ public class Disassembler {
 
   public static void dumpMethod(final BytecodeLoopNode m, final String indent) {
     SClass clazz = getClass(m);
-    Universe u = SomLanguage.getCurrent().getUniverse();
+    dumpMethod(m.getBytecodes(), indent, m.getNumberOfLocals(),
+        m.getMaximumNumberOfStackElements(), clazz, m);
+  }
 
+  public static void dumpMethod(final List<Byte> bytecodes) {
+    dumpMethod(bytecodes, "", 0, 0, null, null);
+  }
+
+  public static void dumpMethod(final List<Byte> bytecodes, final String indent,
+      final int numLocals, final int maxStack, final SClass clazz, final BytecodeLoopNode m) {
+    Universe u = SomLanguage.getCurrent().getUniverse();
     Universe.errorPrintln("(");
 
     // output stack information
-    Universe.errorPrintln(indent + "<" + m.getNumberOfLocals() + " locals, "
-        + m.getMaximumNumberOfStackElements() + " stack, "
-        + m.getNumberOfBytecodes() + " bc_count>");
+    Universe.errorPrintln(indent + "<" + numLocals + " locals, "
+        + maxStack + " stack, "
+        + bytecodes.size() + " bc_count>");
 
     // output bytecodes
-    for (int b = 0; b < m.getNumberOfBytecodes(); b +=
-        getBytecodeLength(m.getBytecode(b))) {
+    for (int b = 0; b < bytecodes.size(); b +=
+        getBytecodeLength(bytecodes.get(b))) {
 
       Universe.errorPrint(indent);
 
@@ -150,7 +161,7 @@ public class Disassembler {
       Universe.errorPrint(" " + b + ":");
 
       // mnemonic
-      byte bytecode = m.getBytecode(b);
+      byte bytecode = bytecodes.get(b);
       Universe.errorPrint(getPaddedBytecodeName(bytecode) + "  ");
 
       // parameters (if any)
@@ -161,52 +172,72 @@ public class Disassembler {
       switch (bytecode) {
         case POP_LOCAL:
         case PUSH_LOCAL: {
-          Universe.errorPrintln("local: " + m.getBytecode(b + 1) + ", context: "
-              + m.getBytecode(b + 2));
+          Universe.errorPrintln("local: " + bytecodes.get(b + 1) + ", context: "
+              + bytecodes.get(b + 2));
           break;
         }
 
         case POP_ARGUMENT:
         case PUSH_ARGUMENT: {
-          Universe.errorPrintln("argument: " + m.getBytecode(b + 1) + ", context "
-              + m.getBytecode(b + 2));
+          Universe.errorPrintln("argument: " + bytecodes.get(b + 1) + ", context "
+              + bytecodes.get(b + 2));
           break;
         }
 
         case INC_FIELD:
         case POP_FIELD:
         case PUSH_FIELD: {
-          int idx = m.getBytecode(b + 1);
-          int ctx = m.getBytecode(b + 2);
-          String fieldName = ((SSymbol) clazz.getInstanceFields()
-                                             .debugGetObject(idx)).getString();
-          Universe.errorPrintln("(index: " + idx
-              + ", context: " + ctx + ") field: " + fieldName);
+          int idx = bytecodes.get(b + 1);
+          int ctx = bytecodes.get(b + 2);
+
+          Universe.errorPrint("(index: " + idx
+              + ", context: " + ctx + ")");
+
+          if (clazz != null) {
+            String fieldName = ((SSymbol) clazz.getInstanceFields()
+                                               .debugGetObject(idx)).getString();
+            Universe.errorPrint(" field: " + fieldName);
+          }
+
+          Universe.errorPrintln();
           break;
         }
 
         case PUSH_BLOCK: {
-          int idx = m.getBytecode(b + 1);
+          int idx = bytecodes.get(b + 1);
           Universe.errorPrint("block: (index: " + idx + ") ");
-          dumpMethod((SMethod) m.getConstant(idx), indent + "\t");
+          if (m != null) {
+            dumpMethod((SMethod) m.getConstant(idx), indent + "\t");
+          }
           break;
         }
 
         case PUSH_CONSTANT: {
-          int idx = m.getBytecode(b + 1);
-          Object constant = m.getConstant(idx);
-          SClass constantClass = Types.getClassOf(constant, u);
-          Universe.errorPrintln("(index: " + idx + ") value: "
-              + "(" + constantClass.getName().toString() + ") "
-              + constant.toString());
+          int idx = bytecodes.get(b + 1);
+
+          Universe.errorPrint("(index: " + idx + ")");
+
+          if (m != null) {
+            Object constant = m.getConstant(idx);
+            SClass constantClass = Types.getClassOf(constant, u);
+            Universe.errorPrint(" value: "
+                + "(" + constantClass.getName().toString() + ") "
+                + constant.toString());
+          }
+          Universe.errorPrintln();
           break;
         }
 
         case Q_PUSH_GLOBAL:
         case PUSH_GLOBAL: {
-          int idx = m.getBytecode(b + 1);
-          Universe.errorPrintln("(index: " + idx + ") value: "
-              + ((SSymbol) m.getConstant(idx)).toString());
+          int idx = bytecodes.get(b + 1);
+
+          Universe.errorPrint("(index: " + idx + ")");
+          if (m != null) {
+            Universe.errorPrint(" value: "
+                + ((SSymbol) m.getConstant(idx)).toString());
+          }
+          Universe.errorPrintln();
           break;
         }
 
@@ -216,14 +247,17 @@ public class Disassembler {
         case Q_SEND_3:
         case SEND:
         case SUPER_SEND: {
-          int idx = m.getBytecode(b + 1);
-          Universe.errorPrintln("(index: " + idx
-              + ") signature: " + ((SSymbol) m.getConstant(idx)).toString());
+          int idx = bytecodes.get(b + 1);
+          Universe.errorPrint("(index: " + idx + ")");
+          if (m != null) {
+            Universe.errorPrint(" signature: " + ((SSymbol) m.getConstant(idx)).toString());
+          }
+          Universe.errorPrintln();
           break;
         }
 
         case RETURN_NON_LOCAL: {
-          Universe.errorPrintln("context: " + m.getBytecode(b + 1));
+          Universe.errorPrintln("context: " + bytecodes.get(b + 1));
           break;
         }
 
