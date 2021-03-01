@@ -306,7 +306,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     int i = 0;
 
     while (i < bytecode.size()) {
-      switch (bytecode.get(i)) {
+      int oldI = i;
+      byte bc = bytecode.get(i);
+      switch (bc) {
         case HALT:
           i++;
           break;
@@ -316,10 +318,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           break;
         case PUSH_LOCAL:
         case PUSH_ARGUMENT:
+        case PUSH_FIELD:
           depth++;
           i += 3;
           break;
-        case PUSH_FIELD:
         case PUSH_BLOCK:
         case PUSH_CONSTANT:
         case PUSH_GLOBAL:
@@ -332,12 +334,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           break;
         case POP_LOCAL:
         case POP_ARGUMENT:
-          depth--;
-          i += 3;
-          break;
         case POP_FIELD:
           depth--;
-          i += 2;
+          i += 3;
           break;
         case SEND:
         case SUPER_SEND: {
@@ -354,14 +353,18 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         case INC:
         case DEC:
         case RETURN_LOCAL:
-        case RETURN_NON_LOCAL:
         case RETURN_SELF:
           i++;
+          break;
+        case RETURN_NON_LOCAL:
+          i += 2;
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "
               + bytecode.get(i));
       }
+
+      assert oldI + Bytecodes.getBytecodeLength(bc) == i;
 
       if (depth > maxDepth) {
         maxDepth = depth;
