@@ -27,6 +27,7 @@
 package trufflesom.compiler.bc;
 
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
@@ -185,6 +186,7 @@ public class Disassembler {
         }
 
         case INC_FIELD:
+        case INC_FIELD_PUSH:
         case POP_FIELD:
         case PUSH_FIELD: {
           int idx = bytecodes.get(b + 1);

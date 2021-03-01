@@ -5,6 +5,7 @@ import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -546,6 +547,48 @@ public class BytecodeLoopNode extends ExpressionNode {
           }
 
           ((IncrementLongFieldNode) node).increment(obj);
+          break;
+        }
+
+        case INC_FIELD_PUSH: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          if (this.quickened == null) {
+            this.quickened = new Node[bytecodes.length];
+          }
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            Object val = obj.getField(fieldIdx);
+            if (!(val instanceof Long)) {
+              throw new NotYetImplementedException();
+            }
+
+            try {
+              long longVal = Math.addExact((Long) val, 1);
+              obj.setField(fieldIdx, longVal);
+              stackPointer += 1;
+              stack[stackPointer] = longVal;
+            } catch (ArithmeticException e) {
+              throw new NotYetImplementedException();
+            }
+
+            node = quickened[bytecodeIndex] =
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            break;
+          }
+
+          long value = ((IncrementLongFieldNode) node).increment(obj);
+          stackPointer += 1;
+          stack[stackPointer] = value;
           break;
         }
 

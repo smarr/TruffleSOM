@@ -53,13 +53,14 @@ public class Bytecodes {
   public static final byte INC = 17;
   public static final byte DEC = 18;
 
-  public static final byte INC_FIELD = 19;
+  public static final byte INC_FIELD      = 19;
+  public static final byte INC_FIELD_PUSH = 20;
 
-  public static final byte Q_PUSH_GLOBAL = 20;
-  public static final byte Q_SEND        = 21;
-  public static final byte Q_SEND_1      = 22;
-  public static final byte Q_SEND_2      = 23;
-  public static final byte Q_SEND_3      = 24;
+  public static final byte Q_PUSH_GLOBAL = 21;
+  public static final byte Q_SEND        = 22;
+  public static final byte Q_SEND_1      = 23;
+  public static final byte Q_SEND_2      = 24;
+  public static final byte Q_SEND_3      = 25;
 
   private static final String[] PADDED_BYTECODE_NAMES = new String[] {
       "HALT            ", "DUP             ", "PUSH_LOCAL      ",
@@ -75,6 +76,7 @@ public class Bytecodes {
       "DEC             ",
 
       "INC_FIELD       ",
+      "INC_FIELD_PUSH  ",
 
       "Q_PUSH_GLOBAL   ",
       "Q_SEND          ",
@@ -132,6 +134,7 @@ public class Bytecodes {
       1, // DEC
 
       3, // INC_FIELD
+      3, // INC_FIELD_PUSH
 
       2, // Q_PUSH_GLOBAL
       2, // Q_SEND

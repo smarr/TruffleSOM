@@ -300,17 +300,17 @@ public abstract class FieldAccessorNode extends Node {
       return layout == obj.getObjectLayout();
     }
 
-    public void increment(final SObject obj) {
+    public long increment(final SObject obj) {
       try {
         if (hasExpectedLayout(obj)) {
-          storage.increment(obj);
+          return storage.increment(obj);
         } else {
           ensureNext(obj);
-          nextInCache.increment(obj);
+          return nextInCache.increment(obj);
         }
       } catch (InvalidAssumptionException e) {
         ensureNext(obj);
-        replace(nextInCache).increment(obj);
+        return replace(nextInCache).increment(obj);
       }
     }
 

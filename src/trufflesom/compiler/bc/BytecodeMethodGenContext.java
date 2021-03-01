@@ -5,6 +5,7 @@ import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -53,7 +54,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private final LinkedHashMap<SSymbol, Local> outerVars;
 
   private final ArrayList<Byte> bytecode;
-  private final byte[]          lastThreeBytecodes;
+  private final byte[]          last4Bytecodes;
 
   private boolean finished;
 
@@ -80,7 +81,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     literals = new ArrayList<>();
     bytecode = new ArrayList<>();
     outerVars = new LinkedHashMap<>();
-    lastThreeBytecodes = new byte[3];
+    last4Bytecodes = new byte[4];
   }
 
   public byte getMaxContextLevel() {
@@ -104,9 +105,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   public void addBytecode(final byte code) {
     bytecode.add(code);
-    lastThreeBytecodes[0] = lastThreeBytecodes[1];
-    lastThreeBytecodes[1] = lastThreeBytecodes[2];
-    lastThreeBytecodes[2] = code;
+    last4Bytecodes[0] = last4Bytecodes[1];
+    last4Bytecodes[1] = last4Bytecodes[2];
+    last4Bytecodes[2] = last4Bytecodes[3];
+    last4Bytecodes[3] = code;
   }
 
   public void addBytecodeArgument(final byte code) {
@@ -132,11 +134,11 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
    * {@link #optimizeDupPopPopSequence()}.
    */
   public void removeLastPopForBlockLocalReturn() {
-    if (lastThreeBytecodes[2] == POP) {
+    if (last4Bytecodes[3] == POP) {
       int idx = bytecode.size() - 1;
       bytecode.remove(idx);
-    } else if ((lastThreeBytecodes[2] == POP_FIELD || lastThreeBytecodes[2] == POP_LOCAL)
-        && lastThreeBytecodes[1] == -1) {
+    } else if ((last4Bytecodes[3] == POP_FIELD || last4Bytecodes[3] == POP_LOCAL)
+        && last4Bytecodes[2] == -1) {
       // we just removed the DUP and didn't emit the POP using optimizeDupPopPopSequence()
       // so, to make blocks work, we need to reintroduce the DUP
       assert Bytecodes.getBytecodeLength(POP_LOCAL) == Bytecodes.getBytecodeLength(POP_FIELD);
@@ -144,6 +146,14 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       assert bytecode.get(bytecode.size() - 3) == POP_LOCAL
           || bytecode.get(bytecode.size() - 3) == POP_FIELD;
       bytecode.add(bytecode.size() - 3, DUP);
+    } else if (last4Bytecodes[3] == INC_FIELD) {
+      // we optimized the sequence to an INC_FIELD, which doesn't modify the stack
+      // but since we need the value to return it from the block, we need to push it.
+      last4Bytecodes[3] = INC_FIELD_PUSH;
+      assert Bytecodes.getBytecodeLength(INC_FIELD) == 3;
+      assert Bytecodes.getBytecodeLength(INC_FIELD) == Bytecodes.getBytecodeLength(
+          INC_FIELD_PUSH);
+      bytecode.set(bytecode.size() - 3, INC_FIELD_PUSH);
     }
   }
 
@@ -253,48 +263,89 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       return false;
     }
 
-    final byte popCandidate = lastThreeBytecodes[2];
-    final byte dupCandidate = lastThreeBytecodes[1];
+    final byte dupCandidate = last4Bytecodes[2];
+    final byte popCandidate = last4Bytecodes[3];
 
     if ((popCandidate == POP_LOCAL || popCandidate == POP_FIELD) && dupCandidate == DUP) {
+      if (popCandidate == POP_FIELD && optimizePushFieldIncDupPopField()) {
+        return true;
+      }
 
       // remove the DUP bytecode
       bytecode.remove(size - 4);
 
-      lastThreeBytecodes[0] = -1;
-      lastThreeBytecodes[1] = -1;
-      lastThreeBytecodes[2] = popCandidate;
+      last4Bytecodes[0] = -1;
+      last4Bytecodes[1] = -1;
+      last4Bytecodes[2] = -1;
+      last4Bytecodes[3] = popCandidate;
       return true;
     }
     return false;
   }
 
-  public boolean optimizePushIncPopSequence(final byte fieldIdx, final byte ctxLevel) {
+  /**
+   * This is going to try to optimize the following sequence, assuming that a pop would be
+   * generated next.
+   *
+   * <pre>
+   *   PUSH_FIELD
+   *   INC
+   *   DUP
+   *   POP_FIELD
+   * </pre>
+   *
+   * @return true, if it optimized it.
+   */
+  private boolean optimizePushFieldIncDupPopField() {
     final int size = bytecode.size();
 
     assert Bytecodes.getBytecodeLength(PUSH_FIELD) == 3;
+    assert Bytecodes.getBytecodeLength(POP_FIELD) == 3;
     assert Bytecodes.getBytecodeLength(INC) == 1;
+    assert Bytecodes.getBytecodeLength(DUP) == 1;
 
-    if (size - 4 < 0) {
+    if (size - (3 + 1 + 1 + 3) < 0) {
       return false;
     }
 
-    final byte incCandidate = lastThreeBytecodes[2];
-    final byte pushCandidate = lastThreeBytecodes[1];
-    final byte pushFieldIdx = bytecode.get(size - 3);
-    final byte pushCtxLevel = bytecode.get(size - 2);
+    final byte pushCandidate = last4Bytecodes[0];
+    final byte incCandidate = last4Bytecodes[1];
+    final byte dupCandidate = last4Bytecodes[2];
+    final byte popCandidate = last4Bytecodes[3];
 
-    if (incCandidate == INC && pushCandidate == PUSH_FIELD &&
-        fieldIdx == pushFieldIdx && pushCtxLevel == ctxLevel) {
+    final int pushBcIdx = size - 3 - 1 - 1 - 3;
+
+    final byte pushFieldIdx = bytecode.get(pushBcIdx + 1);
+    final byte pushCtxLevel = bytecode.get(pushBcIdx + 2);
+
+    final int popBcIdx = size - 3;
+
+    final byte popFieldIdx = bytecode.get(popBcIdx + 1);
+    final byte popCtxLevel = bytecode.get(popBcIdx + 2);
+
+    if (pushCandidate == PUSH_FIELD &&
+        incCandidate == INC &&
+        dupCandidate == DUP &&
+        popCandidate == POP_FIELD &&
+        pushFieldIdx == popFieldIdx && pushCtxLevel == popCtxLevel) {
+      // remove the POP_FIELD bytecode
+      bytecode.remove(bytecode.size() - 1);
+      bytecode.remove(bytecode.size() - 1);
+      bytecode.remove(bytecode.size() - 1);
+
+      // remove the DUP bytecode
+      bytecode.remove(bytecode.size() - 1);
+
       // remove the INC bytecode
-      bytecode.remove(size - 1);
+      bytecode.remove(bytecode.size() - 1);
 
       // replace the PUSH_FIELD bytecode by INC_FIELD
-      bytecode.set(size - 4, INC_FIELD);
+      bytecode.set(pushBcIdx, INC_FIELD);
 
-      lastThreeBytecodes[0] = -1;
-      lastThreeBytecodes[1] = -1;
-      lastThreeBytecodes[2] = INC_FIELD;
+      last4Bytecodes[0] = -1;
+      last4Bytecodes[1] = -1;
+      last4Bytecodes[2] = -1;
+      last4Bytecodes[3] = INC_FIELD;
       return true;
     }
     return false;
@@ -358,6 +409,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           break;
         case RETURN_NON_LOCAL:
           i += 2;
+          break;
+        case INC_FIELD:
+          i += 3;
+          break;
+        case INC_FIELD_PUSH:
+          i += 3;
+          depth++;
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "
