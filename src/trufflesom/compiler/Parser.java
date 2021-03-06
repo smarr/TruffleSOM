@@ -138,6 +138,9 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
 
     protected String expectedSymbolAsString() {
+      if (expected == null) {
+        return null;
+      }
       return expected.toString();
     }
 
@@ -157,7 +160,9 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       msg = msg.replace("%(line)d", java.lang.Integer.toString(sourceCoordinate.startLine));
       msg =
           msg.replace("%(column)d", java.lang.Integer.toString(sourceCoordinate.startColumn));
-      msg = msg.replace("%(expected)s", expectedStr);
+      if (expectedStr != null) {
+        msg = msg.replace("%(expected)s", expectedStr);
+      }
       msg = msg.replace("%(found)s", foundStr);
       return msg;
     }
@@ -492,7 +497,12 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   private void locals(final MGenC mgenc) throws ProgramDefinitionError {
     while (isIdentifier(sym)) {
       SourceCoordinate coord = getCoordinate();
-      mgenc.addLocalIfAbsent(variable(), getSource(coord));
+      SSymbol var = variable();
+      if (mgenc.hasLocal(var)) {
+        throw new ParseError("Declared the variable " + var.getString() + " multiple times.",
+            null, this);
+      }
+      mgenc.addLocal(var, getSource(coord));
     }
   }
 

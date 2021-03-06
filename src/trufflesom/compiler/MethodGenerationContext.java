@@ -270,12 +270,8 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     addArgument(arg, source);
   }
 
-  public void addLocalIfAbsent(final SSymbol local, final SourceSection source) {
-    if (locals.containsKey(local)) {
-      return;
-    }
-
-    addLocal(local, source);
+  public boolean hasLocal(final SSymbol local) {
+    return locals.containsKey(local);
   }
 
   public Local addLocal(final SSymbol local, final SourceSection source) {
