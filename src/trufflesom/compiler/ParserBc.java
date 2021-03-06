@@ -12,6 +12,20 @@ import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
 import static trufflesom.compiler.Symbol.Pound;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDEC;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHGLOBAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNLOCAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNSELF;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +34,6 @@ import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
 import bd.tools.structure.StructuralProbe;
-import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.Universe;
@@ -32,13 +45,10 @@ import trufflesom.vmobjects.SSymbol;
 
 public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
-  private final BytecodeGenerator bcGen;
-
   public ParserBc(final String content, final Source source,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe,
       final Universe universe) {
     super(content, source, structuralProbe, universe);
-    bcGen = new BytecodeGenerator();
   }
 
   @Override
@@ -57,8 +67,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     // be popped off the stack and a ^self be generated
     if (!mgenc.isFinished()) {
       // with the new RETURN_SELF, we don't actually need the extra stack space
-      // bcGen.emitPOP(mgenc);
-      bcGen.emitRETURNSELF(mgenc);
+      // emitPOP(mgenc);
+      emitRETURNSELF(mgenc);
       mgenc.markFinished();
     }
 
@@ -82,20 +92,20 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         // if the block is empty, we need to return nil
         SSymbol nilSym = universe.symbolFor("nil");
         mgenc.addLiteralIfAbsent(nilSym, this);
-        bcGen.emitPUSHGLOBAL(mgenc, nilSym);
+        emitPUSHGLOBAL(mgenc, nilSym);
       }
-      bcGen.emitRETURNLOCAL(mgenc);
+      emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
     } else if (sym == EndTerm) {
       // it does not matter whether a period has been seen,
       // as the end of the method has been found (EndTerm) -
       // so it is safe to emit a "return self"
-      bcGen.emitRETURNSELF(mgenc);
+      emitRETURNSELF(mgenc);
       mgenc.markFinished();
     } else {
       expression(mgenc);
       if (accept(Period)) {
-        bcGen.emitPOP(mgenc);
+        emitPOP(mgenc);
         blockBody(mgenc, true);
       }
     }
@@ -113,7 +123,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         if (nextSym == Period || nextSym == EndTerm) {
           expect(Identifier);
 
-          bcGen.emitRETURNSELF(mgenc);
+          emitRETURNSELF(mgenc);
           mgenc.markFinished();
 
           accept(Period);
@@ -126,9 +136,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     if (mgenc.isBlockMethod()) {
       mgenc.makeOuterCatchNonLocalReturn();
-      bcGen.emitRETURNNONLOCAL(mgenc);
+      emitRETURNNONLOCAL(mgenc);
     } else {
-      bcGen.emitRETURNLOCAL(mgenc);
+      emitRETURNLOCAL(mgenc);
     }
 
     mgenc.markFinished();
@@ -146,7 +156,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     evaluation(mgenc);
 
     for (int i = 1; i <= l.size(); i++) {
-      bcGen.emitDUP(mgenc);
+      emitDUP(mgenc);
     }
     for (SSymbol s : l) {
       genPopVariable(mgenc, s);
@@ -217,9 +227,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     mgenc.addLiteralIfAbsent(msg, this);
 
     if (superSend) {
-      bcGen.emitSUPERSEND(mgenc, msg);
+      emitSUPERSEND(mgenc, msg);
     } else {
-      bcGen.emitSEND(mgenc, msg);
+      emitSEND(mgenc, msg);
     }
   }
 
@@ -233,9 +243,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       if (sym == Integer && text.equals("1")) {
         expect(Integer);
         if (msg == universe.symPlus) {
-          bcGen.emitINC(mgenc);
+          emitINC(mgenc);
         } else {
-          bcGen.emitDEC(mgenc);
+          emitDEC(mgenc);
         }
         return;
       }
@@ -244,9 +254,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     binaryOperand(mgenc);
 
     if (superSend) {
-      bcGen.emitSUPERSEND(mgenc, msg);
+      emitSUPERSEND(mgenc, msg);
     } else {
-      bcGen.emitSEND(mgenc, msg);
+      emitSEND(mgenc, msg);
     }
   }
 
@@ -263,9 +273,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     mgenc.addLiteralIfAbsent(msg, this);
 
     if (superSend) {
-      bcGen.emitSUPERSEND(mgenc, msg);
+      emitSUPERSEND(mgenc, msg);
     } else {
-      bcGen.emitSEND(mgenc, msg);
+      emitSEND(mgenc, msg);
     }
   }
 
@@ -291,7 +301,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         } else {
           SSymbol sym = literalSymbol();
           mgenc.addLiteralIfAbsent(sym, this);
-          bcGen.emitPUSHCONSTANT(mgenc, sym);
+          emitPUSHCONSTANT(mgenc, sym);
         }
         break;
       }
@@ -299,7 +309,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         String str = literalString();
 
         mgenc.addLiteralIfAbsent(str, this);
-        bcGen.emitPUSHCONSTANT(mgenc, str);
+        emitPUSHCONSTANT(mgenc, str);
         break;
       }
       default: {
@@ -321,7 +331,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     }
 
     mgenc.addLiteralIfAbsent(lit, this);
-    bcGen.emitPUSHCONSTANT(mgenc, lit);
+    emitPUSHCONSTANT(mgenc, lit);
   }
 
   private void literalArray(final BytecodeMethodGenContext mgenc) throws ParseError {
@@ -339,20 +349,20 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     final byte arraySizeLiteralIndex = mgenc.addLiteral(arraySizePlaceholder, this);
 
     // create empty array
-    bcGen.emitPUSHGLOBAL(mgenc, arrayClassName);
-    bcGen.emitPUSHCONSTANT(mgenc, arraySizeLiteralIndex);
-    bcGen.emitSEND(mgenc, newMessage);
+    emitPUSHGLOBAL(mgenc, arrayClassName);
+    emitPUSHCONSTANT(mgenc, arraySizeLiteralIndex);
+    emitSEND(mgenc, newMessage);
 
     long i = 1;
 
     while (sym != EndTerm) {
-      bcGen.emitDUP(mgenc); // dup the array for having it on the stack after the #at:put:
+      emitDUP(mgenc); // dup the array for having it on the stack after the #at:put:
 
       mgenc.addLiteralIfAbsent(i, this);
-      bcGen.emitPUSHCONSTANT(mgenc, i);
+      emitPUSHCONSTANT(mgenc, i);
       literal(mgenc);
-      bcGen.emitSEND(mgenc, atPutMessage);
-      bcGen.emitPOP(mgenc);
+      emitSEND(mgenc, atPutMessage);
+      emitPOP(mgenc);
       i += 1;
     }
 
@@ -390,7 +400,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
             null, lastMethodsSourceSection, lastMethodsSourceSection);
         mgenc.addEmbeddedBlockMethod(blockMethod);
         mgenc.addLiteral(blockMethod, this);
-        bcGen.emitPUSHBLOCK(mgenc, blockMethod);
+        emitPUSHBLOCK(mgenc, blockMethod);
         break;
       }
       default:
@@ -424,9 +434,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         // if the block is empty, we need to return nil
         SSymbol nilSym = universe.symbolFor("nil");
         mgenc.addLiteralIfAbsent(nilSym, this);
-        bcGen.emitPUSHGLOBAL(mgenc, nilSym);
+        emitPUSHGLOBAL(mgenc, nilSym);
       }
-      bcGen.emitRETURNLOCAL(mgenc);
+      emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
     }
 
@@ -442,13 +452,13 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     Variable variable = mgenc.getVariable(var);
     if (variable != null) {
-      variable.emitPush(bcGen, mgenc);
+      variable.emitPush(mgenc);
     } else {
       if (mgenc.hasField(var)) {
-        bcGen.emitPUSHFIELD(mgenc, var);
+        emitPUSHFIELD(mgenc, var);
       } else {
         mgenc.addLiteralIfAbsent(var, this);
-        bcGen.emitPUSHGLOBAL(mgenc, var);
+        emitPUSHGLOBAL(mgenc, var);
       }
     }
   }
@@ -462,13 +472,13 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     Variable variable = mgenc.getVariable(var);
     if (variable != null) {
-      variable.emitPop(bcGen, mgenc);
+      variable.emitPop(mgenc);
     } else {
       if (!mgenc.hasField(var)) {
         throw new ParseError("Trying to write to field with the name '" + var.getString()
             + "', but field does not seem exist in class.", Symbol.NONE, this);
       }
-      bcGen.emitPOPFIELD(mgenc, var);
+      emitPOPFIELD(mgenc, var);
     }
   }
 }
