@@ -422,7 +422,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
         holderGenc.getFieldIndex(fieldName), source);
   }
 
-  public void mergeIntoScope(final LexicalScope scope, final SMethod outer) {
+  public void mergeIntoScope(final LexicalScope scope, final SMethod toBeInlined) {
     for (Variable v : scope.getVariables()) {
       Local l = v.splitToMergeIntoOuterScope(universe, currentScope.getFrameDescriptor());
       if (l != null) { // can happen for instance for the block self, which we omit
@@ -433,7 +433,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
       }
     }
 
-    SMethod[] embeddedBlocks = outer.getEmbeddedBlocks();
+    SMethod[] embeddedBlocks = toBeInlined.getEmbeddedBlocks();
     LexicalScope[] embeddedScopes = scope.getEmbeddedScopes();
 
     assert ((embeddedBlocks == null || embeddedBlocks.length == 0) &&
@@ -450,7 +450,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
       }
     }
 
-    boolean removed = embeddedBlockMethods.remove(outer);
+    boolean removed = embeddedBlockMethods.remove(toBeInlined);
     assert removed;
     currentScope.removeMerged(scope);
   }

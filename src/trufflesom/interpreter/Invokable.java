@@ -50,8 +50,9 @@ public abstract class Invokable extends RootNode {
     return expressionOrSequence.executeGeneric(frame);
   }
 
-  /** Inline invokable into the lexical context of the given builder. */
-  public abstract ExpressionNode inline(MethodGenerationContext mgenc, SMethod outer);
+  /** Inline invokable into the lexical context of the target method generation context. */
+  public abstract ExpressionNode inline(MethodGenerationContext targetMgenc,
+      SMethod toBeInlined);
 
   @Override
   public final boolean isCloningAllowed() {

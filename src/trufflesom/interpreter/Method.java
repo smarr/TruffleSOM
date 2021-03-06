@@ -107,8 +107,9 @@ public final class Method extends Invokable {
   }
 
   @Override
-  public ExpressionNode inline(final MethodGenerationContext mgenc, final SMethod outer) {
-    mgenc.mergeIntoScope(currentLexicalScope, outer);
+  public ExpressionNode inline(final MethodGenerationContext mgenc,
+      final SMethod toBeInlined) {
+    mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
     return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc.getCurrentLexicalScope(), 0,
         true, getLanguage(SomLanguage.class));
   }
