@@ -6,6 +6,9 @@ import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -588,6 +591,34 @@ public class BytecodeLoopNode extends ExpressionNode {
           long value = ((IncrementLongFieldNode) node).increment(obj);
           stackPointer += 1;
           stack[stackPointer] = value;
+          break;
+        }
+
+        case JUMP: {
+          byte offset = bytecodes[bytecodeIndex + 1];
+          nextBytecodeIndex = bytecodeIndex + offset;
+          break;
+        }
+
+        case JUMP_ON_TRUE: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.TRUE) {
+            byte offset = bytecodes[bytecodeIndex + 1];
+            nextBytecodeIndex = bytecodeIndex + offset;
+          } else {
+            stackPointer -= 1;
+          }
+          break;
+        }
+
+        case JUMP_ON_FALSE: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.FALSE) {
+            byte offset = bytecodes[bytecodeIndex + 1];
+            nextBytecodeIndex = bytecodeIndex + offset;
+          } else {
+            stackPointer -= 1;
+          }
           break;
         }
 

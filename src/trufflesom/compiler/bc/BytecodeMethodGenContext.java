@@ -7,6 +7,9 @@ import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -610,6 +613,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           break;
         case INC_FIELD_PUSH:
           depth++;
+          break;
+        case JUMP:
+        case JUMP_ON_TRUE:
+        case JUMP_ON_FALSE:
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "

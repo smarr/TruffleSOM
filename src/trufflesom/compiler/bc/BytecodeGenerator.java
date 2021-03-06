@@ -29,6 +29,9 @@ import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -152,6 +155,27 @@ public final class BytecodeGenerator {
   public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc,
       final byte literalIndex) {
     emit2(mgenc, PUSH_CONSTANT, literalIndex);
+  }
+
+  public static int emitJumpOnTrueWithDummyOffset(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, JUMP_ON_TRUE);
+    return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+  }
+
+  public static int emitJumpOnFalseWithDummyOffset(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, JUMP_ON_FALSE);
+    return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+  }
+
+  public static int emitJumpWithDummyOffset(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, JUMP);
+    return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+  }
+
+  public static void patchJumpOffsetToPointToNextInstruction(
+      final BytecodeMethodGenContext mgenc,
+      final int idxOfOffset) {
+    mgenc.patchJumpOffsetToPointToNextInstruction(idxOfOffset);
   }
 
   private static void emit1(final BytecodeMethodGenContext mgenc, final byte code) {

@@ -56,11 +56,15 @@ public class Bytecodes {
   public static final byte INC_FIELD      = 19;
   public static final byte INC_FIELD_PUSH = 20;
 
-  public static final byte Q_PUSH_GLOBAL = 21;
-  public static final byte Q_SEND        = 22;
-  public static final byte Q_SEND_1      = 23;
-  public static final byte Q_SEND_2      = 24;
-  public static final byte Q_SEND_3      = 25;
+  public static final byte JUMP          = 21;
+  public static final byte JUMP_ON_TRUE  = 22;
+  public static final byte JUMP_ON_FALSE = 23;
+
+  public static final byte Q_PUSH_GLOBAL = 24;
+  public static final byte Q_SEND        = 25;
+  public static final byte Q_SEND_1      = 26;
+  public static final byte Q_SEND_2      = 27;
+  public static final byte Q_SEND_3      = 28;
 
   public static final byte INVALID = -1;
 
@@ -111,6 +115,10 @@ public class Bytecodes {
         "INC_FIELD       ",
         "INC_FIELD_PUSH  ",
 
+        "JUMP            ",
+        "JUMP_ON_TRUE    ",
+        "JUMP_ON_FALSE   ",
+
         "Q_PUSH_GLOBAL   ",
         "Q_SEND          ",
         "Q_SEND_1        ",
@@ -146,6 +154,10 @@ public class Bytecodes {
 
         3, // INC_FIELD
         3, // INC_FIELD_PUSH
+
+        2, // JUMP
+        2, // JUMP_ON_TRUE
+        2, // JUMP_ON_FALSE
 
         2, // Q_PUSH_GLOBAL
         2, // Q_SEND
