@@ -419,6 +419,7 @@
         <arg line="native-image" />
         <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
         <arg line="-Dsom.interp=AST" />
+        <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
         <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
 
         <!-- <arg line="-H:+PrintRuntimeCompileMethods" /> -->
@@ -431,8 +432,10 @@
         <arg line="som-native-ast" />
       </exec>
 
-      <move file="${svm.dir}/som-native-ast" todir="${src.dir}/../" />
 
+      <move file="${svm.dir}/som-native-ast" todir="${src.dir}/../" />
+      <move file="${src.dir}/../som-native-ast" tofile="${src.dir}/../som-native-interp-ast" if:true="${no.jit}" />
+      
       <travis target="native" />
     </target>
 
@@ -446,6 +449,7 @@
         <arg line="native-image" />
         <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
         <arg line="-Dsom.interp=BC" />
+        <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
         <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
 
         <!-- <arg line="-H:+PrintRuntimeCompileMethods" /> -->
@@ -459,6 +463,8 @@
       </exec>
 
       <move file="${svm.dir}/som-native-bc" todir="${src.dir}/../" />
+      <move file="${src.dir}/../som-native-bc" tofile="${src.dir}/../som-native-interp-bc" if:true="${no.jit}" />
+          
 
       <travis target="native" />
     </target>
