@@ -1,5 +1,6 @@
 package trufflesom.compiler.bc;
 
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnFalseWithDummyOffset;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
@@ -70,6 +71,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private final byte[]          last4Bytecodes;
 
   private boolean finished;
+  private int     levelOfInlinedBlocks;
+  private int     numInlinedBlocks;
 
   public BytecodeMethodGenContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -124,8 +127,30 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     last4Bytecodes[3] = code;
   }
 
+  public int addBytecodeArgumentAndGetIndex(final byte code) {
+    int idx = bytecode.size();
+    bytecode.add(code);
+    return idx;
+  }
+
   public void addBytecodeArgument(final byte code) {
     bytecode.add(code);
+  }
+
+  public void patchJumpOffsetToPointToNextInstruction(final int idxOfOffset) {
+    int instructionStart = idxOfOffset - 1;
+    byte bytecodeBeforeOffset = bytecode.get(instructionStart);
+    assert bytecodeBeforeOffset == JUMP_ON_TRUE ||
+        bytecodeBeforeOffset == JUMP_ON_FALSE ||
+        bytecodeBeforeOffset == JUMP : "Expected to patch a JUMP instruction, but got bc: "
+            + bytecodeBeforeOffset;
+    int jumpOffset = bytecode.size() - instructionStart;
+
+    assert jumpOffset > 0
+        && jumpOffset <= Byte.MAX_VALUE : "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
+            + jumpOffset;
+
+    bytecode.set(idxOfOffset, (byte) jumpOffset);
   }
 
   @Override
@@ -565,6 +590,44 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       BytecodeGenerator.emitINCFIELD(this, idxCtxPopField[0], idxCtxPopField[1]);
       return true;
     }
+    return false;
+  }
+
+  public boolean inlineIfTrue() throws ParseError {
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
+
+    final byte pushBlockCandidate = last4Bytecodes[3];
+
+    if (pushBlockCandidate != PUSH_BLOCK) {
+      return false;
+    }
+
+    byte blockLiteralIdx = bytecode.get(bytecode.size() - 1);
+
+    // remove the PUSH_BLOCK
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this);
+
+    // grab block's method, and inline it
+    SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+    toBeInlined.getInvokable().inlineBytecode(this, toBeInlined);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
+
+    return true;
+  }
+
+  public boolean inlineIfFalse() {
+    return false;
+  }
+
+  public boolean inlineIfTrueIfFalse() {
+    return false;
+  }
+
+  public boolean inlineIfFalseIfTrue() {
     return false;
   }
 

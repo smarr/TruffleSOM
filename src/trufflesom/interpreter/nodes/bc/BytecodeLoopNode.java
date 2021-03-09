@@ -1,5 +1,20 @@
 package trufflesom.interpreter.nodes.bc;
 
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDEC;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitHALT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHGLOBAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNLOCAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
@@ -30,6 +45,7 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
+import static trufflesom.interpreter.bc.Bytecodes.getBytecodeName;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +65,11 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
 import bd.primitives.Specializer;
+import trufflesom.compiler.BlockInliningVisitor;
+import trufflesom.compiler.BytecodeScopeReference;
+import trufflesom.compiler.Parser.ParseError;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.EscapedBlockException;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
@@ -81,7 +102,7 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class BytecodeLoopNode extends ExpressionNode {
+public class BytecodeLoopNode extends ExpressionNode implements BytecodeScopeReference {
   private static final ValueProfile frameType = ValueProfile.createClassProfile();
   private static final LiteralNode  dummyNode = new IntegerLiteralNode(0);
 
@@ -820,4 +841,148 @@ public class BytecodeLoopNode extends ExpressionNode {
     return literalsAndConstants[idx];
   }
 
+  @Override
+  public void replaceAfterScopeChange(final BlockInliningVisitor inliner) {}
+
+  public void inlineInto(final BytecodeMethodGenContext mgenc) throws ParseError {
+    int i = 0;
+    while (i < bytecodes.length) {
+      byte bytecode = bytecodes[i];
+      final int bytecodeLength = getBytecodeLength(bytecode);
+
+      switch (bytecode) {
+        case HALT: {
+          emitHALT(mgenc);
+          break;
+        }
+
+        case DUP: {
+          emitDUP(mgenc);
+          break;
+        }
+
+        case PUSH_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPush(mgenc);
+          break;
+        }
+
+        case PUSH_ARGUMENT: {
+          byte argIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPUSHARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case PUSH_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPUSHFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case PUSH_BLOCK: {
+          throw new NotYetImplementedException();
+        }
+
+        case PUSH_CONSTANT: {
+          byte literalIdx = bytecodes[i + 1];
+          Object value = literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(value, null);
+          emitPUSHCONSTANT(mgenc, value);
+          break;
+        }
+
+        case PUSH_GLOBAL: {
+          byte literalIdx = bytecodes[i + 1];
+          SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
+          emitPUSHGLOBAL(mgenc, globalName);
+          break;
+        }
+
+        case POP: {
+          emitPOP(mgenc);
+          break;
+        }
+
+        case POP_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPop(mgenc);
+          break;
+        }
+
+        case POP_ARGUMENT: {
+          byte argIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPOPARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case POP_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPOPFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case SEND: {
+          byte literalIdx = bytecodes[i + 1];
+          SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(signature, null);
+          emitSEND(mgenc, signature);
+          break;
+        }
+
+        case SUPER_SEND: {
+          byte literalIdx = bytecodes[i + 1];
+          SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(signature, null);
+          emitSUPERSEND(mgenc, signature);
+          break;
+        }
+
+        case RETURN_LOCAL: {
+          // simply don't translate
+          assert i == bytecodes.length - 1;
+          break;
+        }
+
+        case RETURN_NON_LOCAL: {
+          byte contextIdx = bytecodes[i + 1];
+          byte newCtx = (byte) (contextIdx - 1);
+          if (newCtx == 0) {
+            emitRETURNLOCAL(mgenc);
+          } else {
+            emitRETURNNONLOCAL(mgenc);
+          }
+          break;
+        }
+
+        case RETURN_SELF: {
+          throw new IllegalStateException(
+              "I wouldn't expect RETURN_SELF ever to be inlined, since it's only generated in the most outer methods");
+        }
+
+        case INC: {
+          emitINC(mgenc);
+          break;
+        }
+
+        case DEC: {
+          emitDEC(mgenc);
+          break;
+        }
+
+        default:
+          throw new NotYetImplementedException(
+              "Support for bytecode " + getBytecodeName(bytecode) + " has not yet been added");
+      }
+
+      i += bytecodeLength;
+    }
+  }
 }

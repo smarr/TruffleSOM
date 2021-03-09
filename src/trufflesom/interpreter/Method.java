@@ -28,6 +28,8 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Parser.ParseError;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
@@ -112,5 +114,12 @@ public final class Method extends Invokable {
     mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
     return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc.getCurrentLexicalScope(), 0,
         true, getLanguage(SomLanguage.class));
+  }
+
+  @Override
+  public void inlineBytecode(final BytecodeMethodGenContext mgenc, final SMethod toBeInlined)
+      throws ParseError {
+    mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
+    getBodyForInlining().inlineInto(mgenc);
   }
 }

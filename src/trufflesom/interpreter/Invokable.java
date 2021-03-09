@@ -9,7 +9,10 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Parser.ParseError;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
@@ -53,6 +56,13 @@ public abstract class Invokable extends RootNode {
   /** Inline invokable into the lexical context of the target method generation context. */
   public abstract ExpressionNode inline(MethodGenerationContext targetMgenc,
       SMethod toBeInlined);
+
+  public abstract void inlineBytecode(BytecodeMethodGenContext mgenc, SMethod toBeInlined)
+      throws ParseError;
+
+  public BytecodeLoopNode getBodyForInlining() {
+    return (BytecodeLoopNode) expressionOrSequence.getFirstMethodBodyNode();
+  }
 
   @Override
   public final boolean isCloningAllowed() {

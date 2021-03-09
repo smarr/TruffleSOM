@@ -26,6 +26,7 @@ package trufflesom.compiler.bc;
 
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
+import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
@@ -54,6 +55,10 @@ import trufflesom.vmobjects.SSymbol;
 
 public final class BytecodeGenerator {
   private BytecodeGenerator() {}
+
+  public static void emitHALT(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, HALT);
+  }
 
   public static void emitINC(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, INC);
@@ -119,6 +124,11 @@ public final class BytecodeGenerator {
     emit3(mgenc, PUSH_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
   }
 
+  public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
+      final byte ctx) {
+    emit3(mgenc, PUSH_FIELD, fieldIdx, ctx);
+  }
+
   public static void emitPUSHGLOBAL(final BytecodeMethodGenContext mgenc,
       final SSymbol global) {
     emit2(mgenc, PUSH_GLOBAL, mgenc.findLiteralIndex(global));
@@ -138,6 +148,11 @@ public final class BytecodeGenerator {
       final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
     emit3(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
+  }
+
+  public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
+      final byte ctx) {
+    emit3(mgenc, POP_FIELD, fieldIdx, ctx);
   }
 
   public static void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
