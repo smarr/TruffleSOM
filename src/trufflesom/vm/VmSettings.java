@@ -7,6 +7,7 @@ public class VmSettings implements Settings {
 
   public static final boolean UseAstInterp;
   public static final boolean UseBcInterp;
+  public static final boolean UseJitCompiler;
 
   static {
     String val = System.getProperty("som.interp", "AST").toUpperCase();
@@ -17,6 +18,9 @@ public class VmSettings implements Settings {
       throw new IllegalStateException("The Java property -Dsom.interp=" + val
           + " was set, which is not supported. Currently, only the values BC and AST are supported.");
     }
+
+    val = System.getProperty("som.jitCompiler", "true");
+    UseJitCompiler = "true".equals(val);
   }
 
   @Override
