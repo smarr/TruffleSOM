@@ -191,7 +191,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private byte getPositionIn(final Local local, final LinkedHashMap<SSymbol, Local> map) {
     byte i = 0;
     for (Local l : map.values()) {
-      if (l == local) {
+      if (l.equals(local)) {
         return i;
       }
       i += 1;
