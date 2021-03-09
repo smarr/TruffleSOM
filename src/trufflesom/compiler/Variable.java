@@ -148,12 +148,12 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public void emitPop(final BytecodeMethodGenContext mgenc) {
-      emitPOPARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(name));
+      emitPOPARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(this));
     }
 
     @Override
     protected void emitPush(final BytecodeMethodGenContext mgenc) {
-      emitPUSHARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(name));
+      emitPUSHARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(this));
     }
   }
 
@@ -206,13 +206,13 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public void emitPop(final BytecodeMethodGenContext mgenc) {
-      int contextLevel = mgenc.getContextLevel(name);
+      int contextLevel = mgenc.getContextLevel(this);
       emitPOPLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
     }
 
     @Override
-    protected void emitPush(final BytecodeMethodGenContext mgenc) {
-      int contextLevel = mgenc.getContextLevel(name);
+    public void emitPush(final BytecodeMethodGenContext mgenc) {
+      int contextLevel = mgenc.getContextLevel(this);
       emitPUSHLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
     }
   }

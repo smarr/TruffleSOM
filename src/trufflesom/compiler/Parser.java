@@ -662,7 +662,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     // now look up first local variables, or method arguments
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
-      return mgenc.getLocalReadNode(variableName, source);
+      return mgenc.getLocalReadNode(variable, source);
     }
 
     // then object fields

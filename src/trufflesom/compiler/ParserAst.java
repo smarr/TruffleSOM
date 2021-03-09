@@ -157,7 +157,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       final SSymbol variableName, final ExpressionNode exp, final SourceSection source) {
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
-      return mgenc.getLocalWriteNode(variableName, exp, source);
+      return mgenc.getLocalWriteNode(variable, exp, source);
     }
 
     FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, universe, source);

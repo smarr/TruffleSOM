@@ -325,6 +325,18 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     return 0;
   }
 
+  public int getContextLevel(final Variable var) {
+    if (locals.containsValue(var) || arguments.containsValue(var)) {
+      return 0;
+    }
+
+    if (outerGenc != null) {
+      return 1 + outerGenc.getContextLevel(var);
+    }
+
+    return 0;
+  }
+
   public Local getEmbeddedLocal(final SSymbol embeddedName) {
     return locals.get(embeddedName);
   }
@@ -354,16 +366,13 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
         new AccessNodeState(holderGenc.getName(), holderGenc.isClassSide()), source);
   }
 
-  public ExpressionNode getLocalReadNode(final SSymbol variableName,
-      final SourceSection source) {
-    Variable variable = getVariable(variableName);
-    return variable.getReadNode(getContextLevel(variableName), source);
+  public ExpressionNode getLocalReadNode(final Variable variable, final SourceSection source) {
+    return variable.getReadNode(getContextLevel(variable), source);
   }
 
-  public ExpressionNode getLocalWriteNode(final SSymbol variableName,
+  public ExpressionNode getLocalWriteNode(final Variable variable,
       final ExpressionNode valExpr, final SourceSection source) {
-    Variable variable = getVariable(variableName);
-    return variable.getWriteNode(getContextLevel(variableName), valExpr, source);
+    return variable.getWriteNode(getContextLevel(variable), valExpr, source);
   }
 
   protected Local getLocal(final SSymbol varName) {
