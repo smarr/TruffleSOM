@@ -15,8 +15,9 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import trufflesom.interpreter.nodes.ContextualNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
@@ -26,6 +27,7 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
+import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 
@@ -43,8 +45,13 @@ public final class SNodeFactory {
     return new FieldReadNode(self, fieldIndex).initialize(source);
   }
 
-  public static FieldWriteNode createFieldWrite(final ExpressionNode self,
+  public static FieldNode createFieldWrite(final ExpressionNode self,
       final ExpressionNode exp, final int fieldIndex, final SourceSection source) {
+    if (exp instanceof IntIncrementNode
+        && ((IntIncrementNode) exp).doesAccessField(fieldIndex)) {
+      return new UninitFieldIncNode(self, fieldIndex, source);
+    }
+
     return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(source);
   }
 

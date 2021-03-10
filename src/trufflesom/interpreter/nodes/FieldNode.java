@@ -26,11 +26,14 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
 
@@ -46,6 +49,10 @@ public abstract class FieldNode extends ExpressionNode {
     public FieldReadNode(final ExpressionNode self, final int fieldIndex) {
       this.self = self;
       read = FieldAccessorNode.createRead(fieldIndex);
+    }
+
+    public int getFieldIndex() {
+      return read.getFieldIndex();
     }
 
     @Override
@@ -130,5 +137,85 @@ public abstract class FieldNode extends ExpressionNode {
         final Object value) {
       return executeEvaluated(frame, self, value);
     }
+  }
+
+  public static final class UninitFieldIncNode extends FieldNode {
+
+    @Child private ExpressionNode self;
+    private final int             fieldIndex;
+
+    public UninitFieldIncNode(final ExpressionNode self, final int fieldIndex,
+        final SourceSection source) {
+      this.self = self;
+      this.fieldIndex = fieldIndex;
+      this.sourceSection = source;
+    }
+
+    @Override
+    protected ExpressionNode getSelf() {
+      return self;
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      SObject obj;
+      try {
+        obj = self.executeSObject(frame);
+
+        Object val = obj.getField(fieldIndex);
+        if (!(val instanceof Long)) {
+          throw new NotYetImplementedException();
+        }
+
+        long longVal = 0;
+        try {
+          longVal = Math.addExact((Long) val, 1);
+          obj.setField(fieldIndex, longVal);
+        } catch (ArithmeticException e) {
+          throw new NotYetImplementedException();
+        }
+
+        IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
+        replace(new IncFieldNode(self, node, sourceSection));
+        return longVal;
+      } catch (UnexpectedResultException e1) {
+        throw new NotYetImplementedException();
+      }
+    }
+  }
+
+  private static final class IncFieldNode extends FieldNode {
+    @Child private ExpressionNode         self;
+    @Child private IncrementLongFieldNode inc;
+
+    IncFieldNode(final ExpressionNode self, final IncrementLongFieldNode inc,
+        final SourceSection source) {
+      this.self = self;
+      this.inc = inc;
+      this.sourceSection = source;
+    }
+
+    @Override
+    protected ExpressionNode getSelf() {
+      return self;
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      return executeLong(frame);
+    }
+
+    @Override
+    public long executeLong(final VirtualFrame frame) {
+      SObject obj;
+      try {
+        obj = self.executeSObject(frame);
+        return inc.increment(obj);
+      } catch (UnexpectedResultException e1) {
+        throw new NotYetImplementedException();
+      }
+    }
+
   }
 }
