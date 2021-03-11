@@ -26,9 +26,9 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.inlining.Scope;
 import bd.inlining.ScopeAdaptationVisitor;
 import trufflesom.compiler.MethodGenerationContext;
-import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -74,10 +74,11 @@ public final class Method extends Invokable {
     return "Method " + getName() + " @" + Integer.toHexString(hashCode());
   }
 
-  public Method cloneAndAdaptAfterScopeChange(final LexicalScope adaptedScope,
-      final int appliesTo, final boolean cloneAdaptedAsUninitialized,
-      final boolean outerScopeChanged) {
-    ExpressionNode adaptedBody = ScopeAdaptationVisitor.adapt(uninitializedBody, adaptedScope,
+  public Method cloneAndAdaptAfterScopeChange(final BytecodeMethodGenContext mgenc,
+      final LexicalScope adaptedScope, final int appliesTo,
+      final boolean cloneAdaptedAsUninitialized, final boolean outerScopeChanged) {
+    Scope<?, ?> scope = mgenc == null ? adaptedScope : mgenc;
+    ExpressionNode adaptedBody = ScopeAdaptationVisitor.adapt(uninitializedBody, scope,
         appliesTo, outerScopeChanged, getLanguage(SomLanguage.class));
 
     ExpressionNode uninit;
@@ -105,21 +106,14 @@ public final class Method extends Invokable {
   public Node deepCopy() {
     LexicalScope splitScope = currentLexicalScope.split();
     assert currentLexicalScope != splitScope;
-    return cloneAndAdaptAfterScopeChange(splitScope, 0, false, true);
+    return cloneAndAdaptAfterScopeChange(null, splitScope, 0, false, true);
   }
 
   @Override
   public ExpressionNode inline(final MethodGenerationContext mgenc,
       final SMethod toBeInlined) {
     mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
-    return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc.getCurrentLexicalScope(), 0,
-        true, getLanguage(SomLanguage.class));
-  }
-
-  @Override
-  public void inlineBytecode(final BytecodeMethodGenContext mgenc, final SMethod toBeInlined)
-      throws ParseError {
-    mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
-    getBodyForInlining().inlineInto(mgenc);
+    return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc, 0, true,
+        getLanguage(SomLanguage.class));
   }
 }

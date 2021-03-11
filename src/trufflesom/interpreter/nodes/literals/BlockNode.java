@@ -72,9 +72,8 @@ public class BlockNode extends LiteralNode {
     }
 
     Method blockIvk = (Method) blockMethod.getInvokable();
-    Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(
-        inliner.getScope(blockIvk), inliner.contextLevel + 1, true,
-        inliner.outerScopeChanged());
+    Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(null, inliner.getScope(blockIvk),
+        inliner.contextLevel + 1, true, inliner.outerScopeChanged());
     SMethod method = new SMethod(blockMethod.getSignature(), adapted,
         blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
     replace(createNode(method));
