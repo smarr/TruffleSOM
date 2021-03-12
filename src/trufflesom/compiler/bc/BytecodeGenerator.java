@@ -87,7 +87,9 @@ public final class BytecodeGenerator {
 
   public static void emitPUSHBLOCK(final BytecodeMethodGenContext mgenc,
       final SMethod blockMethod) {
-    emit2(mgenc, PUSH_BLOCK, mgenc.findLiteralIndex(blockMethod));
+    byte litIdx = mgenc.findLiteralIndex(blockMethod);
+    assert litIdx >= 0;
+    emit2(mgenc, PUSH_BLOCK, litIdx);
   }
 
   public static void emitPUSHLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
