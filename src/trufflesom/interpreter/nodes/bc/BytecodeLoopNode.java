@@ -7,8 +7,10 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELDPUSH;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSE;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUE;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSEPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSETOPNIL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUEPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUETOPNIL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
@@ -28,8 +30,10 @@ import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -101,6 +105,7 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongField
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
@@ -630,25 +635,47 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case JUMP_ON_TRUE: {
+        case JUMP_ON_TRUE_TOP_NIL: {
           Object val = stack[stackPointer];
           if (val == Boolean.TRUE) {
             byte offset = bytecodes[bytecodeIndex + 1];
             nextBytecodeIndex = bytecodeIndex + offset;
+            stack[stackPointer] = Nil.nilObject;
           } else {
             stackPointer -= 1;
           }
           break;
         }
 
-        case JUMP_ON_FALSE: {
+        case JUMP_ON_FALSE_TOP_NIL: {
           Object val = stack[stackPointer];
           if (val == Boolean.FALSE) {
             byte offset = bytecodes[bytecodeIndex + 1];
             nextBytecodeIndex = bytecodeIndex + offset;
+            stack[stackPointer] = Nil.nilObject;
           } else {
             stackPointer -= 1;
           }
+          break;
+        }
+
+        case JUMP_ON_TRUE_POP: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.TRUE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            nextBytecodeIndex = bytecodeIndex + offset;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
+        case JUMP_ON_FALSE_POP: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.FALSE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            nextBytecodeIndex = bytecodeIndex + offset;
+          }
+          stackPointer -= 1;
           break;
         }
 
@@ -1035,15 +1062,27 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case JUMP_ON_TRUE: {
+        case JUMP_ON_TRUE_TOP_NIL: {
           byte offset = bytecodes[i + 1];
-          emitJUMPONTRUE(mgenc, offset);
+          emitJUMPONTRUETOPNIL(mgenc, offset);
           break;
         }
 
-        case JUMP_ON_FALSE: {
+        case JUMP_ON_FALSE_TOP_NIL: {
           byte offset = bytecodes[i + 1];
-          emitJUMPONFALSE(mgenc, offset);
+          emitJUMPONFALSETOPNIL(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_TRUE_POP: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONTRUEPOP(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_FALSE_POP: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONFALSEPOP(mgenc, offset);
           break;
         }
 
@@ -1166,8 +1205,10 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case JUMP:
-        case JUMP_ON_TRUE:
-        case JUMP_ON_FALSE: {
+        case JUMP_ON_TRUE_TOP_NIL:
+        case JUMP_ON_FALSE_TOP_NIL:
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP: {
           break;
         }
 

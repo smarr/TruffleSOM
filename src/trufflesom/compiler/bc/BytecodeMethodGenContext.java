@@ -11,8 +11,10 @@ import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -140,8 +142,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   public void patchJumpOffsetToPointToNextInstruction(final int idxOfOffset) {
     int instructionStart = idxOfOffset - 1;
     byte bytecodeBeforeOffset = bytecode.get(instructionStart);
-    assert bytecodeBeforeOffset == JUMP_ON_TRUE ||
-        bytecodeBeforeOffset == JUMP_ON_FALSE ||
+    assert bytecodeBeforeOffset == JUMP_ON_TRUE_TOP_NIL ||
+        bytecodeBeforeOffset == JUMP_ON_FALSE_TOP_NIL ||
+        bytecodeBeforeOffset == JUMP_ON_TRUE_POP ||
+        bytecodeBeforeOffset == JUMP_ON_FALSE_POP ||
         bytecodeBeforeOffset == JUMP : "Expected to patch a JUMP instruction, but got bc: "
             + bytecodeBeforeOffset;
     int jumpOffset = bytecode.size() - instructionStart;
@@ -619,7 +623,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode.remove(bytecode.size() - 1);
     bytecode.remove(bytecode.size() - 1);
 
-    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this);
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, false);
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
@@ -651,7 +655,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode.remove(bytecode.size() - 1);
     bytecode.remove(bytecode.size() - 1);
 
-    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this);
+    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this, false);
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
@@ -691,7 +695,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode.remove(bytecode.size() - 1);
     bytecode.remove(bytecode.size() - 1);
 
-    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this);
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, true);
 
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
 
@@ -735,7 +739,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode.remove(bytecode.size() - 1);
     bytecode.remove(bytecode.size() - 1);
 
-    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this);
+    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this, true);
 
     // grab block's method, and inline it
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
@@ -800,8 +804,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           depth++;
           break;
         case JUMP:
-        case JUMP_ON_TRUE:
-        case JUMP_ON_FALSE:
+        case JUMP_ON_TRUE_TOP_NIL:
+        case JUMP_ON_FALSE_TOP_NIL:
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP:
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "
