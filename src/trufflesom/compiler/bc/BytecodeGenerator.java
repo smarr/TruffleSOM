@@ -70,11 +70,15 @@ public final class BytecodeGenerator {
 
   public static void emitINCFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
       final byte ctx) {
+    assert fieldIdx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, INC_FIELD, fieldIdx, ctx);
   }
 
   public static void emitINCFIELDPUSH(final BytecodeMethodGenContext mgenc,
       final byte fieldIdx, final byte ctx) {
+    assert fieldIdx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, INC_FIELD_PUSH, fieldIdx, ctx);
   }
 
@@ -86,6 +90,8 @@ public final class BytecodeGenerator {
 
   public static void emitPUSHARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
+    assert idx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, PUSH_ARGUMENT, idx, ctx);
   }
 
@@ -115,6 +121,7 @@ public final class BytecodeGenerator {
   public static void emitPUSHLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     assert idx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, PUSH_LOCAL, idx, ctx);
   }
 
@@ -126,6 +133,8 @@ public final class BytecodeGenerator {
 
   public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
       final byte ctx) {
+    assert fieldIdx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, PUSH_FIELD, fieldIdx, ctx);
   }
 
@@ -136,11 +145,15 @@ public final class BytecodeGenerator {
 
   public static void emitPOPARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
+    assert idx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, POP_ARGUMENT, idx, ctx);
   }
 
   public static void emitPOPLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
+    assert idx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, POP_LOCAL, idx, ctx);
   }
 
@@ -152,6 +165,8 @@ public final class BytecodeGenerator {
 
   public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
       final byte ctx) {
+    assert fieldIdx >= 0;
+    assert ctx >= 0;
     emit3(mgenc, POP_FIELD, fieldIdx, ctx);
   }
 
@@ -169,6 +184,7 @@ public final class BytecodeGenerator {
 
   public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc,
       final byte literalIndex) {
+    assert literalIndex >= 0;
     emit2(mgenc, PUSH_CONSTANT, literalIndex);
   }
 

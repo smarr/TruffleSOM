@@ -229,6 +229,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
+          assert contextIdx >= 0;
 
           VirtualFrame currentOrContext = frame;
           if (contextIdx > 0) {
@@ -1077,6 +1078,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
 
           bytecodes[i + 2] = (byte) se.contextLevel;
+          assert bytecodes[i + 2] >= 0;
           localsAndOuters[localIdx] = ((Local) se.var).getSlot();
           break;
         }
@@ -1187,6 +1189,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     byte contextIdx = bytecodes[i + 2];
     if (contextIdx >= inliner.contextLevel) {
       byte ctx = (byte) (contextIdx - 1);
+      assert ctx >= 0;
       bytecodes[i + 2] = ctx;
     }
   }
