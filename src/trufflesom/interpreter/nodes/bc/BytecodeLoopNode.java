@@ -8,6 +8,7 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHGLOBAL;
@@ -64,15 +65,17 @@ import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+import bd.inlining.ScopeAdaptationVisitor;
+import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
+import bd.inlining.nodes.ScopeReference;
 import bd.primitives.Specializer;
-import trufflesom.compiler.BlockInliningVisitor;
-import trufflesom.compiler.BytecodeScopeReference;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.EscapedBlockException;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
@@ -102,7 +105,7 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class BytecodeLoopNode extends ExpressionNode implements BytecodeScopeReference {
+public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   private static final ValueProfile frameType = ValueProfile.createClassProfile();
   private static final LiteralNode  dummyNode = new IntegerLiteralNode(0);
 
@@ -842,9 +845,26 @@ public class BytecodeLoopNode extends ExpressionNode implements BytecodeScopeRef
   }
 
   @Override
-  public void replaceAfterScopeChange(final BlockInliningVisitor inliner) {}
+  public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+    Object scope = inliner.getCurrentScope();
+    int targetContextLevel = inliner.contextLevel;
 
-  public void inlineInto(final BytecodeMethodGenContext mgenc) throws ParseError {
+    if (scope instanceof BytecodeMethodGenContext) {
+      BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+
+      try {
+        inlineInto(mgenc, targetContextLevel, inliner.outerScopeChanged());
+      } catch (ParseError e) {
+        throw new RuntimeException(e);
+      }
+    } else if (inliner.outerScopeChanged()) {
+      adapt(inliner);
+    }
+  }
+
+  private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel,
+      final boolean outerScopeChanged)
+      throws ParseError {
     int i = 0;
     while (i < bytecodes.length) {
       byte bytecode = bytecodes[i];
@@ -884,7 +904,22 @@ public class BytecodeLoopNode extends ExpressionNode implements BytecodeScopeRef
         }
 
         case PUSH_BLOCK: {
-          throw new NotYetImplementedException();
+          if (!outerScopeChanged) {
+            return;
+          }
+
+          byte literalIdx = bytecodes[i + 1];
+          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+
+          Method blockIvk = (Method) blockMethod.getInvokable();
+          Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(null,
+              mgenc.getCurrentLexicalScope().getScope(blockIvk),
+              targetContextLevel + 1, true, true);
+          SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
+              blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
+          mgenc.addLiteralIfAbsent(newMethod, null);
+          emitPUSHBLOCK(mgenc, newMethod);
+          break;
         }
 
         case PUSH_CONSTANT: {
@@ -898,6 +933,7 @@ public class BytecodeLoopNode extends ExpressionNode implements BytecodeScopeRef
         case PUSH_GLOBAL: {
           byte literalIdx = bytecodes[i + 1];
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(globalName, null);
           emitPUSHGLOBAL(mgenc, globalName);
           break;
         }
@@ -974,6 +1010,149 @@ public class BytecodeLoopNode extends ExpressionNode implements BytecodeScopeRef
 
         case DEC: {
           emitDEC(mgenc);
+          break;
+        }
+
+        default:
+          throw new NotYetImplementedException(
+              "Support for bytecode " + getBytecodeName(bytecode) + " has not yet been added");
+      }
+
+      i += bytecodeLength;
+    }
+  }
+
+  private void adapt(final ScopeAdaptationVisitor inliner) {
+    FrameSlot[] oldLocalsAndOuters = Arrays.copyOf(localsAndOuters, localsAndOuters.length);
+
+    int i = 0;
+    while (i < bytecodes.length) {
+      byte bytecode = bytecodes[i];
+      final int bytecodeLength = getBytecodeLength(bytecode);
+
+      switch (bytecode) {
+        case HALT:
+        case DUP: {
+          break;
+        }
+
+        case PUSH_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
+
+          bytecodes[i + 2] = (byte) se.contextLevel;
+          localsAndOuters[localIdx] = ((Local) se.var).getSlot();
+          break;
+        }
+
+        case PUSH_ARGUMENT: {
+          byte contextIdx = bytecodes[i + 2];
+          if (contextIdx >= inliner.contextLevel) {
+            bytecodes[i + 2] = (byte) (contextIdx - 1);
+          }
+          break;
+        }
+
+        case PUSH_FIELD: {
+          byte contextIdx = bytecodes[i + 2];
+          if (contextIdx >= inliner.contextLevel) {
+            bytecodes[i + 2] = (byte) (contextIdx - 1);
+          }
+          break;
+        }
+
+        case PUSH_BLOCK: {
+          if (!inliner.outerScopeChanged()) {
+            return;
+          }
+
+          byte literalIdx = bytecodes[i + 1];
+          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+
+          Method blockIvk = (Method) blockMethod.getInvokable();
+          Method adapted =
+              blockIvk.cloneAndAdaptAfterScopeChange(null, inliner.getScope(blockIvk),
+                  inliner.contextLevel + 1, true, requiresChangesToContextLevels);
+          SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
+              blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
+          literalsAndConstants[literalIdx] = newMethod;
+          break;
+        }
+
+        case PUSH_CONSTANT:
+        case PUSH_GLOBAL:
+        case POP: {
+          break;
+        }
+
+        case POP_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
+
+          bytecodes[i + 2] = (byte) se.contextLevel;
+          localsAndOuters[localIdx] = ((Local) se.var).getSlot();
+          break;
+        }
+
+        case POP_ARGUMENT: {
+          byte contextIdx = bytecodes[i + 2];
+          if (contextIdx >= inliner.contextLevel) {
+            bytecodes[i + 2] = (byte) (contextIdx - 1);
+          }
+          break;
+        }
+
+        case POP_FIELD: {
+          byte contextIdx = bytecodes[i + 2];
+          if (contextIdx >= inliner.contextLevel) {
+            bytecodes[i + 2] = (byte) (contextIdx - 1);
+          }
+          break;
+        }
+
+        case SEND:
+        case SUPER_SEND: {
+          break;
+        }
+
+        case RETURN_LOCAL: {
+          break;
+        }
+
+        case RETURN_NON_LOCAL: {
+          byte contextIdx = bytecodes[i + 1];
+          if (contextIdx >= inliner.contextLevel) {
+            // we don't simplify to return local, because they had different bytecode length
+            // and, well, I don't think this should happen
+            assert contextIdx - 1 > 0 : "I wouldn't expect a RETURN_LOCAL equivalent here, "
+                + " because we are in a block, or it is already a return local";
+            bytecodes[i + 1] = (byte) (contextIdx - 1);
+          }
+          break;
+        }
+
+        case RETURN_SELF:
+        case INC:
+        case DEC: {
+          break;
+        }
+
+        case INC_FIELD:
+        case INC_FIELD_PUSH: {
+          byte contextIdx = bytecodes[i + 2];
+          if (contextIdx >= inliner.contextLevel) {
+            bytecodes[i + 2] = (byte) (contextIdx - 1);
+          }
+          break;
+        }
+
+        case JUMP:
+        case JUMP_ON_TRUE:
+        case JUMP_ON_FALSE: {
           break;
         }
 
