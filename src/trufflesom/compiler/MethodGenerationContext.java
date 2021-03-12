@@ -440,14 +440,18 @@ public class MethodGenerationContext
         holderGenc.getFieldIndex(fieldName), source);
   }
 
+  protected void addLocal(final Local l, final SSymbol name) {
+    assert !locals.containsKey(name);
+    locals.put(name, l);
+    currentScope.addVariable(l);
+  }
+
   public void mergeIntoScope(final LexicalScope scope, final SMethod toBeInlined) {
     for (Variable v : scope.getVariables()) {
       Local l = v.splitToMergeIntoOuterScope(universe, currentScope.getFrameDescriptor());
       if (l != null) { // can happen for instance for the block self, which we omit
         SSymbol name = l.getQualifiedName(universe);
-        assert !locals.containsKey(name);
-        locals.put(name, l);
-        currentScope.addVariable(l);
+        addLocal(l, name);
       }
     }
 

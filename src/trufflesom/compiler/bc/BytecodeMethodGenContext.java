@@ -67,7 +67,7 @@ import trufflesom.vmobjects.SSymbol;
 public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   private final List<Object>                  literals;
-  private final LinkedHashMap<SSymbol, Local> outerVars;
+  private final LinkedHashMap<SSymbol, Local> localAndOuterVars;
 
   private final ArrayList<Byte> bytecode;
   private final byte[]          last4Bytecodes;
@@ -96,7 +96,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     super(holderGenc, outerGenc, universe, isBlockMethod, structuralProbe);
     literals = new ArrayList<>();
     bytecode = new ArrayList<>();
-    outerVars = new LinkedHashMap<>();
+    localAndOuterVars = new LinkedHashMap<>();
     last4Bytecodes = new byte[4];
   }
 
@@ -240,20 +240,32 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
    * Record the access, and also manage the tracking of outer access.
    */
   public byte getLocalIndex(final Local local, final int contextLevel) {
-    if (contextLevel == 0) {
-      return getPositionIn(local, locals);
+    byte pos = getPositionIn(local, localAndOuterVars);
+    if (pos >= 0) {
+      return pos;
     }
 
-    // we already got it, and it's in our outerVar list/map
-    if (outerVars.containsValue(local)) {
-      return (byte) (getPositionIn(local, outerVars) + locals.size());
-    }
+    // Don't have it yet, so, need to add it. Must be an outer,
+    int size = localAndOuterVars.size();
+    assert !localAndOuterVars.containsKey(local.getName());
+    localAndOuterVars.put(local.getName(), local);
+    assert getPositionIn(local, localAndOuterVars) == size;
 
-    int size = outerVars.size();
-    outerVars.put(local.getName(), local);
-    assert getPositionIn(local, outerVars) == size;
+    return (byte) size;
+  }
 
-    return (byte) (size + locals.size());
+  @Override
+  public Local addLocal(final SSymbol local, final SourceSection source) {
+    Local l = super.addLocal(local, source);
+    localAndOuterVars.put(local, l);
+    return l;
+  }
+
+  @Override
+  public void addLocal(final Local l, final SSymbol name) {
+    super.addLocal(l, name);
+    assert !localAndOuterVars.containsKey(name);
+    localAndOuterVars.put(name, l);
   }
 
   private BytecodeLoopNode constructBytecodeBody(final SourceSection sourceSection) {
@@ -265,15 +277,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     Object[] literalsArr = literals.toArray();
-    FrameSlot[] localsAndOuters = new FrameSlot[locals.size() + outerVars.size()];
+    FrameSlot[] localsAndOuters = new FrameSlot[localAndOuterVars.size()];
 
     i = 0;
-    for (Local l : locals.values()) {
-      localsAndOuters[i] = l.getSlot();
-      i += 1;
-    }
-
-    for (Local l : outerVars.values()) {
+    for (Local l : localAndOuterVars.values()) {
       localsAndOuters[i] = l.getSlot();
       i += 1;
     }
