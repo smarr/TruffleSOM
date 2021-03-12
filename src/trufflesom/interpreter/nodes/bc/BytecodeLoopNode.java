@@ -630,7 +630,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case JUMP: {
-          byte offset = bytecodes[bytecodeIndex + 1];
+          int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
           nextBytecodeIndex = bytecodeIndex + offset;
           break;
         }
@@ -638,7 +638,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP_ON_TRUE_TOP_NIL: {
           Object val = stack[stackPointer];
           if (val == Boolean.TRUE) {
-            byte offset = bytecodes[bytecodeIndex + 1];
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
             nextBytecodeIndex = bytecodeIndex + offset;
             stack[stackPointer] = Nil.nilObject;
           } else {
@@ -650,7 +650,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP_ON_FALSE_TOP_NIL: {
           Object val = stack[stackPointer];
           if (val == Boolean.FALSE) {
-            byte offset = bytecodes[bytecodeIndex + 1];
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
             nextBytecodeIndex = bytecodeIndex + offset;
             stack[stackPointer] = Nil.nilObject;
           } else {

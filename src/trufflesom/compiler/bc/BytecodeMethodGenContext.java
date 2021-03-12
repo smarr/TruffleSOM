@@ -151,7 +151,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     int jumpOffset = bytecode.size() - instructionStart;
 
     assert jumpOffset > 0
-        && jumpOffset <= Byte.MAX_VALUE : "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
+        && jumpOffset <= 0xff : "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
             + jumpOffset;
 
     bytecode.set(idxOfOffset, (byte) jumpOffset);

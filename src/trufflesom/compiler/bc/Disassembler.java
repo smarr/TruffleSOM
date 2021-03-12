@@ -237,11 +237,11 @@ public class Disassembler {
         }
 
         case JUMP:
-          int offset = bytecodes.get(b + 1);
         case JUMP_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP: {
+          int offset = Byte.toUnsignedInt(bytecodes.get(b + 1));
 
           Universe.errorPrintln(
               "(jump offset: " + offset + " -> jump target: " + (b + offset) + ")");
