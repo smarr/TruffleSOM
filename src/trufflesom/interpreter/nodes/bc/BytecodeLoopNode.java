@@ -1021,6 +1021,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           byte newCtx = (byte) (contextIdx - 1);
           if (newCtx == 0) {
             emitRETURNLOCAL(mgenc);
+            // emitted to avoid having jumps being broken
+            // but should not be executed
+            emitHALT(mgenc);
           } else {
             emitRETURNNONLOCAL(mgenc);
           }
