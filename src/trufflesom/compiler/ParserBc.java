@@ -8,7 +8,6 @@ import static trufflesom.compiler.Symbol.Exit;
 import static trufflesom.compiler.Symbol.Identifier;
 import static trufflesom.compiler.Symbol.Integer;
 import static trufflesom.compiler.Symbol.Keyword;
-import static trufflesom.compiler.Symbol.NewBlock;
 import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
@@ -288,83 +287,6 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     } else {
       emitSEND(mgenc, msg);
     }
-  }
-
-  private boolean inlineIfTrue(final BytecodeMethodGenContext mgenc)
-      throws ProgramDefinitionError {
-    // HACK: we do assume that the receiver on the stack is a boolean
-    // HACK: similar to the {@see IfInlinedLiteralNode}
-    // HACK: we don't support anything but booleans at the moment
-
-    // if it's not a literal block, well, then we can't do anything anyway
-    if (sym != NewBlock) {
-      return false;
-    }
-
-    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(mgenc);
-
-    inlinedBlock(mgenc);
-
-    peekForNextSymbolFromLexerIfNecessary();
-
-    if (sym == Keyword && "ifFalse:".equals(text) && nextSym == NewBlock) {
-      expect(Keyword);
-      int jumpOffsetIdxToSkipFalseBranch = emitJumpWithDummyOffset(mgenc);
-      patchJumpOffsetToPointToNextInstruction(mgenc, jumpOffsetIdxToSkipTrueBranch);
-      inlinedBlock(mgenc);
-      patchJumpOffsetToPointToNextInstruction(mgenc, jumpOffsetIdxToSkipFalseBranch);
-    } else {
-      patchJumpOffsetToPointToNextInstruction(mgenc, jumpOffsetIdxToSkipTrueBranch);
-    }
-
-    return true;
-  }
-
-  private boolean ifFalseMessages(final BytecodeMethodGenContext mgenc)
-      throws ProgramDefinitionError {
-    // HACK: we do assume that the receiver on the stack is a boolean
-    // HACK: similar to the {@see IfInlinedLiteralNode}
-    // HACK: we don't support anything but booleans at the moment
-
-    // if it's not a literal block, well, then we can't do anything anyway
-    if (sym != NewBlock) {
-      return false;
-    }
-
-    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(mgenc);
-
-    inlinedBlock(mgenc);
-
-    peekForNextSymbolFromLexerIfNecessary();
-
-    if (sym == Keyword && "ifTrue:".equals(text) && nextSym == NewBlock) {
-      expect(Keyword);
-      int jumpOffsetIdxToSkipTrueBranch = emitJumpWithDummyOffset(mgenc);
-      patchJumpOffsetToPointToNextInstruction(mgenc, jumpOffsetIdxToSkipFalseBranch);
-      inlinedBlock(mgenc);
-      patchJumpOffsetToPointToNextInstruction(mgenc, jumpOffsetIdxToSkipTrueBranch);
-    } else {
-      patchJumpOffsetToPointToNextInstruction(mgenc, jumpOffsetIdxToSkipFalseBranch);
-    }
-
-    return true;
-  }
-
-  private void inlinedBlock(final BytecodeMethodGenContext mgenc)
-      throws ProgramDefinitionError {
-    // needs to make sure that we simply don't generate a LOCAL_RETURN at the end
-    // just leaving the last value on the stack is the right semantics
-
-    expect(NewBlock);
-    mgenc.startProcessingDirectlyInlinedBlockBody();
-
-    try {
-      blockContents(mgenc);
-    } finally {
-      mgenc.endProcessingDirectlyInlinedBlockBody();
-    }
-
-    expect(EndBlock);
   }
 
   private void formula(final BytecodeMethodGenContext mgenc) throws ProgramDefinitionError {

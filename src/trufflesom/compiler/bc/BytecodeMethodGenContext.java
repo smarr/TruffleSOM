@@ -1,6 +1,8 @@
 package trufflesom.compiler.bc;
 
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnFalseWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnTrueWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
@@ -71,8 +73,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private final byte[]          last4Bytecodes;
 
   private boolean finished;
-  private int     levelOfInlinedBlocks;
-  private int     numInlinedBlocks;
 
   public BytecodeMethodGenContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -594,6 +594,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   public boolean inlineIfTrue() throws ParseError {
+    // HACK: we do assume that the receiver on the stack is a boolean
+    // HACK: similar to the {@see IfInlinedLiteralNode}
+    // HACK: we don't support anything but booleans at the moment
+
     assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
 
     final byte pushBlockCandidate = last4Bytecodes[3];
@@ -612,23 +616,134 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
-    toBeInlined.getInvokable().inlineBytecode(this, toBeInlined);
+    toBeInlined.getInvokable().inline(this, toBeInlined);
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
+
+    resetLastBytecodeBuffer();
 
     return true;
   }
 
   public boolean inlineIfFalse() {
-    return false;
+    // HACK: we do assume that the receiver on the stack is a boolean
+    // HACK: similar to the {@see IfInlinedLiteralNode}
+    // HACK: we don't support anything but booleans at the moment
+
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
+
+    final byte pushBlockCandidate = last4Bytecodes[3];
+
+    if (pushBlockCandidate != PUSH_BLOCK) {
+      return false;
+    }
+
+    byte blockLiteralIdx = bytecode.get(bytecode.size() - 1);
+
+    // remove the PUSH_BLOCK
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+
+    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this);
+
+    // grab block's method, and inline it
+    SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+    toBeInlined.getInvokable().inline(this, toBeInlined);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
+
+    resetLastBytecodeBuffer();
+
+    return true;
   }
 
   public boolean inlineIfTrueIfFalse() {
-    return false;
+    // HACK: we do assume that the receiver on the stack is a boolean
+    // HACK: similar to the {@see IfInlinedLiteralNode}
+    // HACK: we don't support anything but booleans at the moment
+
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
+
+    final byte pushBlockCandidate1 = last4Bytecodes[2];
+    final byte pushBlockCandidate2 = last4Bytecodes[3];
+
+    if (pushBlockCandidate1 != PUSH_BLOCK || pushBlockCandidate2 != PUSH_BLOCK) {
+      return false;
+    }
+
+    byte block1LiteralIdx = bytecode.get(bytecode.size() - 3);
+    byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
+
+    // grab block's method, and inline it
+    SMethod toBeInlined1 = (SMethod) literals.get(block1LiteralIdx);
+    SMethod toBeInlined2 = (SMethod) literals.get(block2LiteralIdx);
+
+    // remove the 2 PUSH_BLOCK bytecodes
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this);
+
+    toBeInlined1.getInvokable().inline(this, toBeInlined1);
+
+    int jumpOffsetIdxToSkipFalseBranch = emitJumpWithDummyOffset(this);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
+    resetLastBytecodeBuffer();
+
+    toBeInlined2.getInvokable().inline(this, toBeInlined2);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
+    resetLastBytecodeBuffer();
+
+    return true;
   }
 
   public boolean inlineIfFalseIfTrue() {
-    return false;
+    // HACK: we do assume that the receiver on the stack is a boolean
+    // HACK: similar to the {@see IfInlinedLiteralNode}
+    // HACK: we don't support anything but booleans at the moment
+
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
+
+    final byte pushBlockCandidate1 = last4Bytecodes[2];
+    final byte pushBlockCandidate2 = last4Bytecodes[3];
+
+    if (pushBlockCandidate1 != PUSH_BLOCK || pushBlockCandidate2 != PUSH_BLOCK) {
+      return false;
+    }
+
+    byte block1LiteralIdx = bytecode.get(bytecode.size() - 3);
+    byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
+
+    // grab block's method, and inline it
+    SMethod toBeInlined1 = (SMethod) literals.get(block1LiteralIdx);
+    SMethod toBeInlined2 = (SMethod) literals.get(block2LiteralIdx);
+
+    // remove the 2 PUSH_BLOCK bytecodes
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+    bytecode.remove(bytecode.size() - 1);
+
+    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this);
+
+    // grab block's method, and inline it
+    toBeInlined1.getInvokable().inline(this, toBeInlined1);
+
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpWithDummyOffset(this);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
+    resetLastBytecodeBuffer();
+
+    toBeInlined2.getInvokable().inline(this, toBeInlined2);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
+    resetLastBytecodeBuffer();
+
+    return true;
   }
 
   private int computeStackDepth() {

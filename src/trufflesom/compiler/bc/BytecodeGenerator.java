@@ -172,6 +172,18 @@ public final class BytecodeGenerator {
     emit2(mgenc, PUSH_CONSTANT, literalIndex);
   }
 
+  public static void emitJUMP(final BytecodeMethodGenContext mgenc, final byte offset) {
+    emit2(mgenc, JUMP, offset);
+  }
+
+  public static void emitJUMPONTRUE(final BytecodeMethodGenContext mgenc, final byte offset) {
+    emit2(mgenc, JUMP_ON_TRUE, offset);
+  }
+
+  public static void emitJUMPONFALSE(final BytecodeMethodGenContext mgenc, final byte offset) {
+    emit2(mgenc, JUMP_ON_FALSE, offset);
+  }
+
   public static int emitJumpOnTrueWithDummyOffset(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, JUMP_ON_TRUE);
     return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);

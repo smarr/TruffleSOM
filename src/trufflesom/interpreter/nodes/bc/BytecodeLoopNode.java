@@ -4,6 +4,11 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitDEC;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitHALT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELDPUSH;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSE;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUE;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
@@ -1010,6 +1015,38 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case DEC: {
           emitDEC(mgenc);
+          break;
+        }
+
+        case INC_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitINCFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case INC_FIELD_PUSH: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitINCFIELDPUSH(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case JUMP: {
+          byte offset = bytecodes[i + 1];
+          emitJUMP(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_TRUE: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONTRUE(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_FALSE: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONFALSE(mgenc, offset);
           break;
         }
 
