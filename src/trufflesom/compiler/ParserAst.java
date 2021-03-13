@@ -28,7 +28,7 @@ import bd.inlining.InlinableNodes;
 import bd.source.SourceCoordinate;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.literals.ArrayLiteralNode;
 import trufflesom.interpreter.nodes.literals.BigIntegerLiteralNode;
@@ -160,7 +160,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return mgenc.getLocalWriteNode(variableName, exp, source);
     }
 
-    FieldWriteNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, universe, source);
+    FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, universe, source);
 
     if (fieldWrite != null) {
       return fieldWrite;

@@ -24,7 +24,9 @@
  */
 package trufflesom.compiler.bc;
 
+import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
+import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -37,6 +39,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
@@ -46,8 +49,18 @@ import trufflesom.vmobjects.SSymbol;
 
 public class BytecodeGenerator {
 
+  public void emitINC(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, INC);
+  }
+
+  public void emitDEC(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, DEC);
+  }
+
   public void emitPOP(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, POP);
+    if (!mgenc.optimizeDupPopPopSequence()) {
+      emit1(mgenc, POP);
+    }
   }
 
   public void emitPUSHARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
@@ -57,6 +70,10 @@ public class BytecodeGenerator {
 
   public void emitRETURNLOCAL(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, RETURN_LOCAL);
+  }
+
+  public void emitRETURNSELF(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, RETURN_SELF);
   }
 
   public void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {
@@ -123,14 +140,14 @@ public class BytecodeGenerator {
 
   private void emit2(final BytecodeMethodGenContext mgenc, final byte code, final byte idx) {
     mgenc.addBytecode(code);
-    mgenc.addBytecode(idx);
+    mgenc.addBytecodeArgument(idx);
   }
 
   private void emit3(final BytecodeMethodGenContext mgenc, final byte code, final byte idx,
       final byte ctx) {
     mgenc.addBytecode(code);
-    mgenc.addBytecode(idx);
-    mgenc.addBytecode(ctx);
+    mgenc.addBytecodeArgument(idx);
+    mgenc.addBytecodeArgument(ctx);
   }
 
 }

@@ -48,12 +48,19 @@ public class Bytecodes {
   public static final byte SUPER_SEND       = 13;
   public static final byte RETURN_LOCAL     = 14;
   public static final byte RETURN_NON_LOCAL = 15;
+  public static final byte RETURN_SELF      = 16;
 
-  public static final byte Q_PUSH_GLOBAL = 16;
-  public static final byte Q_SEND        = 17;
-  public static final byte Q_SEND_1      = 18;
-  public static final byte Q_SEND_2      = 19;
-  public static final byte Q_SEND_3      = 20;
+  public static final byte INC = 17;
+  public static final byte DEC = 18;
+
+  public static final byte INC_FIELD      = 19;
+  public static final byte INC_FIELD_PUSH = 20;
+
+  public static final byte Q_PUSH_GLOBAL = 21;
+  public static final byte Q_SEND        = 22;
+  public static final byte Q_SEND_1      = 23;
+  public static final byte Q_SEND_2      = 24;
+  public static final byte Q_SEND_3      = 25;
 
   private static final String[] PADDED_BYTECODE_NAMES = new String[] {
       "HALT            ", "DUP             ", "PUSH_LOCAL      ",
@@ -63,8 +70,19 @@ public class Bytecodes {
       "SEND            ", "SUPER_SEND      ", "RETURN_LOCAL    ",
       "RETURN_NON_LOCAL",
 
-      "Q_PUSH_GLOBAL",
-      "Q_SEND", "Q_SEND_1", "Q_SEND_2", "Q_SEND_3",
+      "RETURN_SELF     ",
+
+      "INC             ",
+      "DEC             ",
+
+      "INC_FIELD       ",
+      "INC_FIELD_PUSH  ",
+
+      "Q_PUSH_GLOBAL   ",
+      "Q_SEND          ",
+      "Q_SEND_1        ",
+      "Q_SEND_2        ",
+      "Q_SEND_3        ",
   };
 
   private static final String[] BYTECODE_NAMES =
@@ -110,6 +128,13 @@ public class Bytecodes {
       2, // SUPER_SEND
       1, // RETURN_LOCAL
       2, // RETURN_NON_LOCAL
+      1, // RETURN_SELF
+
+      1, // INC
+      1, // DEC
+
+      3, // INC_FIELD
+      3, // INC_FIELD_PUSH
 
       2, // Q_PUSH_GLOBAL
       2, // Q_SEND

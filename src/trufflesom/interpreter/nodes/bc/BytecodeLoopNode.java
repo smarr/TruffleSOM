@@ -1,7 +1,11 @@
 package trufflesom.interpreter.nodes.bc;
 
+import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
+import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -19,11 +23,14 @@ import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_2;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_3;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
@@ -62,7 +69,9 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SArray;
@@ -464,6 +473,125 @@ public class BytecodeLoopNode extends ExpressionNode {
           break;
         }
 
+        case RETURN_SELF: {
+          return frame.getArguments()[0];
+        }
+
+        case INC: {
+          Object top = stack[stackPointer];
+          if (top instanceof Long) {
+            try {
+              stack[stackPointer] = Math.addExact((Long) top, 1L);
+            } catch (ArithmeticException e) {
+              CompilerDirectives.transferToInterpreterAndInvalidate();
+              throw new NotYetImplementedException();
+            }
+          } else {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            if (top instanceof Double) {
+              stack[stackPointer] = ((Double) top) + 1.0d;
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+          break;
+        }
+
+        case DEC: {
+          Object top = stack[stackPointer];
+          if (top instanceof Long) {
+            stack[stackPointer] = ((Long) top) - 1;
+          } else {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            if (top instanceof Double) {
+              stack[stackPointer] = ((Double) top) - 1.0d;
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+          break;
+        }
+
+        case INC_FIELD: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          if (this.quickened == null) {
+            this.quickened = new Node[bytecodes.length];
+          }
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            Object val = obj.getField(fieldIdx);
+            if (!(val instanceof Long)) {
+              throw new NotYetImplementedException();
+            }
+
+            try {
+              long longVal = Math.addExact((Long) val, 1);
+              obj.setField(fieldIdx, longVal);
+            } catch (ArithmeticException e) {
+              throw new NotYetImplementedException();
+            }
+
+            node = quickened[bytecodeIndex] =
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            break;
+          }
+
+          ((IncrementLongFieldNode) node).increment(obj);
+          break;
+        }
+
+        case INC_FIELD_PUSH: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          if (this.quickened == null) {
+            this.quickened = new Node[bytecodes.length];
+          }
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            Object val = obj.getField(fieldIdx);
+            if (!(val instanceof Long)) {
+              throw new NotYetImplementedException();
+            }
+
+            try {
+              long longVal = Math.addExact((Long) val, 1);
+              obj.setField(fieldIdx, longVal);
+              stackPointer += 1;
+              stack[stackPointer] = longVal;
+            } catch (ArithmeticException e) {
+              throw new NotYetImplementedException();
+            }
+
+            node = quickened[bytecodeIndex] =
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            break;
+          }
+
+          long value = ((IncrementLongFieldNode) node).increment(obj);
+          stackPointer += 1;
+          stack[stackPointer] = value;
+          break;
+        }
+
         case Q_PUSH_GLOBAL: {
           stackPointer += 1;
           stack[stackPointer] = ((GlobalNode) quickened[bytecodeIndex]).executeGeneric(frame);
@@ -669,8 +797,12 @@ public class BytecodeLoopNode extends ExpressionNode {
     return bytecodes.length;
   }
 
-  public byte getBytecode(final int idx) {
-    return bytecodes[idx];
+  public List<Byte> getBytecodes() {
+    List<Byte> list = new ArrayList<>(bytecodes.length);
+    for (byte b : bytecodes) {
+      list.add(b);
+    }
+    return list;
   }
 
   public Object getConstant(final int idx) {

@@ -54,12 +54,11 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     // if no return has been generated so far, we can be sure there was no .
     // terminating the last expression, so the last expression's value must
-    // be
-    // popped off the stack and a ^self be generated
+    // be popped off the stack and a ^self be generated
     if (!mgenc.isFinished()) {
-      bcGen.emitPOP(mgenc);
-      bcGen.emitPUSHARGUMENT(mgenc, (byte) 0, (byte) 0);
-      bcGen.emitRETURNLOCAL(mgenc);
+      // with the new RETURN_SELF, we don't actually need the extra stack space
+      // bcGen.emitPOP(mgenc);
+      bcGen.emitRETURNSELF(mgenc);
       mgenc.markFinished();
     }
 
@@ -76,9 +75,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       if (seenPeriod) {
         // a POP has been generated which must be elided (blocks always
         // return the value of the last expression, regardless of
-        // whether it
-        // was terminated with a . or not)
-        mgenc.removeLastBytecode();
+        // whether it was terminated with a . or not)
+        mgenc.removeLastPopForBlockLocalReturn();
       }
       if (mgenc.isBlockMethod() && !mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
@@ -89,12 +87,10 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       bcGen.emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
     } else if (sym == EndTerm) {
-      // it does not matter whether a period has been seen, as the end of
-      // the
-      // method has been found (EndTerm) - so it is safe to emit a "return
-      // self"
-      bcGen.emitPUSHARGUMENT(mgenc, (byte) 0, (byte) 0);
-      bcGen.emitRETURNLOCAL(mgenc);
+      // it does not matter whether a period has been seen,
+      // as the end of the method has been found (EndTerm) -
+      // so it is safe to emit a "return self"
+      bcGen.emitRETURNSELF(mgenc);
       mgenc.markFinished();
     } else {
       expression(mgenc);
@@ -110,6 +106,22 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
   @Override
   protected ExpressionNode result(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
+    // try to parse a `^ self` to emit RETURN_SELF
+    if (!mgenc.isBlockMethod() && sym == Identifier) {
+      if (text.equals("self")) {
+        peekForNextSymbolFromLexerIfNecessary();
+        if (nextSym == Period || nextSym == EndTerm) {
+          expect(Identifier);
+
+          bcGen.emitRETURNSELF(mgenc);
+          mgenc.markFinished();
+
+          accept(Period);
+          return null;
+        }
+      }
+    }
+
     expression(mgenc);
 
     if (mgenc.isBlockMethod()) {
@@ -215,6 +227,19 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       throws ProgramDefinitionError {
     SSymbol msg = binarySelector();
     mgenc.addLiteralIfAbsent(msg, this);
+
+    boolean isPossibleIncOrDec = msg == universe.symPlus || msg == universe.symMinus;
+    if (isPossibleIncOrDec) {
+      if (sym == Integer && text.equals("1")) {
+        expect(Integer);
+        if (msg == universe.symPlus) {
+          bcGen.emitINC(mgenc);
+        } else {
+          bcGen.emitDEC(mgenc);
+        }
+        return;
+      }
+    }
 
     binaryOperand(mgenc);
 

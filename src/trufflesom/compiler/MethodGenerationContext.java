@@ -49,8 +49,8 @@ import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.LexicalScope;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
@@ -406,7 +406,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
         holderGenc.getFieldIndex(fieldName), source);
   }
 
-  public FieldWriteNode getObjectFieldWrite(final SSymbol fieldName,
+  public FieldNode getObjectFieldWrite(final SSymbol fieldName,
       final ExpressionNode exp, final Universe universe,
       final SourceSection source) {
     if (!holderGenc.hasField(fieldName)) {
