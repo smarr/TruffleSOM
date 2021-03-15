@@ -18,13 +18,26 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
@@ -409,14 +422,14 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private static final byte[] PUSH_BLOCK_BYTECODES = new byte[] {PUSH_BLOCK};
 
   private static final byte[] POP_LOCAL_FIELD_BYTECODES = new byte[] {
-      POP_LOCAL,
-      POP_FIELD};
+      POP_LOCAL, POP_LOCAL_0, POP_LOCAL_1, POP_LOCAL_2,
+      POP_FIELD, POP_FIELD_0, POP_FIELD_1};
 
   private static final byte[] PUSH_FIELD_BYTECODES = new byte[] {
-      PUSH_FIELD};
+      PUSH_FIELD, PUSH_FIELD_0, PUSH_FIELD_1};
 
   private static final byte[] POP_FIELD_BYTECODES = new byte[] {
-      POP_FIELD};
+      POP_FIELD, POP_FIELD_0, POP_FIELD_1};
 
   private LiteralNode optimizeLiteralReturn() {
     final byte pushCandidate = lastBytecodeIs(1, PUSH_CONSTANT);
@@ -531,7 +544,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     final byte popCandidate = lastBytecodeIsOneOf(0, POP_LOCAL_FIELD_BYTECODES);
 
     if (popCandidate != INVALID && dupCandidate != INVALID) {
-      if (POP_FIELD == popCandidate && optimizePushFieldIncDupPopField()) {
+      if (POP_FIELD <= popCandidate && popCandidate <= POP_FIELD_1
+          && optimizePushFieldIncDupPopField()) {
         return true;
       }
 
@@ -545,6 +559,19 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private byte getIndex(final int idxFromEnd) {
+    byte actual = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
+
+    switch (actual) {
+      case POP_FIELD_0:
+      case PUSH_FIELD_0: {
+        return 0;
+      }
+      case POP_FIELD_1:
+      case PUSH_FIELD_1: {
+        return 1;
+      }
+    }
+
     int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
     return bytecode.get(bcOffset + 1);
   }
@@ -556,6 +583,19 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte ctx;
 
     switch (actual) {
+      case POP_FIELD_0:
+      case PUSH_FIELD_0: {
+        ctx = 0;
+        idx = 0;
+        break;
+      }
+      case POP_FIELD_1:
+      case PUSH_FIELD_1: {
+        ctx = 0;
+        idx = 1;
+        break;
+      }
+
       case PUSH_FIELD:
       case POP_FIELD: {
         int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
@@ -771,8 +811,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           break;
         case DUP:
         case PUSH_LOCAL:
+        case PUSH_LOCAL_0:
+        case PUSH_LOCAL_1:
+        case PUSH_LOCAL_2:
         case PUSH_ARGUMENT:
+        case PUSH_SELF:
+        case PUSH_ARG1:
+        case PUSH_ARG2:
         case PUSH_FIELD:
+        case PUSH_FIELD_0:
+        case PUSH_FIELD_1:
         case PUSH_BLOCK:
         case PUSH_CONSTANT:
         case PUSH_GLOBAL:
@@ -780,8 +828,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           break;
         case POP:
         case POP_LOCAL:
+        case POP_LOCAL_0:
+        case POP_LOCAL_1:
+        case POP_LOCAL_2:
         case POP_ARGUMENT:
         case POP_FIELD:
+        case POP_FIELD_0:
+        case POP_FIELD_1:
           depth--;
           break;
         case SEND:

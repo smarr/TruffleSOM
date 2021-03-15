@@ -2,15 +2,12 @@ package trufflesom.interpreter.nodes.bc;
 
 import static trufflesom.compiler.bc.BytecodeGenerator.emitDEC;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitHALT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELDPUSH;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSEPOP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSETOPNIL;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUEPOP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUETOPNIL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnFalseWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnTrueWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
@@ -37,13 +34,26 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.Q_PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_1;
@@ -60,6 +70,7 @@ import static trufflesom.interpreter.bc.Bytecodes.getBytecodeName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -88,6 +99,7 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
+import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode;
@@ -231,6 +243,20 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case PUSH_LOCAL_0:
+        case PUSH_LOCAL_1:
+        case PUSH_LOCAL_2: {
+          byte localIdx = (byte) (bytecode - PUSH_LOCAL_0);
+
+          VirtualFrame currentOrContext = frame;
+          FrameSlot slot = localsAndOuters[localIdx];
+
+          Object value = currentOrContext.getValue(slot);
+          stackPointer += 1;
+          stack[stackPointer] = value;
+          break;
+        }
+
         case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
@@ -247,9 +273,32 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_FIELD: {
-          byte fieldIdx = bytecodes[bytecodeIndex + 1];
-          byte contextIdx = bytecodes[bytecodeIndex + 2];
+        case PUSH_SELF:
+        case PUSH_ARG1:
+        case PUSH_ARG2: {
+          byte argIdx = (byte) (bytecode - PUSH_SELF);
+          VirtualFrame currentOrContext = frame;
+          Object value = currentOrContext.getArguments()[argIdx];
+          stackPointer += 1;
+          stack[stackPointer] = value;
+          break;
+        }
+
+        case PUSH_FIELD:
+        case PUSH_FIELD_0:
+        case PUSH_FIELD_1: {
+          byte fieldIdx;
+          byte contextIdx;
+          if (bytecode == PUSH_FIELD_0) {
+            fieldIdx = 0;
+            contextIdx = 0;
+          } else if (bytecode == PUSH_FIELD_1) {
+            fieldIdx = 1;
+            contextIdx = 0;
+          } else {
+            fieldIdx = bytecodes[bytecodeIndex + 1];
+            contextIdx = bytecodes[bytecodeIndex + 2];
+          }
 
           VirtualFrame currentOrContext = frame;
           if (contextIdx > 0) {
@@ -335,6 +384,21 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case POP_LOCAL_0:
+        case POP_LOCAL_1:
+        case POP_LOCAL_2: {
+          byte localIdx = (byte) (bytecode - POP_LOCAL_0);
+
+          VirtualFrame currentOrContext = frame;
+          FrameSlot slot = localsAndOuters[localIdx];
+
+          Object value = stack[stackPointer];
+          stackPointer -= 1;
+
+          currentOrContext.setObject(slot, value);
+          break;
+        }
+
         case POP_ARGUMENT: {
           byte argIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
@@ -351,9 +415,21 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case POP_FIELD: {
-          byte fieldIdx = bytecodes[bytecodeIndex + 1];
-          byte contextIdx = bytecodes[bytecodeIndex + 2];
+        case POP_FIELD:
+        case POP_FIELD_0:
+        case POP_FIELD_1: {
+          byte fieldIdx;
+          byte contextIdx;
+          if (bytecode == POP_FIELD_0) {
+            fieldIdx = 0;
+            contextIdx = 0;
+          } else if (bytecode == POP_FIELD_1) {
+            fieldIdx = 1;
+            contextIdx = 0;
+          } else {
+            fieldIdx = bytecodes[bytecodeIndex + 1];
+            contextIdx = bytecodes[bytecodeIndex + 2];
+          }
 
           VirtualFrame currentOrContext = frame;
           if (contextIdx > 0) {
@@ -896,19 +972,45 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     }
   }
 
+  private static final class Jump implements Comparable<Jump> {
+    final byte jumpBc;
+
+    final int originalTarget;
+    final int offsetIdx;
+
+    Jump(final byte bc, final int target, final int offsetIdx) {
+      this.jumpBc = bc;
+      this.originalTarget = target;
+      this.offsetIdx = offsetIdx;
+      assert target > 0;
+    }
+
+    @Override
+    public int compareTo(final Jump o) {
+      return this.originalTarget - o.originalTarget;
+    }
+
+    @Override
+    public String toString() {
+      return Bytecodes.getBytecodeName(jumpBc) + " -> " + originalTarget;
+    }
+  }
+
   private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel)
       throws ParseError {
+    PriorityQueue<Jump> jumps = new PriorityQueue<>();
+
     int i = 0;
     while (i < bytecodes.length) {
+      while (!jumps.isEmpty() && jumps.element().originalTarget == i) {
+        Jump j = jumps.remove();
+        mgenc.patchJumpOffsetToPointToNextInstruction(j.offsetIdx, null);
+      }
+
       byte bytecode = bytecodes[i];
       final int bytecodeLength = getBytecodeLength(bytecode);
 
       switch (bytecode) {
-        case HALT: {
-          emitHALT(mgenc);
-          break;
-        }
-
         case DUP: {
           emitDUP(mgenc);
           break;
@@ -922,6 +1024,16 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case PUSH_LOCAL_0:
+        case PUSH_LOCAL_1:
+        case PUSH_LOCAL_2: {
+          byte localIdx = (byte) (bytecode - PUSH_LOCAL_0);
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPush(mgenc);
+          break;
+        }
+
         case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
@@ -929,11 +1041,22 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case PUSH_SELF:
+        case PUSH_ARG1:
+        case PUSH_ARG2: {
+          throw new IllegalStateException("contextLevel is 0, so, not expected to be here");
+        }
+
         case PUSH_FIELD: {
           byte fieldIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
           emitPUSHFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
           break;
+        }
+
+        case PUSH_FIELD_0:
+        case PUSH_FIELD_1: {
+          throw new IllegalStateException("contextLevel is 0, so, not expected to be here");
         }
 
         case PUSH_BLOCK: {
@@ -981,6 +1104,16 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case POP_LOCAL_0:
+        case POP_LOCAL_1:
+        case POP_LOCAL_2: {
+          byte localIdx = (byte) (bytecode - POP_LOCAL_0);
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPop(mgenc);
+          break;
+        }
+
         case POP_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
@@ -993,6 +1126,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           byte contextIdx = bytecodes[i + 2];
           emitPOPFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
           break;
+        }
+
+        case POP_FIELD_0:
+        case POP_FIELD_1: {
+          throw new IllegalStateException("contextLevel is 0, so, not expected to be here");
         }
 
         case SEND: {
@@ -1022,9 +1160,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           byte newCtx = (byte) (contextIdx - 1);
           if (newCtx == 0) {
             emitRETURNLOCAL(mgenc);
-            // emitted to avoid having jumps being broken
-            // but should not be executed
-            emitHALT(mgenc);
           } else {
             emitRETURNNONLOCAL(mgenc);
           }
@@ -1062,31 +1197,36 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case JUMP: {
           byte offset = bytecodes[i + 1];
-          emitJUMP(mgenc, offset);
+          int idxOffset = emitJumpWithDummyOffset(mgenc);
+          jumps.add(new Jump(JUMP, offset + i, idxOffset));
           break;
         }
 
         case JUMP_ON_TRUE_TOP_NIL: {
           byte offset = bytecodes[i + 1];
-          emitJUMPONTRUETOPNIL(mgenc, offset);
+          int idxOffset = emitJumpOnTrueWithDummyOffset(mgenc, false);
+          jumps.add(new Jump(JUMP_ON_TRUE_TOP_NIL, offset + i, idxOffset));
           break;
         }
 
         case JUMP_ON_FALSE_TOP_NIL: {
           byte offset = bytecodes[i + 1];
-          emitJUMPONFALSETOPNIL(mgenc, offset);
+          int idxOffset = emitJumpOnFalseWithDummyOffset(mgenc, false);
+          jumps.add(new Jump(JUMP_ON_FALSE_TOP_NIL, offset + i, idxOffset));
           break;
         }
 
         case JUMP_ON_TRUE_POP: {
           byte offset = bytecodes[i + 1];
-          emitJUMPONTRUEPOP(mgenc, offset);
+          int idxOffset = emitJumpOnTrueWithDummyOffset(mgenc, true);
+          jumps.add(new Jump(JUMP_ON_TRUE_POP, offset + i, idxOffset));
           break;
         }
 
         case JUMP_ON_FALSE_POP: {
           byte offset = bytecodes[i + 1];
-          emitJUMPONFALSEPOP(mgenc, offset);
+          int idxOffset = emitJumpOnFalseWithDummyOffset(mgenc, true);
+          jumps.add(new Jump(JUMP_ON_FALSE_POP, offset + i, idxOffset));
           break;
         }
 
@@ -1097,6 +1237,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
       i += bytecodeLength;
     }
+
+    assert jumps.isEmpty();
   }
 
   private void adapt(final ScopeAdaptationVisitor inliner,
@@ -1114,14 +1256,24 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_LOCAL: {
-          byte localIdx = bytecodes[i + 1];
+        case PUSH_LOCAL:
+        case PUSH_LOCAL_0:
+        case PUSH_LOCAL_1:
+        case PUSH_LOCAL_2: {
+          byte localIdx;
+          if (bytecode == PUSH_LOCAL) {
+            localIdx = bytecodes[i + 1];
+          } else {
+            localIdx = (byte) (bytecode - PUSH_LOCAL_0);
+          }
           FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
           Local local = (Local) frameSlot.getIdentifier();
           ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
 
-          bytecodes[i + 2] = (byte) se.contextLevel;
-          assert bytecodes[i + 2] >= 0;
+          if (bytecode == PUSH_LOCAL) {
+            bytecodes[i + 2] = (byte) se.contextLevel;
+            assert bytecodes[i + 2] >= 0;
+          }
           localsAndOuters[localIdx] = ((Local) se.var).getSlot();
           break;
         }
@@ -1131,8 +1283,19 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case PUSH_SELF:
+        case PUSH_ARG1:
+        case PUSH_ARG2: {
+          break;
+        }
+
         case PUSH_FIELD: {
           adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
+
+        case PUSH_FIELD_0:
+        case PUSH_FIELD_1: {
           break;
         }
 
@@ -1157,14 +1320,24 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case POP_LOCAL: {
-          byte localIdx = bytecodes[i + 1];
+        case POP_LOCAL:
+        case POP_LOCAL_0:
+        case POP_LOCAL_1:
+        case POP_LOCAL_2: {
+          byte localIdx;
+          if (bytecode == POP_LOCAL) {
+            localIdx = bytecodes[i + 1];
+          } else {
+            localIdx = (byte) (bytecode - POP_LOCAL_0);
+          }
           FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
           Local local = (Local) frameSlot.getIdentifier();
           ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
 
-          bytecodes[i + 2] = (byte) se.contextLevel;
-          assert bytecodes[i + 2] >= 0;
+          if (bytecode == POP_LOCAL) {
+            bytecodes[i + 2] = (byte) se.contextLevel;
+            assert bytecodes[i + 2] >= 0;
+          }
           localsAndOuters[localIdx] = ((Local) se.var).getSlot();
           break;
         }
@@ -1179,6 +1352,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case POP_FIELD_0:
+        case POP_FIELD_1:
         case SEND:
         case SUPER_SEND:
         case RETURN_LOCAL: {

@@ -32,41 +32,62 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 public class Bytecodes {
 
   // Bytecodes used by the simple object machine
-  public static final byte HALT             = 0;
-  public static final byte DUP              = 1;
-  public static final byte PUSH_LOCAL       = 2;
-  public static final byte PUSH_ARGUMENT    = 3;
-  public static final byte PUSH_FIELD       = 4;
-  public static final byte PUSH_BLOCK       = 5;
-  public static final byte PUSH_CONSTANT    = 6;
-  public static final byte PUSH_GLOBAL      = 7;
-  public static final byte POP              = 8;
-  public static final byte POP_LOCAL        = 9;
-  public static final byte POP_ARGUMENT     = 10;
-  public static final byte POP_FIELD        = 11;
-  public static final byte SEND             = 12;
-  public static final byte SUPER_SEND       = 13;
-  public static final byte RETURN_LOCAL     = 14;
-  public static final byte RETURN_NON_LOCAL = 15;
-  public static final byte RETURN_SELF      = 16;
+  public static final byte HALT = 0;
+  public static final byte DUP  = 1;
 
-  public static final byte INC = 17;
-  public static final byte DEC = 18;
+  public static final byte PUSH_LOCAL   = 2;
+  public static final byte PUSH_LOCAL_0 = 3;
+  public static final byte PUSH_LOCAL_1 = 4;
+  public static final byte PUSH_LOCAL_2 = 5;
 
-  public static final byte INC_FIELD      = 19;
-  public static final byte INC_FIELD_PUSH = 20;
+  public static final byte PUSH_ARGUMENT = 6;
+  public static final byte PUSH_SELF     = 7;
+  public static final byte PUSH_ARG1     = 8;
+  public static final byte PUSH_ARG2     = 9;
 
-  public static final byte JUMP                  = 21;
-  public static final byte JUMP_ON_TRUE_TOP_NIL  = 22;
-  public static final byte JUMP_ON_FALSE_TOP_NIL = 23;
-  public static final byte JUMP_ON_TRUE_POP      = 24;
-  public static final byte JUMP_ON_FALSE_POP     = 25;
+  public static final byte PUSH_FIELD   = 10;
+  public static final byte PUSH_FIELD_0 = 11;
+  public static final byte PUSH_FIELD_1 = 12;
 
-  public static final byte Q_PUSH_GLOBAL = 26;
-  public static final byte Q_SEND        = 27;
-  public static final byte Q_SEND_1      = 28;
-  public static final byte Q_SEND_2      = 29;
-  public static final byte Q_SEND_3      = 30;
+  public static final byte PUSH_BLOCK    = 13;
+  public static final byte PUSH_CONSTANT = 14;
+  public static final byte PUSH_GLOBAL   = 15;
+
+  public static final byte POP         = 16;
+  public static final byte POP_LOCAL   = 17;
+  public static final byte POP_LOCAL_0 = 18;
+  public static final byte POP_LOCAL_1 = 19;
+  public static final byte POP_LOCAL_2 = 20;
+
+  public static final byte POP_ARGUMENT = 21;
+
+  public static final byte POP_FIELD   = 22;
+  public static final byte POP_FIELD_0 = 23;
+  public static final byte POP_FIELD_1 = 24;
+
+  public static final byte SEND             = 25;
+  public static final byte SUPER_SEND       = 26;
+  public static final byte RETURN_LOCAL     = 27;
+  public static final byte RETURN_NON_LOCAL = 28;
+  public static final byte RETURN_SELF      = 29;
+
+  public static final byte INC = 30;
+  public static final byte DEC = 31;
+
+  public static final byte INC_FIELD      = 32;
+  public static final byte INC_FIELD_PUSH = 33;
+
+  public static final byte JUMP                  = 34;
+  public static final byte JUMP_ON_TRUE_TOP_NIL  = 35;
+  public static final byte JUMP_ON_FALSE_TOP_NIL = 36;
+  public static final byte JUMP_ON_TRUE_POP      = 37;
+  public static final byte JUMP_ON_FALSE_POP     = 38;
+
+  public static final byte Q_PUSH_GLOBAL = 39;
+  public static final byte Q_SEND        = 40;
+  public static final byte Q_SEND_1      = 41;
+  public static final byte Q_SEND_2      = 42;
+  public static final byte Q_SEND_3      = 43;
 
   public static final byte INVALID = -1;
 
@@ -102,11 +123,44 @@ public class Bytecodes {
     NUM_BYTECODES = Q_SEND_3 + 1;
 
     PADDED_BYTECODE_NAMES = new String[] {
-        "HALT            ", "DUP             ", "PUSH_LOCAL      ",
-        "PUSH_ARGUMENT   ", "PUSH_FIELD      ", "PUSH_BLOCK      ",
-        "PUSH_CONSTANT   ", "PUSH_GLOBAL     ", "POP             ",
-        "POP_LOCAL       ", "POP_ARGUMENT    ", "POP_FIELD       ",
-        "SEND            ", "SUPER_SEND      ", "RETURN_LOCAL    ",
+        "HALT            ",
+        "DUP             ",
+
+        "PUSH_LOCAL      ",
+        "PUSH_LOCAL_0    ",
+        "PUSH_LOCAL_1    ",
+        "PUSH_LOCAL_2    ",
+
+        "PUSH_ARGUMENT   ",
+        "PUSH_SELF       ",
+        "PUSH_ARG1       ",
+        "PUSH_ARG2       ",
+
+        "PUSH_FIELD      ",
+        "PUSH_FIELD_0    ",
+        "PUSH_FIELD_1    ",
+
+        "PUSH_BLOCK      ",
+        "PUSH_CONSTANT   ",
+        "PUSH_GLOBAL     ",
+
+        "POP             ",
+
+        "POP_LOCAL       ",
+        "POP_LOCAL_0     ",
+        "POP_LOCAL_1     ",
+        "POP_LOCAL_2     ",
+
+        "POP_ARGUMENT    ",
+
+        "POP_FIELD       ",
+        "POP_FIELD_0     ",
+        "POP_FIELD_1     ",
+
+        "SEND            ",
+        "SUPER_SEND      ",
+
+        "RETURN_LOCAL    ",
         "RETURN_NON_LOCAL",
 
         "RETURN_SELF     ",
@@ -137,16 +191,37 @@ public class Bytecodes {
     BYTECODE_LENGTH = new int[] {
         1, // HALT
         1, // DUP
+
         3, // PUSH_LOCAL
+        1, // PUSH_LOCAL_0
+        1, // PUSH_LOCAL_1
+        1, // PUSH_LOCAL_2
+
         3, // PUSH_ARGUMENT
+        1, // PUSH_SELF
+        1, // PUSH_ARG1
+        1, // PUSH_ARG2
+
         3, // PUSH_FIELD
+        1, // PUSH_FIELD_0
+        1, // PUSH_FIELD_1
+
         2, // PUSH_BLOCK
         2, // PUSH_CONSTANT
         2, // PUSH_GLOBAL
+
         1, // POP
         3, // POP_LOCAL
+        1, // POP_LOCAL_0
+        1, // POP_LOCAL_1
+        1, // POP_LOCAL_2
+
         3, // POP_ARGUMENT
+
         3, // POP_FIELD
+        1, // POP_FIELD_0
+        1, // POP_FIELD_1
+
         2, // SEND
         2, // SUPER_SEND
         1, // RETURN_LOCAL
