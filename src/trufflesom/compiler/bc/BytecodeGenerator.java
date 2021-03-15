@@ -27,6 +27,8 @@ package trufflesom.compiler.bc;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -56,6 +58,16 @@ public final class BytecodeGenerator {
 
   public static void emitDEC(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, DEC);
+  }
+
+  public static void emitINCFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
+      final byte ctx) {
+    emit3(mgenc, INC_FIELD, fieldIdx, ctx);
+  }
+
+  public static void emitINCFIELDPUSH(final BytecodeMethodGenContext mgenc,
+      final byte fieldIdx, final byte ctx) {
+    emit3(mgenc, INC_FIELD_PUSH, fieldIdx, ctx);
   }
 
   public static void emitPOP(final BytecodeMethodGenContext mgenc) {
