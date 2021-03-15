@@ -75,6 +75,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private final byte[]          last4Bytecodes;
 
   private boolean finished;
+  private boolean isCurrentlyInliningBlock = false;
 
   public BytecodeMethodGenContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -519,6 +520,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   public boolean optimizeDupPopPopSequence() {
+      // when we are inlining blocks, this already happened
+      // and any new opportunities to apply these optimizations are consequently
+      // at jump targets for blocks, and we can't remove those
+      if (isCurrentlyInliningBlock) {
+          return false;
+      }
+      
     final byte dupCandidate = lastBytecodeIs(1, DUP);
     final byte popCandidate = lastBytecodeIsOneOf(0, POP_LOCAL_FIELD_BYTECODES);
 
@@ -609,25 +617,23 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
 
-    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
-
-    final byte pushBlockCandidate = last4Bytecodes[3];
-
-    if (pushBlockCandidate != PUSH_BLOCK) {
+    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
       return false;
     }
 
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
     byte blockLiteralIdx = bytecode.get(bytecode.size() - 1);
 
-    // remove the PUSH_BLOCK
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
+    removeLastBytecodeAt(0); // remove the PUSH_BLOCK
 
     int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, false);
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+
+    isCurrentlyInliningBlock = true;
     toBeInlined.getInvokable().inline(this, toBeInlined);
+    isCurrentlyInliningBlock = false;
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
 
@@ -641,25 +647,22 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
 
-    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
-
-    final byte pushBlockCandidate = last4Bytecodes[3];
-
-    if (pushBlockCandidate != PUSH_BLOCK) {
+    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
       return false;
     }
 
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
     byte blockLiteralIdx = bytecode.get(bytecode.size() - 1);
 
-    // remove the PUSH_BLOCK
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
+    removeLastBytecodes(1); // remove the PUSH_BLOCK
 
     int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this, false);
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+    isCurrentlyInliningBlock = true;
     toBeInlined.getInvokable().inline(this, toBeInlined);
+    isCurrentlyInliningBlock = false;
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
 
@@ -673,15 +676,15 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
 
-    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
-
-    final byte pushBlockCandidate1 = last4Bytecodes[2];
-    final byte pushBlockCandidate2 = last4Bytecodes[3];
-
-    if (pushBlockCandidate1 != PUSH_BLOCK || pushBlockCandidate2 != PUSH_BLOCK) {
+    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
       return false;
     }
 
+    if (lastBytecodeIsOneOf(1, PUSH_BLOCK_BYTECODES) == INVALID) {
+      return false;
+    }
+
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
     byte block1LiteralIdx = bytecode.get(bytecode.size() - 3);
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
@@ -689,22 +692,22 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     SMethod toBeInlined1 = (SMethod) literals.get(block1LiteralIdx);
     SMethod toBeInlined2 = (SMethod) literals.get(block2LiteralIdx);
 
-    // remove the 2 PUSH_BLOCK bytecodes
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
+    removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
     int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, true);
 
+    isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
+    isCurrentlyInliningBlock = false;
 
     int jumpOffsetIdxToSkipFalseBranch = emitJumpWithDummyOffset(this);
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
     resetLastBytecodeBuffer();
 
+    isCurrentlyInliningBlock = true;
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
+    isCurrentlyInliningBlock = false;
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
     resetLastBytecodeBuffer();
@@ -717,15 +720,15 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
 
-    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
-
-    final byte pushBlockCandidate1 = last4Bytecodes[2];
-    final byte pushBlockCandidate2 = last4Bytecodes[3];
-
-    if (pushBlockCandidate1 != PUSH_BLOCK || pushBlockCandidate2 != PUSH_BLOCK) {
+    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
       return false;
     }
 
+    if (lastBytecodeIsOneOf(1, PUSH_BLOCK_BYTECODES) == INVALID) {
+      return false;
+    }
+
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
     byte block1LiteralIdx = bytecode.get(bytecode.size() - 3);
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
@@ -733,23 +736,22 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     SMethod toBeInlined1 = (SMethod) literals.get(block1LiteralIdx);
     SMethod toBeInlined2 = (SMethod) literals.get(block2LiteralIdx);
 
-    // remove the 2 PUSH_BLOCK bytecodes
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
-    bytecode.remove(bytecode.size() - 1);
+    removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
     int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this, true);
 
-    // grab block's method, and inline it
+    isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
+    isCurrentlyInliningBlock = false;
 
     int jumpOffsetIdxToSkipTrueBranch = emitJumpWithDummyOffset(this);
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
     resetLastBytecodeBuffer();
 
+    isCurrentlyInliningBlock = true;
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
+    isCurrentlyInliningBlock = false;
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
     resetLastBytecodeBuffer();
