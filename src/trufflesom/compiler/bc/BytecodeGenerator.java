@@ -41,14 +41,27 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
@@ -101,6 +114,18 @@ public final class BytecodeGenerator {
       final byte ctx) {
     assert idx >= 0;
     assert ctx >= 0;
+    if (ctx == 0) {
+      if (idx == 0) {
+        emit1(mgenc, PUSH_SELF, 1);
+        return;
+      } else if (idx == 1) {
+        emit1(mgenc, PUSH_ARG1, 1);
+        return;
+      } else if (idx == 2) {
+        emit1(mgenc, PUSH_ARG2, 1);
+        return;
+      }
+    }
     emit3(mgenc, PUSH_ARGUMENT, idx, ctx, 1);
   }
 
@@ -132,19 +157,35 @@ public final class BytecodeGenerator {
       final byte ctx) {
     assert idx >= 0;
     assert ctx >= 0;
+    if (ctx == 0) {
+      if (idx == 0) {
+        emit1(mgenc, PUSH_LOCAL_0, 1);
+        return;
+      } else if (idx == 1) {
+        emit1(mgenc, PUSH_LOCAL_1, 1);
+        return;
+      } else if (idx == 2) {
+        emit1(mgenc, PUSH_LOCAL_2, 1);
+        return;
+      }
+    }
     emit3(mgenc, PUSH_LOCAL, idx, ctx, 1);
   }
 
   public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc,
       final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
-    emit3(mgenc, PUSH_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel(), 1);
-  }
-
-  public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
-      final byte ctx) {
-    assert fieldIdx >= 0;
-    assert ctx >= 0;
+    byte ctx = mgenc.getMaxContextLevel();
+    byte fieldIdx = mgenc.getFieldIndex(fieldName);
+    if (ctx == 0) {
+      if (fieldIdx == 0) {
+        emit1(mgenc, PUSH_FIELD_0, 1);
+        return;
+      } else if (fieldIdx == 1) {
+        emit1(mgenc, PUSH_FIELD_1, 1);
+        return;
+      }
+    }
     emit3(mgenc, PUSH_FIELD, fieldIdx, ctx, 1);
   }
 
@@ -167,19 +208,35 @@ public final class BytecodeGenerator {
       final byte ctx) {
     assert idx >= 0;
     assert ctx >= 0;
+    if (ctx == 0) {
+      if (idx == 0) {
+        emit1(mgenc, POP_LOCAL_0, -1);
+        return;
+      } else if (idx == 1) {
+        emit1(mgenc, POP_LOCAL_1, -1);
+        return;
+      } else if (idx == 2) {
+        emit1(mgenc, POP_LOCAL_2, -1);
+        return;
+      }
+    }
     emit3(mgenc, POP_LOCAL, idx, ctx, -1);
   }
 
   public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc,
       final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
-    emit3(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel(), -1);
-  }
-
-  public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
-      final byte ctx) {
-    assert fieldIdx >= 0;
-    assert ctx >= 0;
+    byte ctx = mgenc.getMaxContextLevel();
+    byte fieldIdx = mgenc.getFieldIndex(fieldName);
+    if (ctx == 0) {
+      if (fieldIdx == 0) {
+        emit1(mgenc, POP_FIELD_0, -1);
+        return;
+      } else if (fieldIdx == 1) {
+        emit1(mgenc, POP_FIELD_1, -1);
+        return;
+      }
+    }
     emit3(mgenc, POP_FIELD, fieldIdx, ctx, -1);
   }
 

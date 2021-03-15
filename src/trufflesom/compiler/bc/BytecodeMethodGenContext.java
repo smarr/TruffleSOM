@@ -19,12 +19,19 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
@@ -167,7 +174,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         bytecodeBeforeOffset == JUMP_ON_FALSE_POP ||
         bytecodeBeforeOffset == JUMP : "Expected to patch a JUMP instruction, but got bc: "
             + bytecodeBeforeOffset;
-    assert (JUMP2 - JUMP) == Bytecodes.NUM_JUMP_BYTECODES // ~
+    assert (JUMP2 - JUMP) == Bytecodes.NUM_1_BYTE_JUMP_BYTECODES // ~
         : "There's an unexpected number of JUMP bytecodes. Need to adapt the code below";
     int jumpOffset = bytecode.size() - instructionStart;
 
@@ -180,7 +187,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       int offsetOfBytecode = idxOfOffset - 1;
       // we need two bytes for the jump offset
       bytecode.set(offsetOfBytecode,
-          (byte) (bytecode.get(offsetOfBytecode) + Bytecodes.NUM_JUMP_BYTECODES));
+          (byte) (bytecode.get(offsetOfBytecode) + Bytecodes.NUM_1_BYTE_JUMP_BYTECODES));
 
       byte byte1 = (byte) jumpOffset;
       byte byte2 = (byte) (jumpOffset >> 8);
@@ -487,15 +494,15 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       new byte[] {PUSH_BLOCK, PUSH_BLOCK_NO_CTX};
 
   private static final byte[] POP_X_BYTECODES = new byte[] {
-      POP_LOCAL,
+      POP_LOCAL, POP_LOCAL_0, POP_LOCAL_1, POP_LOCAL_2,
       POP_ARGUMENT,
-      POP_FIELD};
+      POP_FIELD, POP_FIELD_0, POP_FIELD_1};
 
   private static final byte[] PUSH_FIELD_BYTECODES = new byte[] {
-      PUSH_FIELD};
+      PUSH_FIELD, PUSH_FIELD_0, PUSH_FIELD_1};
 
   private static final byte[] POP_FIELD_BYTECODES = new byte[] {
-      POP_FIELD};
+      POP_FIELD, POP_FIELD_0, POP_FIELD_1};
 
   private LiteralNode optimizeLiteralReturn() {
     final byte pushCandidate = lastBytecodeIs(1, PUSH_CONSTANT);
@@ -624,7 +631,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     if (popCandidate == INVALID) {
       return false;
     }
-    if (POP_FIELD == popCandidate && optimizePushFieldIncDupPopField()) {
+    if (POP_FIELD <= popCandidate && popCandidate <= POP_FIELD_1
+        && optimizePushFieldIncDupPopField()) {
       return true;
     }
 
@@ -639,6 +647,19 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private byte getIndex(final int idxFromEnd) {
+    byte actual = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
+
+    switch (actual) {
+      case POP_FIELD_0:
+      case PUSH_FIELD_0: {
+        return 0;
+      }
+      case POP_FIELD_1:
+      case PUSH_FIELD_1: {
+        return 1;
+      }
+    }
+
     int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
     return bytecode.get(bcOffset + 1);
   }
@@ -650,6 +671,19 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte ctx;
 
     switch (actual) {
+      case POP_FIELD_0:
+      case PUSH_FIELD_0: {
+        ctx = 0;
+        idx = 0;
+        break;
+      }
+      case POP_FIELD_1:
+      case PUSH_FIELD_1: {
+        ctx = 0;
+        idx = 1;
+        break;
+      }
+
       case PUSH_FIELD:
       case POP_FIELD: {
         int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
