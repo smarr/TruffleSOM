@@ -75,31 +75,35 @@ public class Bytecodes {
   public static final byte RETURN_NON_LOCAL = 29;
   public static final byte RETURN_SELF      = 30;
 
-  public static final byte INC = 31;
-  public static final byte DEC = 32;
+  public static final byte RETURN_FIELD_0 = 31;
+  public static final byte RETURN_FIELD_1 = 32;
+  public static final byte RETURN_FIELD_2 = 33;
 
-  public static final byte INC_FIELD      = 33;
-  public static final byte INC_FIELD_PUSH = 34;
+  public static final byte INC = 34;
+  public static final byte DEC = 35;
 
-  public static final byte JUMP                  = 35;
-  public static final byte JUMP_ON_TRUE_TOP_NIL  = 36;
-  public static final byte JUMP_ON_FALSE_TOP_NIL = 37;
-  public static final byte JUMP_ON_TRUE_POP      = 38;
-  public static final byte JUMP_ON_FALSE_POP     = 39;
-  public static final byte JUMP_BACKWARDS        = 40;
+  public static final byte INC_FIELD      = 36;
+  public static final byte INC_FIELD_PUSH = 37;
 
-  public static final byte JUMP2                  = 41;
-  public static final byte JUMP2_ON_TRUE_TOP_NIL  = 42;
-  public static final byte JUMP2_ON_FALSE_TOP_NIL = 43;
-  public static final byte JUMP2_ON_TRUE_POP      = 44;
-  public static final byte JUMP2_ON_FALSE_POP     = 45;
-  public static final byte JUMP2_BACKWARDS        = 46;
+  public static final byte JUMP                  = 38;
+  public static final byte JUMP_ON_TRUE_TOP_NIL  = 39;
+  public static final byte JUMP_ON_FALSE_TOP_NIL = 40;
+  public static final byte JUMP_ON_TRUE_POP      = 41;
+  public static final byte JUMP_ON_FALSE_POP     = 42;
+  public static final byte JUMP_BACKWARDS        = 43;
 
-  public static final byte Q_PUSH_GLOBAL = 47;
-  public static final byte Q_SEND        = 48;
-  public static final byte Q_SEND_1      = 49;
-  public static final byte Q_SEND_2      = 50;
-  public static final byte Q_SEND_3      = 51;
+  public static final byte JUMP2                  = 44;
+  public static final byte JUMP2_ON_TRUE_TOP_NIL  = 45;
+  public static final byte JUMP2_ON_FALSE_TOP_NIL = 46;
+  public static final byte JUMP2_ON_TRUE_POP      = 47;
+  public static final byte JUMP2_ON_FALSE_POP     = 48;
+  public static final byte JUMP2_BACKWARDS        = 49;
+
+  public static final byte Q_PUSH_GLOBAL = 50;
+  public static final byte Q_SEND        = 51;
+  public static final byte Q_SEND_1      = 52;
+  public static final byte Q_SEND_2      = 53;
+  public static final byte Q_SEND_3      = 54;
 
   public static final byte INVALID = -1;
 
@@ -178,6 +182,9 @@ public class Bytecodes {
         "RETURN_NON_LOCAL",
 
         "RETURN_SELF     ",
+        "RETURN_FIELD_0  ",
+        "RETURN_FIELD_1  ",
+        "RETURN_FIELD_2  ",
 
         "INC             ",
         "DEC             ",
@@ -250,6 +257,10 @@ public class Bytecodes {
         1, // RETURN_LOCAL
         2, // RETURN_NON_LOCAL
         1, // RETURN_SELF
+
+        1, // RETURN_FIELD_0
+        1, // RETURN_FIELD_1
+        1, // RETURN_FIELD_2
 
         1, // INC
         1, // DEC

@@ -740,6 +740,41 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return false;
   }
 
+  /**
+   * This is going to try to optimize PUSH_FIELD_n, RETURN_LOCAL sequences.
+   * The RETURN_LOCAL hasn't been written yet, so, we only need to check the PUSH_FIELD_n
+   * bytecode.
+   *
+   * @return true, if optimized
+   */
+  public boolean optimizeReturnField() {
+    // when we are inlining blocks, this already happened
+    // and any new opportunities to apply these optimizations
+    // may interfere with jump targets
+    if (isCurrentlyInliningBlock) {
+      return false;
+    }
+
+    byte pushFieldCandidate = lastBytecodeIsOneOf(0, PUSH_FIELD_BYTECODES);
+    if (pushFieldCandidate == INVALID) {
+      return false;
+    }
+
+    byte[] idxCtxPushField = getIndexAndContext(0);
+    if (idxCtxPushField[1] != 0) {
+      return false;
+    }
+
+    if (idxCtxPushField[0] > 2) {
+      return false;
+    }
+
+    removeLastBytecodes(1); // remove the PUSH_FIELD_n bytecode
+
+    BytecodeGenerator.emitRETURNFIELD(this, idxCtxPushField[0]);
+    return true;
+  }
+
   public boolean inlineIfTrueOrIfFalse(final ParserBc parser, final boolean ifTrue)
       throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean

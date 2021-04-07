@@ -59,6 +59,9 @@ import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_1;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_2;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_3;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_1;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_2;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
@@ -617,6 +620,25 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case RETURN_SELF: {
           LoopNode.reportLoopCount(this, backBranchesTaken);
           return frame.getArguments()[0];
+        }
+
+        case RETURN_FIELD_0:
+        case RETURN_FIELD_1:
+        case RETURN_FIELD_2: {
+          byte fieldIdx = (byte) (bytecode - RETURN_FIELD_0);
+
+          SObject obj = (SObject) frame.getArguments()[0];
+
+          if (this.quickened == null) {
+            this.quickened = new Node[bytecodes.length];
+          }
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(fieldIdx));
+          }
+
+          return ((AbstractReadFieldNode) node).read(obj);
         }
 
         case INC: {
@@ -1268,6 +1290,12 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
               "I wouldn't expect RETURN_SELF ever to be inlined, since it's only generated in the most outer methods");
         }
 
+        case RETURN_FIELD_0:
+        case RETURN_FIELD_1:
+        case RETURN_FIELD_2:
+          throw new IllegalStateException(
+              "I wouldn't expect RETURN_FIELD_n ever to be inlined, since it's only generated in the most outer methods");
+
         case INC:
         case DEC: {
           emit1(mgenc, bytecode, 0);
@@ -1475,6 +1503,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case RETURN_SELF:
+        case RETURN_FIELD_0:
+        case RETURN_FIELD_1:
+        case RETURN_FIELD_2:
         case INC:
         case DEC: {
           break;
