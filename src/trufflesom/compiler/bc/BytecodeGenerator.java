@@ -57,6 +57,9 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_1;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_2;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
@@ -120,7 +123,9 @@ public final class BytecodeGenerator {
   }
 
   public static void emitRETURNLOCAL(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, RETURN_LOCAL);
+    if (!mgenc.optimizeReturnField()) {
+      emit1(mgenc, RETURN_LOCAL);
+    }
   }
 
   public static void emitRETURNSELF(final BytecodeMethodGenContext mgenc) {
@@ -129,6 +134,20 @@ public final class BytecodeGenerator {
 
   public static void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {
     emit2(mgenc, RETURN_NON_LOCAL, mgenc.getMaxContextLevel());
+  }
+
+  public static void emitRETURNFIELD(final BytecodeMethodGenContext mgenc, final byte idx) {
+    if (idx == 0) {
+      emit1(mgenc, RETURN_FIELD_0);
+      return;
+    } else if (idx == 1) {
+      emit1(mgenc, RETURN_FIELD_1);
+      return;
+    } else if (idx == 2) {
+      emit1(mgenc, RETURN_FIELD_2);
+      return;
+    }
+    throw new IllegalArgumentException("RETURN_FIELD bytecode does not support idx=" + idx);
   }
 
   public static void emitDUP(final BytecodeMethodGenContext mgenc) {

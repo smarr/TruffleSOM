@@ -38,6 +38,9 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_1;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_2;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
@@ -652,6 +655,41 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return false;
   }
 
+  /**
+   * This is going to try to optimize PUSH_FIELD_n, RETURN_LOCAL sequences.
+   * The RETURN_LOCAL hasn't been written yet, so, we only need to check the PUSH_FIELD_n
+   * bytecode.
+   *
+   * @return true, if optimized
+   */
+  public boolean optimizeReturnField() {
+    // when we are inlining blocks, this already happened
+    // and any new opportunities to apply these optimizations
+    // may interfere with jump targets
+    if (isCurrentlyInliningBlock) {
+      return false;
+    }
+
+    byte pushFieldCandidate = lastBytecodeIsOneOf(0, PUSH_FIELD_BYTECODES);
+    if (pushFieldCandidate == INVALID) {
+      return false;
+    }
+
+    byte[] idxCtxPushField = getIndexAndContext(0);
+    if (idxCtxPushField[1] != 0) {
+      return false;
+    }
+
+    if (idxCtxPushField[0] > 2) {
+      return false;
+    }
+
+    removeLastBytecodes(1); // remove the PUSH_FIELD_n bytecode
+
+    BytecodeGenerator.emitRETURNFIELD(this, idxCtxPushField[0]);
+    return true;
+  }
+
   public boolean inlineIfTrue(final ParserBc parser) throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
@@ -853,6 +891,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         case RETURN_LOCAL:
         case RETURN_SELF:
         case RETURN_NON_LOCAL:
+        case RETURN_FIELD_0:
+        case RETURN_FIELD_1:
+        case RETURN_FIELD_2:
         case INC_FIELD:
           break;
         case INC_FIELD_PUSH:

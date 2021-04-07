@@ -71,23 +71,27 @@ public class Bytecodes {
   public static final byte RETURN_NON_LOCAL = 28;
   public static final byte RETURN_SELF      = 29;
 
-  public static final byte INC = 30;
-  public static final byte DEC = 31;
+  public static final byte RETURN_FIELD_0 = 30;
+  public static final byte RETURN_FIELD_1 = 31;
+  public static final byte RETURN_FIELD_2 = 32;
 
-  public static final byte INC_FIELD      = 32;
-  public static final byte INC_FIELD_PUSH = 33;
+  public static final byte INC = 33;
+  public static final byte DEC = 34;
 
-  public static final byte JUMP                  = 34;
-  public static final byte JUMP_ON_TRUE_TOP_NIL  = 35;
-  public static final byte JUMP_ON_FALSE_TOP_NIL = 36;
-  public static final byte JUMP_ON_TRUE_POP      = 37;
-  public static final byte JUMP_ON_FALSE_POP     = 38;
+  public static final byte INC_FIELD      = 35;
+  public static final byte INC_FIELD_PUSH = 36;
 
-  public static final byte Q_PUSH_GLOBAL = 39;
-  public static final byte Q_SEND        = 40;
-  public static final byte Q_SEND_1      = 41;
-  public static final byte Q_SEND_2      = 42;
-  public static final byte Q_SEND_3      = 43;
+  public static final byte JUMP                  = 37;
+  public static final byte JUMP_ON_TRUE_TOP_NIL  = 38;
+  public static final byte JUMP_ON_FALSE_TOP_NIL = 39;
+  public static final byte JUMP_ON_TRUE_POP      = 40;
+  public static final byte JUMP_ON_FALSE_POP     = 41;
+
+  public static final byte Q_PUSH_GLOBAL = 42;
+  public static final byte Q_SEND        = 43;
+  public static final byte Q_SEND_1      = 44;
+  public static final byte Q_SEND_2      = 45;
+  public static final byte Q_SEND_3      = 46;
 
   public static final byte INVALID = -1;
 
@@ -164,6 +168,9 @@ public class Bytecodes {
         "RETURN_NON_LOCAL",
 
         "RETURN_SELF     ",
+        "RETURN_FIELD_0  ",
+        "RETURN_FIELD_1  ",
+        "RETURN_FIELD_2  ",
 
         "INC             ",
         "DEC             ",
@@ -227,6 +234,10 @@ public class Bytecodes {
         1, // RETURN_LOCAL
         2, // RETURN_NON_LOCAL
         1, // RETURN_SELF
+
+        1, // RETURN_FIELD_0
+        1, // RETURN_FIELD_1
+        1, // RETURN_FIELD_2
 
         1, // INC
         1, // DEC
