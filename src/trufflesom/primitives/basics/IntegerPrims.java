@@ -3,6 +3,7 @@ package trufflesom.primitives.basics;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
@@ -56,6 +57,22 @@ public abstract class IntegerPrims {
     @Specialization
     public final long doBig(final BigInteger receiver) {
       return Integer.toUnsignedLong(receiver.intValue());
+    }
+  }
+
+  @GenerateNodeFactory
+  @Primitive(className = "Integer", primitive = "asDouble")
+  @Primitive(selector = "asDouble")
+  public abstract static class AsDoubleValue extends UnaryExpressionNode {
+    @Specialization
+    public final double doLong(final long receiver) {
+      return receiver;
+    }
+
+    @Specialization
+    @TruffleBoundary
+    public final double doBig(final BigInteger receiver) {
+      return receiver.doubleValue();
     }
   }
 
