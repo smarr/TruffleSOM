@@ -60,6 +60,34 @@ public final class SystemPrims {
     }
   }
 
+  @Primitive(className = "System", primitive = "errorPrint:")
+  public abstract static class ErrorPrintPrim extends BinarySystemOperation {
+    @Specialization(guards = "receiver == universe.getSystemObject()")
+    public final Object doSObject(final SObject receiver, final String argument) {
+      Universe.errorPrint(argument);
+      return receiver;
+    }
+
+    @Specialization(guards = "receiver == universe.getSystemObject()")
+    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+      return doSObject(receiver, argument.getString());
+    }
+  }
+
+  @Primitive(className = "System", primitive = "errorPrintln:")
+  public abstract static class ErrorPrintlnPrim extends BinarySystemOperation {
+    @Specialization(guards = "receiver == universe.getSystemObject()")
+    public final Object doSObject(final SObject receiver, final String argument) {
+      Universe.errorPrintln(argument);
+      return receiver;
+    }
+
+    @Specialization(guards = "receiver == universe.getSystemObject()")
+    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+      return doSObject(receiver, argument.getString());
+    }
+  }
+
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "printNewline")
   public abstract static class PrintNewlinePrim extends UnarySystemOperation {
