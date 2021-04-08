@@ -78,6 +78,11 @@ public class BasicInterpreterTests {
         {"IfTrueIfFalse", "test2", 33, Long.class},
         {"IfTrueIfFalse", "test3", 4, Long.class},
 
+        {"IfTrueIfFalse", "testIfTrueTrueResult", "Integer", SClass.class},
+        {"IfTrueIfFalse", "testIfTrueFalseResult", "Nil", SClass.class},
+        {"IfTrueIfFalse", "testIfFalseTrueResult", "Nil", SClass.class},
+        {"IfTrueIfFalse", "testIfFalseFalseResult", "Integer", SClass.class},
+
         {"CompilerSimplification", "testReturnConstantSymbol", "constant", SSymbol.class},
         {"CompilerSimplification", "testReturnConstantInt", 42, Long.class},
         {"CompilerSimplification", "testReturnSelf", "CompilerSimplification", SClass.class},
@@ -101,8 +106,14 @@ public class BasicInterpreterTests {
         {"BlockInlining", "testOneLevelInliningWithLocalShadowTrue", 2, Long.class},
         {"BlockInlining", "testOneLevelInliningWithLocalShadowFalse", 1, Long.class},
 
+        {"BlockInlining", "testShadowDoesntStoreWrongLocal", 33, Long.class},
+        {"BlockInlining", "testShadowDoesntReadUnrelated", "Nil", SClass.class},
+
         {"BlockInlining", "testBlockNestedInIfTrue", 2, Long.class},
         {"BlockInlining", "testBlockNestedInIfFalse", 42, Long.class},
+
+        {"BlockInlining", "testStackDisciplineTrue", 1, Long.class},
+        {"BlockInlining", "testStackDisciplineFalse", 2, Long.class},
 
         {"BlockInlining", "testDeepNestedInlinedIfTrue", 3, Long.class},
         {"BlockInlining", "testDeepNestedInlinedIfFalse", 42, Long.class},
@@ -126,7 +137,7 @@ public class BasicInterpreterTests {
 
         {"BinaryOperation", "test", 3 + 8, Long.class},
 
-        {"NumberOfTests", "numberOfTests", 57, Long.class}
+        {"NumberOfTests", "numberOfTests", 65, Long.class}
     });
   }
 
