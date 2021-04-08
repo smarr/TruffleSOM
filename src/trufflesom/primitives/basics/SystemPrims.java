@@ -135,6 +135,15 @@ public final class SystemPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "printStackTrace")
+  public abstract static class PrintStackTracePrim extends UnarySystemOperation {
+    @Specialization(guards = "receiver == universe.getSystemObject()")
+    public final boolean doSObject(final SObject receiver) {
+      return false;
+    }
+  }
+
+  @GenerateNodeFactory
   @Primitive(className = "System", primitive = "time")
   public abstract static class TimePrim extends UnarySystemOperation {
     @Specialization(guards = "receiver == universe.getSystemObject()")
