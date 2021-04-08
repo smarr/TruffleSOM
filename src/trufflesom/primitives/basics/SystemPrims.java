@@ -1,5 +1,10 @@
 package trufflesom.primitives.basics;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -107,6 +112,25 @@ public final class SystemPrims {
     public final Object doSObject(final SObject receiver) {
       System.gc();
       return true;
+    }
+  }
+
+  @Primitive(className = "System", primitive = "loadFile:")
+  public abstract static class LoadFilePrim extends BinarySystemOperation {
+    @TruffleBoundary
+    @Specialization(guards = "receiver == universe.getSystemObject()")
+    public final Object doSObject(final SObject receiver, final String fileName) {
+      Path p = Paths.get(fileName);
+      try {
+        return new String(Files.readAllBytes(p));
+      } catch (IOException e) {
+        return Nil.nilObject;
+      }
+    }
+
+    @Specialization(guards = "receiver == universe.getSystemObject()")
+    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+      return doSObject(receiver, argument.getString());
     }
   }
 
