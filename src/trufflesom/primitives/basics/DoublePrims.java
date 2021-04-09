@@ -1,9 +1,11 @@
 package trufflesom.primitives.basics;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
 import trufflesom.vmobjects.SClass;
@@ -35,6 +37,20 @@ public abstract class DoublePrims {
     @Specialization(guards = "receiver == universe.doubleClass")
     public final double doSClass(final SClass receiver) {
       return Double.POSITIVE_INFINITY;
+    }
+  }
+
+  @GenerateNodeFactory
+  @Primitive(className = "Double", primitive = "fromString:", classSide = true)
+  public abstract static class FromStringPrim extends BinarySystemOperation {
+    @TruffleBoundary
+    @Specialization(guards = "receiver == universe.doubleClass")
+    public final double doSClass(final SClass receiver, final String str) {
+      try {
+        return Double.parseDouble(str);
+      } catch (NumberFormatException e) {
+        return Double.NaN;
+      }
     }
   }
 }
