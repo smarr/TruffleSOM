@@ -1,5 +1,6 @@
 package trufflesom.primitives.basics;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
@@ -74,6 +75,7 @@ public class StringPrims {
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "isWhiteSpace")
   public abstract static class IsWhiteSpacePrim extends UnarySystemOperation {
+    @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
     public final boolean doChar(final String receiver) {
       return Character.isWhitespace(receiver.charAt(0));
@@ -84,6 +86,7 @@ public class StringPrims {
       return doChar(receiver.getString());
     }
 
+    @TruffleBoundary
     @Specialization(guards = "receiver.length() != 1")
     public final boolean doString(final String receiver) {
       for (int i = 0; i < receiver.length(); i++) {
@@ -108,6 +111,7 @@ public class StringPrims {
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "isLetters")
   public abstract static class IsLettersPrim extends UnarySystemOperation {
+    @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
     public final boolean doChar(final String receiver) {
       return Character.isLetter(receiver.charAt(0));
@@ -118,6 +122,7 @@ public class StringPrims {
       return doChar(receiver.getString());
     }
 
+    @TruffleBoundary
     @Specialization(guards = "receiver.length() != 1")
     public final boolean doString(final String receiver) {
       for (int i = 0; i < receiver.length(); i++) {
@@ -142,6 +147,7 @@ public class StringPrims {
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "isDigits")
   public abstract static class IsDigitsPrim extends UnarySystemOperation {
+    @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
     public final boolean doChar(final String receiver) {
       return Character.isDigit(receiver.charAt(0));
@@ -152,6 +158,7 @@ public class StringPrims {
       return doChar(receiver.getString());
     }
 
+    @TruffleBoundary
     @Specialization(guards = "receiver.length() != 1")
     public final boolean doString(final String receiver) {
       for (int i = 0; i < receiver.length(); i++) {
