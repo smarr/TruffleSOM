@@ -26,6 +26,17 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
         superNode.isClassSide(), universe);
   }
 
+  public static SuperDispatchNode create(final SClass clazz, final SSymbol selector) {
+    SInvokable method = clazz.lookupInvokable(selector);
+
+    if (method == null) {
+      throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
+    }
+    DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
+        method.getCallTarget());
+    return new CachedDispatchNode(superMethodNode);
+  }
+
   private static final class UninitializedDispatchNode extends SuperDispatchNode {
     private final SSymbol  selector;
     private final SSymbol  holderClass;
@@ -51,14 +62,7 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     @TruffleBoundary
     private CachedDispatchNode specialize() {
       CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
-      SInvokable method = getLexicalSuperClass().lookupInvokable(selector);
-
-      if (method == null) {
-        throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
-      }
-      DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
-          method.getCallTarget());
-      return replace(new CachedDispatchNode(superMethodNode));
+      return replace((CachedDispatchNode) create(getLexicalSuperClass(), selector));
     }
 
     @Override

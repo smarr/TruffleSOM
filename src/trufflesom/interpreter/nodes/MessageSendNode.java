@@ -21,6 +21,7 @@ import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -65,6 +66,12 @@ public final class MessageSendNode {
       final Universe universe) {
     return new GenericMessageSendNode(selector, argumentNodes,
         new UninitializedDispatchNode(selector, universe)).initialize(source);
+  }
+
+  public static GenericMessageSendNode createSuper(final SClass clazz, final SSymbol selector,
+      final SourceSection source, final Universe universe) {
+    return new GenericMessageSendNode(selector, null,
+        SuperDispatchNode.create(clazz, selector)).initialize(source);
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
