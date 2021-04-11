@@ -430,7 +430,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
     // Load the system class and create an instance of it
     systemClass = loadClass(symbolFor("System"));
-    systemObject = newInstance(systemClass);
+    systemObject = new SObject(systemClass);
 
     // Put special objects into the dictionary of globals
     setGlobal("nil", nilObject);
@@ -483,10 +483,6 @@ public final class Universe implements IdProvider<SSymbol> {
     } else {
       return new SMethod(signature, truffleInvokable, embeddedBlocks, sourceSection);
     }
-  }
-
-  public static SObject newInstance(final SClass instanceClass) {
-    return SObject.create(instanceClass);
   }
 
   @TruffleBoundary

@@ -68,16 +68,17 @@ public class SObject extends SAbstractObject {
 
   private int primitiveUsedMap;
 
-  private final int numberOfFields;
-
-  protected SObject(final SClass instanceClass) {
-    numberOfFields = instanceClass.getNumberOfInstanceFields();
+  public SObject(final SClass instanceClass) {
     clazz = instanceClass;
     setLayoutInitially(instanceClass.getLayoutForInstances());
   }
 
+  public SObject(final SClass instanceClass, final ObjectLayout layout) {
+    clazz = instanceClass;
+    setLayoutInitially(layout);
+  }
+
   protected SObject(final int numFields) {
-    numberOfFields = numFields;
     setLayoutInitially(new ObjectLayout(numFields, null));
   }
 
@@ -89,12 +90,12 @@ public class SObject extends SAbstractObject {
     // assert objectLayout.getNumberOfFields() == numberOfFields
     // || !Universe.current().isObjectSystemInitialized();
 
-    extensionPrimFields = getExtendedPrimStorage();
-    extensionObjFields = getExtendedObjectStorage();
+    extensionPrimFields = getExtendedPrimStorage(layout);
+    extensionObjFields = getExtendedObjectStorage(layout);
   }
 
   public final int getNumberOfFields() {
-    return numberOfFields;
+    return objectLayout.getNumberOfFields();
   }
 
   public final ObjectLayout getObjectLayout() {
@@ -120,21 +121,31 @@ public class SObject extends SAbstractObject {
     setLayoutInitially(value.getLayoutForInstances());
   }
 
-  private long[] getExtendedPrimStorage() {
-    return new long[objectLayout.getNumberOfUsedExtendedPrimStorageLocations()];
+  private long[] getExtendedPrimStorage(final ObjectLayout layout) {
+    int numExtFields = layout.getNumberOfUsedExtendedPrimStorageLocations();
+    CompilerAsserts.partialEvaluationConstant(numExtFields);
+    if (numExtFields == 0) {
+      return null;
+    }
+    return new long[numExtFields];
   }
 
-  private Object[] getExtendedObjectStorage() {
-    Object[] storage =
-        new Object[objectLayout.getNumberOfUsedExtendedObjectStorageLocations()];
+  private Object[] getExtendedObjectStorage(final ObjectLayout layout) {
+    int numExtFields = layout.getNumberOfUsedExtendedObjectStorageLocations();
+    if (numExtFields == 0) {
+      return null;
+    }
+
+    Object[] storage = new Object[numExtFields];
     Arrays.fill(storage, Nil.nilObject);
     return storage;
   }
 
   @ExplodeLoop
   private Object[] getAllFields() {
-    Object[] fieldValues = new Object[numberOfFields];
-    for (int i = 0; i < numberOfFields; i++) {
+    int numFields = objectLayout.getNumberOfFields();
+    Object[] fieldValues = new Object[numFields];
+    for (int i = 0; i < numFields; i++) {
       if (isFieldSet(i)) {
         fieldValues[i] = getField(i);
       }
@@ -147,9 +158,9 @@ public class SObject extends SAbstractObject {
     field1 = field2 = field3 = field4 = field5 = null;
     primField1 = primField2 = primField3 = primField4 = primField5 = Long.MIN_VALUE;
 
-    assert fieldValues.length == numberOfFields;
+    assert fieldValues.length == objectLayout.getNumberOfFields();
 
-    for (int i = 0; i < numberOfFields; i++) {
+    for (int i = 0; i < objectLayout.getNumberOfFields(); i++) {
       if (fieldValues[i] != null) {
         setField(i, fieldValues[i]);
       } else if (getLocation(i) instanceof AbstractObjectStorageLocation) {
@@ -160,7 +171,7 @@ public class SObject extends SAbstractObject {
 
   public final boolean updateLayoutToMatchClass() {
     ObjectLayout layoutAtClass = clazz.getLayoutForInstances();
-    assert layoutAtClass.getNumberOfFields() == numberOfFields;
+    assert layoutAtClass.getNumberOfFields() == objectLayout.getNumberOfFields();
 
     if (objectLayout != layoutAtClass) {
       assert !objectLayout.isValid();
@@ -180,8 +191,8 @@ public class SObject extends SAbstractObject {
     objectLayout = layout;
 
     primitiveUsedMap = 0;
-    extensionPrimFields = getExtendedPrimStorage();
-    extensionObjFields = getExtendedObjectStorage();
+    extensionPrimFields = getExtendedPrimStorage(layout);
+    extensionObjFields = getExtendedObjectStorage(layout);
 
     setAllFields(fieldValues);
   }
@@ -191,7 +202,7 @@ public class SObject extends SAbstractObject {
     ObjectLayout layout = clazz.updateInstanceLayoutWithInitializedField(index, type);
 
     assert objectLayout != layout;
-    assert layout.getNumberOfFields() == numberOfFields;
+    assert layout.getNumberOfFields() == objectLayout.getNumberOfFields();
 
     setLayoutAndTransferFields(layout);
   }
@@ -200,7 +211,7 @@ public class SObject extends SAbstractObject {
     ObjectLayout layout = clazz.updateInstanceLayoutWithGeneralizedField(index);
 
     assert objectLayout != layout;
-    assert layout.getNumberOfFields() == numberOfFields;
+    assert layout.getNumberOfFields() == objectLayout.getNumberOfFields();
 
     setLayoutAndTransferFields(layout);
   }
@@ -216,10 +227,6 @@ public class SObject extends SAbstractObject {
 
   public final long getFieldIndex(final SSymbol fieldName) {
     return clazz.lookupFieldIndex(fieldName);
-  }
-
-  public static final SObject create(final SClass instanceClass) {
-    return new SObject(instanceClass);
   }
 
   public static SObject create(final int numFields) {

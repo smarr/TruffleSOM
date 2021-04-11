@@ -79,7 +79,7 @@ public class Shell {
         // If success
         if (myClass != null) {
           // Create and push a new instance of our class on the stack
-          myObject = Universe.newInstance(myClass);
+          myObject = new SObject(myClass);
 
           // Lookup the run: method
           SInvokable shellMethod = myClass.lookupInvokable(universe.symbolFor("run:"));
