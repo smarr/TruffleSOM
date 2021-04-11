@@ -86,14 +86,19 @@ public abstract class IntegerPrims {
       return this;
     }
 
+    @TruffleBoundary
     @Specialization(guards = "receiver == integerClass")
-    public final Object doSClass(final SClass receiver, final String argument) {
-      return Long.parseLong(argument);
+    public final Object doString(final SClass receiver, final String argument) {
+      try {
+        return Long.parseLong(argument);
+      } catch (NumberFormatException e) {
+        return new BigInteger(argument);
+      }
     }
 
     @Specialization(guards = "receiver == integerClass")
-    public final Object doSClass(final SClass receiver, final SSymbol argument) {
-      return Long.parseLong(argument.getString());
+    public final Object doSymbol(final SClass receiver, final SSymbol argument) {
+      return doString(receiver, argument.getString());
     }
   }
 

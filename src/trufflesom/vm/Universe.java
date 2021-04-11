@@ -27,6 +27,7 @@ package trufflesom.vm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.StringTokenizer;
@@ -221,13 +222,15 @@ public final class Universe implements IdProvider<SSymbol> {
   }
 
   @TruffleBoundary
-  public String[] handleArguments(String[] arguments) {
+  public String[] handleArguments(final String[] arguments) {
     boolean gotClasspath = false;
-    String[] remainingArgs = new String[arguments.length];
-    int cnt = 0;
+    ArrayList<String> remainingArgs = new ArrayList<>();
+
+    // read dash arguments only while we haven't seen other kind of arguments
+    boolean sawOthers = false;
 
     for (int i = 0; i < arguments.length; i++) {
-      if (arguments[i].equals("-cp")) {
+      if (arguments[i].equals("-cp") && !sawOthers) {
         if (i + 1 >= arguments.length) {
           printUsageAndExit();
         }
@@ -236,10 +239,11 @@ public final class Universe implements IdProvider<SSymbol> {
         ++i; // skip class path
         // Checkstyle: resume
         gotClasspath = true;
-      } else if (arguments[i].equals("-d")) {
+      } else if (arguments[i].equals("-d") && !sawOthers) {
         printAST = true;
       } else {
-        remainingArgs[cnt++] = arguments[i];
+        sawOthers = true;
+        remainingArgs.add(arguments[i]);
       }
     }
 
@@ -248,14 +252,9 @@ public final class Universe implements IdProvider<SSymbol> {
       classPath = setupDefaultClassPath(0);
     }
 
-    // Copy the remaining elements from the original array into the new
-    // array
-    arguments = new String[cnt];
-    System.arraycopy(remainingArgs, 0, arguments, 0, cnt);
-
-    // check remaining args for class paths, and strip file extension
-    for (int i = 0; i < arguments.length; i++) {
-      String[] split = getPathClassExt(arguments[i]);
+    // check first of remaining args for class paths, and strip file extension
+    if (!remainingArgs.isEmpty()) {
+      String[] split = getPathClassExt(remainingArgs.get(0));
 
       if (!("".equals(split[0]))) { // there was a path
         String[] tmp = new String[classPath.length + 1];
@@ -263,10 +262,10 @@ public final class Universe implements IdProvider<SSymbol> {
         tmp[0] = split[0];
         classPath = tmp;
       }
-      arguments[i] = split[1];
+      remainingArgs.set(0, split[1]);
     }
 
-    return arguments;
+    return remainingArgs.toArray(new String[remainingArgs.size()]);
   }
 
   @TruffleBoundary

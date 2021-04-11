@@ -18,6 +18,7 @@ build_and_test_job:
   tags: [benchmarks, infinity]
   script:
     - ${ANT} tests native-obj-storage-test native-tests
+    - ./som -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives core-lib/SomSom/tests/SomSomTests.som
 
 benchmark_job:
   stage: benchmark
@@ -26,5 +27,5 @@ benchmark_job:
   script:
     - ${ANT} compile native-ast -Dno.jit=true
     - ${ANT} compile native-bc  -Dno.jit=true
-    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf TruffleSOM
+    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --report-completion rebench.conf
