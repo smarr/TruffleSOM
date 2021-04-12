@@ -118,6 +118,11 @@ public final class MessageSendNode {
     }
 
     @Override
+    public String toString() {
+      return getClass().getSimpleName() + "(" + selector.getString() + ")";
+    }
+
+    @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
       return specialize(arguments).doPreEvaluated(frame, arguments);
