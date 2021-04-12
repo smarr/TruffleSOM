@@ -12,6 +12,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.primitives.basics.NewObjectPrim;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
@@ -82,5 +83,11 @@ public final class Primitive extends Invokable {
     if (m != null && !(m instanceof Primitive)) {
       m.propagateLoopCountThroughoutLexicalScope(count);
     }
+  }
+
+  public boolean isNewObjectPrimitive() {
+    // Checkstyle: stop
+    return ("new" == name) && expressionOrSequence instanceof NewObjectPrim;
+    // Checkstyle: resume
   }
 }

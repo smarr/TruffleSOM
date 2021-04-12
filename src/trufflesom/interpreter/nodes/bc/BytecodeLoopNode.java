@@ -32,19 +32,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
-import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
@@ -60,7 +57,6 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -74,7 +70,6 @@ import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
-import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -93,8 +88,6 @@ public class BytecodeLoopNode extends ExpressionNode {
 
   @Children private Node[] quickened;
 
-  private final IndirectCallNode indirectCallNode;
-
   private final int      numLocals;
   private final int      maxStackDepth;
   private final Universe universe;
@@ -111,7 +104,6 @@ public class BytecodeLoopNode extends ExpressionNode {
     this.literalsAndConstants = literals;
     this.maxStackDepth = maxStackDepth;
     this.universe = universe;
-    this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode();
 
     this.frameOnStackMarker = frameOnStackMarker;
   }
@@ -432,16 +424,22 @@ public class BytecodeLoopNode extends ExpressionNode {
         }
 
         case SUPER_SEND: {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
           try {
             byte literalIdx = bytecodes[bytecodeIndex + 1];
             SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
             int numberOfArguments = signature.getNumberOfSignatureArguments();
+
             Object[] callArgs = new Object[numberOfArguments];
             System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
                 numberOfArguments);
             stackPointer -= numberOfArguments;
 
-            Object result = doSuperSend(signature, callArgs);
+            GenericMessageSendNode quickened = MessageSendNode.createSuper(
+                (SClass) getHolder().getSuperClass(), signature, sourceSection, universe);
+            quickenBytecode(bytecodeIndex, Q_SEND, quickened);
+
+            Object result = quickened.doPreEvaluated(frame, callArgs);
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -741,25 +739,6 @@ public class BytecodeLoopNode extends ExpressionNode {
 
   private SClass getHolder() {
     return ((Invokable) getRootNode()).getHolder();
-  }
-
-  private Object doSuperSend(final SSymbol signature, final Object[] callArgs) {
-    SClass holderSuper = (SClass) getHolder().getSuperClass();
-    SInvokable invokable = holderSuper.lookupInvokable(signature);
-
-    return performInvoke(signature, invokable, callArgs);
-  }
-
-  private Object performInvoke(final SSymbol signature, final SInvokable invokable,
-      final Object[] callArgs) {
-    if (invokable != null) {
-      return invokable.invoke(indirectCallNode, callArgs);
-    } else {
-      CompilerDirectives.transferToInterpreter();
-      SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(callArgs);
-      CallTarget callTarget = CachedDnuNode.getDnuCallTarget(getHolder(), universe);
-      return indirectCallNode.call(callTarget, callArgs[0], signature, argumentsArray);
-    }
   }
 
   private void doReturnNonLocal(final VirtualFrame frame, final int bytecodeIndex,

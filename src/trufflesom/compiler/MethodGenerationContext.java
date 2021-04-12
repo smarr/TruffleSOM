@@ -197,7 +197,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     return assembleMethod(body, sourceSection, fullSourceSection);
   }
 
-  protected SInvokable assembleMethod(ExpressionNode body, final SourceSection sourceSection,
+  protected SMethod assembleMethod(ExpressionNode body, final SourceSection sourceSection,
       final SourceSection fullSourceSection) {
     if (needsToCatchNonLocalReturn()) {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarker(sourceSection));
@@ -207,7 +207,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
         new Method(getMethodIdentifier(), getSourceSectionForMethod(sourceSection),
             body, currentScope, (ExpressionNode) body.deepCopy(), holderGenc.getLanguage());
 
-    SInvokable meth = Universe.newMethod(signature, truffleMethod, false,
+    SMethod meth = new SMethod(signature, truffleMethod,
         embeddedBlockMethods.toArray(new SMethod[0]), fullSourceSection);
 
     if (structuralProbe != null) {

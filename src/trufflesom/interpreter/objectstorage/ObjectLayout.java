@@ -71,13 +71,17 @@ public final class ObjectLayout {
     latestLayoutForClass.check();
   }
 
-  Assumption getAssumption() {
+  public Assumption getAssumption() {
     return latestLayoutForClass;
   }
 
   public boolean layoutForSameClass(final ObjectLayout other) {
     // TODO: think we don't need this with new guard logic
     return forClass == other.forClass;
+  }
+
+  public boolean layoutForSameClass(final SClass clazz) {
+    return forClass == clazz;
   }
 
   public int getNumberOfFields() {

@@ -45,6 +45,7 @@ import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -219,7 +220,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   @Override
-  protected SInvokable assembleMethod(final ExpressionNode unused,
+  protected SMethod assembleMethod(final ExpressionNode unused,
       final SourceSection sourceSection, final SourceSection fullSourceSection) {
     byte[] bytecodes = new byte[bytecode.size()];
     int i = 0;

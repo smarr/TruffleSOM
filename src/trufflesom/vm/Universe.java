@@ -50,7 +50,6 @@ import trufflesom.compiler.Disassembler;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;
 import trufflesom.compiler.Variable;
-import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
@@ -59,8 +58,6 @@ import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SInvokable.SMethod;
-import trufflesom.vmobjects.SInvokable.SPrimitive;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -430,7 +427,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
     // Load the system class and create an instance of it
     systemClass = loadClass(symbolFor("System"));
-    systemObject = newInstance(systemClass);
+    systemObject = new SObject(systemClass);
 
     // Put special objects into the dictionary of globals
     setGlobal("nil", nilObject);
@@ -471,22 +468,6 @@ public final class Universe implements IdProvider<SSymbol> {
   @TruffleBoundary
   public SClass newClass(final SClass classClass) {
     return new SClass(classClass);
-  }
-
-  @TruffleBoundary
-  public static SInvokable newMethod(final SSymbol signature,
-      final Invokable truffleInvokable, final boolean isPrimitive,
-      final SMethod[] embeddedBlocks, final SourceSection sourceSection) {
-    assert sourceSection != null : "All elements have a lexical representation and thus, are expected to have a source section";
-    if (isPrimitive) {
-      return new SPrimitive(signature, truffleInvokable, sourceSection);
-    } else {
-      return new SMethod(signature, truffleInvokable, embeddedBlocks, sourceSection);
-    }
-  }
-
-  public static SObject newInstance(final SClass instanceClass) {
-    return SObject.create(instanceClass);
   }
 
   @TruffleBoundary

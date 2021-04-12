@@ -113,7 +113,7 @@ import trufflesom.primitives.reflection.PerformWithArgumentsPrimFactory;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SInvokable.SPrimitive;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -130,7 +130,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
   /** Primitives for class and method name. */
   private final HashMap<SSymbol, HashMap<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>>> primitives;
 
-  public static SInvokable constructEmptyPrimitive(final SSymbol signature,
+  public static SPrimitive constructEmptyPrimitive(final SSymbol signature,
       final SomLanguage lang, final SourceSection sourceSection,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation();
@@ -142,8 +142,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
         new Primitive(signature.getString(), sourceSection, primNode,
             mgen.getCurrentLexicalScope().getFrameDescriptor(),
             (ExpressionNode) primNode.deepCopy(), lang);
-    SInvokable prim =
-        Universe.newMethod(signature, primMethodNode, true, new SMethod[0], sourceSection);
+    SPrimitive prim = new SPrimitive(signature, primMethodNode, sourceSection);
 
     if (probe != null) {
       String id = prim.getIdentifier();
@@ -226,7 +225,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     Primitive primMethodNode = new Primitive(signature.getString(), source, primNode,
         mgen.getCurrentLexicalScope().getFrameDescriptor(),
         (ExpressionNode) primNode.deepCopy(), lang);
-    return Universe.newMethod(signature, primMethodNode, true, new SMethod[0], source);
+    return new SPrimitive(signature, primMethodNode, source);
   }
 
   @Override
