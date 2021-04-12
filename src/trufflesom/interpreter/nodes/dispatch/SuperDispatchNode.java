@@ -7,6 +7,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import trufflesom.interpreter.nodes.ISuperReadNode;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -32,6 +34,11 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     if (method == null) {
       throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
     }
+
+    if (method.isNewObjectPrimitive()) {
+      return new CachedExprNode(NewObjectPrimFactory.create(null));
+    }
+
     DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
         method.getCallTarget());
     return new CachedDispatchNode(superMethodNode);
@@ -60,9 +67,9 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     }
 
     @TruffleBoundary
-    private CachedDispatchNode specialize() {
+    private SuperDispatchNode specialize() {
       CompilerAsserts.neverPartOfCompilation("SuperDispatchNode.create2");
-      return replace((CachedDispatchNode) create(getLexicalSuperClass(), selector));
+      return replace(create(getLexicalSuperClass(), selector));
     }
 
     @Override
@@ -83,6 +90,20 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
     public Object executeDispatch(
         final VirtualFrame frame, final Object[] arguments) {
       return cachedSuperMethod.call(arguments);
+    }
+  }
+
+  private static final class CachedExprNode extends SuperDispatchNode {
+    @Child private UnaryExpressionNode expr;
+
+    private CachedExprNode(final UnaryExpressionNode expr) {
+      this.expr = expr;
+    }
+
+    @Override
+    public Object executeDispatch(
+        final VirtualFrame frame, final Object[] arguments) {
+      return expr.executeEvaluated(frame, arguments[0]);
     }
   }
 

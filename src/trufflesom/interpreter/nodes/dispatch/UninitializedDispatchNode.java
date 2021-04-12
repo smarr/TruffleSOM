@@ -8,6 +8,8 @@ import com.oracle.truffle.api.nodes.Node;
 
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -48,18 +50,23 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     if (chainDepth < INLINE_CACHE_SIZE) {
       SClass rcvrClass = Types.getClassOf(rcvr, universe);
       SInvokable method = rcvrClass.lookupInvokable(selector);
-      CallTarget callTarget;
+      CallTarget callTarget = null;
+      UnaryExpressionNode expr = null;
       if (method != null) {
-        callTarget = method.getCallTarget();
-      } else {
-        callTarget = null;
+        if (method.isNewObjectPrimitive()) {
+          expr = NewObjectPrimFactory.create(null);
+        } else {
+          callTarget = method.getCallTarget();
+        }
       }
 
       UninitializedDispatchNode newChainEnd =
           new UninitializedDispatchNode(selector, universe);
       DispatchGuard guard = DispatchGuard.create(rcvr);
-      AbstractCachedDispatchNode node;
-      if (method != null) {
+      AbstractDispatchNode node;
+      if (expr != null) {
+        node = new CachedExprNode(guard, expr, newChainEnd);
+      } else if (method != null) {
         node = new CachedDispatchNode(guard, callTarget, newChainEnd);
       } else {
         node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd, universe);
