@@ -51,6 +51,8 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
+import trufflesom.compiler.Parser.ParseError;
+import trufflesom.compiler.ParserBc;
 import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
@@ -233,8 +235,8 @@ public final class BytecodeGenerator {
 
   public static void patchJumpOffsetToPointToNextInstruction(
       final BytecodeMethodGenContext mgenc,
-      final int idxOfOffset) {
-    mgenc.patchJumpOffsetToPointToNextInstruction(idxOfOffset);
+      final int idxOfOffset, final ParserBc parser) throws ParseError {
+    mgenc.patchJumpOffsetToPointToNextInstruction(idxOfOffset, parser);
   }
 
   private static void emit1(final BytecodeMethodGenContext mgenc, final byte code) {

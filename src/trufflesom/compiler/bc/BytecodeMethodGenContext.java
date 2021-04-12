@@ -140,7 +140,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode.add(code);
   }
 
-  public void patchJumpOffsetToPointToNextInstruction(final int idxOfOffset) {
+  public void patchJumpOffsetToPointToNextInstruction(final int idxOfOffset,
+      final ParserBc parser) throws ParseError {
     int instructionStart = idxOfOffset - 1;
     byte bytecodeBeforeOffset = bytecode.get(instructionStart);
     assert bytecodeBeforeOffset == JUMP_ON_TRUE_TOP_NIL ||
@@ -151,9 +152,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
             + bytecodeBeforeOffset;
     int jumpOffset = bytecode.size() - instructionStart;
 
-    assert jumpOffset > 0
-        && jumpOffset <= 0xff : "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
-            + jumpOffset;
+    if (jumpOffset < 0 || jumpOffset > 0xff) {
+      throw new ParseError(
+          "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
+              + jumpOffset,
+          null, parser);
+    }
 
     bytecode.set(idxOfOffset, (byte) jumpOffset);
   }
@@ -520,13 +524,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   public boolean optimizeDupPopPopSequence() {
-      // when we are inlining blocks, this already happened
-      // and any new opportunities to apply these optimizations are consequently
-      // at jump targets for blocks, and we can't remove those
-      if (isCurrentlyInliningBlock) {
-          return false;
-      }
-      
+    // when we are inlining blocks, this already happened
+    // and any new opportunities to apply these optimizations are consequently
+    // at jump targets for blocks, and we can't remove those
+    if (isCurrentlyInliningBlock) {
+      return false;
+    }
+
     final byte dupCandidate = lastBytecodeIs(1, DUP);
     final byte popCandidate = lastBytecodeIsOneOf(0, POP_LOCAL_FIELD_BYTECODES);
 
@@ -612,7 +616,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return false;
   }
 
-  public boolean inlineIfTrue() throws ParseError {
+  public boolean inlineIfTrue(final ParserBc parser) throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
@@ -635,14 +639,14 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     toBeInlined.getInvokable().inline(this, toBeInlined);
     isCurrentlyInliningBlock = false;
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch, parser);
 
     resetLastBytecodeBuffer();
 
     return true;
   }
 
-  public boolean inlineIfFalse() {
+  public boolean inlineIfFalse(final ParserBc parser) throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
@@ -664,14 +668,14 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     toBeInlined.getInvokable().inline(this, toBeInlined);
     isCurrentlyInliningBlock = false;
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch, parser);
 
     resetLastBytecodeBuffer();
 
     return true;
   }
 
-  public boolean inlineIfTrueIfFalse() {
+  public boolean inlineIfTrueIfFalse(final ParserBc parser) throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
@@ -702,20 +706,20 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     int jumpOffsetIdxToSkipFalseBranch = emitJumpWithDummyOffset(this);
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch, parser);
     resetLastBytecodeBuffer();
 
     isCurrentlyInliningBlock = true;
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
     isCurrentlyInliningBlock = false;
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch, parser);
     resetLastBytecodeBuffer();
 
     return true;
   }
 
-  public boolean inlineIfFalseIfTrue() {
+  public boolean inlineIfFalseIfTrue(final ParserBc parser) throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
@@ -746,14 +750,14 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     int jumpOffsetIdxToSkipTrueBranch = emitJumpWithDummyOffset(this);
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch);
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch, parser);
     resetLastBytecodeBuffer();
 
     isCurrentlyInliningBlock = true;
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
     isCurrentlyInliningBlock = false;
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch);
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch, parser);
     resetLastBytecodeBuffer();
 
     return true;
