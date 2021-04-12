@@ -29,6 +29,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -93,6 +94,19 @@ public abstract class FieldNode extends ExpressionNode {
       }
       return executeEvaluated(obj);
     }
+
+    @Override
+    public boolean isTrivial() {
+      return true;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      FieldReadNode node = (FieldReadNode) copy();
+      node.self = null;
+      node.read = (AbstractReadFieldNode) node.read.deepCopy();
+      return node;
+    }
   }
 
   @NodeChild(value = "self", type = ExpressionNode.class)
@@ -107,6 +121,22 @@ public abstract class FieldNode extends ExpressionNode {
 
     public int getFieldIndex() {
       return write.getFieldIndex();
+    }
+
+    public abstract ExpressionNode getValue();
+
+    @Override
+    public boolean isTrivial() {
+      ExpressionNode val = getValue();
+      // can't be a NonLocalArgumentReadNode, then it wouldn't be a setter
+      // can't be a super access either. So that's why we have the == compare here
+      return val.getClass() == LocalArgumentReadNode.class;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      FieldWriteNode node = (FieldWriteNode) deepCopy();
+      return node;
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,

@@ -21,10 +21,14 @@
  */
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
+
+import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 
 
 @NodeInfo(cost = NodeCost.NONE)
@@ -46,5 +50,48 @@ public final class SequenceNode extends ExpressionNode {
     for (int i = 0; i < expressions.length - 1; i++) {
       expressions[i].executeGeneric(frame);
     }
+  }
+
+  @Override
+  public boolean isTrivial() {
+    // has exactly two expressions
+    if (expressions.length != 2) {
+      return false;
+    }
+
+    // and the last/second one is the self return
+    if (expressions[1].getClass() != LocalArgumentReadNode.class
+        || !((LocalArgumentReadNode) expressions[1]).isSelfRead()) {
+      return false;
+    }
+
+    return expressions[0].isTrivial();
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return new WriteAndReturnSelf(expressions[0].copyTrivialNode());
+  }
+
+  private static final class WriteAndReturnSelf extends ExpressionNode
+      implements PreevaluatedExpression {
+    @Child PreevaluatedExpression write;
+
+    WriteAndReturnSelf(final PreevaluatedExpression write) {
+      this.write = write;
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+      write.doPreEvaluated(frame, args);
+      return args[0];
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
   }
 }

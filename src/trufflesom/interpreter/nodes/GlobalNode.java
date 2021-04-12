@@ -28,6 +28,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import bd.tools.nodes.Invocation;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
@@ -38,7 +39,8 @@ import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class GlobalNode extends ExpressionNode implements Invocation<SSymbol> {
+public abstract class GlobalNode extends ExpressionNode
+    implements Invocation<SSymbol>, PreevaluatedExpression {
 
   public static GlobalNode create(final SSymbol globalName, final Universe universe,
       final SourceSection source) {
@@ -67,6 +69,21 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
   @Override
   public final SSymbol getInvocationIdentifier() {
     return globalName;
+  }
+
+  @Override
+  public boolean isTrivial() {
+    return true;
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return (PreevaluatedExpression) copy();
+  }
+
+  @Override
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+    return executeGeneric(frame);
   }
 
   private abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {

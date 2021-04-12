@@ -6,10 +6,9 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
-import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -51,10 +50,11 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
       SClass rcvrClass = Types.getClassOf(rcvr, universe);
       SInvokable method = rcvrClass.lookupInvokable(selector);
       CallTarget callTarget = null;
-      UnaryExpressionNode expr = null;
+      PreevaluatedExpression expr = null;
       if (method != null) {
-        if (method.isNewObjectPrimitive()) {
-          expr = NewObjectPrimFactory.create(null);
+        if (method.isTrivial()) {
+          expr = method.copyTrivialNode();
+          assert expr != null;
         } else {
           callTarget = method.getCallTarget();
         }

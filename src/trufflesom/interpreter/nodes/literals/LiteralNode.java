@@ -43,4 +43,14 @@ public abstract class LiteralNode extends ExpressionNode
   public ExpressionNode inline(final MethodGenerationContext mgenc) {
     return this;
   }
+
+  @Override
+  public boolean isTrivial() {
+    return true;
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return (PreevaluatedExpression) copy();
+  }
 }

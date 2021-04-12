@@ -4,7 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
-import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import bd.primitives.nodes.PreevaluatedExpression;
 
 
 public class CachedExprNode extends AbstractDispatchNode {
@@ -13,9 +13,9 @@ public class CachedExprNode extends AbstractDispatchNode {
 
   @Child protected AbstractDispatchNode nextInCache;
 
-  @Child protected UnaryExpressionNode expr;
+  @Child protected PreevaluatedExpression expr;
 
-  public CachedExprNode(final DispatchGuard guard, final UnaryExpressionNode expr,
+  public CachedExprNode(final DispatchGuard guard, final PreevaluatedExpression expr,
       final AbstractDispatchNode nextInCache) {
     this.guard = guard;
     this.expr = expr;
@@ -28,7 +28,7 @@ public class CachedExprNode extends AbstractDispatchNode {
     Object rcvr = arguments[0];
     try {
       if (guard.entryMatches(rcvr)) {
-        return expr.executeEvaluated(frame, arguments[0]);
+        return expr.doPreEvaluated(frame, arguments);
       } else {
         return nextInCache.executeDispatch(frame, arguments);
       }

@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
 import trufflesom.vmobjects.SAbstractObject;
@@ -25,5 +26,15 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
   @Specialization(replaces = "doCached")
   public final SAbstractObject doUncached(final SClass receiver) {
     return new SObject(receiver);
+  }
+
+  @Override
+  public boolean isTrivial() {
+    return true;
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return NewObjectPrimFactory.create(null);
   }
 }

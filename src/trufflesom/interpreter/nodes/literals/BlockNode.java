@@ -7,6 +7,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;
@@ -106,6 +107,16 @@ public class BlockNode extends LiteralNode {
     @Override
     protected BlockNode createNode(final SMethod adapted) {
       return new BlockNodeWithContext(adapted, universe).initialize(sourceSection);
+    }
+
+    @Override
+    public boolean isTrivial() {
+      return false;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      throw new UnsupportedOperationException("Block literals with context are not trivial.");
     }
   }
 }

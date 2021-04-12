@@ -6,9 +6,8 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.ISuperReadNode;
-import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
-import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -35,8 +34,8 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
       throw new RuntimeException("Currently #dnu with super sent is not yet implemented. ");
     }
 
-    if (method.isNewObjectPrimitive()) {
-      return new CachedExprNode(NewObjectPrimFactory.create(null));
+    if (method.isTrivial()) {
+      return new CachedExprNode(method.copyTrivialNode());
     }
 
     DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
@@ -94,16 +93,16 @@ public abstract class SuperDispatchNode extends AbstractDispatchNode {
   }
 
   private static final class CachedExprNode extends SuperDispatchNode {
-    @Child private UnaryExpressionNode expr;
+    @Child private PreevaluatedExpression expr;
 
-    private CachedExprNode(final UnaryExpressionNode expr) {
+    private CachedExprNode(final PreevaluatedExpression expr) {
       this.expr = expr;
     }
 
     @Override
     public Object executeDispatch(
         final VirtualFrame frame, final Object[] arguments) {
-      return expr.executeEvaluated(frame, arguments[0]);
+      return expr.doPreEvaluated(frame, arguments);
     }
   }
 

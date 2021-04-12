@@ -35,8 +35,8 @@ import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.Primitive;
 import trufflesom.vm.Universe;
 
 
@@ -90,11 +90,6 @@ public abstract class SInvokable extends SAbstractObject {
         return signature.toString();
       }
     }
-
-    @Override
-    public boolean isNewObjectPrimitive() {
-      return false;
-    }
   }
 
   public static final class SPrimitive extends SInvokable {
@@ -120,14 +115,6 @@ public abstract class SInvokable extends SAbstractObject {
       } else {
         return signature.toString();
       }
-    }
-
-    @Override
-    public boolean isNewObjectPrimitive() {
-      // Checkstyle: stop
-      return (signature.getString() == "new")
-          && ((Primitive) invokable).isNewObjectPrimitive();
-      // Checkstyle: resume
     }
   }
 
@@ -189,5 +176,16 @@ public abstract class SInvokable extends SAbstractObject {
 
   @CompilationFinal protected SClass holder;
 
-  public abstract boolean isNewObjectPrimitive();
+  public boolean isTrivial() {
+    return invokable.isTrivial();
+  }
+
+  public PreevaluatedExpression copyTrivialNode() {
+    if (!isTrivial()) {
+      throw new IllegalStateException();
+    }
+    PreevaluatedExpression n = invokable.copyTrivialNode();
+    assert n != null;
+    return n;
+  }
 }
