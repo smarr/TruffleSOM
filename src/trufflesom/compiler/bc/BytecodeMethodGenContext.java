@@ -219,9 +219,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return (byte) (size + locals.size());
   }
 
-  @Override
-  protected SMethod assembleMethod(final ExpressionNode unused,
-      final SourceSection sourceSection, final SourceSection fullSourceSection) {
+  private BytecodeLoopNode constructBytecodeBody(final SourceSection sourceSection) {
     byte[] bytecodes = new byte[bytecode.size()];
     int i = 0;
     for (byte bc : bytecode) {
@@ -246,11 +244,25 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     FrameSlot frameOnStackMarker =
         throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
 
-    ExpressionNode body = new BytecodeLoopNode(
+    return new BytecodeLoopNode(
         bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),
         frameOnStackMarker, universe);
-    body.initialize(sourceSection);
+  }
 
+  private ExpressionNode constructTrivialBody() {
+    // TODO: recognize the sequences that can be isTrivial() expression nodes
+    return null;
+  }
+
+  @Override
+  protected SMethod assembleMethod(final ExpressionNode unused,
+      final SourceSection sourceSection, final SourceSection fullSourceSection) {
+    ExpressionNode body = constructTrivialBody();
+    if (body == null) {
+      body = constructBytecodeBody(sourceSection);
+    }
+
+    body.initialize(sourceSection);
     return super.assembleMethod(body, sourceSection, fullSourceSection);
   }
 
