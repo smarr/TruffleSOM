@@ -102,7 +102,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private ExpressionNode createSequenceNode(final SourceCoordinate coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return GlobalNode.create(universe.symNil, universe, getSource(coord));
+      return GlobalNode.create(universe.symNil, universe).initialize(getSource(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
