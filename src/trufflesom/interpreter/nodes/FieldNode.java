@@ -29,6 +29,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
@@ -169,9 +170,12 @@ public abstract class FieldNode extends ExpressionNode {
       return executeEvaluated(frame, self, value);
     }
 
-    public static ExpressionNode createForMethod(final int fieldIdx) {
+    public static ExpressionNode createForMethod(final int fieldIdx, final Argument self,
+        final Argument val) {
       FieldWriteNode node = FieldWriteNodeGen.create(
-          fieldIdx, new LocalArgumentReadNode(true, 0), new LocalArgumentReadNode(true, 1));
+          fieldIdx,
+          new LocalArgumentReadNode(self),
+          new LocalArgumentReadNode(val));
       return new WriteAndReturnSelf(node);
     }
   }
@@ -257,9 +261,9 @@ public abstract class FieldNode extends ExpressionNode {
 
   private static final class WriteAndReturnSelf extends ExpressionNode
       implements PreevaluatedExpression {
-    @Child PreevaluatedExpression write;
+    @Child FieldWriteNode write;
 
-    WriteAndReturnSelf(final PreevaluatedExpression write) {
+    WriteAndReturnSelf(final FieldWriteNode write) {
       this.write = write;
     }
 
@@ -272,6 +276,16 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       return doPreEvaluated(frame, frame.getArguments());
+    }
+
+    @Override
+    public boolean isTrivial() {
+      return true;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      return (PreevaluatedExpression) deepCopy();
     }
   }
 }

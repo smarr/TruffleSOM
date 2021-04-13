@@ -24,6 +24,7 @@ import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -38,10 +39,16 @@ import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserBc;
 import trufflesom.compiler.Symbol;
 import trufflesom.compiler.Variable;
+import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.bc.Bytecodes;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
+import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
@@ -252,8 +259,21 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private ExpressionNode constructTrivialBody() {
-    // TODO: recognize the sequences that can be isTrivial() expression nodes
-    return null;
+    ExpressionNode expr = optimizeLiteralReturn();
+
+    if (expr == null) {
+      expr = optimizeGlobalReturn();
+    }
+
+    if (expr == null) {
+      expr = optimizeFieldGetter();
+    }
+
+    if (expr == null) {
+      expr = optimizeFieldSetter();
+    }
+
+    return expr;
   }
 
   @Override
@@ -273,6 +293,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
    */
   private void resetLastBytecodeBuffer() {
     last4Bytecodes[0] = last4Bytecodes[1] = last4Bytecodes[2] = last4Bytecodes[3] = -1;
+  }
+
+  private byte lastBytecodeIs(final int idxFromEnd, final byte candidate) {
+    byte actual = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
+
+    if (candidate == actual) {
+      return actual;
+    }
+
+    return INVALID;
   }
 
   private byte lastBytecodeIsOneOf(final int idxFromEnd, final byte[] candidates) {
@@ -340,8 +370,117 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private static final byte[] POP_FIELD_BYTECODES = new byte[] {
       POP_FIELD};
 
+  private LiteralNode optimizeLiteralReturn() {
+    final byte pushCandidate = lastBytecodeIs(1, PUSH_CONSTANT);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+        + Bytecodes.getBytecodeLength(pushCandidate))) {
+      return null;
+    }
+
+    byte constantIdx = getIndex(1);
+    Object literal = literals.get(constantIdx);
+    return LiteralNode.create(literal);
+  }
+
+  private GlobalNode optimizeGlobalReturn() {
+    final byte pushCandidate = lastBytecodeIs(1, PUSH_GLOBAL);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+        + Bytecodes.getBytecodeLength(pushCandidate))) {
+      return null;
+    }
+
+    byte constantIdx = getIndex(1);
+    SSymbol literal = (SSymbol) literals.get(constantIdx);
+    return GlobalNode.create(literal, universe);
+  }
+
+  private FieldReadNode optimizeFieldGetter() {
+    if (isBlockMethod()) {
+      return null;
+    }
+
+    final byte pushCandidate = lastBytecodeIsOneOf(1, PUSH_FIELD_BYTECODES);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+        + Bytecodes.getBytecodeLength(pushCandidate))) {
+      return null;
+    }
+
+    byte idx = getIndex(1);
+    // because we don't handle block methods, we don't need to worry about ctx > 0
+    return new FieldReadNode(new LocalArgumentReadNode(arguments.get(universe.symSelf)), idx);
+  }
+
+  private ExpressionNode optimizeFieldSetter() {
+    if (isBlockMethod()) {
+      return null;
+    }
+
+    // example sequence: PUSH_ARG1 DUP POP_FIELD_1 RETURN_SELF
+    final byte pushCandidate = lastBytecodeIs(3, PUSH_ARGUMENT);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    if (getIndex(3) != 1) {
+      // we only support access to the only true argument of a setter
+      // (i.e. ignoring the receiver)
+      // though, there could possibly be other arguments
+      // TODO: lift the restriction
+      return null;
+    }
+
+    final byte dupCandidate = lastBytecodeIs(2, DUP);
+    if (dupCandidate == INVALID) {
+      return null;
+    }
+
+    final byte popCandidate = lastBytecodeIs(1, POP_FIELD);
+    if (popCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_SELF);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    byte fieldIdx = getIndex(1);
+    Iterator<Argument> i = arguments.values().iterator();
+    Argument self = i.next();
+    Argument val = i.next();
+
+    return FieldWriteNode.createForMethod(fieldIdx, self, val);
+  }
+
   public boolean optimizeDupPopPopSequence() {
-    final byte dupCandidate = lastBytecodeIsOneOf(1, DUP_BYTECODES);
+    final byte dupCandidate = lastBytecodeIs(1, DUP);
     final byte popCandidate = lastBytecodeIsOneOf(0, POP_LOCAL_FIELD_BYTECODES);
 
     if (popCandidate != INVALID && dupCandidate != INVALID) {
@@ -356,6 +495,11 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       return true;
     }
     return false;
+  }
+
+  private byte getIndex(final int idxFromEnd) {
+    int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
+    return bytecode.get(bcOffset + 1);
   }
 
   private byte[] getIndexAndContext(final int idxFromEnd) {
