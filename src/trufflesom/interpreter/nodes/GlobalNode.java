@@ -26,8 +26,8 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import bd.tools.nodes.Invocation;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
@@ -38,24 +38,24 @@ import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class GlobalNode extends ExpressionNode implements Invocation<SSymbol> {
+public abstract class GlobalNode extends ExpressionNode
+    implements Invocation<SSymbol>, PreevaluatedExpression {
 
-  public static GlobalNode create(final SSymbol globalName, final Universe universe,
-      final SourceSection source) {
+  public static GlobalNode create(final SSymbol globalName, final Universe universe) {
     if (globalName == universe.symNil) {
-      return new NilGlobalNode(globalName).initialize(source);
+      return new NilGlobalNode(globalName);
     } else if (globalName.getString().equals("true")) {
-      return new TrueGlobalNode(globalName).initialize(source);
+      return new TrueGlobalNode(globalName);
     } else if (globalName.getString().equals("false")) {
-      return new FalseGlobalNode(globalName).initialize(source);
+      return new FalseGlobalNode(globalName);
     }
 
     // Get the global from the universe
     Association assoc = universe.getGlobalsAssociation(globalName);
     if (assoc != null) {
-      return new CachedGlobalReadNode(globalName, assoc, source);
+      return new CachedGlobalReadNode(globalName, assoc);
     }
-    return new UninitializedGlobalReadNode(globalName, source, universe);
+    return new UninitializedGlobalReadNode(globalName, universe);
   }
 
   protected final SSymbol globalName;
@@ -69,14 +69,27 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
     return globalName;
   }
 
+  @Override
+  public boolean isTrivial() {
+    return true;
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return (PreevaluatedExpression) copy();
+  }
+
+  @Override
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+    return executeGeneric(frame);
+  }
+
   private abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
     protected final Universe universe;
 
-    AbstractUninitializedGlobalReadNode(final SSymbol globalName,
-        final SourceSection source, final Universe universe) {
+    AbstractUninitializedGlobalReadNode(final SSymbol globalName, final Universe universe) {
       super(globalName);
       this.universe = universe;
-      initialize(source);
     }
 
     protected abstract Object executeUnknownGlobal(VirtualFrame frame);
@@ -88,8 +101,8 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
       // Get the global from the universe
       Association assoc = universe.getGlobalsAssociation(globalName);
       if (assoc != null) {
-        return replace((GlobalNode) new CachedGlobalReadNode(
-            globalName, assoc, sourceSection)).executeGeneric(frame);
+        return replace(
+            (GlobalNode) new CachedGlobalReadNode(globalName, assoc)).executeGeneric(frame);
       } else {
         return executeUnknownGlobal(frame);
       }
@@ -98,9 +111,8 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
 
   private static final class UninitializedGlobalReadNode
       extends AbstractUninitializedGlobalReadNode {
-    UninitializedGlobalReadNode(final SSymbol globalName, final SourceSection source,
-        final Universe universe) {
-      super(globalName, source, universe);
+    UninitializedGlobalReadNode(final SSymbol globalName, final Universe universe) {
+      super(globalName, universe);
     }
 
     @Override
@@ -117,8 +129,8 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
   public static final class UninitializedGlobalReadWithoutErrorNode
       extends AbstractUninitializedGlobalReadNode {
     public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName,
-        final SourceSection source, final Universe universe) {
-      super(globalName, source, universe);
+        final Universe universe) {
+      super(globalName, universe);
     }
 
     @Override
@@ -131,12 +143,10 @@ public abstract class GlobalNode extends ExpressionNode implements Invocation<SS
     private final Association            assoc;
     @CompilationFinal private Assumption assumption;
 
-    private CachedGlobalReadNode(final SSymbol globalName, final Association assoc,
-        final SourceSection source) {
+    private CachedGlobalReadNode(final SSymbol globalName, final Association assoc) {
       super(globalName);
       this.assoc = assoc;
       this.assumption = assoc.getAssumption();
-      initialize(source);
     }
 
     @Override

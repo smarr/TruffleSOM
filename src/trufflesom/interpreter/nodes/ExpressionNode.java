@@ -26,6 +26,7 @@ import java.math.BigInteger;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.TypesGen;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SArray;
@@ -39,6 +40,15 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class ExpressionNode extends SOMNode {
 
   public abstract Object executeGeneric(VirtualFrame frame);
+
+  public boolean isTrivial() {
+    return false;
+  }
+
+  public PreevaluatedExpression copyTrivialNode() {
+    throw new UnsupportedOperationException(
+        "Some of the subclasses may be trivial and implement this");
+  }
 
   @Override
   public ExpressionNode getFirstMethodBodyNode() {

@@ -84,7 +84,8 @@ public abstract class GlobalPrim extends BinarySystemOperation {
         final Universe universe) {
       this.depth = depth;
       this.name = name;
-      getGlobal = new UninitializedGlobalReadWithoutErrorNode(name, source, universe);
+      getGlobal =
+          new UninitializedGlobalReadWithoutErrorNode(name, universe).initialize(source);
       next = new UninitializedGetGlobal(this.depth + 1, universe).initialize(source);
     }
 

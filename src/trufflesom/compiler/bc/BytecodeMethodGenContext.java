@@ -6,6 +6,7 @@ import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
+import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -23,6 +24,7 @@ import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -37,10 +39,17 @@ import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserBc;
 import trufflesom.compiler.Symbol;
 import trufflesom.compiler.Variable;
+import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.bc.Bytecodes;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
+import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SClass;
@@ -191,7 +200,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private byte getPositionIn(final Local local, final LinkedHashMap<SSymbol, Local> map) {
     byte i = 0;
     for (Local l : map.values()) {
-      if (l == local) {
+      if (l.equals(local)) {
         return i;
       }
       i += 1;
@@ -219,9 +228,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return (byte) (size + locals.size());
   }
 
-  @Override
-  protected SMethod assembleMethod(final ExpressionNode unused,
-      final SourceSection sourceSection, final SourceSection fullSourceSection) {
+  private BytecodeLoopNode constructBytecodeBody(final SourceSection sourceSection) {
     byte[] bytecodes = new byte[bytecode.size()];
     int i = 0;
     for (byte bc : bytecode) {
@@ -246,42 +253,275 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     FrameSlot frameOnStackMarker =
         throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
 
-    ExpressionNode body = new BytecodeLoopNode(
+    return new BytecodeLoopNode(
         bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),
         frameOnStackMarker, universe);
-    body.initialize(sourceSection);
+  }
 
+  private ExpressionNode constructTrivialBody() {
+    ExpressionNode expr = optimizeLiteralReturn();
+
+    if (expr == null) {
+      expr = optimizeGlobalReturn();
+    }
+
+    if (expr == null) {
+      expr = optimizeFieldGetter();
+    }
+
+    if (expr == null) {
+      expr = optimizeFieldSetter();
+    }
+
+    return expr;
+  }
+
+  @Override
+  protected SMethod assembleMethod(final ExpressionNode unused,
+      final SourceSection sourceSection, final SourceSection fullSourceSection) {
+    ExpressionNode body = constructTrivialBody();
+    if (body == null) {
+      body = constructBytecodeBody(sourceSection);
+    }
+
+    body.initialize(sourceSection);
     return super.assembleMethod(body, sourceSection, fullSourceSection);
   }
 
-  public boolean optimizeDupPopPopSequence() {
-    final int size = bytecode.size();
-    assert Bytecodes.getBytecodeLength(POP_LOCAL) == Bytecodes.getBytecodeLength(POP_FIELD);
-    assert Bytecodes.getBytecodeLength(POP_LOCAL) == 3;
-    assert Bytecodes.getBytecodeLength(DUP) == 1;
+  /**
+   * Invalidate last4Bytecodes to avoid optimizations which mess with branches.
+   */
+  private void resetLastBytecodeBuffer() {
+    last4Bytecodes[0] = last4Bytecodes[1] = last4Bytecodes[2] = last4Bytecodes[3] = -1;
+  }
 
-    if (size - 4 < 0) {
-      return false;
+  private byte lastBytecodeIs(final int idxFromEnd, final byte candidate) {
+    byte actual = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
+
+    if (candidate == actual) {
+      return actual;
     }
 
-    final byte dupCandidate = last4Bytecodes[2];
-    final byte popCandidate = last4Bytecodes[3];
+    return INVALID;
+  }
 
-    if ((popCandidate == POP_LOCAL || popCandidate == POP_FIELD) && dupCandidate == DUP) {
-      if (popCandidate == POP_FIELD && optimizePushFieldIncDupPopField()) {
+  private byte lastBytecodeIsOneOf(final int idxFromEnd, final byte[] candidates) {
+    byte actual = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
+
+    if (actual == INVALID) {
+      return INVALID;
+    }
+
+    for (byte c : candidates) {
+      if (c == actual) {
+        return actual;
+      }
+    }
+
+    return INVALID;
+  }
+
+  private void removeLastBytecodeAt(final int idxFromEnd) {
+    final int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
+
+    byte bcToBeRemoved = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
+    int bcLength = Bytecodes.getBytecodeLength(bcToBeRemoved);
+
+    for (int i = 0; i < bcLength; i += 1) {
+      bytecode.remove(bcOffset);
+    }
+  }
+
+  private void removeLastBytecodes(final int n) {
+    for (int lastBytecode = 0; lastBytecode < n; lastBytecode += 1) {
+      byte bcToBeRemoved = last4Bytecodes[last4Bytecodes.length - 1 - lastBytecode];
+      int bcLength = Bytecodes.getBytecodeLength(bcToBeRemoved);
+
+      for (int i = 0; i < bcLength; i += 1) {
+        bytecode.remove(bytecode.size() - 1);
+      }
+    }
+  }
+
+  private int getOffsetOfLastBytecode(final int idxFromEnd) {
+    int bcOffset = bytecode.size();
+    for (int i = 0; i <= idxFromEnd; i += 1) {
+      byte actual = last4Bytecodes[last4Bytecodes.length - 1 - i];
+      if (actual == INVALID) {
+        throw new IllegalStateException("The requested bytecode is not a valid one");
+      }
+
+      bcOffset -= Bytecodes.getBytecodeLength(actual);
+    }
+    return bcOffset;
+  }
+
+  private static final byte[] DUP_BYTECODES        = new byte[] {DUP};
+  private static final byte[] INC_BYTECODES        = new byte[] {INC};
+  private static final byte[] PUSH_BLOCK_BYTECODES = new byte[] {PUSH_BLOCK};
+
+  private static final byte[] POP_LOCAL_FIELD_BYTECODES = new byte[] {
+      POP_LOCAL,
+      POP_FIELD};
+
+  private static final byte[] PUSH_FIELD_BYTECODES = new byte[] {
+      PUSH_FIELD};
+
+  private static final byte[] POP_FIELD_BYTECODES = new byte[] {
+      POP_FIELD};
+
+  private LiteralNode optimizeLiteralReturn() {
+    final byte pushCandidate = lastBytecodeIs(1, PUSH_CONSTANT);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+        + Bytecodes.getBytecodeLength(pushCandidate))) {
+      return null;
+    }
+
+    byte constantIdx = getIndex(1);
+    Object literal = literals.get(constantIdx);
+    return LiteralNode.create(literal);
+  }
+
+  private GlobalNode optimizeGlobalReturn() {
+    final byte pushCandidate = lastBytecodeIs(1, PUSH_GLOBAL);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+        + Bytecodes.getBytecodeLength(pushCandidate))) {
+      return null;
+    }
+
+    byte constantIdx = getIndex(1);
+    SSymbol literal = (SSymbol) literals.get(constantIdx);
+    return GlobalNode.create(literal, universe);
+  }
+
+  private FieldReadNode optimizeFieldGetter() {
+    if (isBlockMethod()) {
+      return null;
+    }
+
+    final byte pushCandidate = lastBytecodeIsOneOf(1, PUSH_FIELD_BYTECODES);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+        + Bytecodes.getBytecodeLength(pushCandidate))) {
+      return null;
+    }
+
+    byte idx = getIndex(1);
+    // because we don't handle block methods, we don't need to worry about ctx > 0
+    return new FieldReadNode(new LocalArgumentReadNode(arguments.get(universe.symSelf)), idx);
+  }
+
+  private ExpressionNode optimizeFieldSetter() {
+    if (isBlockMethod()) {
+      return null;
+    }
+
+    // example sequence: PUSH_ARG1 DUP POP_FIELD_1 RETURN_SELF
+    final byte pushCandidate = lastBytecodeIs(3, PUSH_ARGUMENT);
+    if (pushCandidate == INVALID) {
+      return null;
+    }
+
+    if (getIndex(3) != 1) {
+      // we only support access to the only true argument of a setter
+      // (i.e. ignoring the receiver)
+      // though, there could possibly be other arguments
+      // TODO: lift the restriction
+      return null;
+    }
+
+    final byte dupCandidate = lastBytecodeIs(2, DUP);
+    if (dupCandidate == INVALID) {
+      return null;
+    }
+
+    final byte popCandidate = lastBytecodeIs(1, POP_FIELD);
+    if (popCandidate == INVALID) {
+      return null;
+    }
+
+    final byte returnCandidate = lastBytecodeIs(0, RETURN_SELF);
+    if (returnCandidate == INVALID) {
+      return null;
+    }
+
+    byte fieldIdx = getIndex(1);
+    Iterator<Argument> i = arguments.values().iterator();
+    Argument self = i.next();
+    Argument val = i.next();
+
+    return FieldWriteNode.createForMethod(fieldIdx, self, val);
+  }
+
+  public boolean optimizeDupPopPopSequence() {
+    final byte dupCandidate = lastBytecodeIs(1, DUP);
+    final byte popCandidate = lastBytecodeIsOneOf(0, POP_LOCAL_FIELD_BYTECODES);
+
+    if (popCandidate != INVALID && dupCandidate != INVALID) {
+      if (POP_FIELD == popCandidate && optimizePushFieldIncDupPopField()) {
         return true;
       }
 
-      // remove the DUP bytecode
-      bytecode.remove(size - 4);
+      removeLastBytecodeAt(1); // remove the DUP bytecode
 
-      last4Bytecodes[0] = -1;
-      last4Bytecodes[1] = -1;
-      last4Bytecodes[2] = -1;
+      resetLastBytecodeBuffer();
       last4Bytecodes[3] = popCandidate;
       return true;
     }
     return false;
+  }
+
+  private byte getIndex(final int idxFromEnd) {
+    int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
+    return bytecode.get(bcOffset + 1);
+  }
+
+  private byte[] getIndexAndContext(final int idxFromEnd) {
+    byte actual = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
+
+    byte idx;
+    byte ctx;
+
+    switch (actual) {
+      case PUSH_FIELD:
+      case POP_FIELD: {
+        int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
+        idx = bytecode.get(bcOffset + 1);
+        ctx = bytecode.get(bcOffset + 2);
+        break;
+      }
+
+      default:
+        throw new NotYetImplementedException("Need to add support for more bytecodes");
+    }
+
+    return new byte[] {idx, ctx};
   }
 
   /**
@@ -298,55 +538,28 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
    * @return true, if it optimized it.
    */
   private boolean optimizePushFieldIncDupPopField() {
-    final int size = bytecode.size();
-
-    assert Bytecodes.getBytecodeLength(PUSH_FIELD) == 3;
-    assert Bytecodes.getBytecodeLength(POP_FIELD) == 3;
-    assert Bytecodes.getBytecodeLength(INC) == 1;
-    assert Bytecodes.getBytecodeLength(DUP) == 1;
-
-    if (size - (3 + 1 + 1 + 3) < 0) {
+    if (lastBytecodeIsOneOf(3, PUSH_FIELD_BYTECODES) == INVALID) {
+      return false;
+    }
+    if (lastBytecodeIsOneOf(2, INC_BYTECODES) == INVALID) {
+      return false;
+    }
+    if (lastBytecodeIsOneOf(1, DUP_BYTECODES) == INVALID) {
+      return false;
+    }
+    if (lastBytecodeIsOneOf(0, POP_FIELD_BYTECODES) == INVALID) {
       return false;
     }
 
-    final byte pushCandidate = last4Bytecodes[0];
-    final byte incCandidate = last4Bytecodes[1];
-    final byte dupCandidate = last4Bytecodes[2];
-    final byte popCandidate = last4Bytecodes[3];
+    byte[] idxCtxPushField = getIndexAndContext(3);
+    byte[] idxCtxPopField = getIndexAndContext(0);
 
-    final int pushBcIdx = size - 3 - 1 - 1 - 3;
+    if (idxCtxPopField[0] == idxCtxPushField[0] && idxCtxPopField[1] == idxCtxPushField[1]) {
+      // remove all four of the bytecodes, we just checked for
+      removeLastBytecodes(4);
 
-    final byte pushFieldIdx = bytecode.get(pushBcIdx + 1);
-    final byte pushCtxLevel = bytecode.get(pushBcIdx + 2);
-
-    final int popBcIdx = size - 3;
-
-    final byte popFieldIdx = bytecode.get(popBcIdx + 1);
-    final byte popCtxLevel = bytecode.get(popBcIdx + 2);
-
-    if (pushCandidate == PUSH_FIELD &&
-        incCandidate == INC &&
-        dupCandidate == DUP &&
-        popCandidate == POP_FIELD &&
-        pushFieldIdx == popFieldIdx && pushCtxLevel == popCtxLevel) {
-      // remove the POP_FIELD bytecode
-      bytecode.remove(bytecode.size() - 1);
-      bytecode.remove(bytecode.size() - 1);
-      bytecode.remove(bytecode.size() - 1);
-
-      // remove the DUP bytecode
-      bytecode.remove(bytecode.size() - 1);
-
-      // remove the INC bytecode
-      bytecode.remove(bytecode.size() - 1);
-
-      // replace the PUSH_FIELD bytecode by INC_FIELD
-      bytecode.set(pushBcIdx, INC_FIELD);
-
-      last4Bytecodes[0] = -1;
-      last4Bytecodes[1] = -1;
-      last4Bytecodes[2] = -1;
-      last4Bytecodes[3] = INC_FIELD;
+      resetLastBytecodeBuffer();
+      BytecodeGenerator.emitINCFIELD(this, idxCtxPopField[0], idxCtxPopField[1]);
       return true;
     }
     return false;
@@ -358,37 +571,24 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     int i = 0;
 
     while (i < bytecode.size()) {
-      int oldI = i;
       byte bc = bytecode.get(i);
       switch (bc) {
         case HALT:
-          i++;
           break;
         case DUP:
-          depth++;
-          i++;
-          break;
         case PUSH_LOCAL:
         case PUSH_ARGUMENT:
         case PUSH_FIELD:
-          depth++;
-          i += 3;
-          break;
         case PUSH_BLOCK:
         case PUSH_CONSTANT:
         case PUSH_GLOBAL:
           depth++;
-          i += 2;
           break;
         case POP:
-          depth--;
-          i++;
-          break;
         case POP_LOCAL:
         case POP_ARGUMENT:
         case POP_FIELD:
           depth--;
-          i += 3;
           break;
         case SEND:
         case SUPER_SEND: {
@@ -399,23 +599,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
           depth -= sig.getNumberOfSignatureArguments();
 
           depth++; // return value
-          i += 2;
           break;
         }
         case INC:
         case DEC:
         case RETURN_LOCAL:
         case RETURN_SELF:
-          i++;
-          break;
         case RETURN_NON_LOCAL:
-          i += 2;
-          break;
         case INC_FIELD:
-          i += 3;
           break;
         case INC_FIELD_PUSH:
-          i += 3;
           depth++;
           break;
         default:
@@ -423,7 +616,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
               + bytecode.get(i));
       }
 
-      assert oldI + Bytecodes.getBytecodeLength(bc) == i;
+      i += Bytecodes.getBytecodeLength(bc);
 
       if (depth > maxDepth) {
         maxDepth = depth;
@@ -431,5 +624,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     return maxDepth;
+  }
+
+  ArrayList<Byte> getBytecodes() {
+    return bytecode;
   }
 }

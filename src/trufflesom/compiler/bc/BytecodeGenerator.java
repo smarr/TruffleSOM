@@ -27,6 +27,8 @@ package trufflesom.compiler.bc;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -47,107 +49,125 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class BytecodeGenerator {
+public final class BytecodeGenerator {
+  private BytecodeGenerator() {}
 
-  public void emitINC(final BytecodeMethodGenContext mgenc) {
+  public static void emitINC(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, INC);
   }
 
-  public void emitDEC(final BytecodeMethodGenContext mgenc) {
+  public static void emitDEC(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, DEC);
   }
 
-  public void emitPOP(final BytecodeMethodGenContext mgenc) {
+  public static void emitINCFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
+      final byte ctx) {
+    emit3(mgenc, INC_FIELD, fieldIdx, ctx);
+  }
+
+  public static void emitINCFIELDPUSH(final BytecodeMethodGenContext mgenc,
+      final byte fieldIdx, final byte ctx) {
+    emit3(mgenc, INC_FIELD_PUSH, fieldIdx, ctx);
+  }
+
+  public static void emitPOP(final BytecodeMethodGenContext mgenc) {
     if (!mgenc.optimizeDupPopPopSequence()) {
       emit1(mgenc, POP);
     }
   }
 
-  public void emitPUSHARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
+  public static void emitPUSHARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     emit3(mgenc, PUSH_ARGUMENT, idx, ctx);
   }
 
-  public void emitRETURNLOCAL(final BytecodeMethodGenContext mgenc) {
+  public static void emitRETURNLOCAL(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, RETURN_LOCAL);
   }
 
-  public void emitRETURNSELF(final BytecodeMethodGenContext mgenc) {
+  public static void emitRETURNSELF(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, RETURN_SELF);
   }
 
-  public void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {
+  public static void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {
     emit2(mgenc, RETURN_NON_LOCAL, mgenc.getMaxContextLevel());
   }
 
-  public void emitDUP(final BytecodeMethodGenContext mgenc) {
+  public static void emitDUP(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, DUP);
   }
 
-  public void emitPUSHBLOCK(final BytecodeMethodGenContext mgenc, final SMethod blockMethod) {
-    emit2(mgenc, PUSH_BLOCK, mgenc.findLiteralIndex(blockMethod));
+  public static void emitPUSHBLOCK(final BytecodeMethodGenContext mgenc,
+      final SMethod blockMethod) {
+    byte litIdx = mgenc.findLiteralIndex(blockMethod);
+    assert litIdx >= 0;
+    emit2(mgenc, PUSH_BLOCK, litIdx);
   }
 
-  public void emitPUSHLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
+  public static void emitPUSHLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     assert idx >= 0;
     emit3(mgenc, PUSH_LOCAL, idx, ctx);
   }
 
-  public void emitPUSHFIELD(final BytecodeMethodGenContext mgenc, final SSymbol fieldName) {
+  public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc,
+      final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
     emit3(mgenc, PUSH_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
   }
 
-  public void emitPUSHGLOBAL(final BytecodeMethodGenContext mgenc, final SSymbol global) {
+  public static void emitPUSHGLOBAL(final BytecodeMethodGenContext mgenc,
+      final SSymbol global) {
     emit2(mgenc, PUSH_GLOBAL, mgenc.findLiteralIndex(global));
   }
 
-  public void emitPOPARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
+  public static void emitPOPARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     emit3(mgenc, POP_ARGUMENT, idx, ctx);
   }
 
-  public void emitPOPLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
+  public static void emitPOPLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     emit3(mgenc, POP_LOCAL, idx, ctx);
   }
 
-  public void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final SSymbol fieldName) {
+  public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc,
+      final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
     emit3(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
   }
 
-  public void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
+  public static void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
     emit2(mgenc, SUPER_SEND, mgenc.findLiteralIndex(msg));
   }
 
-  public void emitSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
+  public static void emitSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
     emit2(mgenc, SEND, mgenc.findLiteralIndex(msg));
   }
 
-  public void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final Object lit) {
+  public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final Object lit) {
     emit2(mgenc, PUSH_CONSTANT, mgenc.findLiteralIndex(lit));
   }
 
-  public void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final byte literalIndex) {
+  public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc,
+      final byte literalIndex) {
     emit2(mgenc, PUSH_CONSTANT, literalIndex);
   }
 
-  private void emit1(final BytecodeMethodGenContext mgenc, final byte code) {
+  private static void emit1(final BytecodeMethodGenContext mgenc, final byte code) {
     mgenc.addBytecode(code);
   }
 
-  private void emit2(final BytecodeMethodGenContext mgenc, final byte code, final byte idx) {
+  private static void emit2(final BytecodeMethodGenContext mgenc, final byte code,
+      final byte idx) {
     mgenc.addBytecode(code);
     mgenc.addBytecodeArgument(idx);
   }
 
-  private void emit3(final BytecodeMethodGenContext mgenc, final byte code, final byte idx,
-      final byte ctx) {
+  private static void emit3(final BytecodeMethodGenContext mgenc, final byte code,
+      final byte idx, final byte ctx) {
     mgenc.addBytecode(code);
     mgenc.addBytecodeArgument(idx);
     mgenc.addBytecodeArgument(ctx);
   }
-
 }

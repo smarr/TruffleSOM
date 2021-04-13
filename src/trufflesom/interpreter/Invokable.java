@@ -7,6 +7,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SClass;
@@ -69,5 +70,14 @@ public abstract class Invokable extends RootNode {
 
   public void setHolder(final SClass holder) {
     this.holder = holder;
+  }
+
+  @Override
+  public boolean isTrivial() {
+    return expressionOrSequence.isTrivial();
+  }
+
+  public PreevaluatedExpression copyTrivialNode() {
+    return expressionOrSequence.copyTrivialNode();
   }
 }

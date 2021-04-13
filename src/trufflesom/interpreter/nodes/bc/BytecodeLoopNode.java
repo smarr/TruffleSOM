@@ -261,7 +261,8 @@ public class BytecodeLoopNode extends ExpressionNode {
           byte literalIdx = bytecodes[bytecodeIndex + 1];
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
 
-          GlobalNode quickened = GlobalNode.create(globalName, universe, sourceSection);
+          GlobalNode quickened =
+              GlobalNode.create(globalName, universe).initialize(sourceSection);
           quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quickened);
 
           // TODO: what's the correct semantics here? the outer or the closed self? normally,

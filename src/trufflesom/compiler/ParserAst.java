@@ -102,7 +102,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private ExpressionNode createSequenceNode(final SourceCoordinate coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return GlobalNode.create(universe.symNil, universe, getSource(coord));
+      return GlobalNode.create(universe.symNil, universe).initialize(getSource(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
@@ -157,7 +157,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       final SSymbol variableName, final ExpressionNode exp, final SourceSection source) {
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
-      return mgenc.getLocalWriteNode(variableName, exp, source);
+      return mgenc.getLocalWriteNode(variable, exp, source);
     }
 
     FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, universe, source);

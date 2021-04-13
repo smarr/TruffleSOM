@@ -62,33 +62,12 @@ public class Bytecodes {
   public static final byte Q_SEND_2      = 24;
   public static final byte Q_SEND_3      = 25;
 
-  private static final String[] PADDED_BYTECODE_NAMES = new String[] {
-      "HALT            ", "DUP             ", "PUSH_LOCAL      ",
-      "PUSH_ARGUMENT   ", "PUSH_FIELD      ", "PUSH_BLOCK      ",
-      "PUSH_CONSTANT   ", "PUSH_GLOBAL     ", "POP             ",
-      "POP_LOCAL       ", "POP_ARGUMENT    ", "POP_FIELD       ",
-      "SEND            ", "SUPER_SEND      ", "RETURN_LOCAL    ",
-      "RETURN_NON_LOCAL",
+  public static final byte INVALID = -1;
 
-      "RETURN_SELF     ",
+  private static final String[] PADDED_BYTECODE_NAMES;
+  private static final String[] BYTECODE_NAMES;
 
-      "INC             ",
-      "DEC             ",
-
-      "INC_FIELD       ",
-      "INC_FIELD_PUSH  ",
-
-      "Q_PUSH_GLOBAL   ",
-      "Q_SEND          ",
-      "Q_SEND_1        ",
-      "Q_SEND_2        ",
-      "Q_SEND_3        ",
-  };
-
-  private static final String[] BYTECODE_NAMES =
-      Stream.of(PADDED_BYTECODE_NAMES).map(String::trim).toArray(String[]::new);
-
-  private static final byte NUM_BYTECODES = (byte) BYTECODE_NAMES.length;
+  public static final byte NUM_BYTECODES;
 
   private static void checkBytecodeIndex(final byte bytecode) {
     if (bytecode < 0 || bytecode >= NUM_BYTECODES) {
@@ -111,35 +90,70 @@ public class Bytecodes {
   }
 
   // Static array holding lengths of each bytecode
-  @CompilationFinal(dimensions = 1) private static final int[] BYTECODE_LENGTH = new int[] {
-      1, // HALT
-      1, // DUP
-      3, // PUSH_LOCAL
-      3, // PUSH_ARGUMENT
-      3, // PUSH_FIELD
-      2, // PUSH_BLOCK
-      2, // PUSH_CONSTANT
-      2, // PUSH_GLOBAL
-      1, // POP
-      3, // POP_LOCAL
-      3, // POP_ARGUMENT
-      3, // POP_FIELD
-      2, // SEND
-      2, // SUPER_SEND
-      1, // RETURN_LOCAL
-      2, // RETURN_NON_LOCAL
-      1, // RETURN_SELF
+  @CompilationFinal(dimensions = 1) private static final int[] BYTECODE_LENGTH;
 
-      1, // INC
-      1, // DEC
+  static {
+    NUM_BYTECODES = Q_SEND_3 + 1;
 
-      3, // INC_FIELD
-      3, // INC_FIELD_PUSH
+    PADDED_BYTECODE_NAMES = new String[] {
+        "HALT            ", "DUP             ", "PUSH_LOCAL      ",
+        "PUSH_ARGUMENT   ", "PUSH_FIELD      ", "PUSH_BLOCK      ",
+        "PUSH_CONSTANT   ", "PUSH_GLOBAL     ", "POP             ",
+        "POP_LOCAL       ", "POP_ARGUMENT    ", "POP_FIELD       ",
+        "SEND            ", "SUPER_SEND      ", "RETURN_LOCAL    ",
+        "RETURN_NON_LOCAL",
 
-      2, // Q_PUSH_GLOBAL
-      2, // Q_SEND
-      2, // Q_SEND_1
-      2, // Q_SEND_2
-      2, // Q_SEND_3
-  };
+        "RETURN_SELF     ",
+
+        "INC             ",
+        "DEC             ",
+
+        "INC_FIELD       ",
+        "INC_FIELD_PUSH  ",
+
+        "Q_PUSH_GLOBAL   ",
+        "Q_SEND          ",
+        "Q_SEND_1        ",
+        "Q_SEND_2        ",
+        "Q_SEND_3        ",
+    };
+
+    assert PADDED_BYTECODE_NAMES.length == NUM_BYTECODES : "Inconsistency between number of bytecodes and defined padded names";
+
+    BYTECODE_NAMES = Stream.of(PADDED_BYTECODE_NAMES).map(String::trim).toArray(String[]::new);
+
+    BYTECODE_LENGTH = new int[] {
+        1, // HALT
+        1, // DUP
+        3, // PUSH_LOCAL
+        3, // PUSH_ARGUMENT
+        3, // PUSH_FIELD
+        2, // PUSH_BLOCK
+        2, // PUSH_CONSTANT
+        2, // PUSH_GLOBAL
+        1, // POP
+        3, // POP_LOCAL
+        3, // POP_ARGUMENT
+        3, // POP_FIELD
+        2, // SEND
+        2, // SUPER_SEND
+        1, // RETURN_LOCAL
+        2, // RETURN_NON_LOCAL
+        1, // RETURN_SELF
+
+        1, // INC
+        1, // DEC
+
+        3, // INC_FIELD
+        3, // INC_FIELD_PUSH
+
+        2, // Q_PUSH_GLOBAL
+        2, // Q_SEND
+        2, // Q_SEND_1
+        2, // Q_SEND_2
+        2, // Q_SEND_3
+    };
+
+    assert BYTECODE_LENGTH.length == NUM_BYTECODES : "The BYTECODE_LENGTH array is not having the same size as number of bytecodes";
+  }
 }

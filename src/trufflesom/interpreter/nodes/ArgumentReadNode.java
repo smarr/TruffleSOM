@@ -45,6 +45,10 @@ public abstract class ArgumentReadNode {
     public SSymbol getInvocationIdentifier() {
       return arg.name;
     }
+
+    public boolean isSelfRead() {
+      return argumentIndex == 0;
+    }
   }
 
   public static class LocalArgumentWriteNode extends ExpressionNode {

@@ -29,6 +29,9 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.compiler.Variable.Argument;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -93,6 +96,19 @@ public abstract class FieldNode extends ExpressionNode {
       }
       return executeEvaluated(obj);
     }
+
+    @Override
+    public boolean isTrivial() {
+      return true;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      FieldReadNode node = (FieldReadNode) copy();
+      node.self = null;
+      node.read = (AbstractReadFieldNode) node.read.deepCopy();
+      return node;
+    }
   }
 
   @NodeChild(value = "self", type = ExpressionNode.class)
@@ -107,6 +123,22 @@ public abstract class FieldNode extends ExpressionNode {
 
     public int getFieldIndex() {
       return write.getFieldIndex();
+    }
+
+    public abstract ExpressionNode getValue();
+
+    @Override
+    public boolean isTrivial() {
+      ExpressionNode val = getValue();
+      // can't be a NonLocalArgumentReadNode, then it wouldn't be a setter
+      // can't be a super access either. So that's why we have the == compare here
+      return val.getClass() == LocalArgumentReadNode.class;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      FieldWriteNode node = (FieldWriteNode) deepCopy();
+      return new WriteAndReturnSelf(node);
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,
@@ -136,6 +168,15 @@ public abstract class FieldNode extends ExpressionNode {
     public Object doObject(final VirtualFrame frame, final SObject self,
         final Object value) {
       return executeEvaluated(frame, self, value);
+    }
+
+    public static ExpressionNode createForMethod(final int fieldIdx, final Argument self,
+        final Argument val) {
+      FieldWriteNode node = FieldWriteNodeGen.create(
+          fieldIdx,
+          new LocalArgumentReadNode(self),
+          new LocalArgumentReadNode(val));
+      return new WriteAndReturnSelf(node);
     }
   }
 
@@ -216,6 +257,35 @@ public abstract class FieldNode extends ExpressionNode {
         throw new NotYetImplementedException();
       }
     }
+  }
 
+  private static final class WriteAndReturnSelf extends ExpressionNode
+      implements PreevaluatedExpression {
+    @Child FieldWriteNode write;
+
+    WriteAndReturnSelf(final FieldWriteNode write) {
+      this.write = write;
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+      write.doPreEvaluated(frame, args);
+      return args[0];
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      return doPreEvaluated(frame, frame.getArguments());
+    }
+
+    @Override
+    public boolean isTrivial() {
+      return true;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      return (PreevaluatedExpression) deepCopy();
+    }
   }
 }

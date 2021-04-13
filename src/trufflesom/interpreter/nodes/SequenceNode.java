@@ -26,6 +26,9 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
+import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+
 
 @NodeInfo(cost = NodeCost.NONE)
 public final class SequenceNode extends ExpressionNode {
@@ -46,5 +49,26 @@ public final class SequenceNode extends ExpressionNode {
     for (int i = 0; i < expressions.length - 1; i++) {
       expressions[i].executeGeneric(frame);
     }
+  }
+
+  @Override
+  public boolean isTrivial() {
+    // has exactly two expressions
+    if (expressions.length != 2) {
+      return false;
+    }
+
+    // and the last/second one is the self return
+    if (expressions[1].getClass() != LocalArgumentReadNode.class
+        || !((LocalArgumentReadNode) expressions[1]).isSelfRead()) {
+      return false;
+    }
+
+    return expressions[0].isTrivial();
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return expressions[0].copyTrivialNode();
   }
 }
