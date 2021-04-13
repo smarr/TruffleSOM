@@ -30,6 +30,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -136,7 +137,7 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public PreevaluatedExpression copyTrivialNode() {
       FieldWriteNode node = (FieldWriteNode) deepCopy();
-      return node;
+      return new WriteAndReturnSelf(node);
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,
@@ -166,6 +167,12 @@ public abstract class FieldNode extends ExpressionNode {
     public Object doObject(final VirtualFrame frame, final SObject self,
         final Object value) {
       return executeEvaluated(frame, self, value);
+    }
+
+    public static ExpressionNode createForMethod(final int fieldIdx) {
+      FieldWriteNode node = FieldWriteNodeGen.create(
+          fieldIdx, new LocalArgumentReadNode(true, 0), new LocalArgumentReadNode(true, 1));
+      return new WriteAndReturnSelf(node);
     }
   }
 
@@ -246,6 +253,25 @@ public abstract class FieldNode extends ExpressionNode {
         throw new NotYetImplementedException();
       }
     }
+  }
 
+  private static final class WriteAndReturnSelf extends ExpressionNode
+      implements PreevaluatedExpression {
+    @Child PreevaluatedExpression write;
+
+    WriteAndReturnSelf(final PreevaluatedExpression write) {
+      this.write = write;
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+      write.doPreEvaluated(frame, args);
+      return args[0];
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      return doPreEvaluated(frame, frame.getArguments());
+    }
   }
 }

@@ -21,7 +21,6 @@
  */
 package trufflesom.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
@@ -70,28 +69,6 @@ public final class SequenceNode extends ExpressionNode {
 
   @Override
   public PreevaluatedExpression copyTrivialNode() {
-    return new WriteAndReturnSelf(expressions[0].copyTrivialNode());
-  }
-
-  private static final class WriteAndReturnSelf extends ExpressionNode
-      implements PreevaluatedExpression {
-    @Child PreevaluatedExpression write;
-
-    WriteAndReturnSelf(final PreevaluatedExpression write) {
-      this.write = write;
-    }
-
-    @Override
-    public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
-      write.doPreEvaluated(frame, args);
-      return args[0];
-    }
-
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      CompilerDirectives.transferToInterpreter();
-      throw new UnsupportedOperationException();
-    }
-
+    return expressions[0].copyTrivialNode();
   }
 }
