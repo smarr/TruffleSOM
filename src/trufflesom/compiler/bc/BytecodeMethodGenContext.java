@@ -303,6 +303,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private ExpressionNode constructTrivialBody() {
+    if (isBlockMethod()) {
+      return null;
+    }
+
     ExpressionNode expr = optimizeLiteralReturn();
 
     if (expr == null) {
@@ -457,10 +461,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private FieldReadNode optimizeFieldGetter() {
-    if (isBlockMethod()) {
-      return null;
-    }
-
     final byte pushCandidate = lastBytecodeIsOneOf(1, PUSH_FIELD_BYTECODES);
     if (pushCandidate == INVALID) {
       return null;
@@ -482,10 +482,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private ExpressionNode optimizeFieldSetter() {
-    if (isBlockMethod()) {
-      return null;
-    }
-
     // example sequence: PUSH_ARG1 DUP POP_FIELD_1 RETURN_SELF
     final byte pushCandidate = lastBytecodeIs(3, PUSH_ARGUMENT);
     if (pushCandidate == INVALID) {
