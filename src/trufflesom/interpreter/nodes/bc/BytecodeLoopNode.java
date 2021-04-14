@@ -858,17 +858,17 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
       BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
 
       try {
-        inlineInto(mgenc, targetContextLevel, inliner.outerScopeChanged());
+        inlineInto(mgenc, targetContextLevel);
       } catch (ParseError e) {
         throw new RuntimeException(e);
       }
-    } else if (inliner.outerScopeChanged()) {
-      adapt(inliner);
+    } else {
+      boolean requiresChangesToContextLevels = inliner.outerScopeChanged();
+      adapt(inliner, requiresChangesToContextLevels);
     }
   }
 
-  private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel,
-      final boolean outerScopeChanged)
+  private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel)
       throws ParseError {
     int i = 0;
     while (i < bytecodes.length) {
@@ -909,10 +909,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case PUSH_BLOCK: {
-          if (!outerScopeChanged) {
-            return;
-          }
-
           byte literalIdx = bytecodes[i + 1];
           SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
 
@@ -1059,7 +1055,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     }
   }
 
-  private void adapt(final ScopeAdaptationVisitor inliner) {
+  private void adapt(final ScopeAdaptationVisitor inliner,
+      final boolean requiresChangesToContextLevels) {
     FrameSlot[] oldLocalsAndOuters = Arrays.copyOf(localsAndOuters, localsAndOuters.length);
 
     int i = 0;
@@ -1085,26 +1082,16 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case PUSH_ARGUMENT: {
-          byte contextIdx = bytecodes[i + 2];
-          if (contextIdx >= inliner.contextLevel) {
-            bytecodes[i + 2] = (byte) (contextIdx - 1);
-          }
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
           break;
         }
 
         case PUSH_FIELD: {
-          byte contextIdx = bytecodes[i + 2];
-          if (contextIdx >= inliner.contextLevel) {
-            bytecodes[i + 2] = (byte) (contextIdx - 1);
-          }
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
           break;
         }
 
         case PUSH_BLOCK: {
-          if (!inliner.outerScopeChanged()) {
-            return;
-          }
-
           byte literalIdx = bytecodes[i + 1];
           SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
 
@@ -1131,38 +1118,30 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
 
           bytecodes[i + 2] = (byte) se.contextLevel;
+          assert bytecodes[i + 2] >= 0;
           localsAndOuters[localIdx] = ((Local) se.var).getSlot();
           break;
         }
 
         case POP_ARGUMENT: {
-          byte contextIdx = bytecodes[i + 2];
-          if (contextIdx >= inliner.contextLevel) {
-            bytecodes[i + 2] = (byte) (contextIdx - 1);
-          }
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
           break;
         }
 
         case POP_FIELD: {
-          byte contextIdx = bytecodes[i + 2];
-          if (contextIdx >= inliner.contextLevel) {
-            bytecodes[i + 2] = (byte) (contextIdx - 1);
-          }
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
           break;
         }
 
         case SEND:
-        case SUPER_SEND: {
-          break;
-        }
-
+        case SUPER_SEND:
         case RETURN_LOCAL: {
           break;
         }
 
         case RETURN_NON_LOCAL: {
           byte contextIdx = bytecodes[i + 1];
-          if (contextIdx >= inliner.contextLevel) {
+          if (requiresChangesToContextLevels && contextIdx >= inliner.contextLevel) {
             // we don't simplify to return local, because they had different bytecode length
             // and, well, I don't think this should happen
             assert contextIdx - 1 > 0 : "I wouldn't expect a RETURN_LOCAL equivalent here, "
@@ -1180,10 +1159,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case INC_FIELD:
         case INC_FIELD_PUSH: {
-          byte contextIdx = bytecodes[i + 2];
-          if (contextIdx >= inliner.contextLevel) {
-            bytecodes[i + 2] = (byte) (contextIdx - 1);
-          }
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
           break;
         }
 
@@ -1199,6 +1175,19 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
       }
 
       i += bytecodeLength;
+    }
+  }
+
+  private void adaptContextIdx(final ScopeAdaptationVisitor inliner, final int i,
+      final boolean requiresChangesToContextLevels) {
+    if (!requiresChangesToContextLevels) {
+      return;
+    }
+
+    byte contextIdx = bytecodes[i + 2];
+    if (contextIdx >= inliner.contextLevel) {
+      byte ctx = (byte) (contextIdx - 1);
+      bytecodes[i + 2] = ctx;
     }
   }
 }

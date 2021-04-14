@@ -76,10 +76,11 @@ public final class Method extends Invokable {
 
   public Method cloneAndAdaptAfterScopeChange(final BytecodeMethodGenContext mgenc,
       final LexicalScope adaptedScope, final int appliesTo,
-      final boolean cloneAdaptedAsUninitialized, final boolean outerScopeChanged) {
+      final boolean cloneAdaptedAsUninitialized,
+      final boolean requiresChangesToContextLevels) {
     Scope<?, ?> scope = mgenc == null ? adaptedScope : mgenc;
     ExpressionNode adaptedBody = ScopeAdaptationVisitor.adapt(uninitializedBody, scope,
-        appliesTo, outerScopeChanged, getLanguage(SomLanguage.class));
+        appliesTo, requiresChangesToContextLevels, getLanguage(SomLanguage.class));
 
     ExpressionNode uninit;
     if (cloneAdaptedAsUninitialized) {
@@ -106,7 +107,7 @@ public final class Method extends Invokable {
   public Node deepCopy() {
     LexicalScope splitScope = currentLexicalScope.split();
     assert currentLexicalScope != splitScope;
-    return cloneAndAdaptAfterScopeChange(null, splitScope, 0, false, true);
+    return cloneAndAdaptAfterScopeChange(null, splitScope, 0, false, false);
   }
 
   @Override
