@@ -56,11 +56,17 @@ public class Bytecodes {
   public static final byte INC_FIELD      = 19;
   public static final byte INC_FIELD_PUSH = 20;
 
-  public static final byte Q_PUSH_GLOBAL = 21;
-  public static final byte Q_SEND        = 22;
-  public static final byte Q_SEND_1      = 23;
-  public static final byte Q_SEND_2      = 24;
-  public static final byte Q_SEND_3      = 25;
+  public static final byte JUMP                  = 21;
+  public static final byte JUMP_ON_TRUE_TOP_NIL  = 22;
+  public static final byte JUMP_ON_FALSE_TOP_NIL = 23;
+  public static final byte JUMP_ON_TRUE_POP      = 24;
+  public static final byte JUMP_ON_FALSE_POP     = 25;
+
+  public static final byte Q_PUSH_GLOBAL = 26;
+  public static final byte Q_SEND        = 27;
+  public static final byte Q_SEND_1      = 28;
+  public static final byte Q_SEND_2      = 29;
+  public static final byte Q_SEND_3      = 30;
 
   public static final byte INVALID = -1;
 
@@ -111,6 +117,12 @@ public class Bytecodes {
         "INC_FIELD       ",
         "INC_FIELD_PUSH  ",
 
+        "JUMP            ",
+        "JUMP_ON_TRUE_TOP_NIL",
+        "JUMP_ON_FALSE_TOP_NIL",
+        "JUMP_ON_TRUE_POP",
+        "JUMP_ON_FALSE_POP",
+
         "Q_PUSH_GLOBAL   ",
         "Q_SEND          ",
         "Q_SEND_1        ",
@@ -146,6 +158,12 @@ public class Bytecodes {
 
         3, // INC_FIELD
         3, // INC_FIELD_PUSH
+
+        2, // JUMP
+        2, // JUMP_ON_TRUE_TOP_NIL
+        2, // JUMP_ON_FALSE_TOP_NIL
+        2, // JUMP_ON_TRUE_POP
+        2, // JUMP_ON_FALSE_POP
 
         2, // Q_PUSH_GLOBAL
         2, // Q_SEND

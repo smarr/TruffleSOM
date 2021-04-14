@@ -268,7 +268,17 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       formula(mgenc);
     } while (sym == Keyword);
 
-    SSymbol msg = universe.symbolFor(kw.toString());
+    String kwStr = kw.toString();
+
+    if (!superSend && (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrue(this)) ||
+        ("ifFalse:".equals(kwStr) && mgenc.inlineIfFalse(this)) ||
+        ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this)) ||
+        ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfFalseIfTrue(this)))) {
+      // all done
+      return;
+    }
+
+    SSymbol msg = universe.symbolFor(kwStr);
 
     mgenc.addLiteralIfAbsent(msg, this);
 

@@ -1,11 +1,39 @@
 package trufflesom.interpreter.nodes.bc;
 
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDEC;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitHALT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELDPUSH;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSEPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSETOPNIL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUEPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUETOPNIL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHGLOBAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNLOCAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -27,6 +55,7 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
+import static trufflesom.interpreter.bc.Bytecodes.getBytecodeName;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,10 +74,17 @@ import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
+import bd.inlining.ScopeAdaptationVisitor;
+import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
+import bd.inlining.nodes.ScopeReference;
 import bd.primitives.Specializer;
+import trufflesom.compiler.Parser.ParseError;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.EscapedBlockException;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
@@ -69,6 +105,7 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongField
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
@@ -78,7 +115,7 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class BytecodeLoopNode extends ExpressionNode {
+public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   private static final ValueProfile frameType = ValueProfile.createClassProfile();
   private static final LiteralNode  dummyNode = new IntegerLiteralNode(0);
 
@@ -197,6 +234,7 @@ public class BytecodeLoopNode extends ExpressionNode {
         case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
+          assert contextIdx >= 0;
 
           VirtualFrame currentOrContext = frame;
           if (contextIdx > 0) {
@@ -591,6 +629,56 @@ public class BytecodeLoopNode extends ExpressionNode {
           break;
         }
 
+        case JUMP: {
+          int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+          nextBytecodeIndex = bytecodeIndex + offset;
+          break;
+        }
+
+        case JUMP_ON_TRUE_TOP_NIL: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.TRUE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            nextBytecodeIndex = bytecodeIndex + offset;
+            stack[stackPointer] = Nil.nilObject;
+          } else {
+            stackPointer -= 1;
+          }
+          break;
+        }
+
+        case JUMP_ON_FALSE_TOP_NIL: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.FALSE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            nextBytecodeIndex = bytecodeIndex + offset;
+            stack[stackPointer] = Nil.nilObject;
+          } else {
+            stackPointer -= 1;
+          }
+          break;
+        }
+
+        case JUMP_ON_TRUE_POP: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.TRUE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            nextBytecodeIndex = bytecodeIndex + offset;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
+        case JUMP_ON_FALSE_POP: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.FALSE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            nextBytecodeIndex = bytecodeIndex + offset;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
         case Q_PUSH_GLOBAL: {
           stackPointer += 1;
           stack[stackPointer] = ((GlobalNode) quickened[bytecodeIndex]).executeGeneric(frame);
@@ -789,4 +877,366 @@ public class BytecodeLoopNode extends ExpressionNode {
     return literalsAndConstants[idx];
   }
 
+  @Override
+  public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+    Object scope = inliner.getCurrentScope();
+    int targetContextLevel = inliner.contextLevel;
+
+    if (scope instanceof BytecodeMethodGenContext) {
+      BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+
+      try {
+        inlineInto(mgenc, targetContextLevel);
+      } catch (ParseError e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      boolean requiresChangesToContextLevels = inliner.outerScopeChanged();
+      adapt(inliner, requiresChangesToContextLevels);
+    }
+  }
+
+  private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel)
+      throws ParseError {
+    int i = 0;
+    while (i < bytecodes.length) {
+      byte bytecode = bytecodes[i];
+      final int bytecodeLength = getBytecodeLength(bytecode);
+
+      switch (bytecode) {
+        case HALT: {
+          emitHALT(mgenc);
+          break;
+        }
+
+        case DUP: {
+          emitDUP(mgenc);
+          break;
+        }
+
+        case PUSH_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPush(mgenc);
+          break;
+        }
+
+        case PUSH_ARGUMENT: {
+          byte argIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPUSHARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case PUSH_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPUSHFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case PUSH_BLOCK: {
+          byte literalIdx = bytecodes[i + 1];
+          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+
+          Method blockIvk = (Method) blockMethod.getInvokable();
+          Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(null,
+              mgenc.getCurrentLexicalScope().getScope(blockIvk),
+              targetContextLevel + 1, true, true);
+          SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
+              blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
+          newMethod.setHolder(blockMethod.getHolder());
+          mgenc.addLiteralIfAbsent(newMethod, null);
+          emitPUSHBLOCK(mgenc, newMethod);
+          break;
+        }
+
+        case PUSH_CONSTANT: {
+          byte literalIdx = bytecodes[i + 1];
+          Object value = literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(value, null);
+          emitPUSHCONSTANT(mgenc, value);
+          break;
+        }
+
+        case PUSH_GLOBAL: {
+          byte literalIdx = bytecodes[i + 1];
+          SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(globalName, null);
+          emitPUSHGLOBAL(mgenc, globalName);
+          break;
+        }
+
+        case POP: {
+          emitPOP(mgenc);
+          break;
+        }
+
+        case POP_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPop(mgenc);
+          break;
+        }
+
+        case POP_ARGUMENT: {
+          byte argIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPOPARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case POP_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPOPFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case SEND: {
+          byte literalIdx = bytecodes[i + 1];
+          SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(signature, null);
+          emitSEND(mgenc, signature);
+          break;
+        }
+
+        case SUPER_SEND: {
+          byte literalIdx = bytecodes[i + 1];
+          SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
+          mgenc.addLiteralIfAbsent(signature, null);
+          emitSUPERSEND(mgenc, signature);
+          break;
+        }
+
+        case RETURN_LOCAL: {
+          // simply don't translate
+          assert i == bytecodes.length - 1;
+          break;
+        }
+
+        case RETURN_NON_LOCAL: {
+          byte contextIdx = bytecodes[i + 1];
+          byte newCtx = (byte) (contextIdx - 1);
+          if (newCtx == 0) {
+            emitRETURNLOCAL(mgenc);
+            // emitted to avoid having jumps being broken
+            // but should not be executed
+            emitHALT(mgenc);
+          } else {
+            emitRETURNNONLOCAL(mgenc);
+          }
+          break;
+        }
+
+        case RETURN_SELF: {
+          throw new IllegalStateException(
+              "I wouldn't expect RETURN_SELF ever to be inlined, since it's only generated in the most outer methods");
+        }
+
+        case INC: {
+          emitINC(mgenc);
+          break;
+        }
+
+        case DEC: {
+          emitDEC(mgenc);
+          break;
+        }
+
+        case INC_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitINCFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case INC_FIELD_PUSH: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitINCFIELDPUSH(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case JUMP: {
+          byte offset = bytecodes[i + 1];
+          emitJUMP(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_TRUE_TOP_NIL: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONTRUETOPNIL(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_FALSE_TOP_NIL: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONFALSETOPNIL(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_TRUE_POP: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONTRUEPOP(mgenc, offset);
+          break;
+        }
+
+        case JUMP_ON_FALSE_POP: {
+          byte offset = bytecodes[i + 1];
+          emitJUMPONFALSEPOP(mgenc, offset);
+          break;
+        }
+
+        default:
+          throw new NotYetImplementedException(
+              "Support for bytecode " + getBytecodeName(bytecode) + " has not yet been added");
+      }
+
+      i += bytecodeLength;
+    }
+  }
+
+  private void adapt(final ScopeAdaptationVisitor inliner,
+      final boolean requiresChangesToContextLevels) {
+    FrameSlot[] oldLocalsAndOuters = Arrays.copyOf(localsAndOuters, localsAndOuters.length);
+
+    int i = 0;
+    while (i < bytecodes.length) {
+      byte bytecode = bytecodes[i];
+      final int bytecodeLength = getBytecodeLength(bytecode);
+
+      switch (bytecode) {
+        case HALT:
+        case DUP: {
+          break;
+        }
+
+        case PUSH_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
+
+          bytecodes[i + 2] = (byte) se.contextLevel;
+          assert bytecodes[i + 2] >= 0;
+          localsAndOuters[localIdx] = ((Local) se.var).getSlot();
+          break;
+        }
+
+        case PUSH_ARGUMENT: {
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
+
+        case PUSH_FIELD: {
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
+
+        case PUSH_BLOCK: {
+          byte literalIdx = bytecodes[i + 1];
+          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+
+          Method blockIvk = (Method) blockMethod.getInvokable();
+          Method adapted =
+              blockIvk.cloneAndAdaptAfterScopeChange(null, inliner.getScope(blockIvk),
+                  inliner.contextLevel + 1, true, requiresChangesToContextLevels);
+          SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
+              blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
+          newMethod.setHolder(blockMethod.getHolder());
+          literalsAndConstants[literalIdx] = newMethod;
+          break;
+        }
+
+        case PUSH_CONSTANT:
+        case PUSH_GLOBAL:
+        case POP: {
+          break;
+        }
+
+        case POP_LOCAL: {
+          byte localIdx = bytecodes[i + 1];
+          FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
+
+          bytecodes[i + 2] = (byte) se.contextLevel;
+          assert bytecodes[i + 2] >= 0;
+          localsAndOuters[localIdx] = ((Local) se.var).getSlot();
+          break;
+        }
+
+        case POP_ARGUMENT: {
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
+
+        case POP_FIELD: {
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
+
+        case SEND:
+        case SUPER_SEND:
+        case RETURN_LOCAL: {
+          break;
+        }
+
+        case RETURN_NON_LOCAL: {
+          byte contextIdx = bytecodes[i + 1];
+          if (requiresChangesToContextLevels && contextIdx >= inliner.contextLevel) {
+            // we don't simplify to return local, because they had different bytecode length
+            // and, well, I don't think this should happen
+            assert contextIdx - 1 > 0 : "I wouldn't expect a RETURN_LOCAL equivalent here, "
+                + " because we are in a block, or it is already a return local";
+            bytecodes[i + 1] = (byte) (contextIdx - 1);
+          }
+          break;
+        }
+
+        case RETURN_SELF:
+        case INC:
+        case DEC: {
+          break;
+        }
+
+        case INC_FIELD:
+        case INC_FIELD_PUSH: {
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
+
+        case JUMP:
+        case JUMP_ON_TRUE_TOP_NIL:
+        case JUMP_ON_FALSE_TOP_NIL:
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP: {
+          break;
+        }
+
+        default:
+          throw new NotYetImplementedException(
+              "Support for bytecode " + getBytecodeName(bytecode) + " has not yet been added");
+      }
+
+      i += bytecodeLength;
+    }
+  }
+
+  private void adaptContextIdx(final ScopeAdaptationVisitor inliner, final int i,
+      final boolean requiresChangesToContextLevels) {
+    if (!requiresChangesToContextLevels) {
+      return;
+    }
+
+    byte contextIdx = bytecodes[i + 2];
+    if (contextIdx >= inliner.contextLevel) {
+      byte ctx = (byte) (contextIdx - 1);
+      assert ctx >= 0;
+      bytecodes[i + 2] = ctx;
+    }
+  }
 }

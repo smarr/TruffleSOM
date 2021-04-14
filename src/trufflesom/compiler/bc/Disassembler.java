@@ -28,6 +28,11 @@ package trufflesom.compiler.bc;
 
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
@@ -211,6 +216,7 @@ public class Disassembler {
           if (m != null) {
             dumpMethod((SMethod) m.getConstant(idx), indent + "\t");
           }
+          Universe.errorPrintln();
           break;
         }
 
@@ -227,6 +233,18 @@ public class Disassembler {
                 + constant.toString());
           }
           Universe.errorPrintln();
+          break;
+        }
+
+        case JUMP:
+        case JUMP_ON_TRUE_TOP_NIL:
+        case JUMP_ON_FALSE_TOP_NIL:
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP: {
+          int offset = Byte.toUnsignedInt(bytecodes.get(b + 1));
+
+          Universe.errorPrintln(
+              "(jump offset: " + offset + " -> jump target: " + (b + offset) + ")");
           break;
         }
 

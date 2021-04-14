@@ -39,6 +39,7 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
+import bd.inlining.Scope;
 import bd.inlining.ScopeBuilder;
 import bd.inlining.nodes.Inlinable;
 import bd.tools.structure.StructuralProbe;
@@ -62,7 +63,8 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class MethodGenerationContext implements ScopeBuilder<MethodGenerationContext> {
+public class MethodGenerationContext
+    implements ScopeBuilder<MethodGenerationContext>, Scope<LexicalScope, Method> {
 
   protected final ClassGenerationContext  holderGenc;
   protected final MethodGenerationContext outerGenc;
@@ -143,6 +145,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
 
     if (frameOnStack == null) {
       assert needsToCatchNonLocalReturn;
+      assert !locals.containsKey(universe.symFrameOnStack);
 
       frameOnStack = new Internal(universe.symFrameOnStack, source);
       frameOnStack.init(
@@ -219,8 +222,14 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
     return meth;
   }
 
-  public void setVarsOnMethodScope() {
-    Variable[] vars = new Variable[arguments.size() + locals.size()];
+  @Override
+  @SuppressWarnings("unchecked")
+  public Variable[] getVariables() {
+    int numVars = arguments.size() + locals.size();
+    if (frameOnStack != null) {
+      numVars += 1;
+    }
+    Variable[] vars = new Variable[numVars];
     int i = 0;
     for (Argument a : arguments.values()) {
       vars[i] = a;
@@ -231,7 +240,16 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
       vars[i] = l;
       i += 1;
     }
-    currentScope.setVariables(vars);
+
+    if (frameOnStack != null) {
+      vars[i] = frameOnStack;
+    }
+
+    return vars;
+  }
+
+  public void setVarsOnMethodScope() {
+    currentScope.setVariables(getVariables());
   }
 
   private SourceSection getSourceSectionForMethod(final SourceSection ssBody) {
@@ -422,18 +440,22 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
         holderGenc.getFieldIndex(fieldName), source);
   }
 
-  public void mergeIntoScope(final LexicalScope scope, final SMethod outer) {
+  protected void addLocal(final Local l, final SSymbol name) {
+    assert !locals.containsKey(name);
+    locals.put(name, l);
+    currentScope.addVariable(l);
+  }
+
+  public void mergeIntoScope(final LexicalScope scope, final SMethod toBeInlined) {
     for (Variable v : scope.getVariables()) {
       Local l = v.splitToMergeIntoOuterScope(universe, currentScope.getFrameDescriptor());
       if (l != null) { // can happen for instance for the block self, which we omit
         SSymbol name = l.getQualifiedName(universe);
-        assert !locals.containsKey(name);
-        locals.put(name, l);
-        currentScope.addVariable(l);
+        addLocal(l, name);
       }
     }
 
-    SMethod[] embeddedBlocks = outer.getEmbeddedBlocks();
+    SMethod[] embeddedBlocks = toBeInlined.getEmbeddedBlocks();
     LexicalScope[] embeddedScopes = scope.getEmbeddedScopes();
 
     assert ((embeddedBlocks == null || embeddedBlocks.length == 0) &&
@@ -450,7 +472,7 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
       }
     }
 
-    boolean removed = embeddedBlockMethods.remove(outer);
+    boolean removed = embeddedBlockMethods.remove(toBeInlined);
     assert removed;
     currentScope.removeMerged(scope);
   }
@@ -501,5 +523,20 @@ public class MethodGenerationContext implements ScopeBuilder<MethodGenerationCon
   public String toString() {
     return "MethodGenC(" + holderGenc.getName().getString() + ">>" + signature.toString()
         + ")";
+  }
+
+  @Override
+  public LexicalScope getOuterScopeOrNull() {
+    return currentScope.getOuterScopeOrNull();
+  }
+
+  @Override
+  public LexicalScope getScope(final Method method) {
+    return currentScope.getScope(method);
+  }
+
+  @Override
+  public String getName() {
+    return getMethodIdentifier();
   }
 }
