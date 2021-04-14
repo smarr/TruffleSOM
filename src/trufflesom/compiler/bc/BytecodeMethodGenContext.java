@@ -650,18 +650,49 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte actual = last4Bytecodes[last4Bytecodes.length - 1 - idxFromEnd];
 
     switch (actual) {
+      case PUSH_LOCAL_0:
+      case PUSH_SELF:
+      case PUSH_FIELD_0:
+      case POP_LOCAL_0:
       case POP_FIELD_0:
-      case PUSH_FIELD_0: {
+      case RETURN_FIELD_0: {
         return 0;
       }
+
+      case PUSH_LOCAL_1:
+      case PUSH_ARG1:
+      case PUSH_FIELD_1:
+      case POP_LOCAL_1:
       case POP_FIELD_1:
-      case PUSH_FIELD_1: {
+      case RETURN_FIELD_1: {
         return 1;
       }
-    }
 
-    int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
-    return bytecode.get(bcOffset + 1);
+      case PUSH_LOCAL_2:
+      case PUSH_ARG2:
+      case POP_LOCAL_2:
+      case RETURN_FIELD_2: {
+        return 2;
+      }
+
+      case PUSH_LOCAL:
+      case PUSH_ARGUMENT:
+      case PUSH_FIELD:
+      case PUSH_BLOCK:
+      case PUSH_CONSTANT:
+      case PUSH_GLOBAL:
+      case POP_LOCAL:
+      case POP_ARGUMENT:
+      case POP_FIELD:
+      case INC_FIELD:
+      case INC_FIELD_PUSH: {
+        int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
+        return bytecode.get(bcOffset + 1);
+      }
+
+      default:
+        throw new NotYetImplementedException("Need to add support for more bytecodes");
+    }
   }
 
   private byte[] getIndexAndContext(final int idxFromEnd) {
