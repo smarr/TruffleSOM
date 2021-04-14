@@ -946,6 +946,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
               targetContextLevel + 1, true, true);
           SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
               blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
+          newMethod.setHolder(blockMethod.getHolder());
           mgenc.addLiteralIfAbsent(newMethod, null);
           emitPUSHBLOCK(mgenc, newMethod);
           break;
@@ -1145,6 +1146,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
                   inliner.contextLevel + 1, true, requiresChangesToContextLevels);
           SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
               blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
+          newMethod.setHolder(blockMethod.getHolder());
           literalsAndConstants[literalIdx] = newMethod;
           break;
         }
