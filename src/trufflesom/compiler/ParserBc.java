@@ -271,12 +271,12 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     String kwStr = kw.toString();
 
     if (!superSend) {
-      if (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrue(this)) ||
-          ("ifFalse:".equals(kwStr) && mgenc.inlineIfFalse(this)) ||
-          ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this)) ||
-          ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfFalseIfTrue(this)) ||
-          ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrue(this)) ||
-          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileFalse(this))) {
+      if (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, true)) ||
+          ("ifFalse:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, false)) ||
+          ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, true)) ||
+          ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, false)) ||
+          ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, true)) ||
+          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false))) {
         // all done
         return;
       }
