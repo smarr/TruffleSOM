@@ -818,14 +818,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
-    isCurrentlyInliningBlock = false;
 
     int jumpOffsetIdxToSkipLoopBody = emitJumpOnFalseWithDummyOffset(this, true);
 
-    isCurrentlyInliningBlock = true;
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
-    isCurrentlyInliningBlock = false;
 
+    resetLastBytecodeBuffer();
     emitPOP(this);
 
     emitJumpBackwardsWithOffset(this, getBackwardsJumpOffsetToTarget(loopBeginIdx, parser));
@@ -834,6 +832,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     addLiteralIfAbsent(Nil.nilObject, parser);
     emitPUSHCONSTANT(this, Nil.nilObject);
+
+    isCurrentlyInliningBlock = false;
 
     resetLastBytecodeBuffer();
 
