@@ -74,6 +74,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
 import bd.inlining.ScopeAdaptationVisitor;
@@ -1253,5 +1254,14 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
       assert ctx >= 0;
       bytecodes[i + 2] = ctx;
     }
+  }
+
+  @Override
+  public String toString() {
+    RootNode root = getRootNode();
+    if (root == null) {
+      return super.toString();
+    }
+    return getClass().getSimpleName() + "(" + root.getName() + ")";
   }
 }
