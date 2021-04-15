@@ -193,30 +193,6 @@ public final class BytecodeGenerator {
     emit2(mgenc, PUSH_CONSTANT, literalIndex);
   }
 
-  public static void emitJUMP(final BytecodeMethodGenContext mgenc, final byte offset) {
-    emit2(mgenc, JUMP, offset);
-  }
-
-  public static void emitJUMPONTRUETOPNIL(final BytecodeMethodGenContext mgenc,
-      final byte offset) {
-    emit2(mgenc, JUMP_ON_TRUE_TOP_NIL, offset);
-  }
-
-  public static void emitJUMPONFALSETOPNIL(final BytecodeMethodGenContext mgenc,
-      final byte offset) {
-    emit2(mgenc, JUMP_ON_FALSE_TOP_NIL, offset);
-  }
-
-  public static void emitJUMPONTRUEPOP(final BytecodeMethodGenContext mgenc,
-      final byte offset) {
-    emit2(mgenc, JUMP_ON_TRUE_POP, offset);
-  }
-
-  public static void emitJUMPONFALSEPOP(final BytecodeMethodGenContext mgenc,
-      final byte offset) {
-    emit2(mgenc, JUMP_ON_FALSE_POP, offset);
-  }
-
   public static int emitJumpOnTrueWithDummyOffset(final BytecodeMethodGenContext mgenc,
       final boolean needsPop) {
     emit1(mgenc, needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL);
@@ -250,17 +226,17 @@ public final class BytecodeGenerator {
     mgenc.patchJumpOffsetToPointToNextInstruction(idxOfOffset, parser);
   }
 
-  private static void emit1(final BytecodeMethodGenContext mgenc, final byte code) {
+  public static void emit1(final BytecodeMethodGenContext mgenc, final byte code) {
     mgenc.addBytecode(code);
   }
 
-  private static void emit2(final BytecodeMethodGenContext mgenc, final byte code,
+  public static void emit2(final BytecodeMethodGenContext mgenc, final byte code,
       final byte idx) {
     mgenc.addBytecode(code);
     mgenc.addBytecodeArgument(idx);
   }
 
-  private static void emit3(final BytecodeMethodGenContext mgenc, final byte code,
+  public static void emit3(final BytecodeMethodGenContext mgenc, final byte code,
       final byte idx, final byte ctx) {
     mgenc.addBytecode(code);
     mgenc.addBytecodeArgument(idx);

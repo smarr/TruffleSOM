@@ -1,24 +1,11 @@
 package trufflesom.interpreter.nodes.bc;
 
-import static trufflesom.compiler.bc.BytecodeGenerator.emitDEC;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emit1;
+import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitHALT;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELD;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitINCFIELDPUSH;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSEPOP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSETOPNIL;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUEPOP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUETOPNIL;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpBackwardsWithOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHGLOBAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
@@ -913,13 +900,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
       final int bytecodeLength = getBytecodeLength(bytecode);
 
       switch (bytecode) {
-        case HALT: {
-          emitHALT(mgenc);
-          break;
-        }
-
+        case HALT:
         case DUP: {
-          emitDUP(mgenc);
+          emit1(mgenc, bytecode);
           break;
         }
 
@@ -931,17 +914,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_ARGUMENT: {
+        case PUSH_ARGUMENT:
+        case PUSH_FIELD: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emitPUSHARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
-          break;
-        }
-
-        case PUSH_FIELD: {
-          byte fieldIdx = bytecodes[i + 1];
-          byte contextIdx = bytecodes[i + 2];
-          emitPUSHFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1));
           break;
         }
 
@@ -990,17 +967,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case POP_ARGUMENT: {
+        case POP_ARGUMENT:
+        case POP_FIELD: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emitPOPARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
-          break;
-        }
-
-        case POP_FIELD: {
-          byte fieldIdx = bytecodes[i + 1];
-          byte contextIdx = bytecodes[i + 2];
-          emitPOPFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1));
           break;
         }
 
@@ -1045,63 +1016,29 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
               "I wouldn't expect RETURN_SELF ever to be inlined, since it's only generated in the most outer methods");
         }
 
-        case INC: {
-          emitINC(mgenc);
-          break;
-        }
-
+        case INC:
         case DEC: {
-          emitDEC(mgenc);
+          emit1(mgenc, bytecode);
           break;
         }
 
-        case INC_FIELD: {
-          byte fieldIdx = bytecodes[i + 1];
-          byte contextIdx = bytecodes[i + 2];
-          emitINCFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
-          break;
-        }
-
+        case INC_FIELD:
         case INC_FIELD_PUSH: {
           byte fieldIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emitINCFIELDPUSH(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          emit3(mgenc, bytecode, fieldIdx, (byte) (contextIdx - 1));
           break;
         }
 
-        case JUMP: {
-          byte offset = bytecodes[i + 1];
-          emitJUMP(mgenc, offset);
-          break;
-        }
-
-        case JUMP_ON_TRUE_TOP_NIL: {
-          byte offset = bytecodes[i + 1];
-          emitJUMPONTRUETOPNIL(mgenc, offset);
-          break;
-        }
-
-        case JUMP_ON_FALSE_TOP_NIL: {
-          byte offset = bytecodes[i + 1];
-          emitJUMPONFALSETOPNIL(mgenc, offset);
-          break;
-        }
-
-        case JUMP_ON_TRUE_POP: {
-          byte offset = bytecodes[i + 1];
-          emitJUMPONTRUEPOP(mgenc, offset);
-          break;
-        }
-
-        case JUMP_ON_FALSE_POP: {
-          byte offset = bytecodes[i + 1];
-          emitJUMPONFALSEPOP(mgenc, offset);
-          break;
-        }
-
+        case JUMP:
+        case JUMP_ON_TRUE_TOP_NIL:
+        case JUMP_ON_FALSE_TOP_NIL:
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP:
         case JUMP_BACKWARDS: {
-          byte offset = bytecodes[i + 1];
-          emitJumpBackwardsWithOffset(mgenc, offset);
+          byte offset1 = bytecodes[i + 1];
+          byte offset2 = bytecodes[i + 2];
+          emit3(mgenc, bytecode, offset1, offset2);
           break;
         }
 
