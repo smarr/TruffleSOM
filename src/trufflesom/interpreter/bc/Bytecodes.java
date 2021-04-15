@@ -63,13 +63,22 @@ public class Bytecodes {
   public static final byte JUMP_ON_FALSE_POP     = 25;
   public static final byte JUMP_BACKWARDS        = 26;
 
-  public static final byte Q_PUSH_GLOBAL = 27;
-  public static final byte Q_SEND        = 28;
-  public static final byte Q_SEND_1      = 29;
-  public static final byte Q_SEND_2      = 30;
-  public static final byte Q_SEND_3      = 31;
+  public static final byte JUMP2                  = 27;
+  public static final byte JUMP2_ON_TRUE_TOP_NIL  = 28;
+  public static final byte JUMP2_ON_FALSE_TOP_NIL = 29;
+  public static final byte JUMP2_ON_TRUE_POP      = 30;
+  public static final byte JUMP2_ON_FALSE_POP     = 31;
+  public static final byte JUMP2_BACKWARDS        = 32;
+
+  public static final byte Q_PUSH_GLOBAL = 33;
+  public static final byte Q_SEND        = 34;
+  public static final byte Q_SEND_1      = 35;
+  public static final byte Q_SEND_2      = 36;
+  public static final byte Q_SEND_3      = 37;
 
   public static final byte INVALID = -1;
+
+  public static final byte NUM_JUMP_BYTECODES = 6;
 
   private static final String[] PADDED_BYTECODE_NAMES;
   private static final String[] BYTECODE_NAMES;
@@ -125,6 +134,13 @@ public class Bytecodes {
         "JUMP_ON_FALSE_POP",
         "JUMP_BACKWARDS  ",
 
+        "JUMP2           ",
+        "JUMP2_ON_TRUE_TOP_NIL",
+        "JUMP2_ON_FALSE_TOP_NIL",
+        "JUMP2_ON_TRUE_POP",
+        "JUMP2_ON_FALSE_POP",
+        "JUMP2_BACKWARDS ",
+
         "Q_PUSH_GLOBAL   ",
         "Q_SEND          ",
         "Q_SEND_1        ",
@@ -161,12 +177,19 @@ public class Bytecodes {
         3, // INC_FIELD
         3, // INC_FIELD_PUSH
 
-        2, // JUMP
-        2, // JUMP_ON_TRUE_TOP_NIL
-        2, // JUMP_ON_FALSE_TOP_NIL
-        2, // JUMP_ON_TRUE_POP
-        2, // JUMP_ON_FALSE_POP
-        2, // JUMP_BACKWARDS
+        3, // JUMP
+        3, // JUMP_ON_TRUE_TOP_NIL
+        3, // JUMP_ON_FALSE_TOP_NIL
+        3, // JUMP_ON_TRUE_POP
+        3, // JUMP_ON_FALSE_POP
+        3, // JUMP_BACKWARDS
+
+        3, // JUMP2
+        3, // JUMP2_ON_TRUE_TOP_NIL
+        3, // JUMP2_ON_FALSE_TOP_NIL
+        3, // JUMP2_ON_TRUE_POP
+        3, // JUMP2_ON_FALSE_POP
+        3, // JUMP2_BACKWARDS
 
         2, // Q_PUSH_GLOBAL
         2, // Q_SEND

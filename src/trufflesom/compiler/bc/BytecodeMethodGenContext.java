@@ -14,6 +14,12 @@ import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
@@ -155,15 +161,30 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         bytecodeBeforeOffset == JUMP_ON_FALSE_POP ||
         bytecodeBeforeOffset == JUMP : "Expected to patch a JUMP instruction, but got bc: "
             + bytecodeBeforeOffset;
+    assert (JUMP2 - JUMP) == Bytecodes.NUM_JUMP_BYTECODES // ~
+        : "There's an unexpected number of JUMP bytecodes. Need to adapt the code below";
     int jumpOffset = bytecode.size() - instructionStart;
 
     checkJumpOffset(parser, jumpOffset);
 
-    bytecode.set(idxOfOffset, (byte) jumpOffset);
+    if (jumpOffset <= 0xff) {
+      bytecode.set(idxOfOffset, (byte) jumpOffset);
+    } else {
+      int offsetOfBytecode = idxOfOffset - 1;
+      // we need two bytes for the jump offset
+      bytecode.set(offsetOfBytecode,
+          (byte) (bytecode.get(offsetOfBytecode) + Bytecodes.NUM_JUMP_BYTECODES));
+
+      byte byte1 = (byte) jumpOffset;
+      byte byte2 = (byte) (jumpOffset >> 8);
+
+      bytecode.set(idxOfOffset, byte1);
+      bytecode.set(idxOfOffset + 1, byte2);
+    }
   }
 
   private void checkJumpOffset(final ParserBc parser, final int jumpOffset) throws ParseError {
-    if (jumpOffset < 0 || jumpOffset > 0xff) {
+    if (jumpOffset < 0 || jumpOffset > 0xffff) {
       throw new ParseError(
           "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
               + jumpOffset,
@@ -171,7 +192,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
   }
 
-  public byte getBackwardsJumpOffsetToTarget(final int targetAddress, final ParserBc parser)
+  public void emitBackwardsJumpOffsetToTarget(final int targetAddress, final ParserBc parser)
       throws ParseError {
     int addressOfJumpBc = bytecode.size();
 
@@ -183,7 +204,11 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     jumpOffset = -jumpOffset;
 
     checkJumpOffset(parser, jumpOffset);
-    return (byte) jumpOffset;
+
+    byte byte1 = (byte) jumpOffset;
+    byte byte2 = (byte) (jumpOffset >> 8);
+
+    emitJumpBackwardsWithOffset(this, byte1, byte2);
   }
 
   public int offsetOfNextInstruction() {
@@ -826,7 +851,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     resetLastBytecodeBuffer();
     emitPOP(this);
 
-    emitJumpBackwardsWithOffset(this, getBackwardsJumpOffsetToTarget(loopBeginIdx, parser));
+    emitBackwardsJumpOffsetToTarget(loopBeginIdx, parser);
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipLoopBody, parser);
 
@@ -896,6 +921,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
         case JUMP_BACKWARDS:
+        case JUMP2:
+        case JUMP2_ON_TRUE_TOP_NIL:
+        case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP2_ON_TRUE_POP:
+        case JUMP2_ON_FALSE_POP:
+        case JUMP2_BACKWARDS:
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "

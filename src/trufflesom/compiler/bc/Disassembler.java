@@ -29,6 +29,12 @@ package trufflesom.compiler.bc;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
@@ -226,16 +232,28 @@ public class Disassembler {
         case JUMP_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP: {
-          int offset = Byte.toUnsignedInt(bytecodes.get(b + 1));
+        case JUMP_ON_FALSE_POP:
+        case JUMP2:
+        case JUMP2_ON_TRUE_TOP_NIL:
+        case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP2_ON_TRUE_POP:
+        case JUMP2_ON_FALSE_POP: {
+          int offset1 = Byte.toUnsignedInt(bytecodes.get(b + 1));
+          int offset2 = Byte.toUnsignedInt(bytecodes.get(b + 2));
+
+          int offset = offset2 << 8 + offset1;
 
           Universe.errorPrintln(
               "(jump offset: " + offset + " -> jump target: " + (b + offset) + ")");
           break;
         }
 
-        case JUMP_BACKWARDS: {
-          int offset = Byte.toUnsignedInt(bytecodes.get(b + 1));
+        case JUMP_BACKWARDS:
+        case JUMP2_BACKWARDS: {
+          int offset1 = Byte.toUnsignedInt(bytecodes.get(b + 1));
+          int offset2 = Byte.toUnsignedInt(bytecodes.get(b + 2));
+
+          int offset = offset2 << 8 + offset1;
 
           Universe.errorPrintln(
               "(jump offset: " + offset + " -> jump target: " + (b - offset) + ")");

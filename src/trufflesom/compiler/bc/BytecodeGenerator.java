@@ -31,6 +31,8 @@ import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
@@ -196,28 +198,34 @@ public final class BytecodeGenerator {
   public static int emitJumpOnTrueWithDummyOffset(final BytecodeMethodGenContext mgenc,
       final boolean needsPop) {
     emit1(mgenc, needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL);
-    return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    mgenc.addBytecodeArgument((byte) 0);
+    return idx;
   }
 
   public static int emitJumpOnFalseWithDummyOffset(final BytecodeMethodGenContext mgenc,
       final boolean needsPop) {
     emit1(mgenc, needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL);
-    return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    mgenc.addBytecodeArgument((byte) 0);
+    return idx;
   }
 
   public static void emitJumpWithOffset(final BytecodeMethodGenContext mgenc,
-      final byte offset) {
-    emit2(mgenc, JUMP, offset);
+      final byte offset1, final byte offset2) {
+    emit3(mgenc, offset2 == 0 ? JUMP : JUMP2, offset1, offset2);
   }
 
   public static void emitJumpBackwardsWithOffset(final BytecodeMethodGenContext mgenc,
-      final byte offset) {
-    emit2(mgenc, JUMP_BACKWARDS, offset);
+      final byte offset1, final byte offset2) {
+    emit3(mgenc, offset2 == 0 ? JUMP_BACKWARDS : JUMP2_BACKWARDS, offset1, offset2);
   }
 
   public static int emitJumpWithDummyOffset(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, JUMP);
-    return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    mgenc.addBytecodeArgument((byte) 0);
+    return idx;
   }
 
   public static void patchJumpOffsetToPointToNextInstruction(

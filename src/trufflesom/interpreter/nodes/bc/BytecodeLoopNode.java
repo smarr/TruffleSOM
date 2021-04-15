@@ -18,6 +18,12 @@ import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
@@ -675,6 +681,76 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case JUMP2: {
+          int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+              + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+          nextBytecodeIndex = bytecodeIndex + offset;
+
+          if (CompilerDirectives.inInterpreter()) {
+            backBranchesTaken += 1;
+          }
+          break;
+        }
+
+        case JUMP2_ON_TRUE_TOP_NIL: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.TRUE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            nextBytecodeIndex = bytecodeIndex + offset;
+            stack[stackPointer] = Nil.nilObject;
+          } else {
+            stackPointer -= 1;
+          }
+          break;
+        }
+
+        case JUMP2_ON_FALSE_TOP_NIL: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.FALSE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            nextBytecodeIndex = bytecodeIndex + offset;
+            stack[stackPointer] = Nil.nilObject;
+          } else {
+            stackPointer -= 1;
+          }
+          break;
+        }
+
+        case JUMP2_ON_TRUE_POP: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.TRUE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            nextBytecodeIndex = bytecodeIndex + offset;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
+        case JUMP2_ON_FALSE_POP: {
+          Object val = stack[stackPointer];
+          if (val == Boolean.FALSE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            nextBytecodeIndex = bytecodeIndex + offset;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
+        case JUMP2_BACKWARDS: {
+          int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+              + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+          nextBytecodeIndex = bytecodeIndex - offset;
+
+          if (CompilerDirectives.inInterpreter()) {
+            backBranchesTaken += 1;
+          }
+          break;
+        }
+
         case Q_PUSH_GLOBAL: {
           stackPointer += 1;
           stack[stackPointer] = ((GlobalNode) quickened[bytecodeIndex]).executeGeneric(frame);
@@ -1035,7 +1111,13 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
-        case JUMP_BACKWARDS: {
+        case JUMP_BACKWARDS:
+        case JUMP2:
+        case JUMP2_ON_TRUE_TOP_NIL:
+        case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP2_ON_TRUE_POP:
+        case JUMP2_ON_FALSE_POP:
+        case JUMP2_BACKWARDS: {
           byte offset1 = bytecodes[i + 1];
           byte offset2 = bytecodes[i + 2];
           emit3(mgenc, bytecode, offset1, offset2);
@@ -1166,7 +1248,13 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
-        case JUMP_BACKWARDS: {
+        case JUMP_BACKWARDS:
+        case JUMP2:
+        case JUMP2_ON_TRUE_TOP_NIL:
+        case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP2_ON_TRUE_POP:
+        case JUMP2_ON_FALSE_POP:
+        case JUMP2_BACKWARDS: {
           break;
         }
 
