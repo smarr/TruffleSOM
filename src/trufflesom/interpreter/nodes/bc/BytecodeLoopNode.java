@@ -11,6 +11,7 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSEPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONFALSETOPNIL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUEPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJUMPONTRUETOPNIL;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpBackwardsWithOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
@@ -30,6 +31,7 @@ import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -679,6 +681,12 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case JUMP_BACKWARDS: {
+          int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+          nextBytecodeIndex = bytecodeIndex - offset;
+          break;
+        }
+
         case Q_PUSH_GLOBAL: {
           stackPointer += 1;
           stack[stackPointer] = ((GlobalNode) quickened[bytecodeIndex]).executeGeneric(frame);
@@ -1090,6 +1098,12 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case JUMP_BACKWARDS: {
+          byte offset = bytecodes[i + 1];
+          emitJumpBackwardsWithOffset(mgenc, offset);
+          break;
+        }
+
         default:
           throw new NotYetImplementedException(
               "Support for bytecode " + getBytecodeName(bytecode) + " has not yet been added");
@@ -1213,7 +1227,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP: {
+        case JUMP_ON_FALSE_POP:
+        case JUMP_BACKWARDS: {
           break;
         }
 

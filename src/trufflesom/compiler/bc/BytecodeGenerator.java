@@ -31,6 +31,7 @@ import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -226,6 +227,16 @@ public final class BytecodeGenerator {
       final boolean needsPop) {
     emit1(mgenc, needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL);
     return mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+  }
+
+  public static void emitJumpWithOffset(final BytecodeMethodGenContext mgenc,
+      final byte offset) {
+    emit2(mgenc, JUMP, offset);
+  }
+
+  public static void emitJumpBackwardsWithOffset(final BytecodeMethodGenContext mgenc,
+      final byte offset) {
+    emit2(mgenc, JUMP_BACKWARDS, offset);
   }
 
   public static int emitJumpWithDummyOffset(final BytecodeMethodGenContext mgenc) {

@@ -270,12 +270,16 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     String kwStr = kw.toString();
 
-    if (!superSend && (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrue(this)) ||
-        ("ifFalse:".equals(kwStr) && mgenc.inlineIfFalse(this)) ||
-        ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this)) ||
-        ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfFalseIfTrue(this)))) {
-      // all done
-      return;
+    if (!superSend) {
+      if (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrue(this)) ||
+          ("ifFalse:".equals(kwStr) && mgenc.inlineIfFalse(this)) ||
+          ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this)) ||
+          ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfFalseIfTrue(this)) ||
+          ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrue(this)) ||
+          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileFalse(this))) {
+        // all done
+        return;
+      }
     }
 
     SSymbol msg = universe.symbolFor(kwStr);

@@ -29,6 +29,7 @@ package trufflesom.compiler.bc;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -230,6 +231,14 @@ public class Disassembler {
 
           Universe.errorPrintln(
               "(jump offset: " + offset + " -> jump target: " + (b + offset) + ")");
+          break;
+        }
+
+        case JUMP_BACKWARDS: {
+          int offset = Byte.toUnsignedInt(bytecodes.get(b + 1));
+
+          Universe.errorPrintln(
+              "(jump offset: " + offset + " -> jump target: " + (b - offset) + ")");
           break;
         }
 
