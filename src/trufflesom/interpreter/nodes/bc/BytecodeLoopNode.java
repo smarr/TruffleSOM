@@ -66,6 +66,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
+import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
@@ -190,6 +191,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     Object[] stack = new Object[maxStackDepth];
     int stackPointer = -1;
     int bytecodeIndex = 0;
+
+    int backBranchesTaken = 0;
 
     while (true) {
       byte bytecode = bytecodes[bytecodeIndex];
@@ -496,10 +499,13 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case RETURN_LOCAL: {
+          LoopNode.reportLoopCount(this, backBranchesTaken);
           return stack[stackPointer];
         }
 
         case RETURN_NON_LOCAL: {
+          LoopNode.reportLoopCount(this, backBranchesTaken);
+
           Object result = stack[stackPointer];
           // stackPointer -= 1;
           doReturnNonLocal(frame, bytecodeIndex, result);
@@ -507,6 +513,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case RETURN_SELF: {
+          LoopNode.reportLoopCount(this, backBranchesTaken);
           return frame.getArguments()[0];
         }
 
