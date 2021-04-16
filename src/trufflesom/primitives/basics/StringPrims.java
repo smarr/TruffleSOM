@@ -18,21 +18,25 @@ public class StringPrims {
   @Primitive(className = "String", primitive = "concatenate:")
   public abstract static class ConcatPrim extends BinaryExpressionNode {
     @Specialization
+    @TruffleBoundary
     public final String doString(final String receiver, final String argument) {
       return receiver + argument;
     }
 
     @Specialization
+    @TruffleBoundary
     public final String doString(final String receiver, final SSymbol argument) {
       return receiver + argument.getString();
     }
 
     @Specialization
+    @TruffleBoundary
     public final String doSSymbol(final SSymbol receiver, final String argument) {
       return receiver.getString() + argument;
     }
 
     @Specialization
+    @TruffleBoundary
     public final String doSSymbol(final SSymbol receiver, final SSymbol argument) {
       return receiver.getString() + argument.getString();
     }

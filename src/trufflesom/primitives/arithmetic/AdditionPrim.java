@@ -2,6 +2,7 @@ package trufflesom.primitives.arithmetic;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
@@ -21,11 +22,13 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   }
 
   @Specialization
+  @TruffleBoundary
   public final BigInteger doLongWithOverflow(final long left, final long argument) {
     return BigInteger.valueOf(left).add(BigInteger.valueOf(argument));
   }
 
   @Specialization
+  @TruffleBoundary
   public final Object doBigInteger(final BigInteger left, final BigInteger right) {
     BigInteger result = left.add(right);
     return reduceToLongIfPossible(result);
@@ -37,21 +40,25 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   }
 
   @Specialization
+  @TruffleBoundary
   public final String doString(final String left, final String right) {
     return left + right;
   }
 
   @Specialization
+  @TruffleBoundary
   public final String doSSymbol(final SSymbol left, final SSymbol right) {
     return left.getString() + right.getString();
   }
 
   @Specialization
+  @TruffleBoundary
   public final String doSSymbol(final SSymbol left, final String right) {
     return left.getString() + right;
   }
 
   @Specialization
+  @TruffleBoundary
   public final Object doLong(final long left, final BigInteger argument) {
     return doBigInteger(BigInteger.valueOf(left), argument);
   }
@@ -62,16 +69,19 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   }
 
   @Specialization
+  @TruffleBoundary
   public final Object doBigInteger(final BigInteger left, final long right) {
     return doBigInteger(left, BigInteger.valueOf(right));
   }
 
   @Specialization
+  @TruffleBoundary
   public final Object doDouble(final BigInteger left, final double right) {
     return left.doubleValue() + right;
   }
 
   @Specialization
+  @TruffleBoundary
   public final Object doDouble(final double left, final BigInteger right) {
     return left + right.doubleValue();
   }
@@ -82,11 +92,13 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   }
 
   @Specialization
+  @TruffleBoundary
   public final String doString(final String left, final SClass right) {
     return left + right.getName().getString();
   }
 
   @Specialization
+  @TruffleBoundary
   public final String doString(final String left, final SSymbol right) {
     return left + right.getString();
   }

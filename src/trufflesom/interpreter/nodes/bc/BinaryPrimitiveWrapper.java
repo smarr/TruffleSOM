@@ -2,6 +2,7 @@ package trufflesom.interpreter.nodes.bc;
 
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
@@ -34,6 +35,7 @@ public class BinaryPrimitiveWrapper extends BinaryExpressionNode {
 
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
+    CompilerDirectives.transferToInterpreter();
     throw new UnsupportedOperationException(
         "In the bytecode interpreter, `executeEvaluated` is expected to be used");
   }
