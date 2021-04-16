@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.specialized.whileloops;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.vm.NotYetImplementedException;
@@ -26,7 +27,7 @@ public final class WhileWithDynamicBlocksNode extends AbstractWhileNode {
 
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
-    // CompilerAsserts.neverPartOfCompilation("WhileWithDynamicBlocksNode.generic");
+    CompilerDirectives.transferToInterpreter();
     throw new NotYetImplementedException();
   }
 

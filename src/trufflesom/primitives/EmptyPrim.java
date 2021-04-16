@@ -1,5 +1,6 @@
 package trufflesom.primitives;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -29,6 +30,7 @@ public final class EmptyPrim extends UnaryExpressionNode {
 
   @Override
   public Object executeEvaluated(final VirtualFrame frame, final Object receiver) {
+    CompilerDirectives.transferToInterpreter();
     Universe.errorExit(
         "Warning: undefined primitive called: " + signature + " at: " + getSourceSection());
     return null;

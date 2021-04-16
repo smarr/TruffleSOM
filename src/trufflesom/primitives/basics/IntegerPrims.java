@@ -40,6 +40,7 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
+    @TruffleBoundary
     public final long doBig(final BigInteger receiver) {
       return receiver.intValue();
     }
@@ -55,6 +56,7 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
+    @TruffleBoundary
     public final long doBig(final BigInteger receiver) {
       return Integer.toUnsignedLong(receiver.intValue());
     }
@@ -119,6 +121,7 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
+    @TruffleBoundary
     public final BigInteger doLongWithOverflow(final long receiver, final long right) {
       assert right >= 0; // currently not defined for negative values of right
       assert right <= Integer.MAX_VALUE;
@@ -146,16 +149,19 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
+    @TruffleBoundary
     public BigInteger doLongBig(final long left, final BigInteger right) {
       return BigInteger.valueOf(left).min(right);
     }
 
     @Specialization
+    @TruffleBoundary
     public BigInteger doBigLong(final BigInteger left, final long right) {
       return left.min(BigInteger.valueOf(right));
     }
 
     @Specialization
+    @TruffleBoundary
     public BigInteger doBig(final BigInteger left, final BigInteger right) {
       return left.min(right);
     }
@@ -171,16 +177,19 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
+    @TruffleBoundary
     public BigInteger doLongBig(final long left, final BigInteger right) {
       return BigInteger.valueOf(left).max(right);
     }
 
     @Specialization
+    @TruffleBoundary
     public BigInteger doBigLong(final BigInteger left, final long right) {
       return left.max(BigInteger.valueOf(right));
     }
 
     @Specialization
+    @TruffleBoundary
     public BigInteger doBig(final BigInteger left, final BigInteger right) {
       return left.max(right);
     }
@@ -218,11 +227,13 @@ public abstract class IntegerPrims {
     }
 
     @Specialization(guards = "minLong(receiver)")
+    @TruffleBoundary
     public final BigInteger doLongMinValue(final long receiver) {
       return BigInteger.valueOf(Long.MIN_VALUE).abs();
     }
 
     @Specialization
+    @TruffleBoundary
     public final BigInteger doBig(final BigInteger receiver) {
       return receiver.abs();
     }

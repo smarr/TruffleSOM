@@ -2,6 +2,7 @@ package trufflesom.primitives.basics;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
@@ -32,6 +33,7 @@ public abstract class EqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
+  @TruffleBoundary
   public final boolean doBigInteger(final BigInteger left, final BigInteger right) {
     return left.compareTo(right) == 0;
   }
@@ -57,11 +59,13 @@ public abstract class EqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
+  @TruffleBoundary
   public final boolean doBigInteger(final BigInteger left, final long right) {
     return doBigInteger(left, BigInteger.valueOf(right));
   }
 
   @Specialization
+  @TruffleBoundary
   public final boolean doLong(final long left, final BigInteger right) {
     return doBigInteger(BigInteger.valueOf(left), right);
   }
