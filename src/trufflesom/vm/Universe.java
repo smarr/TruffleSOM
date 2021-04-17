@@ -111,7 +111,7 @@ public final class Universe implements IdProvider<SSymbol> {
   }
 
   public static void main(final String[] arguments) {
-    Value returnCode = eval(arguments);
+    Value returnCode = eval(arguments, false);
     if (returnCode.isNumber()) {
       System.exit(returnCode.asInt());
     } else {
@@ -119,18 +119,23 @@ public final class Universe implements IdProvider<SSymbol> {
     }
   }
 
-  public static Builder createContextBuilder() {
+  public static Builder createContextBuilder(final boolean interpreterOnly) {
     Builder builder = Context.newBuilder(SomLanguage.LANG_ID)
                              .in(System.in)
                              .out(System.out)
                              .allowAllAccess(true);
+
+    if (VmSettings.UseInterpreterOnly) {
+      builder.option("engine.WarnInterpreterOnly", "false");
+    }
+
     return builder;
   }
 
-  public static Value eval(final String[] arguments) {
+  public static Value eval(final String[] arguments, final boolean interpreterOnly) {
     StorageAnalyzer.initAccessors();
 
-    Builder builder = createContextBuilder();
+    Builder builder = createContextBuilder(interpreterOnly);
     builder.arguments(SomLanguage.LANG_ID, arguments);
     builder.logHandler(System.err);
 

@@ -195,7 +195,7 @@ public class BasicInterpreterTests {
   public void testBasicInterpreterBehavior() {
     StorageAnalyzer.initAccessors();
 
-    Builder builder = Universe.createContextBuilder();
+    Builder builder = Universe.createContextBuilder(true);
     builder.option("som.CLASS_PATH", "Smalltalk:TestSuite/BasicInterpreterTests");
     builder.option("som.TEST_CLASS", testClass);
     builder.option("som.TEST_SELECTOR", testSelector);

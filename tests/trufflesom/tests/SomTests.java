@@ -96,7 +96,7 @@ public class SomTests {
   @Test
   public void testSomeTest() {
     Value returnCode = Universe.eval(
-        new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName});
+        new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName}, true);
     if (returnCode.isNumber()) {
       assertEquals(0, returnCode.asInt());
     } else {
