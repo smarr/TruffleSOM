@@ -8,6 +8,7 @@ public class VmSettings implements Settings {
   public static final boolean UseAstInterp;
   public static final boolean UseBcInterp;
   public static final boolean UseJitCompiler;
+  public static final boolean PrintStackTraceOnDNU;
 
   static {
     String val = System.getProperty("som.interp", "AST").toUpperCase();
@@ -21,6 +22,9 @@ public class VmSettings implements Settings {
 
     val = System.getProperty("som.jitCompiler", "true");
     UseJitCompiler = "true".equals(val);
+
+    val = System.getProperty("som.printStackTraceOnDNU", "false");
+    PrintStackTraceOnDNU = "true".equals(val);
   }
 
   @Override

@@ -6,8 +6,12 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 import trufflesom.interpreter.SArguments;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
+import trufflesom.primitives.basics.SystemPrims.PrintStackTracePrim;
 import trufflesom.vm.Universe;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
@@ -45,6 +49,13 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
   }
 
   protected Object performDnu(final Object[] arguments, final Object rcvr) {
+    if (VmSettings.PrintStackTraceOnDNU) {
+      CompilerDirectives.transferToInterpreter();
+      PrintStackTracePrim.printStackTrace(0, getSourceSection());
+      Universe.errorPrintln("Lookup of " + selector + " failed in "
+          + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
+    }
+
     Object[] argsArr = new Object[] {
         rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments)};
     return cachedMethod.call(argsArr);

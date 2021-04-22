@@ -21,6 +21,11 @@ parser.add_argument('-d', '--debug', help='wait for debugger to attach',
                     dest='debug', action='store_true', default=False)
 parser.add_argument('-t', '--num-threads', help='number of threads to be used',
                     dest='threads', default=None)
+parser.add_argument('-dnu', '--stack-trace-on-dnu', help='Print a stack trace on #doesNotUnderstand:',
+                    dest='som_dnu', action='store_true', default=False)
+parser.add_argument('-di', '--dump-ir', help='Dump the IR, i.e., the AST or bytecode of a method',
+                    dest='dump_ir', action='store_true', default=False)
+
 
 explore = parser.add_argument_group('Explore', 'Investigate Execution')
 explore.add_argument('-i', '--igv', help='dump compilation details to IGV',
@@ -163,7 +168,7 @@ if args.use_libgraal:
 ##
 
 CLASSPATH = (BASE_DIR + '/build/classes:'
-           + BASE_DIR + '/libs/black-diamonds/build/classes:')
+           + BASE_DIR + '/libs/black-diamonds/build/classes')
 
 BOOT_CLASSPATH = ('-Xbootclasspath/a:'
              + TRUFFLE_DIR + '/sdk/mxbuild/dists/jdk1.8/graal-sdk.jar:'
@@ -209,12 +214,18 @@ if not args.interpreter and GRAAL_FLAGS:
 else:
     flags = []
 
+if args.dump_ir:
+    SOM_ARGS += ['-di']
+
 if args.interpreter:
     flags += ['-Dtruffle.TruffleRuntime=com.oracle.truffle.api.impl.DefaultTruffleRuntime']
 else:
   flags += GRAAL_JVMCI_FLAGS
   if args.embedded_graal:
     flags += GRAAL_EMBEDDED_FLAGS
+
+if args.som_dnu:
+    flags += ['-Dsom.printStackTraceOnDNU=true']
 
 # Handle executable names
 if sys.argv[0].endswith('fast'):
@@ -294,6 +305,12 @@ if args.java_properties:
 if args.java_args:
     JAVA_ARGS += ['-' + property for property in args.java_args]
 
+# HACK: Havlak needs a lot of stack to run reliably...
+if 'Havlak' in args.args:
+  # double the standard stack size
+  # we don't do it always, because...
+  JAVA_ARGS += ['-Xss2048k']
+  
 all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + [BOOT_CLASSPATH] + flags + SOM_ARGS + unknown_args + args.args
 
 if args.verbose:

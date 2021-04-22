@@ -481,7 +481,15 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return new FieldReadNode(new LocalArgumentReadNode(arguments.get(universe.symSelf)), idx);
   }
 
+  private static int expectedSetterMethodLength =
+      Bytecodes.getBytecodeLength(PUSH_ARGUMENT) + Bytecodes.getBytecodeLength(DUP)
+          + Bytecodes.getBytecodeLength(POP_FIELD) + Bytecodes.getBytecodeLength(RETURN_SELF);
+
   private ExpressionNode optimizeFieldSetter() {
+    if (bytecode.size() != expectedSetterMethodLength) {
+      return null;
+    }
+
     // example sequence: PUSH_ARG1 DUP POP_FIELD_1 RETURN_SELF
     final byte pushCandidate = lastBytecodeIs(3, PUSH_ARGUMENT);
     if (pushCandidate == INVALID) {
