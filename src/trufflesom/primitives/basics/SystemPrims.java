@@ -4,15 +4,26 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameInstance;
+import com.oracle.truffle.api.frame.FrameInstanceVisitor;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
+import bd.source.SourceCoordinate;
+import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -139,7 +150,65 @@ public final class SystemPrims {
   public abstract static class PrintStackTracePrim extends UnarySystemOperation {
     @Specialization(guards = "receiver == universe.getSystemObject()")
     public final boolean doSObject(final SObject receiver) {
-      return false;
+      printStackTrace(2, null);
+      return true;
+    }
+
+    @TruffleBoundary
+    public static void printStackTrace(final int skipDnuFrames, final SourceSection topNode) {
+      List<String> method = new ArrayList<String>();
+      List<String> location = new ArrayList<String>();
+      int[] maxLengthMethod = {0};
+      boolean[] first = {true};
+      Universe.println("Stack Trace");
+
+      Truffle.getRuntime().iterateFrames(new FrameInstanceVisitor<Object>() {
+        @Override
+        public Object visitFrame(final FrameInstance frameInstance) {
+          RootCallTarget ct = (RootCallTarget) frameInstance.getCallTarget();
+
+          if (!(ct.getRootNode() instanceof Invokable)) {
+            return new NotYetImplementedException(
+                "do we need to handle other kinds of root nodes?");
+          }
+
+          Invokable m = (Invokable) ct.getRootNode();
+
+          String id = m.getName();
+          method.add(id);
+          maxLengthMethod[0] = Math.max(maxLengthMethod[0], id.length());
+          Node callNode = frameInstance.getCallNode();
+          if (callNode != null || first[0]) {
+            SourceSection nodeSS;
+            if (first[0]) {
+              first[0] = false;
+              nodeSS = topNode;
+            } else {
+              nodeSS = callNode.getEncapsulatingSourceSection();
+            }
+            if (nodeSS != null) {
+              location.add(nodeSS.getSource().getName()
+                  + SourceCoordinate.getLocationQualifier(nodeSS));
+            } else {
+              location.add("");
+            }
+          } else {
+            location.add("");
+          }
+
+          return null;
+        }
+      });
+
+      StringBuilder sb = new StringBuilder();
+      for (int i = method.size() - 1; i >= skipDnuFrames; i--) {
+        sb.append(String.format("\t%1$-" + (maxLengthMethod[0] + 4) + "s",
+            method.get(i)));
+        sb.append(location.get(i));
+        sb.append('\n');
+      }
+
+      Universe.print(sb.toString());
     }
   }
 
