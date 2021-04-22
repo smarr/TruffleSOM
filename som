@@ -305,6 +305,12 @@ if args.java_properties:
 if args.java_args:
     JAVA_ARGS += ['-' + property for property in args.java_args]
 
+# HACK: Havlak needs a lot of stack to run reliably...
+if 'Havlak' in args.args:
+  # double the standard stack size
+  # we don't do it always, because...
+  JAVA_ARGS += ['-Xss2048k']
+  
 all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + [BOOT_CLASSPATH] + flags + SOM_ARGS + unknown_args + args.args
 
 if args.verbose:
