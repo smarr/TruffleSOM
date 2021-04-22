@@ -25,11 +25,14 @@
 
 package trufflesom.compiler;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+
 import trufflesom.vm.Universe;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
-
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SInvokable.SPrimitive;
 
 
 public final class Disassembler {
@@ -43,8 +46,16 @@ public final class Disassembler {
       Universe.errorPrint(cl.getName().toString() + ">>"
           + inv.getSignature().toString() + " = ");
 
-      // output actual method
-      dumpMethod(inv, "\t");
+      if (inv instanceof SPrimitive) {
+        Universe.errorPrintln("<primitive>");
+        continue;
+      }
+
+      if (VmSettings.UseAstInterp) {
+        dumpMethod(inv, "\t");
+      } else {
+        trufflesom.compiler.bc.Disassembler.dumpMethod((SMethod) inv, "\t");
+      }
     }
   }
 

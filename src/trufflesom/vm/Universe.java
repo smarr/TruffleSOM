@@ -236,8 +236,8 @@ public final class Universe implements IdProvider<SSymbol> {
         ++i; // skip class path
         // Checkstyle: resume
         gotClasspath = true;
-      } else if (arguments[i].equals("-d") && !sawOthers) {
-        printAST = true;
+      } else if (arguments[i].equals("-di") && !sawOthers) {
+        printIR += 1;
       } else {
         sawOthers = true;
         remainingArgs.add(arguments[i]);
@@ -331,7 +331,7 @@ public final class Universe implements IdProvider<SSymbol> {
     println("where options include:                                   ");
     println("    -cp <directories separated by " + File.pathSeparator + ">");
     println("                  set search path for application classes");
-    println("    -d            enable disassembling");
+    println("    -di           enable disassembling, dumping the IR");
 
     // Exit
     System.exit(0);
@@ -634,7 +634,7 @@ public final class Universe implements IdProvider<SSymbol> {
         // Load the class from a file and return the loaded class
         SClass result =
             compiler.compileClass(cpEntry, name.getString(), systemClass, systemClassProbe);
-        if (printAST) {
+        if (printIR > 0) {
           Disassembler.dump(result.getSOMClass(this));
           Disassembler.dump(result);
         }
@@ -656,7 +656,7 @@ public final class Universe implements IdProvider<SSymbol> {
     try {
       // Load the class from a stream and return the loaded class
       SClass result = compiler.compileClass(stmt, null, null);
-      if (printAST) {
+      if (printIR > 0) {
         Disassembler.dump(result);
       }
       return result;
@@ -764,8 +764,8 @@ public final class Universe implements IdProvider<SSymbol> {
 
   private final HashMap<SSymbol, Association> globals;
 
-  private String[]                  classPath;
-  @CompilationFinal private boolean printAST;
+  private String[]              classPath;
+  @CompilationFinal private int printIR;
 
   /**
    * A {@link StructuralProbe} that is used when loading the system classes.

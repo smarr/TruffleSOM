@@ -66,30 +66,11 @@ import trufflesom.interpreter.nodes.SOMNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
-import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
-import trufflesom.vmobjects.SInvokable.SPrimitive;
 import trufflesom.vmobjects.SSymbol;
 
 
 public class Disassembler {
-
-  public static void dump(final SClass cl) {
-    for (int i = 0; i < cl.getNumberOfInstanceInvokables(); i++) {
-      SInvokable inv = cl.getInstanceInvokable(i);
-
-      // output header and skip if the Invokable is a Primitive
-      Universe.errorPrint(cl.getName().toString() + ">>"
-          + inv.getSignature().toString() + " = ");
-
-      if (inv instanceof SPrimitive) {
-        Universe.errorPrintln("<primitive>");
-        continue;
-      }
-      // output actual method
-      dumpMethod((SMethod) inv, "\t");
-    }
-  }
 
   private static BytecodeLoopNode getBytecodeNode(final SMethod m) {
     RootNode i = m.getInvokable();
@@ -119,6 +100,10 @@ public class Disassembler {
 
   public static void dumpMethod(final SMethod method, final String indent) {
     BytecodeLoopNode m = getBytecodeNode(method);
+    if (m == null) {
+      Universe.errorPrintln("( disassemling not yet supported )");
+      return;
+    }
     dumpMethod(m, indent);
   }
 
