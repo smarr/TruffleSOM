@@ -1,8 +1,11 @@
 package trufflesom.compiler.bc;
 
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpBackwardsWithOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnFalseWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnTrueWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
@@ -11,6 +14,13 @@ import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -59,6 +69,7 @@ import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -150,16 +161,58 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         bytecodeBeforeOffset == JUMP_ON_FALSE_POP ||
         bytecodeBeforeOffset == JUMP : "Expected to patch a JUMP instruction, but got bc: "
             + bytecodeBeforeOffset;
+    assert (JUMP2 - JUMP) == Bytecodes.NUM_JUMP_BYTECODES // ~
+        : "There's an unexpected number of JUMP bytecodes. Need to adapt the code below";
     int jumpOffset = bytecode.size() - instructionStart;
 
-    if (jumpOffset < 0 || jumpOffset > 0xff) {
+    checkJumpOffset(parser, jumpOffset);
+
+    if (jumpOffset <= 0xff) {
+      bytecode.set(idxOfOffset, (byte) jumpOffset);
+    } else {
+      int offsetOfBytecode = idxOfOffset - 1;
+      // we need two bytes for the jump offset
+      bytecode.set(offsetOfBytecode,
+          (byte) (bytecode.get(offsetOfBytecode) + Bytecodes.NUM_JUMP_BYTECODES));
+
+      byte byte1 = (byte) jumpOffset;
+      byte byte2 = (byte) (jumpOffset >> 8);
+
+      bytecode.set(idxOfOffset, byte1);
+      bytecode.set(idxOfOffset + 1, byte2);
+    }
+  }
+
+  private void checkJumpOffset(final ParserBc parser, final int jumpOffset) throws ParseError {
+    if (jumpOffset < 0 || jumpOffset > 0xffff) {
       throw new ParseError(
           "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
               + jumpOffset,
           null, parser);
     }
+  }
 
-    bytecode.set(idxOfOffset, (byte) jumpOffset);
+  public void emitBackwardsJumpOffsetToTarget(final int targetAddress, final ParserBc parser)
+      throws ParseError {
+    int addressOfJumpBc = bytecode.size();
+
+    int jumpOffset = targetAddress - addressOfJumpBc;
+
+    // we get a negative offset, which we negate to get a positive offset
+    // using the JUMP_BACKWARDS bytecode here allows us to use unsigned offsets
+    // and thus a wider range of jumps
+    jumpOffset = -jumpOffset;
+
+    checkJumpOffset(parser, jumpOffset);
+
+    byte byte1 = (byte) jumpOffset;
+    byte byte2 = (byte) (jumpOffset >> 8);
+
+    emitJumpBackwardsWithOffset(this, byte1, byte2);
+  }
+
+  public int offsetOfNextInstruction() {
+    return bytecode.size();
   }
 
   @Override
@@ -620,7 +673,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return false;
   }
 
-  public boolean inlineIfTrue(final ParserBc parser) throws ParseError {
+  public boolean inlineIfTrueOrIfFalse(final ParserBc parser, final boolean ifTrue)
+      throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
@@ -634,7 +688,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodeAt(0); // remove the PUSH_BLOCK
 
-    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, false);
+    int jumpOffsetIdxToSkipTrueBranch;
+    if (ifTrue) {
+      jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, false);
+    } else {
+      jumpOffsetIdxToSkipTrueBranch = emitJumpOnTrueWithDummyOffset(this, false);
+    }
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
@@ -650,45 +709,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return true;
   }
 
-  public boolean inlineIfFalse(final ParserBc parser) throws ParseError {
+  public boolean inlineIfTrueIfFalse(final ParserBc parser, final boolean isIfTrueIfFalse)
+      throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
     // HACK: we don't support anything but booleans at the moment
 
-    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
-      return false;
-    }
-
-    assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
-    byte blockLiteralIdx = bytecode.get(bytecode.size() - 1);
-
-    removeLastBytecodes(1); // remove the PUSH_BLOCK
-
-    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this, false);
-
-    // grab block's method, and inline it
-    SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
-    isCurrentlyInliningBlock = true;
-    toBeInlined.getInvokable().inline(this, toBeInlined);
-    isCurrentlyInliningBlock = false;
-
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch, parser);
-
-    resetLastBytecodeBuffer();
-
-    return true;
-  }
-
-  public boolean inlineIfTrueIfFalse(final ParserBc parser) throws ParseError {
-    // HACK: we do assume that the receiver on the stack is a boolean
-    // HACK: similar to the {@see IfInlinedLiteralNode}
-    // HACK: we don't support anything but booleans at the moment
-
-    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
-      return false;
-    }
-
-    if (lastBytecodeIsOneOf(1, PUSH_BLOCK_BYTECODES) == INVALID) {
+    if (!hasTwoLiteralBlockArguments()) {
       return false;
     }
 
@@ -702,18 +729,21 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
-    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, true);
+    int jumpOffsetIdxToSkipTrueBranch;
+    if (isIfTrueIfFalse) {
+      jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, true);
+    } else {
+      jumpOffsetIdxToSkipTrueBranch = emitJumpOnTrueWithDummyOffset(this, true);
+    }
 
     isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
-    isCurrentlyInliningBlock = false;
 
     int jumpOffsetIdxToSkipFalseBranch = emitJumpWithDummyOffset(this);
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch, parser);
     resetLastBytecodeBuffer();
 
-    isCurrentlyInliningBlock = true;
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
     isCurrentlyInliningBlock = false;
 
@@ -723,16 +753,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return true;
   }
 
-  public boolean inlineIfFalseIfTrue(final ParserBc parser) throws ParseError {
-    // HACK: we do assume that the receiver on the stack is a boolean
-    // HACK: similar to the {@see IfInlinedLiteralNode}
-    // HACK: we don't support anything but booleans at the moment
-
-    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
-      return false;
-    }
-
-    if (lastBytecodeIsOneOf(1, PUSH_BLOCK_BYTECODES) == INVALID) {
+  public boolean inlineWhileTrueOrFalse(final ParserBc parser, final boolean isWhileTrue)
+      throws ParseError {
+    if (!hasTwoLiteralBlockArguments()) {
       return false;
     }
 
@@ -746,25 +769,50 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
-    int jumpOffsetIdxToSkipFalseBranch = emitJumpOnTrueWithDummyOffset(this, true);
+    int loopBeginIdx = offsetOfNextInstruction();
 
     isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
-    isCurrentlyInliningBlock = false;
 
-    int jumpOffsetIdxToSkipTrueBranch = emitJumpWithDummyOffset(this);
+    int jumpOffsetIdxToSkipLoopBody;
+    if (isWhileTrue) {
+      jumpOffsetIdxToSkipLoopBody = emitJumpOnFalseWithDummyOffset(this, true);
+    } else {
+      jumpOffsetIdxToSkipLoopBody = emitJumpOnTrueWithDummyOffset(this, true);
+    }
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipFalseBranch, parser);
-    resetLastBytecodeBuffer();
-
-    isCurrentlyInliningBlock = true;
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
+
+    completeJumpsAndEmitReturningNil(parser, loopBeginIdx, jumpOffsetIdxToSkipLoopBody);
+    return true;
+  }
+
+  private boolean hasTwoLiteralBlockArguments() {
+    if (lastBytecodeIs(1, PUSH_BLOCK) == INVALID) {
+      return false;
+    }
+
+    if (lastBytecodeIs(0, PUSH_BLOCK) == INVALID) {
+      return false;
+    }
+    return true;
+  }
+
+  private void completeJumpsAndEmitReturningNil(final ParserBc parser, final int loopBeginIdx,
+      final int jumpOffsetIdxToSkipLoopBody) throws ParseError {
+    resetLastBytecodeBuffer();
+    emitPOP(this);
+
+    emitBackwardsJumpOffsetToTarget(loopBeginIdx, parser);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipLoopBody, parser);
+
+    addLiteralIfAbsent(Nil.nilObject, parser);
+    emitPUSHCONSTANT(this, Nil.nilObject);
+
     isCurrentlyInliningBlock = false;
 
-    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipTrueBranch, parser);
     resetLastBytecodeBuffer();
-
-    return true;
   }
 
   private int computeStackDepth() {
@@ -818,6 +866,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
+        case JUMP_BACKWARDS:
+        case JUMP2:
+        case JUMP2_ON_TRUE_TOP_NIL:
+        case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP2_ON_TRUE_POP:
+        case JUMP2_ON_FALSE_POP:
+        case JUMP2_BACKWARDS:
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "
