@@ -9,10 +9,8 @@ import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
-import trufflesom.interpreter.nodes.ArgumentReadNode.LocalSuperReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
-import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalSuperReadNode;
 import trufflesom.interpreter.nodes.ContextualNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
@@ -21,7 +19,6 @@ import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
-import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SequenceNode;
@@ -29,7 +26,6 @@ import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVaria
 import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.vm.Universe;
-import trufflesom.vmobjects.SSymbol;
 
 
 public final class SNodeFactory {
@@ -69,16 +65,6 @@ public final class SNodeFactory {
     }
   }
 
-  public static ExpressionNode createSuperRead(final Argument arg, final int contextLevel,
-      final SSymbol holderClass, final boolean classSide, final SourceSection source) {
-    if (contextLevel == 0) {
-      return new LocalSuperReadNode(arg, holderClass, classSide).initialize(source);
-    } else {
-      return new NonLocalSuperReadNode(
-          arg, contextLevel, holderClass, classSide).initialize(source);
-    }
-  }
-
   public static ContextualNode createVariableWrite(final Local variable,
       final int contextLevel, final ExpressionNode exp, final SourceSection source) {
     return new UninitializedVariableWriteNode(variable, contextLevel, exp).initialize(source);
@@ -101,11 +87,6 @@ public final class SNodeFactory {
   public static SequenceNode createSequence(final List<ExpressionNode> exps,
       final SourceSection source) {
     return new SequenceNode(exps.toArray(new ExpressionNode[0])).initialize(source);
-  }
-
-  public static ExpressionNode createMessageSend(final SSymbol msg,
-      final ExpressionNode[] exprs, final SourceSection source, final Universe universe) {
-    return MessageSendNode.create(msg, exprs, source, universe);
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,

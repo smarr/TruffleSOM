@@ -181,60 +181,62 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
   @Override
   protected ExpressionNode evaluation(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
-    boolean superSend = primary(mgenc);
+    primary(mgenc);
     if (sym == Identifier || sym == Keyword || sym == OperatorSequence
         || symIn(binaryOpSyms)) {
-      messages(mgenc, superSend);
+      messages(mgenc);
     }
 
+    superSend = false;
     return null;
   }
 
-  private void messages(final BytecodeMethodGenContext mgenc, boolean superSend)
-      throws ProgramDefinitionError {
+  private void messages(final BytecodeMethodGenContext mgenc) throws ProgramDefinitionError {
     if (isIdentifier(sym)) {
       do {
         // only the first message in a sequence can be a super send
-        unaryMessage(mgenc, superSend);
-        superSend = false;
+        unaryMessage(mgenc);
       } while (isIdentifier(sym));
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
-        binaryMessage(mgenc, false);
+        binaryMessage(mgenc);
       }
 
       if (sym == Keyword) {
-        keywordMessage(mgenc, false);
+        keywordMessage(mgenc);
       }
     } else if (sym == OperatorSequence || symIn(binaryOpSyms)) {
       do {
         // only the first message in a sequence can be a super send
-        binaryMessage(mgenc, superSend);
-        superSend = false;
+        binaryMessage(mgenc);
       } while (sym == OperatorSequence || symIn(binaryOpSyms));
 
       if (sym == Keyword) {
-        keywordMessage(mgenc, false);
+        keywordMessage(mgenc);
       }
     } else {
-      keywordMessage(mgenc, superSend);
+      keywordMessage(mgenc);
     }
   }
 
-  private void unaryMessage(final BytecodeMethodGenContext mgenc, final boolean superSend)
+  protected void unaryMessage(final BytecodeMethodGenContext mgenc)
       throws ParseError {
     SSymbol msg = unarySelector();
     mgenc.addLiteralIfAbsent(msg, this);
 
     if (superSend) {
       emitSUPERSEND(mgenc, msg);
+      superSend = false;
     } else {
       emitSEND(mgenc, msg);
     }
   }
 
-  private void binaryMessage(final BytecodeMethodGenContext mgenc, final boolean superSend)
+  private void binaryMessage(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
+    boolean isSuperSend = superSend;
+    superSend = false;
+
     SSymbol msg = binarySelector();
     mgenc.addLiteralIfAbsent(msg, this);
 
@@ -253,15 +255,18 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     binaryOperand(mgenc);
 
-    if (superSend) {
+    if (isSuperSend) {
       emitSUPERSEND(mgenc, msg);
     } else {
       emitSEND(mgenc, msg);
     }
   }
 
-  private void keywordMessage(final BytecodeMethodGenContext mgenc, final boolean superSend)
+  private void keywordMessage(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
+    boolean isSuperSend = superSend;
+    superSend = false;
+
     StringBuilder kw = new StringBuilder();
     do {
       kw.append(keyword());
@@ -270,7 +275,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     String kwStr = kw.toString();
 
-    if (!superSend) {
+    if (!isSuperSend) {
       if (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, true)) ||
           ("ifFalse:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, false)) ||
           ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, true)) ||
@@ -286,7 +291,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     mgenc.addLiteralIfAbsent(msg, this);
 
-    if (superSend) {
+    if (isSuperSend) {
       emitSUPERSEND(mgenc, msg);
     } else {
       emitSEND(mgenc, msg);
@@ -294,15 +299,15 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
   }
 
   private void formula(final BytecodeMethodGenContext mgenc) throws ProgramDefinitionError {
-    boolean superSend = binaryOperand(mgenc);
+    binaryOperand(mgenc);
 
     // only the first message in a sequence can be a super send
     if (sym == OperatorSequence || symIn(binaryOpSyms)) {
-      binaryMessage(mgenc, superSend);
+      binaryMessage(mgenc);
     }
 
     while (sym == OperatorSequence || symIn(binaryOpSyms)) {
-      binaryMessage(mgenc, false);
+      binaryMessage(mgenc);
     }
   }
 
@@ -386,11 +391,10 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     expect(EndTerm);
   }
 
-  private boolean primary(final BytecodeMethodGenContext mgenc)
-      throws ProgramDefinitionError {
-    boolean superSend = false;
+  private void primary(final BytecodeMethodGenContext mgenc) throws ProgramDefinitionError {
     switch (sym) {
-      case Identifier: {
+      case Identifier:
+      case Primitive: {
         SSymbol v = variable();
 
         if (v == universe.symSuper) {
@@ -421,19 +425,17 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         literal(mgenc);
         break;
     }
-    return superSend;
   }
 
-  private boolean binaryOperand(final BytecodeMethodGenContext mgenc)
+  private void binaryOperand(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
-    boolean superSend = primary(mgenc);
+    primary(mgenc);
 
     while (sym == Identifier) {
-      unaryMessage(mgenc, superSend);
-      superSend = false;
+      unaryMessage(mgenc);
     }
 
-    return superSend;
+    superSend = false;
   }
 
   @Override

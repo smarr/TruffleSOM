@@ -97,6 +97,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   protected static final List<Symbol> binaryOpSyms        = new ArrayList<Symbol>();
   private static final List<Symbol>   keywordSelectorSyms = new ArrayList<Symbol>();
 
+  protected boolean superSend;
+
   static {
     for (Symbol s : new Symbol[] {Not, And, Or, Star, Div, Mod, Plus, Equal,
         More, Less, Comma, At, Per, NONE}) {
@@ -277,9 +279,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
             " could not be loaded", NONE, this);
       }
 
-      cgenc.setInstanceFieldsOfSuper(superClass.getInstanceFieldDefinitions());
-      cgenc.setClassFieldsOfSuper(
-          superClass.getSOMClass(universe).getInstanceFieldDefinitions());
+      cgenc.setSuperClass(superClass);
     }
   }
 
@@ -654,11 +654,6 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected ExpressionNode variableRead(final MGenC mgenc, final SSymbol variableName,
       final SourceSection source) {
-    // we need to handle super special here
-    if (universe.symSuper == variableName) {
-      return mgenc.getSuperReadNode(source);
-    }
-
     // now look up first local variables, or method arguments
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {

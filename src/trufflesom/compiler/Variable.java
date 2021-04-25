@@ -7,7 +7,6 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHLOCAL;
 import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
 import static trufflesom.interpreter.SNodeFactory.createArgumentWrite;
 import static trufflesom.interpreter.SNodeFactory.createLocalVarRead;
-import static trufflesom.interpreter.SNodeFactory.createSuperRead;
 import static trufflesom.interpreter.SNodeFactory.createVariableWrite;
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
@@ -135,8 +134,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @Override
     public ExpressionNode getSuperReadNode(final int contextLevel, final NodeState state,
         final SourceSection source) {
-      AccessNodeState holder = (AccessNodeState) state;
-      return createSuperRead(this, contextLevel, holder.holderClass, holder.classSide, source);
+      throw new UnsupportedOperationException("Not needed in this implementation");
     }
 
     @Override

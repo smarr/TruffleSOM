@@ -75,6 +75,7 @@ import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
 import bd.inlining.nodes.ScopeReference;
 import bd.primitives.Specializer;
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
@@ -89,6 +90,7 @@ import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
@@ -473,9 +475,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
                 numberOfArguments);
             stackPointer -= numberOfArguments;
 
-            GenericMessageSendNode quickened = MessageSendNode.createSuper(
-                (SClass) getHolder().getSuperClass(), signature, sourceSection, universe);
-            quickenBytecode(bytecodeIndex, Q_SEND, quickened);
+            PreevaluatedExpression quickened = MessageSendNode.createSuperSend(
+                (SClass) getHolder().getSuperClass(), signature, null, sourceSection);
+            quickenBytecode(bytecodeIndex, Q_SEND, (Node) quickened);
 
             Object result = quickened.doPreEvaluated(frame, callArgs);
 
@@ -765,7 +767,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case Q_SEND: {
-          GenericMessageSendNode node = (GenericMessageSendNode) quickened[bytecodeIndex];
+          AbstractMessageSendNode node = (AbstractMessageSendNode) quickened[bytecodeIndex];
 
           int numberOfArguments =
               node.getInvocationIdentifier().getNumberOfSignatureArguments();
@@ -897,7 +899,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   }
 
   private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,
-      final ExpressionNode quickenedNode) {
+      final Node quickenedNode) {
     if (this.quickened == null) {
       this.quickened = new Node[bytecodes.length];
     }
