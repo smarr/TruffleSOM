@@ -191,6 +191,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
       while (isIdentifier(sym)) {
         msg = unaryMessage(mgenc, msg);
+        superSend = false;
       }
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
@@ -202,6 +203,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       }
     } else if (sym == OperatorSequence || symIn(binaryOpSyms)) {
       msg = binaryMessage(mgenc, receiver);
+      superSend = false;
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
         msg = binaryMessage(mgenc, msg);
@@ -426,7 +428,6 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       operand = unaryMessage(mgenc, operand);
     }
 
-    superSend = false;
     return operand;
   }
 }

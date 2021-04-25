@@ -196,6 +196,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       do {
         // only the first message in a sequence can be a super send
         unaryMessage(mgenc);
+        superSend = false;
       } while (isIdentifier(sym));
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
@@ -209,6 +210,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       do {
         // only the first message in a sequence can be a super send
         binaryMessage(mgenc);
+        superSend = false;
       } while (sym == OperatorSequence || symIn(binaryOpSyms));
 
       if (sym == Keyword) {
@@ -221,12 +223,14 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
   protected void unaryMessage(final BytecodeMethodGenContext mgenc)
       throws ParseError {
+    boolean isSuperSend = superSend;
+    superSend = false;
+
     SSymbol msg = unarySelector();
     mgenc.addLiteralIfAbsent(msg, this);
 
-    if (superSend) {
+    if (isSuperSend) {
       emitSUPERSEND(mgenc, msg);
-      superSend = false;
     } else {
       emitSEND(mgenc, msg);
     }
