@@ -49,6 +49,11 @@ public abstract class ArgumentReadNode {
     public boolean isSelfRead() {
       return argumentIndex == 0;
     }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ")";
+    }
   }
 
   public static class LocalArgumentWriteNode extends ExpressionNode {
@@ -112,6 +117,11 @@ public abstract class ArgumentReadNode {
     @Override
     public SSymbol getInvocationIdentifier() {
       return arg.name;
+    }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ", ctx: " + contextLevel + ")";
     }
   }
 
