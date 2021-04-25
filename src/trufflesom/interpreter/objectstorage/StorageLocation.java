@@ -7,12 +7,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import sun.misc.Unsafe;
 import trufflesom.interpreter.TruffleCompiler;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadDoubleFieldNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadLongFieldNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadObjectFieldNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadUnwrittenFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteDoubleFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteLongFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.WriteObjectFieldNode;
@@ -101,9 +96,6 @@ public abstract class StorageLocation {
 
   public abstract void write(SObject obj, Object value);
 
-  public abstract AbstractReadFieldNode getReadNode(int fieldIndex, ObjectLayout layout,
-      AbstractReadFieldNode next);
-
   public abstract AbstractWriteFieldNode getWriteNode(int fieldIndex, ObjectLayout layout,
       AbstractWriteFieldNode next);
 
@@ -120,7 +112,6 @@ public abstract class StorageLocation {
 
     @Override
     public Object read(final SObject obj) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
       return Nil.nilObject;
     }
 
@@ -128,13 +119,6 @@ public abstract class StorageLocation {
     public void write(final SObject obj, final Object value) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
       obj.setUninitializedField(fieldIndex, value);
-    }
-
-    @Override
-    public AbstractReadFieldNode getReadNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
-      return new ReadUnwrittenFieldNode(fieldIndex, layout, next);
     }
 
     @Override
@@ -159,13 +143,6 @@ public abstract class StorageLocation {
 
     @Override
     public abstract void write(SObject obj, Object value);
-
-    @Override
-    public final AbstractReadFieldNode getReadNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
-      return new ReadObjectFieldNode(fieldIndex, layout, next);
-    }
 
     @Override
     public final AbstractWriteFieldNode getWriteNode(final int fieldIndex,
@@ -318,13 +295,6 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public AbstractReadFieldNode getReadNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
-      return new ReadDoubleFieldNode(fieldIndex, layout, next);
-    }
-
-    @Override
     public AbstractWriteFieldNode getWriteNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractWriteFieldNode next) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
@@ -388,13 +358,6 @@ public abstract class StorageLocation {
     public void writeLong(final SObject obj, final long value) {
       unsafe.putLong(obj, fieldMemoryOffset, value);
       markAsSet(obj);
-    }
-
-    @Override
-    public AbstractReadFieldNode getReadNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
-      return new ReadLongFieldNode(fieldIndex, layout, next);
     }
 
     @Override
@@ -476,13 +439,6 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public AbstractReadFieldNode getReadNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
-      return new ReadLongFieldNode(fieldIndex, layout, next);
-    }
-
-    @Override
     public AbstractWriteFieldNode getWriteNode(final int fieldIndex,
         final ObjectLayout layout, final AbstractWriteFieldNode next) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
@@ -546,13 +502,6 @@ public abstract class StorageLocation {
           value);
 
       markAsSet(obj);
-    }
-
-    @Override
-    public AbstractReadFieldNode getReadNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
-      return new ReadDoubleFieldNode(fieldIndex, layout, next);
     }
 
     @Override

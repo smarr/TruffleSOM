@@ -3,23 +3,16 @@ package trufflesom.interpreter.objectstorage;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import trufflesom.interpreter.TruffleCompiler;
-import trufflesom.interpreter.TypesGen;
 import trufflesom.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
 import trufflesom.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
 import trufflesom.interpreter.objectstorage.StorageLocation.LongStorageLocation;
-import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 
 
 public abstract class FieldAccessorNode extends Node {
   protected final int fieldIndex;
-
-  public static AbstractReadFieldNode createRead(final int fieldIndex) {
-    return new UninitializedReadFieldNode(fieldIndex);
-  }
 
   public static AbstractWriteFieldNode createWrite(final int fieldIndex) {
     return new UninitializedWriteFieldNode(fieldIndex);
@@ -37,186 +30,6 @@ public abstract class FieldAccessorNode extends Node {
 
   public final int getFieldIndex() {
     return fieldIndex;
-  }
-
-  public abstract static class AbstractReadFieldNode extends FieldAccessorNode {
-    public AbstractReadFieldNode(final int fieldIndex) {
-      super(fieldIndex);
-    }
-
-    public abstract Object read(SObject obj);
-
-    public long readLong(final SObject obj) throws UnexpectedResultException {
-      return TypesGen.expectLong(read(obj));
-    }
-
-    public double readDouble(final SObject obj) throws UnexpectedResultException {
-      return TypesGen.expectDouble(read(obj));
-    }
-
-    protected final Object specializeAndRead(final SObject obj, final String reason,
-        final AbstractReadFieldNode next) {
-      return specialize(obj, reason, next).read(obj);
-    }
-
-    protected final AbstractReadFieldNode specialize(final SObject obj,
-        final String reason, final AbstractReadFieldNode next) {
-      TruffleCompiler.transferToInterpreterAndInvalidate(reason);
-      obj.updateLayoutToMatchClass();
-
-      final ObjectLayout layout = obj.getObjectLayout();
-      final StorageLocation location = layout.getStorageLocation(fieldIndex);
-
-      AbstractReadFieldNode newNode = location.getReadNode(fieldIndex, layout, next);
-      return replace(newNode, reason);
-    }
-  }
-
-  private static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
-
-    UninitializedReadFieldNode(final int fieldIndex) {
-      super(fieldIndex);
-    }
-
-    @Override
-    public Object read(final SObject obj) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      return specializeAndRead(obj, "uninitalized node",
-          new UninitializedReadFieldNode(fieldIndex));
-    }
-  }
-
-  public abstract static class ReadSpecializedFieldNode extends AbstractReadFieldNode {
-    protected final ObjectLayout           layout;
-    @Child protected AbstractReadFieldNode nextInCache;
-
-    public ReadSpecializedFieldNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      super(fieldIndex);
-      this.layout = layout;
-      nextInCache = next;
-    }
-
-    protected final boolean hasExpectedLayout(final SObject obj)
-        throws InvalidAssumptionException {
-      layout.checkIsLatest();
-      return layout == obj.getObjectLayout();
-    }
-
-    protected final AbstractReadFieldNode respecializedNodeOrNext(final SObject obj) {
-      if (layout.layoutForSameClass(obj.getObjectLayout())) {
-        return specialize(obj, "update outdated read node", nextInCache);
-      } else {
-        return nextInCache;
-      }
-    }
-  }
-
-  public static final class ReadUnwrittenFieldNode extends ReadSpecializedFieldNode {
-    public ReadUnwrittenFieldNode(final int fieldIndex,
-        final ObjectLayout layout, final AbstractReadFieldNode next) {
-      super(fieldIndex, layout, next);
-    }
-
-    @Override
-    public Object read(final SObject obj) {
-      try {
-        if (hasExpectedLayout(obj)) {
-          return Nil.nilObject;
-        } else {
-          return respecializedNodeOrNext(obj).read(obj);
-        }
-      } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).read(obj);
-      }
-    }
-  }
-
-  public static final class ReadLongFieldNode extends ReadSpecializedFieldNode {
-    private final LongStorageLocation storage;
-
-    public ReadLongFieldNode(final int fieldIndex, final ObjectLayout layout,
-        final AbstractReadFieldNode next) {
-      super(fieldIndex, layout, next);
-      this.storage = (LongStorageLocation) layout.getStorageLocation(fieldIndex);
-    }
-
-    @Override
-    public long readLong(final SObject obj) throws UnexpectedResultException {
-      try {
-        if (hasExpectedLayout(obj)) {
-          return storage.readLong(obj);
-        } else {
-          return respecializedNodeOrNext(obj).readLong(obj);
-        }
-      } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).readLong(obj);
-      }
-    }
-
-    @Override
-    public Object read(final SObject obj) {
-      try {
-        return readLong(obj);
-      } catch (UnexpectedResultException e) {
-        return e.getResult();
-      }
-    }
-  }
-
-  public static final class ReadDoubleFieldNode extends ReadSpecializedFieldNode {
-    private final DoubleStorageLocation storage;
-
-    public ReadDoubleFieldNode(final int fieldIndex, final ObjectLayout layout,
-        final AbstractReadFieldNode next) {
-      super(fieldIndex, layout, next);
-      this.storage = (DoubleStorageLocation) layout.getStorageLocation(fieldIndex);
-    }
-
-    @Override
-    public double readDouble(final SObject obj) throws UnexpectedResultException {
-      try {
-        if (hasExpectedLayout(obj)) {
-          return storage.readDouble(obj);
-        } else {
-          return respecializedNodeOrNext(obj).readDouble(obj);
-        }
-      } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).readDouble(obj);
-      }
-    }
-
-    @Override
-    public Object read(final SObject obj) {
-      try {
-        return readDouble(obj);
-      } catch (UnexpectedResultException e) {
-        return e.getResult();
-      }
-    }
-  }
-
-  public static final class ReadObjectFieldNode extends ReadSpecializedFieldNode {
-    private final AbstractObjectStorageLocation storage;
-
-    public ReadObjectFieldNode(final int fieldIndex, final ObjectLayout layout,
-        final AbstractReadFieldNode next) {
-      super(fieldIndex, layout, next);
-      this.storage = (AbstractObjectStorageLocation) layout.getStorageLocation(fieldIndex);
-    }
-
-    @Override
-    public Object read(final SObject obj) {
-      try {
-        if (hasExpectedLayout(obj)) {
-          return storage.read(obj);
-        } else {
-          return respecializedNodeOrNext(obj).read(obj);
-        }
-      } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).read(obj);
-      }
-    }
   }
 
   public abstract static class AbstractWriteFieldNode extends FieldAccessorNode {

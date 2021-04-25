@@ -88,6 +88,8 @@ import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldReadNodeGen;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
@@ -98,7 +100,6 @@ import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
 import trufflesom.primitives.Primitives;
@@ -273,10 +274,10 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(fieldIdx));
+            node = quickened[bytecodeIndex] = insert(FieldReadNodeGen.create(fieldIdx, null));
           }
 
-          Object value = ((AbstractReadFieldNode) node).read(obj);
+          Object value = ((FieldReadNode) node).executeEvaluated(obj);
           stackPointer += 1;
           stack[stackPointer] = value;
           break;
