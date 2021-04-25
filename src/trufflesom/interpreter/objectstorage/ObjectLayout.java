@@ -5,6 +5,8 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
+import trufflesom.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
+import trufflesom.interpreter.objectstorage.StorageLocation.LongStorageLocation;
 import trufflesom.interpreter.objectstorage.StorageLocation.UnwrittenStorageLocation;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
@@ -138,6 +140,34 @@ public final class ObjectLayout {
 
   public StorageLocation getStorageLocation(final int fieldIndex) {
     return storageLocations[fieldIndex];
+  }
+
+  public LongStorageLocation getLongLocation(final int fieldIndex) {
+    return (LongStorageLocation) storageLocations[fieldIndex];
+  }
+
+  public DoubleStorageLocation getDoubleLocation(final int fieldIndex) {
+    return (DoubleStorageLocation) storageLocations[fieldIndex];
+  }
+
+  public StorageLocation getObjectLocation(final int fieldIndex) {
+    return storageLocations[fieldIndex];
+  }
+
+  public boolean isLongLocation(final int fieldIndex) {
+    return storageTypes[fieldIndex] == Long.class;
+  }
+
+  public boolean isDoubleLocation(final int fieldIndex) {
+    return storageTypes[fieldIndex] == Double.class;
+  }
+
+  public boolean isObjectLocation(final int fieldIndex) {
+    return storageTypes[fieldIndex] == Object.class;
+  }
+
+  public boolean isUnwrittenLocation(final int fieldIndex) {
+    return storageTypes[fieldIndex] == null;
   }
 
   public int getNumberOfUsedExtendedObjectStorageLocations() {

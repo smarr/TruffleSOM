@@ -6,9 +6,10 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.Node;
 
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldReadNodeGen;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
@@ -86,9 +87,9 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   }
 
   private static final class CachedReadDispatchNode extends IndexDispatch {
-    private final int                    index;
-    private final SClass                 clazz;
-    @Child private AbstractReadFieldNode access;
+    private final int            index;
+    private final SClass         clazz;
+    @Child private FieldReadNode access;
     // TODO: have a second cached class for the writing...
     @Child private IndexDispatch next;
 
@@ -98,13 +99,13 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       this.index = index;
       this.clazz = clazz;
       this.next = next;
-      access = FieldAccessorNode.createRead(index);
+      access = FieldReadNodeGen.create(index, null);
     }
 
     @Override
     public Object executeDispatch(final SObject obj, final int index) {
       if (this.index == index && this.clazz == obj.getSOMClass(universe)) {
-        return access.read(obj);
+        return access.executeEvaluated(obj);
       } else {
         return next.executeDispatch(obj, index);
       }

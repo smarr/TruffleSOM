@@ -22,6 +22,7 @@
 package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -31,12 +32,17 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldReadNodeGen;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
+import trufflesom.interpreter.objectstorage.ObjectLayout;
+import trufflesom.interpreter.objectstorage.StorageLocation;
+import trufflesom.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
+import trufflesom.interpreter.objectstorage.StorageLocation.LongStorageLocation;
 import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 
 
@@ -44,27 +50,19 @@ public abstract class FieldNode extends ExpressionNode {
 
   public abstract ExpressionNode getSelf();
 
-  public static final class FieldReadNode extends FieldNode
+  @NodeChild(value = "self", type = ExpressionNode.class)
+  public abstract static class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
-    @Child private ExpressionNode        self;
-    @Child private AbstractReadFieldNode read;
+    protected final int fieldIndex;
 
-    public FieldReadNode(final ExpressionNode self, final int fieldIndex) {
-      this.self = self;
-      read = FieldAccessorNode.createRead(fieldIndex);
+    public FieldReadNode(final int fieldIndex) {
+      this.fieldIndex = fieldIndex;
     }
+
+    public abstract Object executeEvaluated(SObject obj);
 
     public int getFieldIndex() {
-      return read.getFieldIndex();
-    }
-
-    @Override
-    public ExpressionNode getSelf() {
-      return self;
-    }
-
-    public Object executeEvaluated(final SObject obj) {
-      return read.read(obj);
+      return fieldIndex;
     }
 
     @Override
@@ -73,28 +71,64 @@ public abstract class FieldNode extends ExpressionNode {
       return executeEvaluated((SObject) arguments[0]);
     }
 
-    @Override
-    public long executeLong(final VirtualFrame frame) throws UnexpectedResultException {
-      SObject obj = self.executeSObject(frame);
-      return read.readLong(obj);
+    @Specialization(
+        assumptions = "layout.getAssumption()",
+        guards = {
+            "obj.getObjectLayout() == layout",
+            "layout.isLongLocation(fieldIndex)"},
+        rewriteOn = UnexpectedResultException.class)
+    public long readLong(final SObject obj,
+        @Cached("obj.getObjectLayout()") final ObjectLayout layout,
+        @Cached("layout.getLongLocation(fieldIndex)") final LongStorageLocation storage)
+        throws UnexpectedResultException {
+      return storage.readLong(obj);
     }
 
-    @Override
-    public double executeDouble(final VirtualFrame frame) throws UnexpectedResultException {
-      SObject obj = self.executeSObject(frame);
-      return read.readDouble(obj);
+    @Specialization(
+        assumptions = "layout.getAssumption()",
+        guards = {
+            "obj.getObjectLayout() == layout",
+            "layout.isDoubleLocation(fieldIndex)"},
+        rewriteOn = UnexpectedResultException.class)
+    public double readDouble(final SObject obj,
+        @Cached("obj.getObjectLayout()") final ObjectLayout layout,
+        @Cached("layout.getDoubleLocation(fieldIndex)") final DoubleStorageLocation storage)
+        throws UnexpectedResultException {
+      return storage.readDouble(obj);
     }
 
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      SObject obj;
-      try {
-        obj = self.executeSObject(frame);
-      } catch (UnexpectedResultException e) {
-        CompilerDirectives.transferToInterpreter();
-        throw new RuntimeException("This should never happen by construction");
-      }
+    @Specialization(
+        assumptions = "layout.getAssumption()",
+        guards = {
+            "obj.getObjectLayout() == layout",
+            "layout.isUnwrittenLocation(fieldIndex)"},
+        rewriteOn = UnexpectedResultException.class)
+    public SObject readNil(final SObject obj,
+        @Cached("obj.getObjectLayout()") final ObjectLayout layout)
+        throws UnexpectedResultException {
+      return Nil.nilObject;
+    }
+
+    @Specialization(
+        assumptions = "layout.getAssumption()",
+        guards = {
+            "obj.getObjectLayout() == layout",
+            "layout.isObjectLocation(fieldIndex)"})
+    public Object readObject(final SObject obj,
+        @Cached("obj.getObjectLayout()") final ObjectLayout layout,
+        @Cached("layout.getObjectLocation(fieldIndex)") final StorageLocation storage) {
+      return storage.read(obj);
+    }
+
+    @Specialization(guards = "!obj.getObjectLayout().isValid()")
+    public Object updateObject(final SObject obj) {
+      obj.updateLayoutToMatchClass();
       return executeEvaluated(obj);
+    }
+
+    @Specialization
+    public Object readObject(final SObject obj) {
+      return obj.getObjectLayout().getStorageLocation(fieldIndex).read(obj);
     }
 
     @Override
@@ -104,10 +138,7 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public PreevaluatedExpression copyTrivialNode() {
-      FieldReadNode node = (FieldReadNode) copy();
-      node.self = null;
-      node.read = (AbstractReadFieldNode) node.read.deepCopy();
-      return node;
+      return FieldReadNodeGen.create(fieldIndex, getSelf());
     }
   }
 

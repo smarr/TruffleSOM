@@ -13,7 +13,6 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
-import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
@@ -31,11 +30,6 @@ public final class SNodeFactory {
       final ExpressionNode methodBody, final Internal onStackMarker) {
     return new CatchNonLocalReturnNode(
         methodBody, onStackMarker).initialize(methodBody.getSourceSection());
-  }
-
-  public static FieldReadNode createFieldRead(final ExpressionNode self,
-      final int fieldIndex, final SourceSection source) {
-    return new FieldReadNode(self, fieldIndex).initialize(source);
   }
 
   public static FieldNode createFieldWrite(final ExpressionNode self,

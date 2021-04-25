@@ -26,7 +26,6 @@
 package trufflesom.compiler;
 
 import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
-import static trufflesom.interpreter.SNodeFactory.createFieldRead;
 import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
 import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
@@ -56,6 +55,7 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldReadNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
@@ -435,8 +435,8 @@ public class MethodGenerationContext
     if (!holderGenc.hasField(fieldName)) {
       return null;
     }
-    return createFieldRead(getSelfRead(source),
-        holderGenc.getFieldIndex(fieldName), source);
+    return FieldReadNodeGen.create(holderGenc.getFieldIndex(fieldName), getSelfRead(source))
+                           .initialize(source);
   }
 
   public FieldNode getObjectFieldWrite(final SSymbol fieldName,

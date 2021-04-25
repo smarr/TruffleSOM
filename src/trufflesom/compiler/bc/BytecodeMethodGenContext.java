@@ -74,6 +74,7 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldReadNodeGen;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode.BackJump;
@@ -610,7 +611,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     // because we don't handle block methods, we don't need to worry about ctx > 0
-    return new FieldReadNode(new LocalArgumentReadNode(arguments.get(symSelf)), idx);
+    return FieldReadNodeGen.create(idx,
+        new LocalArgumentReadNode(arguments.get(universe.symSelf)));
   }
 
   private ExpressionNode optimizeFieldSetter(final byte returnCandidate) {
