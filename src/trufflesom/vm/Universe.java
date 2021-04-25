@@ -413,10 +413,10 @@ public final class Universe implements IdProvider<SSymbol> {
     loadSystemClass(nilClass);
     loadSystemClass(arrayClass);
     loadSystemClass(methodClass);
+    loadSystemClass(stringClass);
     loadSystemClass(symbolClass);
     loadSystemClass(integerClass);
     loadSystemClass(primitiveClass);
-    loadSystemClass(stringClass);
     loadSystemClass(doubleClass);
     loadSystemClass(booleanClass);
     loadSystemClass(trueClass);
