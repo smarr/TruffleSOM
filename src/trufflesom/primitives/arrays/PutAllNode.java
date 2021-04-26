@@ -12,10 +12,9 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
-import trufflesom.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
-import trufflesom.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import trufflesom.primitives.basics.BlockPrims.ValueNonePrim;
+import trufflesom.primitives.basics.BlockPrimsFactory.ValueNonePrimFactory;
 import trufflesom.primitives.basics.LengthPrim;
 import trufflesom.primitives.basics.LengthPrimFactory;
 import trufflesom.vm.constants.Nil;
@@ -30,13 +29,8 @@ import trufflesom.vmobjects.SObject;
 @Primitive(className = "Array", primitive = "putAll:", selector = "putAll:", disabled = true,
     extraChild = LengthPrimFactory.class)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
-public abstract class PutAllNode extends BinaryExpressionNode implements ValuePrimitiveNode {
-  @Child private AbstractDispatchNode block = new UninitializedValuePrimDispatchNode();
-
-  @Override
-  public void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-    block = insert(node);
-  }
+public abstract class PutAllNode extends BinaryExpressionNode {
+  @Child private ValueNonePrim block = ValueNonePrimFactory.create(null);
 
   protected static final boolean valueIsNil(final SObject value) {
     return value == Nil.nilObject;
@@ -66,28 +60,28 @@ public abstract class PutAllNode extends BinaryExpressionNode implements ValuePr
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final Object[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = this.block.executeEvaluated(block);
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final long[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (long) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (long) this.block.executeEvaluated(block);
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final double[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (double) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (double) this.block.executeEvaluated(block);
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
       final SBlock block, final long length, final boolean[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (boolean) this.block.executeDispatch(frame, new Object[] {block});
+      storage[i] = (boolean) this.block.executeEvaluated(block);
     }
   }
 
@@ -100,7 +94,7 @@ public abstract class PutAllNode extends BinaryExpressionNode implements ValuePr
     // TODO: this version does not handle the case that a subsequent value is not of the
     // expected type...
     try {
-      Object result = this.block.executeDispatch(frame, new Object[] {block});
+      Object result = this.block.executeEvaluated(block);
       if (result instanceof Long) {
         long[] newStorage = new long[(int) length];
         newStorage[0] = (long) result;

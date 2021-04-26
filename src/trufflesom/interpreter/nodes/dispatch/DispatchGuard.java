@@ -3,9 +3,7 @@ package trufflesom.interpreter.nodes.dispatch;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 import trufflesom.interpreter.objectstorage.ObjectLayout;
-import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
-import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SObject;
 
 
@@ -30,23 +28,6 @@ public abstract class DispatchGuard {
     }
 
     return new CheckClass(obj.getClass());
-  }
-
-  public static DispatchGuard createForBlock(final SBlock block) {
-    return new BlockMethod(block.getMethod());
-  }
-
-  private static final class BlockMethod extends DispatchGuard {
-    private final SInvokable expected;
-
-    BlockMethod(final SInvokable method) {
-      this.expected = method;
-    }
-
-    @Override
-    public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
-      return ((SBlock) obj).getMethod() == expected;
-    }
   }
 
   private static final class CheckClass extends DispatchGuard {
