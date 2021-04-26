@@ -137,8 +137,8 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public PreevaluatedExpression copyTrivialNode() {
-      FieldWriteNode node = (FieldWriteNode) deepCopy();
-      return new WriteAndReturnSelf(node);
+      return new WriteAndReturnSelf(
+          FieldWriteNodeGen.create(write.getFieldIndex(), null, null));
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,
