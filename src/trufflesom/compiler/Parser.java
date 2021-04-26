@@ -226,6 +226,10 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     cgenc.setName(universe.symbolFor(text));
     SourceCoordinate coord = getCoordinate();
+    if ("Object".equals(text)) {
+      universe.selfSource = getSource(coord);
+    }
+
     expect(Identifier);
     expect(Equal);
 
@@ -406,8 +410,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   private void pattern(final MGenC mgenc) throws ProgramDefinitionError {
-    // TODO: can we do that optionally?
-    mgenc.addArgumentIfAbsent(universe.symSelf, getEmptySource());
+    assert universe.selfSource != null;
+    mgenc.addArgumentIfAbsent(universe.symSelf, universe.selfSource);
     switch (sym) {
       case Identifier:
       case Primitive:
