@@ -22,6 +22,7 @@ import trufflesom.vmobjects.SInvokable;
 
 
 public abstract class BlockPrims {
+  protected static int InlineCacheSize = 6;
 
   public static final DirectCallNode createCallNode(final SInvokable method) {
     return Truffle.getRuntime().createDirectCallNode(method.getCallTarget());
@@ -50,7 +51,8 @@ public abstract class BlockPrims {
     public abstract Object executeEvaluated(SBlock receiver);
 
     @Specialization(
-        guards = "receiver.getMethod() == method")
+        guards = "receiver.getMethod() == method",
+        limit = "InlineCacheSize")
     public final Object doSBlock(final SBlock receiver,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
@@ -76,7 +78,9 @@ public abstract class BlockPrims {
 
     public abstract Object executeEvaluated(SBlock receiver, Object arg);
 
-    @Specialization(guards = "receiver.getMethod() == method")
+    @Specialization(
+        guards = "receiver.getMethod() == method",
+        limit = "InlineCacheSize")
     public final Object doSBlock(final SBlock receiver, final Object arg,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
@@ -97,7 +101,9 @@ public abstract class BlockPrims {
 
     public abstract Object executeEvaluated(SBlock receiver, Object arg1, Object arg2);
 
-    @Specialization(guards = "receiver.getMethod() == method")
+    @Specialization(
+        guards = "receiver.getMethod() == method",
+        limit = "InlineCacheSize")
     public final Object doSBlock(final SBlock receiver, final Object arg1, final Object arg2,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
