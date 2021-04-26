@@ -1,7 +1,9 @@
 package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
@@ -13,7 +15,6 @@ import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
-import trufflesom.interpreter.nodes.dispatch.SuperDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
@@ -22,6 +23,7 @@ import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -68,10 +70,24 @@ public final class MessageSendNode {
         new UninitializedDispatchNode(selector, universe)).initialize(source);
   }
 
-  public static GenericMessageSendNode createSuper(final SClass clazz, final SSymbol selector,
-      final SourceSection source, final Universe universe) {
-    return new GenericMessageSendNode(selector, null,
-        SuperDispatchNode.create(clazz, selector)).initialize(source);
+  public static AbstractMessageSendNode createSuperSend(final SClass superClass,
+      final SSymbol selector, final ExpressionNode[] arguments, final SourceSection source) {
+    SInvokable method = superClass.lookupInvokable(selector);
+
+    if (method == null) {
+      throw new NotYetImplementedException(
+          "Currently #dnu with super sent is not yet implemented. ");
+    }
+
+    if (method.isTrivial()) {
+      PreevaluatedExpression node = method.copyTrivialNode();
+      return new SuperExprNode(selector, arguments, node).initialize(source);
+    }
+
+    DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
+        method.getCallTarget());
+
+    return new SuperSendNode(selector, arguments, superMethodNode).initialize(source);
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
@@ -81,10 +97,6 @@ public final class MessageSendNode {
 
     protected AbstractMessageSendNode(final ExpressionNode[] arguments) {
       this.argumentNodes = arguments;
-    }
-
-    public boolean isSuperSend() {
-      return argumentNodes[0] instanceof ISuperReadNode;
     }
 
     @Override
@@ -131,12 +143,6 @@ public final class MessageSendNode {
     private PreevaluatedExpression specialize(final Object[] arguments) {
       TruffleCompiler.transferToInterpreterAndInvalidate("Specialize Message Node");
 
-      // first option is a super send, super sends are treated specially because
-      // the receiver class is lexically determined
-      if (isSuperSend()) {
-        return makeSuperSend();
-      }
-
       // We treat super sends separately for simplicity, might not be the
       // optimal solution, especially in cases were the knowledge of the
       // receiver class also allows us to do more specific things, but for the
@@ -172,8 +178,6 @@ public final class MessageSendNode {
       return result;
     }
 
-    protected abstract PreevaluatedExpression makeSuperSend();
-
     private GenericMessageSendNode makeGenericSend() {
       GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
           new UninitializedDispatchNode(selector, universe)).initialize(sourceSection);
@@ -195,13 +199,6 @@ public final class MessageSendNode {
       super(selector, arguments, universe);
     }
 
-    @Override
-    protected PreevaluatedExpression makeSuperSend() {
-      GenericMessageSendNode node = new GenericMessageSendNode(selector, argumentNodes,
-          SuperDispatchNode.create(selector, (ISuperReadNode) argumentNodes[0],
-              universe)).initialize(sourceSection);
-      return replace(node);
-    }
   }
 
   private static final class UninitializedSymbolSendNode
@@ -209,18 +206,6 @@ public final class MessageSendNode {
 
     protected UninitializedSymbolSendNode(final SSymbol selector, final Universe universe) {
       super(selector, new ExpressionNode[0], universe);
-    }
-
-    @Override
-    public boolean isSuperSend() {
-      // TODO: is is correct?
-      return false;
-    }
-
-    @Override
-    protected PreevaluatedExpression makeSuperSend() {
-      // should never be reached with isSuperSend() returning always false
-      throw new NotYetImplementedException();
     }
   }
 
@@ -266,6 +251,63 @@ public final class MessageSendNode {
     @Override
     public SSymbol getInvocationIdentifier() {
       return selector;
+    }
+  }
+
+  public static final class SuperSendNode extends AbstractMessageSendNode {
+    private final SSymbol selector;
+
+    @Child private DirectCallNode cachedSuperMethod;
+
+    private SuperSendNode(final SSymbol selector, final ExpressionNode[] arguments,
+        final DirectCallNode superMethod) {
+      super(arguments);
+      this.selector = selector;
+      this.cachedSuperMethod = superMethod;
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame,
+        final Object[] arguments) {
+      return cachedSuperMethod.call(arguments);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return selector;
+    }
+
+    @Override
+    public String toString() {
+      return "SuperSend(" + selector.getString() + ")";
+    }
+  }
+
+  private static final class SuperExprNode extends AbstractMessageSendNode {
+    private final SSymbol                 selector;
+    @Child private PreevaluatedExpression expr;
+
+    private SuperExprNode(final SSymbol selector, final ExpressionNode[] arguments,
+        final PreevaluatedExpression expr) {
+      super(arguments);
+      this.selector = selector;
+      this.expr = expr;
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame,
+        final Object[] arguments) {
+      return expr.doPreEvaluated(frame, arguments);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return selector;
+    }
+
+    @Override
+    public String toString() {
+      return "SendExpr(" + selector.getString() + ")";
     }
   }
 }

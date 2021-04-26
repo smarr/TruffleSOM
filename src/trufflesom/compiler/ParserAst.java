@@ -13,7 +13,6 @@ import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
 import static trufflesom.compiler.Symbol.Pound;
-import static trufflesom.interpreter.SNodeFactory.createMessageSend;
 import static trufflesom.interpreter.SNodeFactory.createSequence;
 
 import java.math.BigInteger;
@@ -30,6 +29,7 @@ import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.literals.ArrayLiteralNode;
 import trufflesom.interpreter.nodes.literals.BigIntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
@@ -178,6 +178,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         || symIn(binaryOpSyms)) {
       exp = messages(mgenc, exp);
     }
+
+    superSend = false;
     return exp;
   }
 
@@ -185,10 +187,11 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       final ExpressionNode receiver) throws ProgramDefinitionError {
     ExpressionNode msg;
     if (isIdentifier(sym)) {
-      msg = unaryMessage(receiver);
+      msg = unaryMessage(mgenc, receiver);
 
       while (isIdentifier(sym)) {
-        msg = unaryMessage(msg);
+        msg = unaryMessage(mgenc, msg);
+        superSend = false;
       }
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
@@ -200,6 +203,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       }
     } else if (sym == OperatorSequence || symIn(binaryOpSyms)) {
       msg = binaryMessage(mgenc, receiver);
+      superSend = false;
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
         msg = binaryMessage(mgenc, msg);
@@ -214,26 +218,48 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     return msg;
   }
 
-  protected ExpressionNode unaryMessage(final ExpressionNode receiver)
+  protected ExpressionNode unaryMessage(final MethodGenerationContext mgenc,
+      final ExpressionNode receiver)
       throws ParseError {
+    boolean isSuperSend = superSend;
+    superSend = false;
+
     SourceCoordinate coord = getCoordinate();
     SSymbol selector = unarySelector();
-    return createMessageSend(selector, new ExpressionNode[] {receiver},
-        getSource(coord), universe);
+
+    ExpressionNode[] args = new ExpressionNode[] {receiver};
+    SourceSection source = getSource(coord);
+
+    if (isSuperSend) {
+      return MessageSendNode.createSuperSend(
+          mgenc.getHolder().getSuperClass(), selector, args, source);
+    }
+    ExpressionNode msg =
+        MessageSendNode.create(selector, args, source, universe);
+    return msg;
   }
 
   protected ExpressionNode binaryMessage(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ProgramDefinitionError {
+    boolean isSuperSend = superSend;
+    superSend = false;
     SourceCoordinate coord = getCoordinate();
     SSymbol msg = binarySelector();
     ExpressionNode operand = binaryOperand(mgenc);
 
-    return createMessageSend(msg, new ExpressionNode[] {receiver, operand},
-        getSource(coord), universe);
+    ExpressionNode[] args = new ExpressionNode[] {receiver, operand};
+    SourceSection source = getSource(coord);
+    if (isSuperSend) {
+      return MessageSendNode.createSuperSend(
+          mgenc.getHolder().getSuperClass(), msg, args, source);
+    }
+    return MessageSendNode.create(msg, args, source, universe);
   }
 
   protected ExpressionNode keywordMessage(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ProgramDefinitionError {
+    boolean isSuperSend = superSend;
+    superSend = false;
     SourceCoordinate coord = getCoordinate();
     List<ExpressionNode> arguments = new ArrayList<ExpressionNode>();
     StringBuilder kw = new StringBuilder();
@@ -251,11 +277,16 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     ExpressionNode inlined = inlinableNodes.inline(msg, arguments, mgenc, source);
     if (inlined != null) {
+      assert !isSuperSend;
       return inlined;
     }
 
-    return createMessageSend(msg, arguments.toArray(new ExpressionNode[0]),
-        source, universe);
+    ExpressionNode[] args = arguments.toArray(new ExpressionNode[0]);
+    if (isSuperSend) {
+      return MessageSendNode.createSuperSend(
+          mgenc.getHolder().getSuperClass(), msg, args, source);
+    }
+    return MessageSendNode.create(msg, args, source, universe);
   }
 
   private ExpressionNode formula(final MethodGenerationContext mgenc)
@@ -351,6 +382,14 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       case Primitive: {
         SourceCoordinate coord = getCoordinate();
         SSymbol v = variable();
+
+        if (v == universe.symSuper) {
+          assert !superSend : "Since super is consumed directly, it should never be true here";
+          superSend = true;
+          // sends to super push self as the receiver
+          v = universe.symSelf;
+        }
+
         return variableRead(mgenc, v, getSource(coord));
       }
       case NewTerm: {
@@ -386,8 +425,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     // Example: 2 * 3 asString
     // is evaluated as 2 * (3 asString)
     while (isIdentifier(sym)) {
-      operand = unaryMessage(operand);
+      operand = unaryMessage(mgenc, operand);
     }
+
     return operand;
   }
 }

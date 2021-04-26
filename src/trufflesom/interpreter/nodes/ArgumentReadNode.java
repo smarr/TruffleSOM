@@ -4,7 +4,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.tools.nodes.Invocation;
-import trufflesom.compiler.Variable.AccessNodeState;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.SArguments;
 import trufflesom.vmobjects.SSymbol;
@@ -48,6 +47,11 @@ public abstract class ArgumentReadNode {
 
     public boolean isSelfRead() {
       return argumentIndex == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ")";
     }
   }
 
@@ -113,6 +117,11 @@ public abstract class ArgumentReadNode {
     public SSymbol getInvocationIdentifier() {
       return arg.name;
     }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ", ctx: " + contextLevel + ")";
+    }
   }
 
   public static class NonLocalArgumentWriteNode extends ContextualNode {
@@ -141,65 +150,6 @@ public abstract class ArgumentReadNode {
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateWrite(arg, this, valueNode, contextLevel);
-    }
-  }
-
-  public static final class LocalSuperReadNode extends LocalArgumentReadNode
-      implements ISuperReadNode {
-
-    private final SSymbol holderClass;
-    private final boolean classSide;
-
-    public LocalSuperReadNode(final Argument arg, final SSymbol holderClass,
-        final boolean classSide) {
-      super(arg);
-      this.holderClass = holderClass;
-      this.classSide = classSide;
-    }
-
-    @Override
-    public SSymbol getHolderClass() {
-      return holderClass;
-    }
-
-    @Override
-    public boolean isClassSide() {
-      return classSide;
-    }
-
-    @Override
-    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-      inliner.updateSuperRead(arg, this, new AccessNodeState(holderClass, classSide), 0);
-    }
-  }
-
-  public static final class NonLocalSuperReadNode extends
-      NonLocalArgumentReadNode implements ISuperReadNode {
-
-    private final SSymbol holderClass;
-    private final boolean classSide;
-
-    public NonLocalSuperReadNode(final Argument arg, final int contextLevel,
-        final SSymbol holderClass, final boolean classSide) {
-      super(arg, contextLevel);
-      this.holderClass = holderClass;
-      this.classSide = classSide;
-    }
-
-    @Override
-    public SSymbol getHolderClass() {
-      return holderClass;
-    }
-
-    @Override
-    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-      inliner.updateSuperRead(arg, this, new AccessNodeState(holderClass, classSide),
-          contextLevel);
-    }
-
-    @Override
-    public boolean isClassSide() {
-      return classSide;
     }
   }
 }

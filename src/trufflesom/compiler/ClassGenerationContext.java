@@ -52,7 +52,7 @@ public final class ClassGenerationContext {
   }
 
   private SSymbol           name;
-  private SSymbol           superName;
+  private SClass            superClass;
   private SourceSection     sourceSection;
   private boolean           classSide;
   private final List<Field> instanceFields = new ArrayList<>();
@@ -88,17 +88,28 @@ public final class ClassGenerationContext {
     return sourceSection;
   }
 
-  public void setSuperName(final SSymbol superName) {
-    this.superName = superName;
+  /** Return the super class, considering whether we are instance or class side. */
+  public SClass getSuperClass() {
+    if (classSide) {
+      return superClass.getSOMClass(universe);
+    }
+    return superClass;
   }
 
-  public void setInstanceFieldsOfSuper(final Field[] fields) {
+  public void setSuperClass(final SClass superClass) {
+    this.superClass = superClass;
+    setInstanceFieldsOfSuper(superClass.getInstanceFieldDefinitions());
+    setClassFieldsOfSuper(
+        superClass.getSOMClass(universe).getInstanceFieldDefinitions());
+  }
+
+  private void setInstanceFieldsOfSuper(final Field[] fields) {
     for (Field f : fields) {
       instanceFields.add(f);
     }
   }
 
-  public void setClassFieldsOfSuper(final Field[] fields) {
+  private void setClassFieldsOfSuper(final Field[] fields) {
     for (Field f : fields) {
       classFields.add(f);
     }
@@ -168,9 +179,6 @@ public final class ClassGenerationContext {
   public SClass assemble() {
     // build class class name
     String ccname = name.getString() + " class";
-
-    // Load the super class
-    SClass superClass = universe.loadClass(superName);
 
     // Allocate the class of the resulting class
     SClass resultClass = universe.newClass(universe.metaclassClass);

@@ -43,7 +43,6 @@ import bd.inlining.Scope;
 import bd.inlining.ScopeBuilder;
 import bd.inlining.nodes.Inlinable;
 import bd.tools.structure.StructuralProbe;
-import trufflesom.compiler.Variable.AccessNodeState;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
@@ -376,12 +375,6 @@ public class MethodGenerationContext
       return outerVar;
     }
     return null;
-  }
-
-  public ExpressionNode getSuperReadNode(final SourceSection source) {
-    Variable self = getVariable(universe.symSelf);
-    return self.getSuperReadNode(getOuterSelfContextLevel(),
-        new AccessNodeState(holderGenc.getName(), holderGenc.isClassSide()), source);
   }
 
   public ExpressionNode getLocalReadNode(final Variable variable, final SourceSection source) {

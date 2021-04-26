@@ -97,6 +97,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   protected static final List<Symbol> binaryOpSyms        = new ArrayList<Symbol>();
   private static final List<Symbol>   keywordSelectorSyms = new ArrayList<Symbol>();
 
+  protected boolean superSend;
+
   static {
     for (Symbol s : new Symbol[] {Not, And, Or, Star, Div, Mod, Plus, Equal,
         More, Less, Comma, At, Per, NONE}) {
@@ -224,6 +226,10 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     cgenc.setName(universe.symbolFor(text));
     SourceCoordinate coord = getCoordinate();
+    if ("Object".equals(text)) {
+      universe.selfSource = getSource(coord);
+    }
+
     expect(Identifier);
     expect(Equal);
 
@@ -267,7 +273,6 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     } else {
       superName = universe.symbolFor("Object");
     }
-    cgenc.setSuperName(superName);
 
     // Load the super class, if it is not nil (break the dependency cycle)
     if (!superName.getString().equals("nil")) {
@@ -277,9 +282,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
             " could not be loaded", NONE, this);
       }
 
-      cgenc.setInstanceFieldsOfSuper(superClass.getInstanceFieldDefinitions());
-      cgenc.setClassFieldsOfSuper(
-          superClass.getSOMClass(universe).getInstanceFieldDefinitions());
+      cgenc.setSuperClass(superClass);
     }
   }
 
@@ -407,8 +410,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   private void pattern(final MGenC mgenc) throws ProgramDefinitionError {
-    // TODO: can we do that optionally?
-    mgenc.addArgumentIfAbsent(universe.symSelf, getEmptySource());
+    assert universe.selfSource != null;
+    mgenc.addArgumentIfAbsent(universe.symSelf, universe.selfSource);
     switch (sym) {
       case Identifier:
       case Primitive:
@@ -654,11 +657,6 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected ExpressionNode variableRead(final MGenC mgenc, final SSymbol variableName,
       final SourceSection source) {
-    // we need to handle super special here
-    if (universe.symSuper == variableName) {
-      return mgenc.getSuperReadNode(source);
-    }
-
     // now look up first local variables, or method arguments
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {

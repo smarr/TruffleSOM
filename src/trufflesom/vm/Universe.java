@@ -413,10 +413,10 @@ public final class Universe implements IdProvider<SSymbol> {
     loadSystemClass(nilClass);
     loadSystemClass(arrayClass);
     loadSystemClass(methodClass);
+    loadSystemClass(stringClass);
     loadSystemClass(symbolClass);
     loadSystemClass(integerClass);
     loadSystemClass(primitiveClass);
-    loadSystemClass(stringClass);
     loadSystemClass(doubleClass);
     loadSystemClass(booleanClass);
     loadSystemClass(trueClass);
@@ -782,6 +782,10 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal private boolean alreadyInitialized;
 
   @CompilationFinal private boolean objectSystemInitialized = false;
+
+  // "self" considered to be defined by the Object class
+  // we capture the source section here when parsing Object.
+  public SourceSection selfSource;
 
   public boolean isObjectSystemInitialized() {
     return objectSystemInitialized;
