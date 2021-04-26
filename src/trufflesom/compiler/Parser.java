@@ -269,7 +269,6 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     } else {
       superName = universe.symbolFor("Object");
     }
-    cgenc.setSuperName(superName);
 
     // Load the super class, if it is not nil (break the dependency cycle)
     if (!superName.getString().equals("nil")) {

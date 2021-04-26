@@ -52,7 +52,6 @@ public final class ClassGenerationContext {
   }
 
   private SSymbol           name;
-  private SSymbol           superName;
   private SClass            superClass;
   private SourceSection     sourceSection;
   private boolean           classSide;
@@ -87,10 +86,6 @@ public final class ClassGenerationContext {
 
   public SourceSection getSourceSection() {
     return sourceSection;
-  }
-
-  public void setSuperName(final SSymbol superName) {
-    this.superName = superName;
   }
 
   /** Return the super class, considering whether we are instance or class side. */
