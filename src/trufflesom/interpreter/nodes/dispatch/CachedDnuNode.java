@@ -4,13 +4,14 @@ import static trufflesom.vm.SymbolTable.symbolFor;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.GuardedDispatchNode;
 import trufflesom.primitives.basics.SystemPrims.PrintStackTracePrim;
 import trufflesom.vm.Universe;
 import trufflesom.vm.VmSettings;
@@ -18,48 +19,38 @@ import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class CachedDnuNode extends AbstractCachedDispatchNode {
-  private final SSymbol       selector;
-  private final DispatchGuard guard;
+public final class CachedDnuNode extends GuardedDispatchNode {
+  private final SSymbol selector;
+
+  @Child protected DirectCallNode cachedMethod;
 
   public CachedDnuNode(final SClass rcvrClass, final DispatchGuard guard,
-      final SSymbol selector, final AbstractDispatchNode nextInCache,
-      final Universe universe) {
-    super(getDnuCallTarget(rcvrClass, universe), nextInCache);
+      final SSymbol selector) {
+    super(guard);
     this.selector = selector;
-    this.guard = guard;
+
+    cachedMethod = insert(Truffle.getRuntime().createDirectCallNode(
+        getDnuCallTarget(rcvrClass)));
   }
 
   @Override
-  public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
     Object rcvr = arguments[0];
-    try {
-      if (guard.entryMatches(rcvr)) {
-        return performDnu(arguments, rcvr);
-      } else {
-        return nextInCache.executeDispatch(frame, arguments);
-      }
-    } catch (InvalidAssumptionException e) {
-      CompilerDirectives.transferToInterpreter();
-      return replace(nextInCache).executeDispatch(frame, arguments);
-    }
-  }
-
-  public static CallTarget getDnuCallTarget(final SClass rcvrClass, final Universe universe) {
-    return rcvrClass.lookupInvokable(
-        symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
-  }
-
-  protected Object performDnu(final Object[] arguments, final Object rcvr) {
     if (VmSettings.PrintStackTraceOnDNU) {
       CompilerDirectives.transferToInterpreter();
       PrintStackTracePrim.printStackTrace(0, getSourceSection());
       Universe.errorPrintln("Lookup of " + selector + " failed in "
-          + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
+          + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName()
+                 .getString());
     }
 
     Object[] argsArr = new Object[] {
         rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments)};
     return cachedMethod.call(argsArr);
+  }
+
+  public static CallTarget getDnuCallTarget(final SClass rcvrClass) {
+    return rcvrClass.lookupInvokable(
+        symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
   }
 }
