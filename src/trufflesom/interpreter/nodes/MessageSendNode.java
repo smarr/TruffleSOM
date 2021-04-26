@@ -58,9 +58,11 @@ public final class MessageSendNode {
     }
   }
 
+  private static final ExpressionNode[] NO_ARGS = new ExpressionNode[0];
+
   public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
       final SourceSection source, final Universe universe) {
-    return new UninitializedSymbolSendNode(selector, universe).initialize(source);
+    return new UninitializedMessageSendNode(selector, NO_ARGS, universe).initialize(source);
   }
 
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
@@ -116,13 +118,12 @@ public final class MessageSendNode {
     }
   }
 
-  public abstract static class AbstractUninitializedMessageSendNode
-      extends AbstractMessageSendNode {
+  public static final class UninitializedMessageSendNode extends AbstractMessageSendNode {
 
     protected final SSymbol  selector;
     protected final Universe universe;
 
-    protected AbstractUninitializedMessageSendNode(final SSymbol selector,
+    protected UninitializedMessageSendNode(final SSymbol selector,
         final ExpressionNode[] arguments, final Universe universe) {
       super(arguments);
       this.selector = selector;
@@ -135,8 +136,7 @@ public final class MessageSendNode {
     }
 
     @Override
-    public final Object doPreEvaluated(final VirtualFrame frame,
-        final Object[] arguments) {
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
       return specialize(arguments).doPreEvaluated(frame, arguments);
     }
 
@@ -189,24 +189,6 @@ public final class MessageSendNode {
       return selector;
     }
 
-  }
-
-  private static final class UninitializedMessageSendNode
-      extends AbstractUninitializedMessageSendNode {
-
-    protected UninitializedMessageSendNode(final SSymbol selector,
-        final ExpressionNode[] arguments, final Universe universe) {
-      super(selector, arguments, universe);
-    }
-
-  }
-
-  private static final class UninitializedSymbolSendNode
-      extends AbstractUninitializedMessageSendNode {
-
-    protected UninitializedSymbolSendNode(final SSymbol selector, final Universe universe) {
-      super(selector, new ExpressionNode[0], universe);
-    }
   }
 
   // TODO: currently, we do not only specialize the given stuff above, but also what has been
