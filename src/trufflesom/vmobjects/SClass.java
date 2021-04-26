@@ -26,6 +26,7 @@ package trufflesom.vmobjects;
 
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -127,12 +128,19 @@ public final class SClass extends SObject {
 
   @TruffleBoundary
   public SArray getInstanceInvokables() {
-    // TODO: our lookup is optimized and copies down superclass methods
-    // we need to filter them out, by checking the holder here
     if (invokablesTable == null) {
       return SArray.create(0);
     }
-    return SArray.create(invokablesTable.values().toArray(new Object[0]));
+
+    ArrayList<SInvokable> invokables = new ArrayList<>();
+
+    for (SInvokable i : invokablesTable.values()) {
+      if (i.getHolder() == this) {
+        invokables.add(i);
+      }
+    }
+
+    return SArray.create(invokables.toArray(new Object[0]));
   }
 
   public void setInstanceInvokables(final LinkedHashMap<SSymbol, SInvokable> value,
