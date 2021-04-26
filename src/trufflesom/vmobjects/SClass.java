@@ -26,7 +26,10 @@ package trufflesom.vmobjects;
 
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -39,19 +42,20 @@ import com.oracle.truffle.api.source.SourceSection;
 import trufflesom.compiler.Field;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
 import trufflesom.vm.constants.Nil;
-import trufflesom.vmobjects.SInvokable.SPrimitive;
 
 
 public final class SClass extends SObject {
 
   private static final ValueProfile storageType = ValueProfile.createClassProfile();
-  private SourceSection             sourceSection;
+
+  private SourceSection sourceSection;
+  private boolean       hasPrimitives;
 
   public SClass(final int numberOfFields) {
     // Initialize this class by calling the super constructor with the given
     // value
     super(numberOfFields);
-    invokablesTable = new HashMap<SSymbol, SInvokable>();
+    invokablesTable = null;
     this.superclass = Nil.nilObject;
 
     layoutForInstances = new ObjectLayout(numberOfFields, this);
@@ -59,7 +63,7 @@ public final class SClass extends SObject {
 
   public SClass(final SClass clazz) {
     super(clazz);
-    invokablesTable = new HashMap<SSymbol, SInvokable>();
+    invokablesTable = null;
     this.superclass = Nil.nilObject;
   }
 
@@ -122,59 +126,64 @@ public final class SClass extends SObject {
     }
   }
 
+  @TruffleBoundary
   public SArray getInstanceInvokables() {
-    return instanceInvokables;
+    if (invokablesTable == null) {
+      return SArray.create(0);
+    }
+
+    ArrayList<SInvokable> invokables = new ArrayList<>();
+
+    for (SInvokable i : invokablesTable.values()) {
+      if (i.getHolder() == this) {
+        invokables.add(i);
+      }
+    }
+
+    return SArray.create(invokables.toArray(new Object[0]));
   }
 
-  public void setInstanceInvokables(final SArray value) {
-    transferToInterpreterAndInvalidate("SClass.setInstanceInvokables");
-    instanceInvokables = value;
+  public void setInstanceInvokables(final LinkedHashMap<SSymbol, SInvokable> value,
+      final boolean hasPrimitives) {
+    this.hasPrimitives = hasPrimitives;
 
-    // Make sure this class is the holder of all invokables in the array
-    for (int i = 0; i < getNumberOfInstanceInvokables(); i++) {
-      ((SInvokable) instanceInvokables.getObjectStorage(storageType)[i]).setHolder(this);
+    transferToInterpreterAndInvalidate("SClass.setInstanceInvokables");
+    if (value == null || value.isEmpty()) {
+      assert invokablesTable == null;
+      return;
+    }
+
+    invokablesTable = value;
+
+    // Make sure this class is the holder of all invokables
+    for (SInvokable i : invokablesTable.values()) {
+      i.setHolder(this);
     }
   }
 
   public int getNumberOfInstanceInvokables() {
     // Return the number of instance invokables in this class
-    return instanceInvokables.getObjectStorage(storageType).length;
-  }
-
-  public SInvokable getInstanceInvokable(final int index) {
-    return (SInvokable) instanceInvokables.getObjectStorage(storageType)[index];
-  }
-
-  public void setInstanceInvokable(final int index, final SInvokable value) {
-    CompilerAsserts.neverPartOfCompilation();
-    // Set this class as the holder of the given invokable
-    value.setHolder(this);
-
-    instanceInvokables.getObjectStorage(storageType)[index] = value;
-
-    if (invokablesTable.containsKey(value.getSignature())) {
-      invokablesTable.put(value.getSignature(), value);
+    if (invokablesTable == null) {
+      return 0;
     }
+    return invokablesTable.size();
+  }
+
+  public Collection<SInvokable> getInstanceInvokablesForDisassembler() {
+    if (invokablesTable == null) {
+      return null;
+    }
+    return invokablesTable.values();
   }
 
   @TruffleBoundary
   public SInvokable lookupInvokable(final SSymbol selector) {
     SInvokable invokable;
 
-    // Lookup invokable and return if found
-    invokable = invokablesTable.get(selector);
-    if (invokable != null) {
-      return invokable;
-    }
-
-    // Lookup invokable with given signature in array of instance invokables
-    for (int i = 0; i < getNumberOfInstanceInvokables(); i++) {
-      // Get the next invokable in the instance invokable array
-      invokable = getInstanceInvokable(i);
-
-      // Return the invokable if the signature matches
-      if (invokable.getSignature() == selector) {
-        invokablesTable.put(selector, invokable);
+    if (invokablesTable != null) {
+      // Lookup invokable and return if found
+      invokable = invokablesTable.get(selector);
+      if (invokable != null) {
         return invokable;
       }
     }
@@ -183,6 +192,9 @@ public final class SClass extends SObject {
     if (hasSuperClass()) {
       invokable = ((SClass) getSuperClass()).lookupInvokable(selector);
       if (invokable != null) {
+        if (invokablesTable == null) {
+          invokablesTable = new LinkedHashMap<>();
+        }
         invokablesTable.put(selector, invokable);
         return invokable;
       }
@@ -205,24 +217,11 @@ public final class SClass extends SObject {
     return -1;
   }
 
-  public boolean addInstanceInvokable(final SInvokable value) {
+  public void addPrimitive(final SInvokable value) {
     CompilerAsserts.neverPartOfCompilation("SClass.addInstanceInvokable(.)");
 
-    // Add the given invokable to the array of instance invokables
-    for (int i = 0; i < getNumberOfInstanceInvokables(); i++) {
-      // Get the next invokable in the instance invokable array
-      SInvokable invokable = getInstanceInvokable(i);
-
-      // Replace the invokable with the given one if the signature matches
-      if (invokable.getSignature() == value.getSignature()) {
-        setInstanceInvokable(i, value);
-        return false;
-      }
-    }
-
-    // Append the given method to the array of instance methods
-    instanceInvokables = instanceInvokables.copyAndExtendWith(value);
-    return true;
+    value.setHolder(this);
+    invokablesTable.put(value.getSignature(), value);
   }
 
   public SSymbol getInstanceFieldName(final int index) {
@@ -233,20 +232,8 @@ public final class SClass extends SObject {
     return instanceFields.getObjectStorage(storageType).length;
   }
 
-  private static boolean includesPrimitives(final SClass clazz) {
-    CompilerAsserts.neverPartOfCompilation("SClass.includesPrimitives(.)");
-    // Lookup invokable with given signature in array of instance invokables
-    for (int i = 0; i < clazz.getNumberOfInstanceInvokables(); i++) {
-      // Get the next invokable in the instance invokable array
-      if (clazz.getInstanceInvokable(i) instanceof SPrimitive) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   public boolean hasPrimitives() {
-    return includesPrimitives(this) || includesPrimitives(clazz);
+    return this.hasPrimitives || clazz.hasPrimitives;
   }
 
   public ObjectLayout getLayoutForInstances() {
@@ -280,11 +267,10 @@ public final class SClass extends SObject {
   }
 
   // Mapping of symbols to invokables
-  private final HashMap<SSymbol, SInvokable> invokablesTable;
+  @CompilationFinal private HashMap<SSymbol, SInvokable> invokablesTable;
 
   @CompilationFinal private SObject superclass;
   @CompilationFinal private SSymbol name;
-  @CompilationFinal private SArray  instanceInvokables;
   @CompilationFinal private SArray  instanceFields;
 
   @CompilationFinal(dimensions = 1) private Field[] instanceFieldDefinitions;

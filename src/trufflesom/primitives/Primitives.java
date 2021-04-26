@@ -182,7 +182,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
           + target.getName().getString() + ". Can't install a primitive for it.";
       SInvokable prim = constructPrimitive(
           e.getKey(), ivk.getSourceSection(), universe.getLanguage(), e.getValue(), probe);
-      target.addInstanceInvokable(prim);
+      target.addPrimitive(prim);
     }
   }
 

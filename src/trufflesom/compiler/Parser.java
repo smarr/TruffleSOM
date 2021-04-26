@@ -243,7 +243,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
 
     if (accept(Separator)) {
-      cgenc.setClassSide(true);
+      cgenc.switchToClassSide();
       classFields(cgenc);
       while (isIdentifier(sym) || sym == Keyword || sym == OperatorSequence
           || symIn(binaryOpSyms)) {
