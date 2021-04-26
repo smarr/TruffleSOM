@@ -125,6 +125,7 @@ public final class SClass extends SObject {
     }
   }
 
+  @TruffleBoundary
   public SArray getInstanceInvokables() {
     // TODO: our lookup is optimized and copies down superclass methods
     // we need to filter them out, by checking the holder here
