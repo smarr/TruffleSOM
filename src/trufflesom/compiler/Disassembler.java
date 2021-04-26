@@ -25,6 +25,8 @@
 
 package trufflesom.compiler;
 
+import java.util.Collection;
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
 import trufflesom.vm.Universe;
@@ -39,9 +41,12 @@ public final class Disassembler {
 
   @TruffleBoundary
   public static void dump(final SClass cl) {
-    for (int i = 0; i < cl.getNumberOfInstanceInvokables(); i++) {
-      SInvokable inv = cl.getInstanceInvokable(i);
+    Collection<SInvokable> invokables = cl.getInstanceInvokablesForDisassembler();
+    if (invokables == null) {
+      return;
+    }
 
+    for (SInvokable inv : invokables) {
       // output header and skip if the Invokable is a Primitive
       Universe.errorPrint(cl.getName().toString() + ">>"
           + inv.getSignature().toString() + " = ");

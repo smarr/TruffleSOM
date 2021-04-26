@@ -508,10 +508,6 @@ public final class Universe implements IdProvider<SSymbol> {
     systemClass.setInstanceFields(Arrays.asList());
     systemClass.getSOMClass(this).setInstanceFields(Arrays.asList());
 
-    // Initialize the array of instance invokables
-    systemClass.setInstanceInvokables(SArray.create(new Object[0]));
-    systemClass.getSOMClass(this).setInstanceInvokables(SArray.create(new Object[0]));
-
     // Initialize the name of the system class
     systemClass.setName(symbolFor(name));
     systemClass.getSOMClass(this).setName(symbolFor(name + " class"));

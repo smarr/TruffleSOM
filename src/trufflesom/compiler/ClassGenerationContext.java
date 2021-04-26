@@ -25,6 +25,7 @@
 package trufflesom.compiler;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -33,9 +34,9 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.Universe;
-import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SPrimitive;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -50,14 +51,18 @@ public final class ClassGenerationContext {
     this.structuralProbe = structuralProbe;
   }
 
-  private SSymbol                name;
-  private SSymbol                superName;
-  private SourceSection          sourceSection;
-  private boolean                classSide;
-  private final List<Field>      instanceFields  = new ArrayList<>();
-  private final List<SInvokable> instanceMethods = new ArrayList<SInvokable>();
-  private final List<Field>      classFields     = new ArrayList<>();
-  private final List<SInvokable> classMethods    = new ArrayList<SInvokable>();
+  private SSymbol           name;
+  private SSymbol           superName;
+  private SourceSection     sourceSection;
+  private boolean           classSide;
+  private final List<Field> instanceFields = new ArrayList<>();
+  private final List<Field> classFields    = new ArrayList<>();
+
+  private final LinkedHashMap<SSymbol, SInvokable> instanceMethods = new LinkedHashMap<>();
+  private final LinkedHashMap<SSymbol, SInvokable> classMethods    = new LinkedHashMap<>();
+
+  private boolean instanceHasPrimitives = false;
+  private boolean classHasPrimitives    = false;
 
   public SomLanguage getLanguage() {
     return universe.getLanguage();
@@ -100,15 +105,21 @@ public final class ClassGenerationContext {
   }
 
   public void addInstanceMethod(final SInvokable meth) {
-    instanceMethods.add(meth);
+    instanceMethods.put(meth.getSignature(), meth);
+    if (meth instanceof SPrimitive) {
+      instanceHasPrimitives = true;
+    }
   }
 
-  public void setClassSide(final boolean b) {
-    classSide = b;
+  public void switchToClassSide() {
+    classSide = true;
   }
 
   public void addClassMethod(final SInvokable meth) {
-    classMethods.add(meth);
+    classMethods.put(meth.getSignature(), meth);
+    if (meth instanceof SPrimitive) {
+      classHasPrimitives = true;
+    }
   }
 
   public void addInstanceField(final SSymbol name, final SourceSection source) {
@@ -166,8 +177,7 @@ public final class ClassGenerationContext {
 
     // Initialize the class of the resulting class
     resultClass.setInstanceFields(classFields);
-    resultClass.setInstanceInvokables(
-        SArray.create(classMethods.toArray(new Object[0])));
+    resultClass.setInstanceInvokables(classMethods, classHasPrimitives);
     resultClass.setName(universe.symbolFor(ccname));
 
     SClass superMClass = superClass == null ? null : superClass.getSOMClass(universe);
@@ -185,7 +195,7 @@ public final class ClassGenerationContext {
     result.setName(name);
     result.setSuperClass(superClass);
     result.setInstanceFields(instanceFields);
-    result.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
+    result.setInstanceInvokables(instanceMethods, instanceHasPrimitives);
     result.setSourceSection(sourceSection);
 
     if (structuralProbe != null) {
@@ -196,7 +206,7 @@ public final class ClassGenerationContext {
 
   @TruffleBoundary
   public void assembleSystemClass(final SClass systemClass) {
-    systemClass.setInstanceInvokables(SArray.create(instanceMethods.toArray(new Object[0])));
+    systemClass.setInstanceInvokables(instanceMethods, instanceHasPrimitives);
     systemClass.setInstanceFields(instanceFields);
 
     if (structuralProbe != null) {
@@ -205,7 +215,7 @@ public final class ClassGenerationContext {
 
     // class-bound == class-instance-bound
     SClass superMClass = systemClass.getSOMClass(universe);
-    superMClass.setInstanceInvokables(SArray.create(classMethods.toArray(new Object[0])));
+    superMClass.setInstanceInvokables(classMethods, classHasPrimitives);
     superMClass.setInstanceFields(classFields);
 
     if (structuralProbe != null) {
