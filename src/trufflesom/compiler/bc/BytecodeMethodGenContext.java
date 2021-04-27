@@ -182,6 +182,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode.add(code);
   }
 
+  public void replaceWith(final SMethod oldBlock, final SMethod newBlock) {
+    boolean wasInList = embeddedBlockMethods.remove(oldBlock);
+    assert wasInList : "The block to be removed is expected to be in the list of embedded methods";
+    embeddedBlockMethods.add(newBlock);
+  }
+
   public void patchJumpOffsetToPointToNextInstruction(final int idxOfOffset,
       final ParserBc parser) throws ParseError {
     int instructionStart = idxOfOffset - 1;

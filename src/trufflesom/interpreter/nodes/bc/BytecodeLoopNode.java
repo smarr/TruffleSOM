@@ -1334,6 +1334,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
               blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
           newMethod.setHolder(blockMethod.getHolder());
+          mgenc.replaceWith(blockMethod, newMethod);
           mgenc.addLiteralIfAbsent(newMethod, null);
           emitPUSHBLOCK(mgenc, newMethod, bytecodes[i] == PUSH_BLOCK);
           break;

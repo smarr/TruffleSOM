@@ -1,5 +1,6 @@
 package trufflesom.interpreter;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -20,7 +21,7 @@ public abstract class Invokable extends RootNode {
 
   protected final ExpressionNode uninitializedBody;
 
-  protected SClass holder;
+  @CompilationFinal protected SClass holder;
 
   protected Invokable(final String name, final SourceSection sourceSection,
       final FrameDescriptor frameDescriptor,

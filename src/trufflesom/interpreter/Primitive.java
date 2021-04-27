@@ -26,8 +26,10 @@ public final class Primitive extends Invokable {
   @Override
   public Node deepCopy() {
     assert getFrameDescriptor().getSize() == 0 : "Make sure there are no slots to be taken care off";
-    return new Primitive(name, sourceSection, NodeUtil.cloneNode(uninitializedBody),
+    Primitive p = new Primitive(name, sourceSection, NodeUtil.cloneNode(uninitializedBody),
         getFrameDescriptor(), uninitializedBody, getLanguage(SomLanguage.class));
+    p.setHolder(holder);
+    return p;
   }
 
   @Override

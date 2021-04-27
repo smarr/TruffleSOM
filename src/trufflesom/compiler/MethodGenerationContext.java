@@ -90,7 +90,7 @@ public class MethodGenerationContext
   private Internal             frameOnStack;
   protected final LexicalScope currentScope;
 
-  private final List<SMethod> embeddedBlockMethods;
+  protected final List<SMethod> embeddedBlockMethods;
 
   public final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
