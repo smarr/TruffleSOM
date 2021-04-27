@@ -1263,7 +1263,12 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP2_ON_FALSE_TOP_NIL:
         case JUMP2_ON_TRUE_POP:
         case JUMP2_ON_FALSE_POP:
-        case JUMP2_BACKWARDS: {
+        case JUMP2_BACKWARDS:
+        case Q_PUSH_GLOBAL:
+        case Q_SEND:
+        case Q_SEND_1:
+        case Q_SEND_2:
+        case Q_SEND_3: {
           break;
         }
 
