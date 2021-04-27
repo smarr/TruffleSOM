@@ -74,7 +74,8 @@ public final class MessageSendNode {
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
       final ExpressionNode[] argumentNodes, final SourceSection source,
       final Universe universe) {
-    return new GenericMessageSendNode(selector, argumentNodes, universe).initialize(source);
+    return new GenericMessageSendNode(
+        selector, argumentNodes, universe, true).initialize(source);
   }
 
   public static AbstractMessageSendNode createSuperSend(final SClass superClass,
@@ -134,10 +135,16 @@ public final class MessageSendNode {
     @Child private GuardedDispatchNode dispatchCache;
 
     private GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
-        final Universe universe) {
+        final Universe universe, final boolean triedEager) {
       super(arguments);
       this.selector = selector;
       this.universe = universe;
+      this.triedEager = triedEager;
+    }
+
+    private GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
+        final Universe universe) {
+      this(selector, arguments, universe, false);
     }
 
     @Override
