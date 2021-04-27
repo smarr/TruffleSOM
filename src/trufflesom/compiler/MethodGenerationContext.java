@@ -42,6 +42,7 @@ import bd.basic.ProgramDefinitionError;
 import bd.inlining.Scope;
 import bd.inlining.ScopeBuilder;
 import bd.inlining.nodes.Inlinable;
+import bd.source.SourceCoordinate;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
@@ -512,10 +513,35 @@ public class MethodGenerationContext
     return signature;
   }
 
+  private String stripColonsAndSourceLocation(String str) {
+    int startOfSource = str.indexOf('@');
+    if (startOfSource > -1) {
+      str = str.substring(0, startOfSource);
+    }
+
+    // replacing classic colons with triple colons to still indicate them without breaking
+    // selector semantics based on colon counting
+    return str.replace(":", "⫶");
+  }
+
+  public void setBlockSignature(final SourceCoordinate coord) {
+    String outerMethodName =
+        stripColonsAndSourceLocation(outerGenc.getSignature().getString());
+
+    int argSize = getNumberOfArguments();
+    String blockSig = "λ" + outerMethodName + "@" + coord.startLine + "@" + coord.startColumn;
+
+    for (int i = 1; i < argSize; i++) {
+      blockSig += ":";
+    }
+
+    setSignature(universe.symbolFor(blockSig));
+  }
+
   @Override
   public String toString() {
-    return "MethodGenC(" + holderGenc.getName().getString() + ">>" + signature.toString()
-        + ")";
+    String sig = signature == null ? "" : signature.toString();
+    return "MethodGenC(" + holderGenc.getName().getString() + ">>" + sig + ")";
   }
 
   @Override
