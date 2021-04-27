@@ -5,6 +5,8 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.ReportPolymorphism;
+import com.oracle.truffle.api.dsl.ReportPolymorphism.Megamorphic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -40,6 +42,7 @@ public abstract class BlockPrims {
     }
   }
 
+  @ReportPolymorphism
   @GenerateNodeFactory
   @Primitive(className = "Block", primitive = "value")
   @Primitive(className = "Block1", primitive = "value")
@@ -60,6 +63,7 @@ public abstract class BlockPrims {
     }
 
     @Specialization
+    @Megamorphic
     public final Object generic(final SBlock receiver) {
       return receiver.getMethod().invoke(new Object[] {receiver});
     }
@@ -70,6 +74,7 @@ public abstract class BlockPrims {
     }
   }
 
+  @ReportPolymorphism
   @GenerateNodeFactory
   @Primitive(className = "Block2", primitive = "value:", selector = "value:", inParser = false,
       receiverType = SBlock.class)
@@ -88,11 +93,13 @@ public abstract class BlockPrims {
     }
 
     @Specialization
+    @Megamorphic
     public final Object generic(final SBlock receiver, final Object arg) {
       return receiver.getMethod().invoke(new Object[] {receiver, arg});
     }
   }
 
+  @ReportPolymorphism
   @GenerateNodeFactory
   @Primitive(className = "Block3", primitive = "value:with:", selector = "value:with:",
       inParser = false, receiverType = SBlock.class)
@@ -111,6 +118,7 @@ public abstract class BlockPrims {
     }
 
     @Specialization
+    @Megamorphic
     public final Object generic(final SBlock receiver, final Object arg1, final Object arg2) {
       return receiver.getMethod().invoke(new Object[] {receiver, arg1, arg2});
     }
