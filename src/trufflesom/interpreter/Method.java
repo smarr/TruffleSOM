@@ -92,6 +92,7 @@ public final class Method extends Invokable {
     Method clone = new Method(name, sourceSection, adaptedBody, adaptedScope, uninit,
         getLanguage(SomLanguage.class));
     adaptedScope.setMethod(clone);
+    clone.setHolder(holder);
     return clone;
   }
 
