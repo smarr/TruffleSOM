@@ -148,6 +148,7 @@ public final class MessageSendNode {
     }
 
     @Override
+    @ExplodeLoop
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
 
