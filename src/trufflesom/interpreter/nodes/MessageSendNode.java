@@ -184,8 +184,6 @@ public final class MessageSendNode {
           }
           continue;
         }
-        // cache guard
-        // --> apply cache
         cache = cache.next;
       }
 
@@ -201,7 +199,31 @@ public final class MessageSendNode {
 
     @Override
     public NodeCost getCost() {
-      return NodeCost.NONE;
+      if (!triedEager) {
+        return NodeCost.UNINITIALIZED;
+      }
+
+      GuardedDispatchNode cache = dispatchCache;
+
+      if (cache instanceof GenericDispatchNode) {
+        return NodeCost.MEGAMORPHIC;
+      }
+
+      int cacheSize = 0;
+      while (cache != null) {
+        cache = cache.next;
+        cacheSize += 1;
+      }
+
+      if (cacheSize == 0) {
+        return NodeCost.UNINITIALIZED;
+      }
+
+      if (cacheSize == 1) {
+        return NodeCost.MONOMORPHIC;
+      }
+
+      return NodeCost.POLYMORPHIC;
     }
 
     private PreevaluatedExpression specialize(final Object[] arguments) {
@@ -259,6 +281,7 @@ public final class MessageSendNode {
         }
 
         if (first != null) {
+          reportPolymorphicSpecialize();
           node.next = node.insertHere(first);
         }
         dispatchCache = insert(node);
@@ -269,6 +292,7 @@ public final class MessageSendNode {
       // thus, this callsite is considered to be megaprophic, and we generalize it.
       GenericDispatchNode generic = new GenericDispatchNode(selector, universe);
       dispatchCache = insert(generic);
+      reportPolymorphicSpecialize();
       return generic;
     }
 
