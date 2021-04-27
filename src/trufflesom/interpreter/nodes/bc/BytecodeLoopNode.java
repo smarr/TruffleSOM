@@ -144,6 +144,13 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     this.frameOnStackMarker = frameOnStackMarker;
   }
 
+  @Override
+  public Node deepCopy() {
+    return new BytecodeLoopNode(
+        bytecodes.clone(), numLocals, localsAndOuters, literalsAndConstants,
+        maxStackDepth, frameOnStackMarker, universe).initialize(sourceSection);
+  }
+
   @ExplodeLoop
   private VirtualFrame determineOuterContext(final VirtualFrame frame) {
     // TODO: change bytecode format to include the context level
