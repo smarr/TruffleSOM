@@ -11,10 +11,9 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
-import trufflesom.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
-import trufflesom.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
+import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
 import trufflesom.primitives.basics.LengthPrim;
 import trufflesom.primitives.basics.LengthPrimFactory;
 import trufflesom.vmobjects.SArray;
@@ -24,16 +23,15 @@ import trufflesom.vmobjects.SBlock;
 @GenerateNodeFactory
 @Primitive(className = "Array", primitive = "doIndexes:", selector = "doIndexes:",
     receiverType = SArray.class, disabled = true)
-public abstract class DoIndexesPrim extends BinaryExpressionNode
-    implements ValuePrimitiveNode {
-  @Child private AbstractDispatchNode block;
-  @Child private LengthPrim           length;
+public abstract class DoIndexesPrim extends BinaryExpressionNode {
+  @Child private ValueOnePrim block;
+  @Child private LengthPrim   length;
 
   @Override
   @SuppressWarnings("unchecked")
   public DoIndexesPrim initialize(final SourceSection source) {
     super.initialize(source);
-    block = new UninitializedValuePrimDispatchNode();
+    block = ValueOnePrimFactory.create(null, null);
     length = LengthPrimFactory.create(null);
     return this;
   }
@@ -50,13 +48,13 @@ public abstract class DoIndexesPrim extends BinaryExpressionNode
     try {
       assert SArray.FIRST_IDX == 0;
       if (SArray.FIRST_IDX < length) {
-        this.block.executeDispatch(frame, new Object[] {
+        this.block.executeEvaluated(
             // +1 because it is going to the Smalltalk level
-            block, (long) SArray.FIRST_IDX + 1});
+            block, (long) SArray.FIRST_IDX + 1);
       }
       for (long i = 1; i < length; i++) {
-        this.block.executeDispatch(frame, new Object[] {
-            block, i + 1}); // +1 because it is going to the Smalltalk level
+        this.block.executeEvaluated(
+            block, i + 1); // +1 because it is going to the Smalltalk level
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -77,8 +75,4 @@ public abstract class DoIndexesPrim extends BinaryExpressionNode
     }
   }
 
-  @Override
-  public void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-    block = insert(node);
-  }
 }

@@ -144,6 +144,13 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     this.frameOnStackMarker = frameOnStackMarker;
   }
 
+  @Override
+  public Node deepCopy() {
+    return new BytecodeLoopNode(
+        bytecodes.clone(), numLocals, localsAndOuters, literalsAndConstants,
+        maxStackDepth, frameOnStackMarker, universe).initialize(sourceSection);
+  }
+
   @ExplodeLoop
   private VirtualFrame determineOuterContext(final VirtualFrame frame) {
     // TODO: change bytecode format to include the context level
@@ -183,8 +190,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     return frameType.profile(self.getContext());
   }
 
-  public void requicken(final int bytecodeIndex, final byte bytecode) {
+  public void requicken(final int bytecodeIndex, final byte bytecode, final Node node) {
     bytecodes[bytecodeIndex] = bytecode;
+    quickened[bytecodeIndex] = insert(node);
   }
 
   @Override
@@ -1264,6 +1272,19 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP2_ON_TRUE_POP:
         case JUMP2_ON_FALSE_POP:
         case JUMP2_BACKWARDS: {
+          break;
+        }
+
+        case Q_PUSH_GLOBAL: {
+          bytecodes[i] = PUSH_GLOBAL;
+          break;
+        }
+
+        case Q_SEND:
+        case Q_SEND_1:
+        case Q_SEND_2:
+        case Q_SEND_3: {
+          bytecodes[i] = SEND;
           break;
         }
 

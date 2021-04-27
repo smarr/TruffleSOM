@@ -12,10 +12,9 @@ import com.oracle.truffle.api.profiles.ValueProfile;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
-import trufflesom.interpreter.nodes.dispatch.UninitializedValuePrimDispatchNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
-import trufflesom.primitives.basics.BlockPrims.ValuePrimitiveNode;
+import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
+import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SArray.ArrayType;
@@ -27,19 +26,9 @@ import trufflesom.vmobjects.SBlock;
 @ImportStatic(ArrayType.class)
 @Primitive(className = "Array", primitive = "do:", selector = "do:",
     receiverType = SArray.class, disabled = true)
-public abstract class DoPrim extends BinaryExpressionNode
-    implements ValuePrimitiveNode {
-  @Child private AbstractDispatchNode block       = new UninitializedValuePrimDispatchNode();
-  private final ValueProfile          storageType = ValueProfile.createClassProfile();
-
-  @Override
-  public void adoptNewDispatchListHead(final AbstractDispatchNode node) {
-    block = insert(node);
-  }
-
-  private void execBlock(final VirtualFrame frame, final SBlock block, final Object arg) {
-    this.block.executeDispatch(frame, new Object[] {block, arg});
-  }
+public abstract class DoPrim extends BinaryExpressionNode {
+  @Child private ValueOnePrim block       = ValueOnePrimFactory.create(null, null);
+  private final ValueProfile  storageType = ValueProfile.createClassProfile();
 
   @Specialization(guards = "isEmptyType(arr)")
   public final SArray doEmptyArray(final VirtualFrame frame,
@@ -47,10 +36,10 @@ public abstract class DoPrim extends BinaryExpressionNode
     int length = arr.getEmptyStorage(storageType);
     try {
       if (SArray.FIRST_IDX < length) {
-        execBlock(frame, block, Nil.nilObject);
+        this.block.executeEvaluated(block, Nil.nilObject);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        execBlock(frame, block, Nil.nilObject);
+        this.block.executeEvaluated(block, Nil.nilObject);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -67,10 +56,10 @@ public abstract class DoPrim extends BinaryExpressionNode
     int length = storage.getLength();
     try {
       if (SArray.FIRST_IDX < length) {
-        execBlock(frame, block, storage.get(SArray.FIRST_IDX));
+        this.block.executeEvaluated(block, storage.get(SArray.FIRST_IDX));
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        execBlock(frame, block, storage.get(i));
+        this.block.executeEvaluated(block, storage.get(i));
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -87,10 +76,10 @@ public abstract class DoPrim extends BinaryExpressionNode
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        execBlock(frame, block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        execBlock(frame, block, storage[(int) i]);
+        this.block.executeEvaluated(block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -107,10 +96,10 @@ public abstract class DoPrim extends BinaryExpressionNode
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        execBlock(frame, block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        execBlock(frame, block, storage[(int) i]);
+        this.block.executeEvaluated(block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -127,10 +116,10 @@ public abstract class DoPrim extends BinaryExpressionNode
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        execBlock(frame, block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        execBlock(frame, block, storage[(int) i]);
+        this.block.executeEvaluated(block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -147,10 +136,10 @@ public abstract class DoPrim extends BinaryExpressionNode
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        execBlock(frame, block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        execBlock(frame, block, storage[(int) i]);
+        this.block.executeEvaluated(block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {

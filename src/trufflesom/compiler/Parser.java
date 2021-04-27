@@ -398,7 +398,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       blockPattern(mgenc);
     }
 
-    mgenc.setSignature(createBlockSignature(mgenc));
+    mgenc.setBlockSignature(coord);
 
     ExpressionNode expressions = blockContents(mgenc);
 
@@ -629,17 +629,6 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     String s = new String(text);
     expect(STString);
     return s;
-  }
-
-  protected SSymbol createBlockSignature(final MGenC mgenc) {
-    String blockSig =
-        "$blockMethod@" + lexer.getCurrentLineNumber() + "@" + lexer.getCurrentColumn();
-    int argSize = mgenc.getNumberOfArguments();
-    for (int i = 1; i < argSize; i++) {
-      blockSig += ":";
-    }
-
-    return universe.symbolFor(blockSig);
   }
 
   protected void blockPattern(final MGenC mgenc) throws ProgramDefinitionError {

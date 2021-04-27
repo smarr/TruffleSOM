@@ -38,6 +38,8 @@ explore.add_argument('-l', '--low-level', help='enable low-level optimization ou
                     dest='low_level', action='store_true', default=False)
 explore.add_argument('-ti', '--trace-invalidation', help='trace assumption invalidation and transfers to interpreter',
                     dest='trace_invalidation', action='store_true', default=False)
+explore.add_argument('-ts', '--trace-splitting', help='trace splitting decisions',
+                    dest='trace_splitting', action='store_true', default=False)
 explore.add_argument('-w', '--perf-warnings', help='enable performance warnings',
                     dest='perf_warnings', action='store_true', default=False)
 explore.add_argument('-v', '--visual-vm', help='connect to VisualVM for profiling',
@@ -233,6 +235,7 @@ if sys.argv[0].endswith('fast'):
     args.no_trace = True
 if sys.argv[0].endswith('debug'):
     args.perf_warnings = True
+    args.trace_splitting = True
     args.background_compilation = False
 
 if args.only_igv:
@@ -273,6 +276,9 @@ if not args.interpreter and args.perf_warnings:
 if not args.interpreter and args.trace_invalidation:
     flags += ['-Dpolyglot.engine.TraceTransferToInterpreter=true',
               '-Dpolyglot.engine.TraceAssumptions=true']
+if not args.interpreter and args.trace_splitting:
+    flags += ['-Dpolyglot.engine.TraceSplittingSummary=true',
+              '-Dpolyglot.engine.TraceSplitting=true']
 if not args.interpreter and args.only_compile:
     flags.append("-Dpolyglot.engine.CompileOnly=%s" % args.only_compile)
 if args.visual_vm:
