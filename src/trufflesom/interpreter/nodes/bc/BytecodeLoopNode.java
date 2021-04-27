@@ -183,8 +183,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     return frameType.profile(self.getContext());
   }
 
-  public void requicken(final int bytecodeIndex, final byte bytecode) {
+  public void requicken(final int bytecodeIndex, final byte bytecode, final Node node) {
     bytecodes[bytecodeIndex] = bytecode;
+    quickened[bytecodeIndex] = insert(node);
   }
 
   @Override

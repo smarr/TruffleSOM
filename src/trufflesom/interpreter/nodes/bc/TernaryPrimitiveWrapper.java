@@ -58,8 +58,8 @@ public class TernaryPrimitiveWrapper extends TernaryExpressionNode {
         MessageSendNode.createGeneric(selector, null, sourceSection, universe);
 
     assert getParent() instanceof BytecodeLoopNode : "TernaryPrimitiveWrapper are expected to be direct children of a `BytecodeLoopNode`.";
-    ((BytecodeLoopNode) getParent()).requicken(bytecodeIndex, Q_SEND);
+    ((BytecodeLoopNode) getParent()).requicken(bytecodeIndex, Q_SEND, node);
 
-    return replace(node);
+    return node;
   }
 }
