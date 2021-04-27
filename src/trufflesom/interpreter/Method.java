@@ -71,7 +71,7 @@ public final class Method extends Invokable {
 
   @Override
   public String toString() {
-    return "Method " + getName() + " @" + Integer.toHexString(hashCode());
+    return getName() + " @" + Integer.toHexString(hashCode());
   }
 
   public Method cloneAndAdaptAfterScopeChange(final BytecodeMethodGenContext mgenc,
