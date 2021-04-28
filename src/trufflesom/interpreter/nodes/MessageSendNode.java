@@ -149,26 +149,8 @@ public final class MessageSendNode {
             return cache.doPreEvaluated(frame, arguments);
           }
         } catch (InvalidAssumptionException e) {
-          // Remove invalid node from dispatch chain
           CompilerDirectives.transferToInterpreterAndInvalidate();
-          if (cache.getParent() == this) {
-            if (cache.next == null) {
-              dispatchCache = null;
-              cache = null;
-            } else {
-              dispatchCache = insert(cache.next);
-              cache = cache.next;
-            }
-          } else {
-            GuardedDispatchNode parent = (GuardedDispatchNode) cache.getParent();
-            if (cache.next == null) {
-              parent.next = null;
-              cache = null;
-            } else {
-              parent.next = insert(cache.next);
-              cache = cache.next;
-            }
-          }
+          cache = removeInvalidEntryAndReturnNext(cache);
           continue;
         }
         cache = cache.next;
@@ -179,9 +161,41 @@ public final class MessageSendNode {
       return specialize(arguments).doPreEvaluated(frame, arguments);
     }
 
+    private GuardedDispatchNode removeInvalidEntryAndReturnNext(
+        final GuardedDispatchNode cache) {
+      if (cache.getParent() == this) {
+        if (cache.next == null) {
+          dispatchCache = null;
+          return null;
+        } else {
+          dispatchCache = insert(cache.next);
+          return cache.next;
+        }
+      } else {
+        GuardedDispatchNode parent = (GuardedDispatchNode) cache.getParent();
+        if (cache.next == null) {
+          parent.next = null;
+          return null;
+        } else {
+          parent.next = parent.insertHere(cache.next);
+          return cache.next;
+        }
+      }
+    }
+
     @Override
     public String toString() {
       return "GMsgSend(" + selector.getString() + ")";
+    }
+
+    private int getCacheSize(GuardedDispatchNode cache) {
+      int cacheSize = 0;
+      while (cache != null) {
+        cache = cache.next;
+        cacheSize += 1;
+      }
+
+      return cacheSize;
     }
 
     @Override
@@ -196,11 +210,7 @@ public final class MessageSendNode {
         return NodeCost.MEGAMORPHIC;
       }
 
-      int cacheSize = 0;
-      while (cache != null) {
-        cache = cache.next;
-        cacheSize += 1;
-      }
+      int cacheSize = getCacheSize(cache);
 
       if (cacheSize == 0) {
         return NodeCost.UNINITIALIZED;
@@ -223,12 +233,8 @@ public final class MessageSendNode {
       }
 
       final GuardedDispatchNode first = dispatchCache;
-      GuardedDispatchNode cache = first;
-      int cacheSize = 0;
-      while (cache != null) {
-        cache = cache.next;
-        cacheSize += 1;
-      }
+
+      int cacheSize = getCacheSize(first);
 
       Object rcvr = arguments[0];
       assert rcvr != null;
