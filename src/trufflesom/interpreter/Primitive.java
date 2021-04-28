@@ -40,8 +40,7 @@ public final class Primitive extends Invokable {
 
   @Override
   public String toString() {
-    return expressionOrSequence.getClass().getSimpleName() + "@"
-        + Integer.toHexString(hashCode());
+    return expressionOrSequence.getClass().getSimpleName();
   }
 
   @Override
