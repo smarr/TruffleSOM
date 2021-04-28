@@ -111,12 +111,8 @@ public final class Universe implements IdProvider<SSymbol> {
   }
 
   public static void main(final String[] arguments) {
-    Value returnCode = eval(arguments, false);
-    if (returnCode.isNumber()) {
-      System.exit(returnCode.asInt());
-    } else {
-      System.exit(0);
-    }
+    int returnCode = eval(arguments, false);
+    System.exit(returnCode);
   }
 
   public static Builder createContextBuilder(final boolean interpreterOnly) {
@@ -132,7 +128,7 @@ public final class Universe implements IdProvider<SSymbol> {
     return builder;
   }
 
-  public static Value eval(final String[] arguments, final boolean interpreterOnly) {
+  public static int eval(final String[] arguments, final boolean interpreterOnly) {
     StorageAnalyzer.initAccessors();
 
     Builder builder = createContextBuilder(interpreterOnly);
@@ -145,8 +141,15 @@ public final class Universe implements IdProvider<SSymbol> {
 
     Context context = builder.build();
 
-    Value returnCode = context.eval(SomLanguage.START);
-    return returnCode;
+    try {
+      Value returnCode = context.eval(SomLanguage.START);
+      if (returnCode.isNumber()) {
+        return returnCode.asInt();
+      }
+      return Integer.MIN_VALUE;
+    } finally {
+      context.close();
+    }
   }
 
   public Object interpret(String[] arguments) {

@@ -33,7 +33,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import trufflesom.vm.Universe;
-import trufflesom.vmobjects.SObject;
 
 
 @RunWith(Parameterized.class)
@@ -95,15 +94,8 @@ public class SomTests {
 
   @Test
   public void testSomeTest() {
-    Value returnCode = Universe.eval(
+    int returnCode = Universe.eval(
         new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName}, true);
-    if (returnCode.isNumber()) {
-      assertEquals(0, returnCode.asInt());
-    } else {
-      SObject obj = (SObject) readValue(returnCode);
-
-      assertEquals("System",
-          obj.getSOMClass(null).getName().getString());
-    }
+    assertEquals(0, returnCode);
   }
 }
