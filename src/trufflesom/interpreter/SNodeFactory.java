@@ -11,7 +11,6 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
-import trufflesom.interpreter.nodes.ContextualNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
@@ -22,8 +21,6 @@ import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteN
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SequenceNode;
-import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
-import trufflesom.interpreter.nodes.UninitializedVariableNode.UninitializedVariableWriteNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.vm.Universe;
 
@@ -51,11 +48,6 @@ public final class SNodeFactory {
     return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(source);
   }
 
-  public static ContextualNode createLocalVarRead(final Local variable,
-      final int contextLevel, final SourceSection source) {
-    return new UninitializedVariableReadNode(variable, contextLevel).initialize(source);
-  }
-
   public static ExpressionNode createArgumentRead(final Argument variable,
       final int contextLevel, final SourceSection source) {
     if (contextLevel == 0) {
@@ -63,11 +55,6 @@ public final class SNodeFactory {
     } else {
       return new NonLocalArgumentReadNode(variable, contextLevel).initialize(source);
     }
-  }
-
-  public static ContextualNode createVariableWrite(final Local variable,
-      final int contextLevel, final ExpressionNode exp, final SourceSection source) {
-    return new UninitializedVariableWriteNode(variable, contextLevel, exp).initialize(source);
   }
 
   public static LocalVariableWriteNode createLocalVariableWrite(

@@ -106,6 +106,16 @@ if args.java_interpreter:
 if args.interpreter:
     args.use_libgraal = False
 
+# Handle executable names
+if sys.argv[0].endswith('fast'):
+    args.assert_ = False
+    args.no_trace = True
+if sys.argv[0].endswith('debug'):
+    args.perf_warnings = True
+    args.trace_splitting = True
+    args.background_compilation = False
+    args.use_libgraal = False
+
 # Determine JVM to be used
 java_bin = None
 
@@ -228,15 +238,6 @@ else:
 
 if args.som_dnu:
     flags += ['-Dsom.printStackTraceOnDNU=true']
-
-# Handle executable names
-if sys.argv[0].endswith('fast'):
-    args.assert_ = False
-    args.no_trace = True
-if sys.argv[0].endswith('debug'):
-    args.perf_warnings = True
-    args.trace_splitting = True
-    args.background_compilation = False
 
 if args.only_igv:
     args.igv = True

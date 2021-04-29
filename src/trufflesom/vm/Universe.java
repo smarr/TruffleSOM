@@ -132,6 +132,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
     Builder builder = createContextBuilder();
     builder.arguments(SomLanguage.LANG_ID, arguments);
+    builder.logHandler(System.err);
 
     if (!VmSettings.UseJitCompiler) {
       builder.option("engine.Compilation", "false");

@@ -71,6 +71,7 @@ import trufflesom.primitives.arithmetic.BitXorPrimFactory;
 import trufflesom.primitives.arithmetic.CosPrimFactory;
 import trufflesom.primitives.arithmetic.DividePrimFactory;
 import trufflesom.primitives.arithmetic.DoubleDivPrimFactory;
+import trufflesom.primitives.arithmetic.GreaterThanOrEqualPrimFactory;
 import trufflesom.primitives.arithmetic.GreaterThanPrimFactory;
 import trufflesom.primitives.arithmetic.LessThanOrEqualPrimFactory;
 import trufflesom.primitives.arithmetic.LessThanPrimFactory;
@@ -251,6 +252,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     add(allFactories, DividePrimFactory.getInstance());
     add(allFactories, DoubleDivPrimFactory.getInstance());
     add(allFactories, GreaterThanPrimFactory.getInstance());
+    add(allFactories, GreaterThanOrEqualPrimFactory.getInstance());
     add(allFactories, LessThanOrEqualPrimFactory.getInstance());
     add(allFactories, LessThanPrimFactory.getInstance());
     add(allFactories, LogicAndPrimFactory.getInstance());

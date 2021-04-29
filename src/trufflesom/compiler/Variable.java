@@ -6,8 +6,6 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHLOCAL;
 import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
 import static trufflesom.interpreter.SNodeFactory.createArgumentWrite;
-import static trufflesom.interpreter.SNodeFactory.createLocalVarRead;
-import static trufflesom.interpreter.SNodeFactory.createVariableWrite;
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 
 import java.util.Objects;
@@ -21,6 +19,10 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.inlining.NodeState;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
@@ -83,16 +85,6 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
   @Override
   public int hashCode() {
     return Objects.hash(name, source);
-  }
-
-  public static final class AccessNodeState implements NodeState {
-    private final SSymbol holderClass;
-    private final boolean classSide;
-
-    public AccessNodeState(final SSymbol holderClass, final boolean classSide) {
-      this.holderClass = holderClass;
-      this.classSide = classSide;
-    }
   }
 
   public static final class Argument extends Variable {
@@ -171,7 +163,10 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final SourceSection source) {
       transferToInterpreterAndInvalidate("Variable.getReadNode");
-      return createLocalVarRead(this, contextLevel, source);
+      if (contextLevel > 0) {
+        return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(source);
+      }
+      return LocalVariableReadNodeGen.create(this).initialize(source);
     }
 
     public FrameSlot getSlot() {
@@ -195,7 +190,11 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final SourceSection source) {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
-      return createVariableWrite(this, contextLevel, valueExpr, source);
+      if (contextLevel > 0) {
+        return NonLocalVariableWriteNodeGen.create(contextLevel, this, valueExpr)
+                                           .initialize(source);
+      }
+      return LocalVariableWriteNodeGen.create(this, valueExpr).initialize(source);
     }
 
     public FrameDescriptor getFrameDescriptor() {
