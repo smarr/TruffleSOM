@@ -129,6 +129,14 @@ public class MethodGenerationContext
     this.universe = universe;
   }
 
+  protected void markAccessingOuterScopes() {
+    MethodGenerationContext context = this;
+    while (context != null) {
+      context.accessesVariablesOfOuterScope = true;
+      context = context.outerGenc;
+    }
+  }
+
   public void addEmbeddedBlockMethod(final SMethod blockMethod) {
     embeddedBlockMethods.add(blockMethod);
     currentScope.addEmbeddedScope(((Method) blockMethod.getInvokable()).getScope());
