@@ -45,6 +45,7 @@ import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
@@ -202,7 +203,8 @@ public class Disassembler {
           break;
         }
 
-        case PUSH_BLOCK: {
+        case PUSH_BLOCK:
+        case PUSH_BLOCK_NO_CTX: {
           int idx = bytecodes.get(b + 1);
           Universe.errorPrint("block: (index: " + idx + ") ");
           if (m != null) {

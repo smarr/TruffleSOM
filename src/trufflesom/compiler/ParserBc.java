@@ -422,7 +422,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
             null, lastMethodsSourceSection, lastMethodsSourceSection);
         mgenc.addEmbeddedBlockMethod(blockMethod);
         mgenc.addLiteral(blockMethod, this);
-        emitPUSHBLOCK(mgenc, blockMethod);
+        emitPUSHBLOCK(mgenc, blockMethod, bgenc.requiresContext());
         break;
       }
       default:

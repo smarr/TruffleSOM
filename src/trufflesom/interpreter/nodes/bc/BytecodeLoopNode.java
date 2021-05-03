@@ -35,6 +35,7 @@ import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
@@ -288,6 +289,17 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           Object value = new SBlock(blockMethod,
               universe.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
+          stackPointer += 1;
+          stack[stackPointer] = value;
+          break;
+        }
+
+        case PUSH_BLOCK_NO_CTX: {
+          byte literalIdx = bytecodes[bytecodeIndex + 1];
+          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+
+          Object value = new SBlock(blockMethod,
+              universe.getBlockClass(blockMethod.getNumberOfArguments()), null);
           stackPointer += 1;
           stack[stackPointer] = value;
           break;
@@ -1015,7 +1027,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_BLOCK: {
+        case PUSH_BLOCK:
+        case PUSH_BLOCK_NO_CTX: {
           byte literalIdx = bytecodes[i + 1];
           SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
 
@@ -1027,7 +1040,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
               blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
           newMethod.setHolder(blockMethod.getHolder());
           mgenc.addLiteralIfAbsent(newMethod, null);
-          emitPUSHBLOCK(mgenc, newMethod);
+          emitPUSHBLOCK(mgenc, newMethod, bytecodes[i] == PUSH_BLOCK);
           break;
         }
 
@@ -1187,7 +1200,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_BLOCK: {
+        case PUSH_BLOCK:
+        case PUSH_BLOCK_NO_CTX: {
           byte literalIdx = bytecodes[i + 1];
           SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
 

@@ -44,6 +44,7 @@ import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
@@ -119,10 +120,10 @@ public final class BytecodeGenerator {
   }
 
   public static void emitPUSHBLOCK(final BytecodeMethodGenContext mgenc,
-      final SMethod blockMethod) {
+      final SMethod blockMethod, final boolean withContext) {
     byte litIdx = mgenc.findLiteralIndex(blockMethod);
     assert litIdx >= 0;
-    emit2(mgenc, PUSH_BLOCK, litIdx);
+    emit2(mgenc, withContext ? PUSH_BLOCK : PUSH_BLOCK_NO_CTX, litIdx);
   }
 
   public static void emitPUSHLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
