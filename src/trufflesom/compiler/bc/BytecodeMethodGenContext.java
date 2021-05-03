@@ -127,6 +127,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   public byte getFieldIndex(final SSymbol fieldName) {
+    accessesVariablesOfOuterScope = true;
     return holderGenc.getFieldIndex(fieldName);
   }
 

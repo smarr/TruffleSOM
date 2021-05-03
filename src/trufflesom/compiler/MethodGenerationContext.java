@@ -77,7 +77,7 @@ public class MethodGenerationContext
   // does directly or indirectly a non-local return
   protected boolean throwsNonLocalReturn;
 
-  private boolean accessesVariablesOfOuterScope;
+  protected boolean accessesVariablesOfOuterScope;
 
   protected final LinkedHashMap<SSymbol, Argument> arguments;
   protected final LinkedHashMap<SSymbol, Local>    locals;
