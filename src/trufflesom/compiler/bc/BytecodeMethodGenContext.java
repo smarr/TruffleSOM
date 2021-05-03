@@ -31,6 +31,7 @@ import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
@@ -126,6 +127,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   public byte getFieldIndex(final SSymbol fieldName) {
+    markAccessingOuterScopes();
     return holderGenc.getFieldIndex(fieldName);
   }
 
@@ -457,9 +459,11 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return bcOffset;
   }
 
-  private static final byte[] DUP_BYTECODES        = new byte[] {DUP};
-  private static final byte[] INC_BYTECODES        = new byte[] {INC};
-  private static final byte[] PUSH_BLOCK_BYTECODES = new byte[] {PUSH_BLOCK};
+  private static final byte[] DUP_BYTECODES = new byte[] {DUP};
+  private static final byte[] INC_BYTECODES = new byte[] {INC};
+
+  private static final byte[] PUSH_BLOCK_BYTECODES =
+      new byte[] {PUSH_BLOCK, PUSH_BLOCK_NO_CTX};
 
   private static final byte[] POP_LOCAL_FIELD_BYTECODES = new byte[] {
       POP_LOCAL,
@@ -720,6 +724,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK_NO_CTX) == 2;
     byte block1LiteralIdx = bytecode.get(bytecode.size() - 3);
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
@@ -760,6 +765,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     assert Bytecodes.getBytecodeLength(PUSH_BLOCK) == 2;
+    assert Bytecodes.getBytecodeLength(PUSH_BLOCK_NO_CTX) == 2;
     byte block1LiteralIdx = bytecode.get(bytecode.size() - 3);
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
@@ -788,11 +794,11 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private boolean hasTwoLiteralBlockArguments() {
-    if (lastBytecodeIs(1, PUSH_BLOCK) == INVALID) {
+    if (lastBytecodeIsOneOf(1, PUSH_BLOCK_BYTECODES) == INVALID) {
       return false;
     }
 
-    if (lastBytecodeIs(0, PUSH_BLOCK) == INVALID) {
+    if (lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES) == INVALID) {
       return false;
     }
     return true;
@@ -830,6 +836,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         case PUSH_ARGUMENT:
         case PUSH_FIELD:
         case PUSH_BLOCK:
+        case PUSH_BLOCK_NO_CTX:
         case PUSH_CONSTANT:
         case PUSH_GLOBAL:
           depth++;

@@ -77,7 +77,7 @@ public class MethodGenerationContext
   // does directly or indirectly a non-local return
   protected boolean throwsNonLocalReturn;
 
-  private boolean accessesVariablesOfOuterScope;
+  protected boolean accessesVariablesOfOuterScope;
 
   protected final LinkedHashMap<SSymbol, Argument> arguments;
   protected final LinkedHashMap<SSymbol, Local>    locals;
@@ -127,6 +127,14 @@ public class MethodGenerationContext
     locals = new LinkedHashMap<SSymbol, Local>();
 
     this.universe = universe;
+  }
+
+  protected void markAccessingOuterScopes() {
+    MethodGenerationContext context = this;
+    while (context != null) {
+      context.accessesVariablesOfOuterScope = true;
+      context = context.outerGenc;
+    }
   }
 
   public void addEmbeddedBlockMethod(final SMethod blockMethod) {
