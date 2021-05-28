@@ -365,11 +365,13 @@ public final class Universe implements IdProvider<SSymbol> {
       return shell.start();
     }
 
+    Object[] arrStorage = Arrays.copyOfRange(arguments, 0, arguments.length, Object[].class);
+
     // Lookup the initialize invokable on the system class
     SInvokable initialize = systemClass.lookupInvokable(symbolFor("initialize:"));
 
     return initialize.invoke(new Object[] {systemObject,
-        SArray.create(arguments)});
+        SArray.create(arrStorage)});
   }
 
   @TruffleBoundary
