@@ -10,7 +10,7 @@ import trufflesom.vm.constants.Nil;
 
 /**
  * SArrays are implemented using a Strategy-like approach.
- * The SArray objects are 'tagged' with a type, and the strategy behavior
+ * The storage identifies the strategy behavior, which
  * is implemented directly in the AST nodes.
  *
  * @author smarr
@@ -93,10 +93,6 @@ public final class SArray extends SAbstractObject {
 
   public boolean isBooleanType() {
     return storage.getClass() == boolean[].class;
-  }
-
-  public boolean isSomePrimitiveType() {
-    return isLongType() || isDoubleType() || isBooleanType();
   }
 
   /**
@@ -197,18 +193,18 @@ public final class SArray extends SAbstractObject {
     PartiallyEmptyArray arr = getPartiallyEmptyStorage();
 
     if (arr.isFull()) {
-      if (arr.getType() == PartiallyEmptyArray.Type.LONG) {
+      if (arr.type == PartiallyEmptyArray.Type.LONG) {
         storage = createLong(arr.getStorage());
-      } else if (arr.getType() == PartiallyEmptyArray.Type.DOUBLE) {
+      } else if (arr.type == PartiallyEmptyArray.Type.DOUBLE) {
         storage = createDouble(arr.getStorage());
-      } else if (arr.getType() == PartiallyEmptyArray.Type.BOOLEAN) {
+      } else if (arr.type == PartiallyEmptyArray.Type.BOOLEAN) {
         storage = createBoolean(arr.getStorage());
       } else {
         storage = arr.getStorage();
       }
       return;
     }
-    if (arr.getType() == PartiallyEmptyArray.Type.OBJECT) {
+    if (arr.type == PartiallyEmptyArray.Type.OBJECT) {
       storage = arr.getStorage();
     }
   }
