@@ -117,40 +117,21 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   @Specialization(guards = "receiver.isPartiallyEmptyType()")
   public final long doPartiallyEmptySArray(final SArray receiver,
       final long index, final long value) {
-    long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
-    setValue(idx, value, storage);
-    if (storage.getType() != ArrayType.LONG) {
-      storage.setType(ArrayType.OBJECT);
-    }
-
-    receiver.ifFullTransitionPartiallyEmpty();
+    setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.LONG);
     return value;
   }
 
   @Specialization(guards = "receiver.isPartiallyEmptyType()")
   public final double doPartiallyEmptySArray(final SArray receiver,
       final long index, final double value) {
-    long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
-    setValue(idx, value, storage);
-    if (storage.getType() != ArrayType.DOUBLE) {
-      storage.setType(ArrayType.OBJECT);
-    }
-    receiver.ifFullTransitionPartiallyEmpty();
+    setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.DOUBLE);
     return value;
   }
 
   @Specialization(guards = "receiver.isPartiallyEmptyType()")
   public final boolean doPartiallyEmptySArray(final SArray receiver,
       final long index, final boolean value) {
-    long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
-    setValue(idx, value, storage);
-    if (storage.getType() != ArrayType.BOOLEAN) {
-      storage.setType(ArrayType.OBJECT);
-    }
-    receiver.ifFullTransitionPartiallyEmpty();
+    setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.BOOLEAN);
     return value;
   }
 
@@ -172,11 +153,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   @Specialization(guards = {"receiver.isPartiallyEmptyType()", "valueIsNotNil(value)"})
   public final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final Object value) {
-    long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
-    setValue(idx, value, storage);
-    storage.setType(ArrayType.OBJECT);
-    receiver.ifFullTransitionPartiallyEmpty();
+    setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.OBJECT);
     return value;
   }
 
@@ -199,17 +176,13 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   @Specialization(guards = {"receiver.isLongType()", "valueIsNotLong(value)"})
   public final Object doLongSArray(final SArray receiver, final long index,
       final Object value) {
-    long idx = index - 1;
-
     long[] storage = receiver.getLongStorage();
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
     }
 
-    receiver.transitionTo(ArrayType.OBJECT, newStorage);
-    newStorage[(int) idx] = value;
-    return value;
+    return transitionAndSet(receiver, index, value, newStorage);
   }
 
   @Specialization(guards = "receiver.isDoubleType()")
@@ -223,17 +196,13 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   @Specialization(guards = {"receiver.isDoubleType()", "valueIsNotDouble(value)"})
   public final Object doDoubleSArray(final SArray receiver, final long index,
       final Object value) {
-    long idx = index - 1;
-
     double[] storage = receiver.getDoubleStorage();
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
     }
 
-    receiver.transitionTo(ArrayType.OBJECT, newStorage);
-    newStorage[(int) idx] = value;
-    return value;
+    return transitionAndSet(receiver, index, value, newStorage);
   }
 
   @Specialization(guards = "receiver.isBooleanType()")
@@ -247,16 +216,30 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   @Specialization(guards = {"receiver.isBooleanType()", "valueIsNotBoolean(value)"})
   public final Object doBooleanSArray(final SArray receiver, final long index,
       final Object value) {
-    long idx = index - 1;
-
     boolean[] storage = receiver.getBooleanStorage();
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
     }
 
-    receiver.transitionTo(ArrayType.OBJECT, newStorage);
+    return transitionAndSet(receiver, index, value, newStorage);
+  }
+
+  private Object transitionAndSet(final SArray receiver, final long index, final Object value,
+      final Object[] newStorage) {
+    long idx = index - 1;
+    receiver.transitionTo(newStorage);
     newStorage[(int) idx] = value;
     return value;
+  }
+
+  private void setAndPossiblyTransition(final SArray receiver,
+      final long index, final Object value, final PartiallyEmptyArray.Type expectedType) {
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage();
+    setValue(index - 1, value, storage);
+    if (storage.getType() != expectedType) {
+      storage.setType(PartiallyEmptyArray.Type.OBJECT);
+    }
+    receiver.ifFullOrObjectTransitionPartiallyEmpty();
   }
 }
