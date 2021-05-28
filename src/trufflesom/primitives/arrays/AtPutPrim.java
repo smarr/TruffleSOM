@@ -145,7 +145,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
 
     if (storage.get(idx) != Nil.nilObject) {
       storage.incEmptyElements();
-      setValue(idx, Nil.nilObject, storage);
+      storage.set(idx, Nil.nilObject);
     }
     return value;
   }
