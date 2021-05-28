@@ -123,10 +123,6 @@ public final class SArray extends SAbstractObject {
   /**
    * Transition from the Empty, to the PartiallyEmpty state/strategy.
    */
-  public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final Object val) {
-    fromEmptyToParticalWithType(ArrayType.OBJECT, idx, val);
-  }
-
   public void transitionFromEmptyToPartiallyEmptyWith(final long idx, final long val) {
     fromEmptyToParticalWithType(PartiallyEmptyArray.Type.LONG, idx, val);
   }
@@ -197,8 +193,8 @@ public final class SArray extends SAbstractObject {
     return storage;
   }
 
-  public void ifFullTransitionPartiallyEmpty() {
-    PartiallyEmptyArray arr = getPartiallyEmptyStorage(partialStorageType);
+  public void ifFullOrObjectTransitionPartiallyEmpty() {
+    PartiallyEmptyArray arr = getPartiallyEmptyStorage();
 
     if (arr.isFull()) {
       if (arr.getType() == PartiallyEmptyArray.Type.LONG) {
@@ -210,6 +206,10 @@ public final class SArray extends SAbstractObject {
       } else {
         storage = arr.getStorage();
       }
+      return;
+    }
+    if (arr.getType() == PartiallyEmptyArray.Type.OBJECT) {
+      storage = arr.getStorage();
     }
   }
 

@@ -1,5 +1,7 @@
 package trufflesom.primitives.arrays;
 
+import java.util.Arrays;
+
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
@@ -78,11 +80,17 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       "valueNotLongDoubleBoolean(value)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final Object value) {
-    long idx = index - 1;
+    int idx = (int) index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage(storageType);
+    int size = receiver.getEmptyStorage();
+    assert idx < size;
 
-    receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
+    // if the value is an object, we transition directly to an Object array
+    Object[] newStorage = new Object[size];
+    Arrays.fill(newStorage, Nil.nilObject);
+
+    newStorage[idx] = value;
+    receiver.transitionTo(newStorage);
     return value;
   }
 
