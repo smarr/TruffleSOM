@@ -1,25 +1,19 @@
 package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
-import trufflesom.vmobjects.SArray.ArrayType;
 import trufflesom.vmobjects.SArray.PartiallyEmptyArray;
 
 
 @GenerateNodeFactory
-@ImportStatic(ArrayType.class)
 @Primitive(className = "Array", primitive = "at:put:", selector = "at:put:",
     receiverType = SArray.class, inParser = false)
 public abstract class AtPutPrim extends TernaryExpressionNode {
-
-  private final ValueProfile storageType = ValueProfile.createClassProfile();
 
   protected static final boolean valueIsNil(final Object value) {
     return value == Nil.nilObject;
@@ -47,40 +41,40 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
         !(value instanceof Boolean);
   }
 
-  @Specialization(guards = {"isEmptyType(receiver)"})
+  @Specialization(guards = {"receiver.isEmptyType()"})
   public final long doEmptySArray(final SArray receiver, final long index,
       final long value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage(storageType);
+    assert idx < receiver.getEmptyStorage();
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
     return value;
   }
 
-  @Specialization(guards = {"isEmptyType(receiver)"})
+  @Specialization(guards = {"receiver.isEmptyType()"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final double value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage(storageType);
+    assert idx < receiver.getEmptyStorage();
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
     return value;
   }
 
-  @Specialization(guards = {"isEmptyType(receiver)"})
+  @Specialization(guards = {"receiver.isEmptyType()"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final boolean value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage(storageType);
+    assert idx < receiver.getEmptyStorage();
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
     return value;
   }
 
-  @Specialization(guards = {"isEmptyType(receiver)", "valueIsNotNil(value)",
+  @Specialization(guards = {"receiver.isEmptyType()", "valueIsNotNil(value)",
       "valueNotLongDoubleBoolean(value)"})
   public final Object doEmptySArray(final SArray receiver, final long index,
       final Object value) {
@@ -92,12 +86,12 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = {"isEmptyType(receiver)", "valueIsNil(value)"})
+  @Specialization(guards = {"receiver.isEmptyType()", "valueIsNil(value)"})
   public final Object doEmptySArrayWithNil(final SArray receiver, final long index,
       final Object value) {
     long idx = index - 1;
     assert idx >= 0;
-    assert idx < receiver.getEmptyStorage(storageType);
+    assert idx < receiver.getEmptyStorage();
     return value;
   }
 
@@ -112,7 +106,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     storage.set(idx, value);
   }
 
-  @Specialization(guards = "isPartiallyEmptyType(receiver)")
+  @Specialization(guards = "receiver.isPartiallyEmptyType()")
   public final long doPartiallyEmptySArray(final SArray receiver,
       final long index, final long value) {
     long idx = index - 1;
@@ -126,7 +120,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = "isPartiallyEmptyType(receiver)")
+  @Specialization(guards = "receiver.isPartiallyEmptyType()")
   public final double doPartiallyEmptySArray(final SArray receiver,
       final long index, final double value) {
     long idx = index - 1;
@@ -139,7 +133,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = "isPartiallyEmptyType(receiver)")
+  @Specialization(guards = "receiver.isPartiallyEmptyType()")
   public final boolean doPartiallyEmptySArray(final SArray receiver,
       final long index, final boolean value) {
     long idx = index - 1;
@@ -152,11 +146,11 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = {"isPartiallyEmptyType(receiver)", "valueIsNil(value)"})
+  @Specialization(guards = {"receiver.isPartiallyEmptyType()", "valueIsNil(value)"})
   public final Object doPartiallyEmptySArrayWithNil(final SArray receiver,
       final long index, final Object value) {
     long idx = index - 1;
-    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage(storageType);
+    PartiallyEmptyArray storage = receiver.getPartiallyEmptyStorage();
     assert idx >= 0;
     assert idx < storage.getLength();
 
@@ -167,7 +161,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = {"isPartiallyEmptyType(receiver)", "valueIsNotNil(value)"})
+  @Specialization(guards = {"receiver.isPartiallyEmptyType()", "valueIsNotNil(value)"})
   public final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final Object value) {
     long idx = index - 1;
@@ -178,28 +172,28 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = "isObjectType(receiver)")
+  @Specialization(guards = "receiver.isObjectType()")
   public final Object doObjectSArray(final SArray receiver, final long index,
       final Object value) {
     long idx = index - 1;
-    receiver.getObjectStorage(storageType)[(int) idx] = value;
+    receiver.getObjectStorage()[(int) idx] = value;
     return value;
   }
 
-  @Specialization(guards = "isLongType(receiver)")
+  @Specialization(guards = "receiver.isLongType()")
   public final Object doObjectSArray(final SArray receiver, final long index,
       final long value) {
     long idx = index - 1;
-    receiver.getLongStorage(storageType)[(int) idx] = value;
+    receiver.getLongStorage()[(int) idx] = value;
     return value;
   }
 
-  @Specialization(guards = {"isLongType(receiver)", "valueIsNotLong(value)"})
+  @Specialization(guards = {"receiver.isLongType()", "valueIsNotLong(value)"})
   public final Object doLongSArray(final SArray receiver, final long index,
       final Object value) {
     long idx = index - 1;
 
-    long[] storage = receiver.getLongStorage(storageType);
+    long[] storage = receiver.getLongStorage();
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
@@ -210,20 +204,20 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = "isDoubleType(receiver)")
+  @Specialization(guards = "receiver.isDoubleType()")
   public final Object doDoubleSArray(final SArray receiver, final long index,
       final double value) {
     long idx = index - 1;
-    receiver.getDoubleStorage(storageType)[(int) idx] = value;
+    receiver.getDoubleStorage()[(int) idx] = value;
     return value;
   }
 
-  @Specialization(guards = {"isDoubleType(receiver)", "valueIsNotDouble(value)"})
+  @Specialization(guards = {"receiver.isDoubleType()", "valueIsNotDouble(value)"})
   public final Object doDoubleSArray(final SArray receiver, final long index,
       final Object value) {
     long idx = index - 1;
 
-    double[] storage = receiver.getDoubleStorage(storageType);
+    double[] storage = receiver.getDoubleStorage();
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];
@@ -234,20 +228,20 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     return value;
   }
 
-  @Specialization(guards = "isBooleanType(receiver)")
+  @Specialization(guards = "receiver.isBooleanType()")
   public final Object doBooleanSArray(final SArray receiver, final long index,
       final boolean value) {
     long idx = index - 1;
-    receiver.getBooleanStorage(storageType)[(int) idx] = value;
+    receiver.getBooleanStorage()[(int) idx] = value;
     return value;
   }
 
-  @Specialization(guards = {"isBooleanType(receiver)", "valueIsNotBoolean(value)"})
+  @Specialization(guards = {"receiver.isBooleanType()", "valueIsNotBoolean(value)"})
   public final Object doBooleanSArray(final SArray receiver, final long index,
       final Object value) {
     long idx = index - 1;
 
-    boolean[] storage = receiver.getBooleanStorage(storageType);
+    boolean[] storage = receiver.getBooleanStorage();
     Object[] newStorage = new Object[storage.length];
     for (int i = 0; i < storage.length; i++) {
       newStorage[i] = storage[i];

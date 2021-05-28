@@ -3,7 +3,6 @@ package trufflesom.primitives.arrays;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -19,13 +18,11 @@ import trufflesom.primitives.basics.LengthPrim;
 import trufflesom.primitives.basics.LengthPrimFactory;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
-import trufflesom.vmobjects.SArray.ArrayType;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SObject;
 
 
 @GenerateNodeFactory
-@ImportStatic(ArrayType.class)
 @Primitive(className = "Array", primitive = "putAll:", selector = "putAll:", disabled = true,
     extraChild = LengthPrimFactory.class)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
@@ -43,7 +40,7 @@ public abstract class PutAllNode extends BinaryExpressionNode {
         !(value instanceof SBlock);
   }
 
-  @Specialization(guards = {"isEmptyType(rcvr)", "valueIsNil(nil)"})
+  @Specialization(guards = {"rcvr.isEmptyType()", "valueIsNil(nil)"})
   public SArray doPutNilInEmptyArray(final SArray rcvr, final SObject nil,
       final long length) {
     // NO OP
@@ -99,22 +96,22 @@ public abstract class PutAllNode extends BinaryExpressionNode {
         long[] newStorage = new long[(int) length];
         newStorage[0] = (long) result;
         evalBlockForRemaining(frame, block, length, newStorage);
-        rcvr.transitionTo(ArrayType.LONG, newStorage);
+        rcvr.transitionTo(newStorage);
       } else if (result instanceof Double) {
         double[] newStorage = new double[(int) length];
         newStorage[0] = (double) result;
         evalBlockForRemaining(frame, block, length, newStorage);
-        rcvr.transitionTo(ArrayType.DOUBLE, newStorage);
+        rcvr.transitionTo(newStorage);
       } else if (result instanceof Boolean) {
         boolean[] newStorage = new boolean[(int) length];
         newStorage[0] = (boolean) result;
         evalBlockForRemaining(frame, block, length, newStorage);
-        rcvr.transitionTo(ArrayType.BOOLEAN, newStorage);
+        rcvr.transitionTo(newStorage);
       } else {
         Object[] newStorage = new Object[(int) length];
         newStorage[0] = result;
         evalBlockForRemaining(frame, block, length, newStorage);
-        rcvr.transitionTo(ArrayType.OBJECT, newStorage);
+        rcvr.transitionTo(newStorage);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {

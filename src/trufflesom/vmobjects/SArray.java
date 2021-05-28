@@ -45,33 +45,33 @@ public final class SArray extends SAbstractObject {
     return type;
   }
 
-  public int getEmptyStorage(final ValueProfile storageType) {
-    assert type == ArrayType.EMPTY;
+  public int getEmptyStorage() {
+    assert isEmptyType();
     return (int) storage;
   }
 
-  public PartiallyEmptyArray getPartiallyEmptyStorage(final ValueProfile storageType) {
-    assert type == ArrayType.PARTIAL_EMPTY;
+  public PartiallyEmptyArray getPartiallyEmptyStorage() {
+    assert isPartiallyEmptyType();
     return (PartiallyEmptyArray) storage;
   }
 
-  public Object[] getObjectStorage(final ValueProfile storageType) {
-    assert type == ArrayType.OBJECT;
-    return (Object[]) storage;
+  public Object[] getObjectStorage() {
+    assert isObjectType();
+    return CompilerDirectives.castExact(storage, Object[].class);
   }
 
-  public long[] getLongStorage(final ValueProfile storageType) {
-    assert type == ArrayType.LONG;
+  public long[] getLongStorage() {
+    assert isLongType();
     return (long[]) storage;
   }
 
-  public double[] getDoubleStorage(final ValueProfile storageType) {
-    assert type == ArrayType.DOUBLE;
+  public double[] getDoubleStorage() {
+    assert isDoubleType();
     return (double[]) storage;
   }
 
-  public boolean[] getBooleanStorage(final ValueProfile storageType) {
-    assert type == ArrayType.BOOLEAN;
+  public boolean[] getBooleanStorage() {
+    assert isBooleanType();
     return (boolean[]) storage;
   }
 
