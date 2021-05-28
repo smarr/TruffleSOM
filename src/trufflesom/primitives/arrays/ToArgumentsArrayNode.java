@@ -19,17 +19,13 @@ import trufflesom.vmobjects.SArray;
     @NodeChild("receiver")})
 public abstract class ToArgumentsArrayNode extends ExpressionNode {
 
-  public static final boolean isNull(final Object somArray) {
-    return somArray == null;
-  }
-
   public abstract Object[] executedEvaluated(SArray somArray, Object rcvr);
 
   public final Object[] executedEvaluated(final Object somArray, final Object rcvr) {
     return executedEvaluated((SArray) somArray, rcvr);
   }
 
-  @Specialization(guards = "isNull(somArray)")
+  @Specialization(guards = "somArray == null")
   public final Object[] doNoArray(final Object somArray, final Object rcvr) {
     return new Object[] {rcvr};
   }
