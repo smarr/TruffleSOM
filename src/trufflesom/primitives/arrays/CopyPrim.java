@@ -1,50 +1,44 @@
 package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.vmobjects.SArray;
-import trufflesom.vmobjects.SArray.ArrayType;
 
 
 @GenerateNodeFactory
-@ImportStatic(ArrayType.class)
 @Primitive(className = "Array", primitive = "copy")
 public abstract class CopyPrim extends UnaryExpressionNode {
-  private final ValueProfile storageType = ValueProfile.createClassProfile();
-
-  @Specialization(guards = "isEmptyType(receiver)")
+  @Specialization(guards = "receiver.isEmptyType()")
   public final SArray doEmptyArray(final SArray receiver) {
-    return new SArray(receiver.getEmptyStorage(storageType));
+    return new SArray(receiver.getEmptyStorage());
   }
 
-  @Specialization(guards = "isPartiallyEmptyType(receiver)")
+  @Specialization(guards = "receiver.isPartiallyEmptyType()")
   public final SArray doPartiallyEmptyArray(final SArray receiver) {
-    return new SArray(ArrayType.PARTIAL_EMPTY,
-        receiver.getPartiallyEmptyStorage(storageType).copy());
+    return new SArray(
+        receiver.getPartiallyEmptyStorage().copy());
   }
 
-  @Specialization(guards = "isObjectType(receiver)")
+  @Specialization(guards = "receiver.isObjectType()")
   public final SArray doObjectArray(final SArray receiver) {
-    return SArray.create(receiver.getObjectStorage(storageType).clone());
+    return SArray.create(receiver.getObjectStorage().clone());
   }
 
-  @Specialization(guards = "isLongType(receiver)")
+  @Specialization(guards = "receiver.isLongType()")
   public final SArray doLongArray(final SArray receiver) {
-    return SArray.create(receiver.getLongStorage(storageType).clone());
+    return SArray.create(receiver.getLongStorage().clone());
   }
 
-  @Specialization(guards = "isDoubleType(receiver)")
+  @Specialization(guards = "receiver.isDoubleType()")
   public final SArray doDoubleArray(final SArray receiver) {
-    return SArray.create(receiver.getDoubleStorage(storageType).clone());
+    return SArray.create(receiver.getDoubleStorage().clone());
   }
 
-  @Specialization(guards = "isBooleanType(receiver)")
+  @Specialization(guards = "receiver.isBooleanType()")
   public final SArray doBooleanArray(final SArray receiver) {
-    return SArray.create(receiver.getBooleanStorage(storageType).clone());
+    return SArray.create(receiver.getBooleanStorage().clone());
   }
 }

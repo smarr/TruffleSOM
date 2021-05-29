@@ -36,7 +36,6 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.profiles.ValueProfile;
 import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.compiler.Field;
@@ -45,8 +44,6 @@ import trufflesom.vm.constants.Nil;
 
 
 public final class SClass extends SObject {
-
-  private static final ValueProfile storageType = ValueProfile.createClassProfile();
 
   private SourceSection sourceSection;
   private boolean       hasPrimitives;
@@ -225,11 +222,11 @@ public final class SClass extends SObject {
   }
 
   public SSymbol getInstanceFieldName(final int index) {
-    return (SSymbol) instanceFields.getObjectStorage(storageType)[index];
+    return (SSymbol) instanceFields.getObjectStorage()[index];
   }
 
   public int getNumberOfInstanceFields() {
-    return instanceFields.getObjectStorage(storageType).length;
+    return instanceFields.getObjectStorage().length;
   }
 
   public boolean hasPrimitives() {

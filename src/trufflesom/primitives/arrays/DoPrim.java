@@ -3,12 +3,10 @@ package trufflesom.primitives.arrays;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
-import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
@@ -17,23 +15,20 @@ import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
 import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
-import trufflesom.vmobjects.SArray.ArrayType;
 import trufflesom.vmobjects.SArray.PartiallyEmptyArray;
 import trufflesom.vmobjects.SBlock;
 
 
 @GenerateNodeFactory
-@ImportStatic(ArrayType.class)
 @Primitive(className = "Array", primitive = "do:", selector = "do:",
     receiverType = SArray.class, disabled = true)
 public abstract class DoPrim extends BinaryExpressionNode {
-  @Child private ValueOnePrim block       = ValueOnePrimFactory.create(null, null);
-  private final ValueProfile  storageType = ValueProfile.createClassProfile();
+  @Child private ValueOnePrim block = ValueOnePrimFactory.create(null, null);
 
-  @Specialization(guards = "isEmptyType(arr)")
+  @Specialization(guards = "arr.isEmptyType()")
   public final SArray doEmptyArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    int length = arr.getEmptyStorage(storageType);
+    int length = arr.getEmptyStorage();
     try {
       if (SArray.FIRST_IDX < length) {
         this.block.executeEvaluated(block, Nil.nilObject);
@@ -49,10 +44,10 @@ public abstract class DoPrim extends BinaryExpressionNode {
     return arr;
   }
 
-  @Specialization(guards = "isPartiallyEmptyType(arr)")
+  @Specialization(guards = "arr.isPartiallyEmptyType()")
   public final SArray doPartiallyEmptyArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    PartiallyEmptyArray storage = arr.getPartiallyEmptyStorage(storageType);
+    PartiallyEmptyArray storage = arr.getPartiallyEmptyStorage();
     int length = storage.getLength();
     try {
       if (SArray.FIRST_IDX < length) {
@@ -69,10 +64,10 @@ public abstract class DoPrim extends BinaryExpressionNode {
     return arr;
   }
 
-  @Specialization(guards = "isObjectType(arr)")
+  @Specialization(guards = "arr.isObjectType()")
   public final SArray doObjectArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    Object[] storage = arr.getObjectStorage(storageType);
+    Object[] storage = arr.getObjectStorage();
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
@@ -89,10 +84,10 @@ public abstract class DoPrim extends BinaryExpressionNode {
     return arr;
   }
 
-  @Specialization(guards = "isLongType(arr)")
+  @Specialization(guards = "arr.isLongType()")
   public final SArray doLongArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    long[] storage = arr.getLongStorage(storageType);
+    long[] storage = arr.getLongStorage();
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
@@ -109,10 +104,10 @@ public abstract class DoPrim extends BinaryExpressionNode {
     return arr;
   }
 
-  @Specialization(guards = "isDoubleType(arr)")
+  @Specialization(guards = "arr.isDoubleType()")
   public final SArray doDoubleArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    double[] storage = arr.getDoubleStorage(storageType);
+    double[] storage = arr.getDoubleStorage();
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
@@ -129,10 +124,10 @@ public abstract class DoPrim extends BinaryExpressionNode {
     return arr;
   }
 
-  @Specialization(guards = "isBooleanType(arr)")
+  @Specialization(guards = "arr.isBooleanType()")
   public final SArray doBooleanArray(final VirtualFrame frame,
       final SArray arr, final SBlock block) {
-    boolean[] storage = arr.getBooleanStorage(storageType);
+    boolean[] storage = arr.getBooleanStorage();
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
