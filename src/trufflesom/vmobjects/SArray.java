@@ -72,11 +72,11 @@ public final class SArray extends SAbstractObject {
   }
 
   public boolean isEmptyType() {
-    return storage instanceof Integer;
+    return storage.getClass() == Integer.class;
   }
 
   public boolean isPartiallyEmptyType() {
-    return storage instanceof PartiallyEmptyArray;
+    return storage.getClass() == PartiallyEmptyArray.class;
   }
 
   public boolean isObjectType() {
