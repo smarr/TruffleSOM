@@ -192,6 +192,11 @@ public final class SArray extends SAbstractObject {
   public void ifFullOrObjectTransitionPartiallyEmpty() {
     PartiallyEmptyArray arr = getPartiallyEmptyStorage();
 
+    if (arr.type == PartiallyEmptyArray.Type.OBJECT) {
+      storage = arr.getStorage();
+      return;
+    }
+
     if (arr.isFull()) {
       if (arr.type == PartiallyEmptyArray.Type.LONG) {
         storage = createLong(arr.getStorage());
@@ -202,10 +207,6 @@ public final class SArray extends SAbstractObject {
       } else {
         storage = arr.getStorage();
       }
-      return;
-    }
-    if (arr.type == PartiallyEmptyArray.Type.OBJECT) {
-      storage = arr.getStorage();
     }
   }
 
