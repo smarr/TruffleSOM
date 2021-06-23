@@ -169,7 +169,11 @@ if args.use_libgraal:
         'DISABLE_LIBPOLYGLOT':  'true',
         'EXCLUDE_COMPONENTS':   'svmag,nju,nic,ni,nil'
       })
-    java_bin = libgraal_jdk_home.strip() + '/bin/java'
+    lines = libgraal_jdk_home.strip().split('\n')
+    if lines[-1][0] != '/':
+      print("libgraal JDK HOME does not look like path: " + libgraal_jdk_home)
+      sys.exit(1)
+    java_bin = lines[-1].strip() + '/bin/java'
   except CalledProcessError as e:
     print "Failed to determine location of libgraal"
     print e.output
