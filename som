@@ -327,4 +327,8 @@ if args.verbose:
 env = dict(os.environ)
 env['JVMCI_VERSION_CHECK'] = 'ignore'
 
-os.execvpe(java_bin, all_args, env)
+try:
+  os.execvpe(java_bin, all_args, env)
+except OSError:
+  print("Couldn't find java_bin=" + java_bin)
+  sys.exit(1)
