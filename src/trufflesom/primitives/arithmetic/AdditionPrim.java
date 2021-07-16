@@ -23,8 +23,8 @@ public abstract class AdditionPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
-  public final BigInteger doLongWithOverflow(final long left, final long argument) {
-    return BigInteger.valueOf(left).add(BigInteger.valueOf(argument));
+  public final Object doLongWithOverflow(final long left, final long argument) {
+    return reduceToLongIfPossible(BigInteger.valueOf(left).add(BigInteger.valueOf(argument)));
   }
 
   @Specialization

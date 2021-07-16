@@ -21,8 +21,9 @@ public abstract class SubtractionPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
-  public final BigInteger doLongWithOverflow(final long left, final long right) {
-    return BigInteger.valueOf(left).subtract(BigInteger.valueOf(right));
+  public final Object doLongWithOverflow(final long left, final long right) {
+    return reduceToLongIfPossible(
+        BigInteger.valueOf(left).subtract(BigInteger.valueOf(right)));
   }
 
   @Specialization
