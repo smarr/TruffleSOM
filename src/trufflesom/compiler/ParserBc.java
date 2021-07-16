@@ -313,6 +313,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     while (sym == OperatorSequence || symIn(binaryOpSyms)) {
       binaryMessage(mgenc);
     }
+
+    superSend = false;
   }
 
   private void literal(final BytecodeMethodGenContext mgenc) throws ParseError {
@@ -438,8 +440,6 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     while (sym == Identifier) {
       unaryMessage(mgenc);
     }
-
-    superSend = false;
   }
 
   @Override
