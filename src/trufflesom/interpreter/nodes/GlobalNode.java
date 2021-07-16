@@ -29,19 +29,27 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import bd.tools.nodes.Invocation;
+import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.Association;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class GlobalNode extends ExpressionNode
     implements Invocation<SSymbol>, PreevaluatedExpression {
 
-  public static GlobalNode create(final SSymbol globalName, final Universe universe) {
+  public static boolean isPotentiallyUnknown(final SSymbol global, final Universe universe) {
+    return global != universe.symNil && !global.getString().equals("true")
+        && !global.getString().equals("false") && !universe.hasGlobal(global);
+  }
+
+  public static GlobalNode create(final SSymbol globalName, final Universe universe,
+      final MethodGenerationContext mgenc) {
     if (globalName == universe.symNil) {
       return new NilGlobalNode(globalName);
     } else if (globalName.getString().equals("true")) {
@@ -54,6 +62,10 @@ public abstract class GlobalNode extends ExpressionNode
     Association assoc = universe.getGlobalsAssociation(globalName);
     if (assoc != null) {
       return new CachedGlobalReadNode(globalName, assoc);
+    }
+
+    if (mgenc != null) {
+      mgenc.markAccessingOuterScopes();
     }
     return new UninitializedGlobalReadNode(globalName, universe);
   }
@@ -119,9 +131,15 @@ public abstract class GlobalNode extends ExpressionNode
     protected Object executeUnknownGlobal(final VirtualFrame frame) {
       CompilerAsserts.neverPartOfCompilation();
 
+      // find outer self
+      Object self = SArguments.rcvr(frame);
+      while (self instanceof SBlock) {
+        self = ((SBlock) self).getOuterSelf();
+      }
+
       // if it is not defined, we will send a error message to the current
       // receiver object
-      Object self = SArguments.rcvr(frame);
+
       return SAbstractObject.sendUnknownGlobal(self, globalName, universe);
     }
   }

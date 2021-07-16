@@ -129,7 +129,7 @@ public class MethodGenerationContext
     this.universe = universe;
   }
 
-  protected void markAccessingOuterScopes() {
+  public void markAccessingOuterScopes() {
     MethodGenerationContext context = this;
     while (context != null) {
       context.accessesVariablesOfOuterScope = true;

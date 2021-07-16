@@ -514,7 +514,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     byte constantIdx = getIndex(1);
     SSymbol literal = (SSymbol) literals.get(constantIdx);
-    return GlobalNode.create(literal, universe);
+    return GlobalNode.create(literal, universe, this);
   }
 
   private FieldReadNode optimizeFieldGetter() {
@@ -898,5 +898,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   ArrayList<Byte> getBytecodes() {
     return bytecode;
+  }
+
+  public Universe getUniverse() {
+    return universe;
   }
 }

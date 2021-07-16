@@ -321,7 +321,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
 
           GlobalNode quickened =
-              GlobalNode.create(globalName, universe).initialize(sourceSection);
+              GlobalNode.create(globalName, universe, null).initialize(sourceSection);
           quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quickened);
 
           // TODO: what's the correct semantics here? the outer or the closed self? normally,
