@@ -96,6 +96,11 @@ public abstract class GlobalNode extends ExpressionNode
     return executeGeneric(frame);
   }
 
+  @Override
+  public final String toString() {
+    return getClass().getSimpleName() + "(" + globalName.getString() + ")";
+  }
+
   private abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
     protected final Universe universe;
 
