@@ -57,6 +57,7 @@ import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserBc;
+import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
@@ -148,6 +149,9 @@ public final class BytecodeGenerator {
 
   public static void emitPUSHGLOBAL(final BytecodeMethodGenContext mgenc,
       final SSymbol global) {
+    if (GlobalNode.isPotentiallyUnknown(global, mgenc.getUniverse())) {
+      mgenc.markAccessingOuterScopes();
+    }
     emit2(mgenc, PUSH_GLOBAL, mgenc.findLiteralIndex(global));
   }
 

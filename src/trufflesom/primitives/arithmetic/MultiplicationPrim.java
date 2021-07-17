@@ -22,7 +22,8 @@ public abstract class MultiplicationPrim extends ArithmeticPrim {
   @Specialization
   @TruffleBoundary
   public final Object doLongWithOverflow(final long left, final long right) {
-    return BigInteger.valueOf(left).multiply(BigInteger.valueOf(right));
+    return reduceToLongIfPossible(
+        BigInteger.valueOf(left).multiply(BigInteger.valueOf(right)));
   }
 
   @Specialization

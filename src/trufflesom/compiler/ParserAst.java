@@ -102,7 +102,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private ExpressionNode createSequenceNode(final SourceCoordinate coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return GlobalNode.create(universe.symNil, universe).initialize(getSource(coord));
+      return GlobalNode.create(universe.symNil, universe, null).initialize(getSource(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
@@ -191,7 +191,6 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
       while (isIdentifier(sym)) {
         msg = unaryMessage(mgenc, msg);
-        superSend = false;
       }
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
@@ -203,7 +202,6 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       }
     } else if (sym == OperatorSequence || symIn(binaryOpSyms)) {
       msg = binaryMessage(mgenc, receiver);
-      superSend = false;
 
       while (sym == OperatorSequence || symIn(binaryOpSyms)) {
         msg = binaryMessage(mgenc, msg);
@@ -296,6 +294,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     while (sym == OperatorSequence || symIn(binaryOpSyms)) {
       operand = binaryMessage(mgenc, operand);
     }
+
+    superSend = false;
     return operand;
   }
 
