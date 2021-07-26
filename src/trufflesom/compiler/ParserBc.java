@@ -443,7 +443,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
   }
 
   @Override
-  protected ExpressionNode nestedBlock(final BytecodeMethodGenContext mgenc)
+  public ExpressionNode nestedBlock(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
     super.nestedBlock(mgenc);
 

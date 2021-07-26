@@ -300,6 +300,10 @@ public class MethodGenerationContext
     return locals.containsKey(local);
   }
 
+  public int getNumberOfLocals() {
+    return locals.size();
+  }
+
   public Local addLocal(final SSymbol local, final SourceSection source) {
     Local l = new Local(local, source);
     l.init(

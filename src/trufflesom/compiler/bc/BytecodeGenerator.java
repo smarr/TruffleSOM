@@ -109,6 +109,7 @@ public final class BytecodeGenerator {
   }
 
   public static void emitRETURNSELF(final BytecodeMethodGenContext mgenc) {
+    mgenc.optimizeDupPopPopSequence();
     emit1(mgenc, RETURN_SELF);
   }
 

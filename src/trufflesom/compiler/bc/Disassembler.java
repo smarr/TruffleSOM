@@ -124,6 +124,11 @@ public class Disassembler {
     return i.getHolder();
   }
 
+  public static void dumpMethod(final BytecodeMethodGenContext mgenc) {
+    dumpMethod(mgenc.getBytecodes(), "", mgenc.getNumberOfLocals(), mgenc.computeStackDepth(),
+        null, null);
+  }
+
   public static void dumpMethod(final BytecodeLoopNode m, final String indent) {
     SClass clazz = getClass(m);
     dumpMethod(m.getBytecodes(), indent, m.getNumberOfLocals(),
@@ -136,7 +141,6 @@ public class Disassembler {
 
   public static void dumpMethod(final List<Byte> bytecodes, final String indent,
       final int numLocals, final int maxStack, final SClass clazz, final BytecodeLoopNode m) {
-    Universe u = SomLanguage.getCurrent().getUniverse();
     Universe.errorPrintln("(");
 
     // output stack information
@@ -220,6 +224,7 @@ public class Disassembler {
           Universe.errorPrint("(index: " + idx + ")");
 
           if (m != null) {
+            Universe u = SomLanguage.getCurrent().getUniverse();
             Object constant = m.getConstant(idx);
             SClass constantClass = Types.getClassOf(constant, u);
             Universe.errorPrint(" value: "
