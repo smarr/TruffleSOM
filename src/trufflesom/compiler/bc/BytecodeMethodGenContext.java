@@ -41,6 +41,7 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
+import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -239,15 +240,17 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     if (last4Bytecodes[3] == POP) {
       int idx = bytecode.size() - 1;
       bytecode.remove(idx);
-    } else if ((last4Bytecodes[3] == POP_FIELD || last4Bytecodes[3] == POP_LOCAL)
-        && last4Bytecodes[2] == -1) {
+    } else if (isOneOf(last4Bytecodes[3], POP_X_BYTECODES) && last4Bytecodes[2] != DUP) {
       // we just removed the DUP and didn't emit the POP using optimizeDupPopPopSequence()
       // so, to make blocks work, we need to reintroduce the DUP
-      assert Bytecodes.getBytecodeLength(POP_LOCAL) == Bytecodes.getBytecodeLength(POP_FIELD);
-      assert Bytecodes.getBytecodeLength(POP_LOCAL) == 3;
-      assert bytecode.get(bytecode.size() - 3) == POP_LOCAL
-          || bytecode.get(bytecode.size() - 3) == POP_FIELD;
-      bytecode.add(bytecode.size() - 3, DUP);
+      int idx = bytecode.size() - getBytecodeLength(last4Bytecodes[3]);
+      assert idx >= 0;
+      assert isOneOf(bytecode.get(idx), POP_X_BYTECODES);
+      bytecode.add(idx, DUP);
+
+      last4Bytecodes[0] = last4Bytecodes[1];
+      last4Bytecodes[1] = last4Bytecodes[2];
+      last4Bytecodes[2] = DUP;
     } else if (last4Bytecodes[3] == INC_FIELD) {
       // we optimized the sequence to an INC_FIELD, which doesn't modify the stack
       // but since we need the value to return it from the block, we need to push it.
@@ -429,6 +432,15 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return INVALID;
   }
 
+  private boolean isOneOf(final byte bytecode, final byte[] candidates) {
+    for (byte c : candidates) {
+      if (c == bytecode) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private void removeLastBytecodeAt(final int idxFromEnd) {
     final int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
 
@@ -470,8 +482,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private static final byte[] PUSH_BLOCK_BYTECODES =
       new byte[] {PUSH_BLOCK, PUSH_BLOCK_NO_CTX};
 
-  private static final byte[] POP_LOCAL_FIELD_BYTECODES = new byte[] {
+  private static final byte[] POP_X_BYTECODES = new byte[] {
       POP_LOCAL,
+      POP_ARGUMENT,
       POP_FIELD};
 
   private static final byte[] PUSH_FIELD_BYTECODES = new byte[] {
@@ -598,20 +611,27 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     final byte dupCandidate = lastBytecodeIs(1, DUP);
-    final byte popCandidate = lastBytecodeIsOneOf(0, POP_LOCAL_FIELD_BYTECODES);
+    if (dupCandidate == INVALID) {
+      return false;
+    }
 
-    if (popCandidate != INVALID && dupCandidate != INVALID) {
-      if (POP_FIELD == popCandidate && optimizePushFieldIncDupPopField()) {
-        return true;
-      }
+    final byte popCandidate = lastBytecodeIsOneOf(0, POP_X_BYTECODES);
 
-      removeLastBytecodeAt(1); // remove the DUP bytecode
-
-      resetLastBytecodeBuffer();
-      last4Bytecodes[3] = popCandidate;
+    if (popCandidate == INVALID) {
+      return false;
+    }
+    if (POP_FIELD == popCandidate && optimizePushFieldIncDupPopField()) {
       return true;
     }
-    return false;
+
+    removeLastBytecodeAt(1); // remove the DUP bytecode
+
+    assert last4Bytecodes[3] == popCandidate;
+    last4Bytecodes[2] = last4Bytecodes[1];
+    last4Bytecodes[1] = last4Bytecodes[0];
+    last4Bytecodes[0] = INVALID;
+
+    return true;
   }
 
   private byte getIndex(final int idxFromEnd) {
