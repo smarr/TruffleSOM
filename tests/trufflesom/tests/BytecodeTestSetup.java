@@ -2,6 +2,8 @@ package trufflesom.tests;
 
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
 
+import org.junit.Ignore;
+
 import com.oracle.truffle.api.source.Source;
 
 import bd.tools.structure.StructuralProbe;
@@ -16,6 +18,7 @@ import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
+@Ignore("provides just setup")
 public class BytecodeTestSetup {
 
   protected final ClassGenerationContext   cgenc;
