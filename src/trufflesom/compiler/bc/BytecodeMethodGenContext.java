@@ -333,17 +333,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private BytecodeLoopNode constructBytecodeBody(final SourceSection sourceSection) {
-    byte[] bytecodes = new byte[bytecode.size()];
-    int i = 0;
-    for (byte bc : bytecode) {
-      bytecodes[i] = bc;
-      i += 1;
-    }
+    byte[] bytecodes = getBytecodeArray();
 
     Object[] literalsArr = literals.toArray();
     FrameSlot[] localsAndOuters = new FrameSlot[localAndOuterVars.size()];
 
-    i = 0;
+    int i = 0;
     for (Local l : localAndOuterVars.values()) {
       localsAndOuters[i] = l.getSlot();
       i += 1;
@@ -355,6 +350,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return new BytecodeLoopNode(
         bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),
         frameOnStackMarker, universe);
+  }
+
+  public byte[] getBytecodeArray() {
+    byte[] bytecodes = new byte[bytecode.size()];
+    int i = 0;
+    for (byte bc : bytecode) {
+      bytecodes[i] = bc;
+      i += 1;
+    }
+    return bytecodes;
   }
 
   private ExpressionNode constructTrivialBody() {
@@ -821,7 +826,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     resetLastBytecodeBuffer();
   }
 
-  private int computeStackDepth() {
+  public int computeStackDepth() {
     int depth = 0;
     int maxDepth = 0;
     int i = 0;
@@ -896,7 +901,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return maxDepth;
   }
 
-  ArrayList<Byte> getBytecodes() {
+  public ArrayList<Byte> getBytecodes() {
     return bytecode;
   }
 

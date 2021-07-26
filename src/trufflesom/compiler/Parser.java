@@ -358,7 +358,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
         Math.max(lexer.getNumberOfNonWhiteCharsRead() - coord.charIndex, 0));
   }
 
-  private ExpressionNode method(final MGenC mgenc)
+  public ExpressionNode method(final MGenC mgenc)
       throws ProgramDefinitionError {
     lastCoordinate = getCoordinate();
     pattern(mgenc);
