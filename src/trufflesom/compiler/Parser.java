@@ -101,11 +101,11 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   static {
     for (Symbol s : new Symbol[] {Not, And, Or, Star, Div, Mod, Plus, Equal,
-        More, Less, Comma, At, Per, NONE}) {
+        More, Less, Comma, At, Per}) {
       singleOpSyms.add(s);
     }
     for (Symbol s : new Symbol[] {Or, Comma, Minus, Equal, Not, And, Or, Star,
-        Div, Mod, Plus, Equal, More, Less, Comma, At, Per, NONE}) {
+        Div, Mod, Plus, Equal, More, Less, Comma, At, Per}) {
       binaryOpSyms.add(s);
     }
     for (Symbol s : new Symbol[] {Keyword, KeywordSequence}) {
