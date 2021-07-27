@@ -896,15 +896,17 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         case JUMP:
         case JUMP_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
-        case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP:
         case JUMP_BACKWARDS:
         case JUMP2:
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP2_BACKWARDS:
+          break;
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP:
         case JUMP2_ON_TRUE_POP:
         case JUMP2_ON_FALSE_POP:
-        case JUMP2_BACKWARDS:
+          depth--;
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "
