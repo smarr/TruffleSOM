@@ -201,17 +201,18 @@ public final class BytecodeGenerator {
     emit2(mgenc, PUSH_CONSTANT, literalIndex);
   }
 
-  public static int emitJumpOnTrueWithDummyOffset(final BytecodeMethodGenContext mgenc,
-      final boolean needsPop) {
-    emit1(mgenc, needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL);
-    int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
-    mgenc.addBytecodeArgument((byte) 0);
-    return idx;
-  }
+  public static int emitJumpOnBoolWithDummyOffset(final BytecodeMethodGenContext mgenc,
+      final boolean isIfTrue, final boolean needsPop) {
+    // Remember: true and false seem flipped here
+    // this is because if the test passes, the block is inlined directly.
+    // if the test fails, we need to jump.
+    // Thus, an #ifTrue: needs to generated a JUMP_ON_FALSE.
+    if (isIfTrue) {
 
-  public static int emitJumpOnFalseWithDummyOffset(final BytecodeMethodGenContext mgenc,
-      final boolean needsPop) {
-    emit1(mgenc, needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL);
+      emit1(mgenc, needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL);
+    } else {
+      emit1(mgenc, needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL);
+    }
     int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
     mgenc.addBytecodeArgument((byte) 0);
     return idx;

@@ -1,8 +1,7 @@
 package trufflesom.compiler.bc;
 
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpBackwardsWithOffset;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnFalseWithDummyOffset;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnTrueWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
@@ -717,12 +716,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodeAt(0); // remove the PUSH_BLOCK
 
-    int jumpOffsetIdxToSkipTrueBranch;
-    if (ifTrue) {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, false);
-    } else {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnTrueWithDummyOffset(this, false);
-    }
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnBoolWithDummyOffset(this, ifTrue, false);
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
@@ -759,12 +753,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
-    int jumpOffsetIdxToSkipTrueBranch;
-    if (isIfTrueIfFalse) {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, true);
-    } else {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnTrueWithDummyOffset(this, true);
-    }
+    int jumpOffsetIdxToSkipTrueBranch =
+        emitJumpOnBoolWithDummyOffset(this, isIfTrueIfFalse, true);
 
     isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
@@ -805,12 +795,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
 
-    int jumpOffsetIdxToSkipLoopBody;
-    if (isWhileTrue) {
-      jumpOffsetIdxToSkipLoopBody = emitJumpOnFalseWithDummyOffset(this, true);
-    } else {
-      jumpOffsetIdxToSkipLoopBody = emitJumpOnTrueWithDummyOffset(this, true);
-    }
+    int jumpOffsetIdxToSkipLoopBody = emitJumpOnBoolWithDummyOffset(this, isWhileTrue, true);
 
     toBeInlined2.getInvokable().inline(this, toBeInlined2);
 
