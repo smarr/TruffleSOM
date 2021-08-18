@@ -104,7 +104,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
    *
    * @author Stefan Marr
    */
-  private static final class ReturnLocalNode extends ExpressionNode {
+  public static final class ReturnLocalNode extends ExpressionNode {
     @Child private ExpressionNode expression;
 
     private final Internal  onStackMarkerVar;
