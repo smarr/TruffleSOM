@@ -785,21 +785,23 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
     // grab block's method, and inline it
-    SMethod toBeInlined1 = (SMethod) literals.get(block1LiteralIdx);
-    SMethod toBeInlined2 = (SMethod) literals.get(block2LiteralIdx);
+    SMethod condMethod = (SMethod) literals.get(block1LiteralIdx);
+    SMethod bodyMethod = (SMethod) literals.get(block2LiteralIdx);
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
     int loopBeginIdx = offsetOfNextInstruction();
 
     isCurrentlyInliningBlock = true;
-    toBeInlined1.getInvokable().inline(this, toBeInlined1);
+    condMethod.getInvokable().inline(this, condMethod);
 
     int jumpOffsetIdxToSkipLoopBody = emitJumpOnBoolWithDummyOffset(this, isWhileTrue, true);
 
-    toBeInlined2.getInvokable().inline(this, toBeInlined2);
+    bodyMethod.getInvokable().inline(this, bodyMethod);
 
     completeJumpsAndEmitReturningNil(parser, loopBeginIdx, jumpOffsetIdxToSkipLoopBody);
+
+    isCurrentlyInliningBlock = false;
     return true;
   }
 
@@ -825,8 +827,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     addLiteralIfAbsent(Nil.nilObject, parser);
     emitPUSHCONSTANT(this, Nil.nilObject);
-
-    isCurrentlyInliningBlock = false;
 
     resetLastBytecodeBuffer();
   }
