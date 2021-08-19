@@ -6,20 +6,15 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Context.Builder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
-import bd.tools.structure.StructuralProbe;
-import trufflesom.compiler.ClassGenerationContext;
-import trufflesom.compiler.Field;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.ParserAst;
-import trufflesom.compiler.Variable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
@@ -46,57 +41,20 @@ import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
-import trufflesom.interpreter.objectstorage.StorageAnalyzer;
-import trufflesom.vm.Universe;
-import trufflesom.vmobjects.SClass;
-import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SSymbol;
 
 
-public class AstInliningTests {
+public class AstInliningTests extends TruffleTestSetup {
 
-  protected final ClassGenerationContext cgenc;
-  protected MethodGenerationContext      mgenc;
-
-  protected final Universe universe;
-
-  protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe;
-
-  private static Universe getUniverse() {
-    return SomLanguage.getCurrent().getUniverse();
-  }
+  protected MethodGenerationContext mgenc;
 
   public AstInliningTests() {
-    universe = getUniverse();
-    probe = null;
-
-    cgenc = new ClassGenerationContext(universe, null);
-    cgenc.setName(universe.symbolFor("Test"));
-
+    super();
     initMgenc();
   }
 
   private void initMgenc() {
     mgenc = new MethodGenerationContext(cgenc, probe);
     mgenc.addArgumentIfAbsent(universe.symSelf, null);
-  }
-
-  private static void initTruffle() {
-    StorageAnalyzer.initAccessors();
-
-    Builder builder = Universe.createContextBuilder();
-    builder.logHandler(System.err);
-
-    Context context = builder.build();
-    context.eval(SomLanguage.INIT);
-
-    Universe u = getUniverse();
-    Source s = SomLanguage.getSyntheticSource("self", "self");
-    u.selfSource = s.createSection(1);
-  }
-
-  protected void addField(final String name) {
-    cgenc.addInstanceField(universe.symbolFor(name), null);
   }
 
   protected ExpressionNode parseMethod(final String source) {
@@ -168,6 +126,7 @@ public class AstInliningTests {
     assertThat(literal, instanceOf(cls));
   }
 
+  @Ignore("TODO")
   @Test
   public void testIfTrueWithLiteralReturn() {
     literalTest("0", IntegerLiteralNode.class);
@@ -207,6 +166,7 @@ public class AstInliningTests {
     ifArg("ifFalse:", false);
   }
 
+  @Ignore("TODO")
   @Test
   public void testIfTrueAndIncField() {
     addField("field");
@@ -230,6 +190,7 @@ public class AstInliningTests {
     fail("TODO: test that the right context level/field is accessed");
   }
 
+  @Ignore("TODO")
   @Test
   public void testIfTrueAndIncArg() {
     SequenceNode seq = (SequenceNode) parseMethod(
@@ -394,6 +355,7 @@ public class AstInliningTests {
     assertEquals(expectedBool, read(ifNode, "expectedBool", Boolean.class));
   }
 
+  @Ignore("TODO")
   @Test
   public void testIfTrueIfFalseReturn() {
     ifTrueIfFalseReturn("ifTrue:", "ifFalse:", true);
@@ -418,6 +380,7 @@ public class AstInliningTests {
     whileInlining("whileFalse:", false);
   }
 
+  @Ignore("TODO")
   @Test
   public void testBlockBlockInlinedSelf() {
     addField("field");
@@ -449,6 +412,7 @@ public class AstInliningTests {
     fail("TODO: test that the self is at the correct level (ctx level 2)");
   }
 
+  @Ignore("TODO")
   @Test
   public void testToDoBlockBlockInlinedSelf() {
     addField("field");
@@ -501,6 +465,7 @@ public class AstInliningTests {
     return read(seq, "expressions", 0);
   }
 
+  @Ignore("TODO")
   @Test
   public void testInliningOf() {
     assertThat(inliningOf("or:"), instanceOf(OrInlinedLiteralNode.class));
@@ -515,45 +480,5 @@ public class AstInliningTests {
     IntToDoInlinedLiteralsNode toDo =
         (IntToDoInlinedLiteralsNode) read(seq, "expressions", 0);
     assertEquals("i", toDo.getIndexName());
-  }
-
-  private java.lang.reflect.Field lookup(final Class<?> cls, final String fieldName) {
-    try {
-      return cls.getDeclaredField(fieldName);
-    } catch (NoSuchFieldException e) {
-      if (cls.getSuperclass() != null) {
-        return lookup(cls.getSuperclass(), fieldName);
-      }
-    } catch (SecurityException e) {
-      throw new RuntimeException(e);
-    }
-    throw new RuntimeException("Didn't find field: " + fieldName);
-  }
-
-  private Node read(final Object obj, final String fieldName) {
-    return read(obj, fieldName, Node.class);
-  }
-
-  private ExpressionNode read(final Object obj, final String fieldName, final int idx) {
-    return read(obj, fieldName, ExpressionNode[].class)[idx];
-  }
-
-  private ExpressionNode[] getBlockExprs(final BlockNode blockNode) {
-    return read(read(blockNode.getMethod().getInvokable(), "expressionOrSequence"),
-        "expressions", ExpressionNode[].class);
-  }
-
-  private <T> T read(final Object obj, final String fieldName, final Class<T> c) {
-    java.lang.reflect.Field field = lookup(obj.getClass(), fieldName);
-    field.setAccessible(true);
-    try {
-      return c.cast(field.get(obj));
-    } catch (IllegalAccessException | IllegalArgumentException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  static {
-    initTruffle();
   }
 }

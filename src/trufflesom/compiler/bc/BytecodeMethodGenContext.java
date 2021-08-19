@@ -115,6 +115,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     last4Bytecodes = new byte[4];
   }
 
+  public Object getConstant(final int bytecodeIdx) {
+    return literals.get(bytecode.get(bytecodeIdx + 1));
+  }
+
   public byte getMaxContextLevel() {
     if (outerGenc != null) {
       return (byte) (1 + ((BytecodeMethodGenContext) outerGenc).getMaxContextLevel());
