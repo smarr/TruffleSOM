@@ -974,6 +974,10 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     return list;
   }
 
+  public byte[] getBytecodeArray() {
+    return bytecodes;
+  }
+
   public Object getConstant(final int idx) {
     return literalsAndConstants[idx];
   }

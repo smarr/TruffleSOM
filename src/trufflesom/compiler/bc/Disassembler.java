@@ -248,7 +248,7 @@ public class Disassembler {
           int offset1 = Byte.toUnsignedInt(bytecodes.get(b + 1));
           int offset2 = Byte.toUnsignedInt(bytecodes.get(b + 2));
 
-          int offset = offset2 << 8 + offset1;
+          int offset = (offset2 << 8) + offset1;
 
           Universe.errorPrintln(
               "(jump offset: " + offset + " -> jump target: " + (b + offset) + ")");

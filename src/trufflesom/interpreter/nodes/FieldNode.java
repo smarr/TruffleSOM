@@ -42,7 +42,7 @@ import trufflesom.vmobjects.SObject;
 
 public abstract class FieldNode extends ExpressionNode {
 
-  protected abstract ExpressionNode getSelf();
+  public abstract ExpressionNode getSelf();
 
   public static final class FieldReadNode extends FieldNode
       implements PreevaluatedExpression {
@@ -59,7 +59,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
-    protected ExpressionNode getSelf() {
+    public ExpressionNode getSelf() {
       return self;
     }
 
@@ -193,7 +193,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
-    protected ExpressionNode getSelf() {
+    public ExpressionNode getSelf() {
       return self;
     }
 
@@ -238,7 +238,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
-    protected ExpressionNode getSelf() {
+    public ExpressionNode getSelf() {
       return self;
     }
 

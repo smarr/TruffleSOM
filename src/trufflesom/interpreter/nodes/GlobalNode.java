@@ -126,7 +126,7 @@ public abstract class GlobalNode extends ExpressionNode
     }
   }
 
-  private static final class UninitializedGlobalReadNode
+  public static final class UninitializedGlobalReadNode
       extends AbstractUninitializedGlobalReadNode {
     UninitializedGlobalReadNode(final SSymbol globalName, final Universe universe) {
       super(globalName, universe);

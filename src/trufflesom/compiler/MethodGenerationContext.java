@@ -540,10 +540,10 @@ public class MethodGenerationContext
     String outerMethodName =
         stripColonsAndSourceLocation(outerGenc.getSignature().getString());
 
-    int argSize = getNumberOfArguments();
+    int numArgs = getNumberOfArguments();
     String blockSig = "λ" + outerMethodName + "@" + coord.startLine + "@" + coord.startColumn;
 
-    for (int i = 1; i < argSize; i++) {
+    for (int i = 1; i < numArgs; i++) {
       blockSig += ":";
     }
 

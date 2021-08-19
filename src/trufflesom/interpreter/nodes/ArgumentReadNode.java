@@ -13,7 +13,8 @@ public abstract class ArgumentReadNode {
 
   public static class LocalArgumentReadNode extends ExpressionNode
       implements Invocation<SSymbol> {
-    protected final int      argumentIndex;
+    public final int argumentIndex;
+
     protected final Argument arg;
 
     public LocalArgumentReadNode(final Argument arg) {

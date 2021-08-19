@@ -39,6 +39,10 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
 
   public abstract ExpressionNode getTo();
 
+  public String getIndexName() {
+    return loopIdxVar.getName().getString();
+  }
+
   public IntToDoInlinedLiteralsNode(final ExpressionNode originalBody,
       final ExpressionNode body, final Local loopIdxVar) {
     this.body = body;

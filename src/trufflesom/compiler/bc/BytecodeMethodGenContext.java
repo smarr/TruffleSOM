@@ -1,8 +1,7 @@
 package trufflesom.compiler.bc;
 
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpBackwardsWithOffset;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnFalseWithDummyOffset;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnTrueWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
@@ -114,6 +113,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     bytecode = new ArrayList<>();
     localAndOuterVars = new LinkedHashMap<>();
     last4Bytecodes = new byte[4];
+  }
+
+  public Object getConstant(final int bytecodeIdx) {
+    return literals.get(bytecode.get(bytecodeIdx + 1));
   }
 
   public byte getMaxContextLevel() {
@@ -717,12 +720,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodeAt(0); // remove the PUSH_BLOCK
 
-    int jumpOffsetIdxToSkipTrueBranch;
-    if (ifTrue) {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, false);
-    } else {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnTrueWithDummyOffset(this, false);
-    }
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnBoolWithDummyOffset(this, ifTrue, false);
 
     // grab block's method, and inline it
     SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
@@ -759,12 +757,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
-    int jumpOffsetIdxToSkipTrueBranch;
-    if (isIfTrueIfFalse) {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnFalseWithDummyOffset(this, true);
-    } else {
-      jumpOffsetIdxToSkipTrueBranch = emitJumpOnTrueWithDummyOffset(this, true);
-    }
+    int jumpOffsetIdxToSkipTrueBranch =
+        emitJumpOnBoolWithDummyOffset(this, isIfTrueIfFalse, true);
 
     isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
@@ -795,26 +789,23 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
     // grab block's method, and inline it
-    SMethod toBeInlined1 = (SMethod) literals.get(block1LiteralIdx);
-    SMethod toBeInlined2 = (SMethod) literals.get(block2LiteralIdx);
+    SMethod condMethod = (SMethod) literals.get(block1LiteralIdx);
+    SMethod bodyMethod = (SMethod) literals.get(block2LiteralIdx);
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
     int loopBeginIdx = offsetOfNextInstruction();
 
     isCurrentlyInliningBlock = true;
-    toBeInlined1.getInvokable().inline(this, toBeInlined1);
+    condMethod.getInvokable().inline(this, condMethod);
 
-    int jumpOffsetIdxToSkipLoopBody;
-    if (isWhileTrue) {
-      jumpOffsetIdxToSkipLoopBody = emitJumpOnFalseWithDummyOffset(this, true);
-    } else {
-      jumpOffsetIdxToSkipLoopBody = emitJumpOnTrueWithDummyOffset(this, true);
-    }
+    int jumpOffsetIdxToSkipLoopBody = emitJumpOnBoolWithDummyOffset(this, isWhileTrue, true);
 
-    toBeInlined2.getInvokable().inline(this, toBeInlined2);
+    bodyMethod.getInvokable().inline(this, bodyMethod);
 
     completeJumpsAndEmitReturningNil(parser, loopBeginIdx, jumpOffsetIdxToSkipLoopBody);
+
+    isCurrentlyInliningBlock = false;
     return true;
   }
 
@@ -840,8 +831,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     addLiteralIfAbsent(Nil.nilObject, parser);
     emitPUSHCONSTANT(this, Nil.nilObject);
-
-    isCurrentlyInliningBlock = false;
 
     resetLastBytecodeBuffer();
   }
@@ -896,15 +885,17 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         case JUMP:
         case JUMP_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
-        case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP:
         case JUMP_BACKWARDS:
         case JUMP2:
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP2_BACKWARDS:
+          break;
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP:
         case JUMP2_ON_TRUE_POP:
         case JUMP2_ON_FALSE_POP:
-        case JUMP2_BACKWARDS:
+          depth--;
           break;
         default:
           throw new IllegalStateException("Illegal bytecode "
