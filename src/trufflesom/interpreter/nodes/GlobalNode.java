@@ -182,7 +182,7 @@ public abstract class GlobalNode extends ExpressionNode
     }
   }
 
-  private static final class TrueGlobalNode extends GlobalNode {
+  public static final class TrueGlobalNode extends GlobalNode {
     TrueGlobalNode(final SSymbol globalName) {
       super(globalName);
     }
@@ -198,7 +198,7 @@ public abstract class GlobalNode extends ExpressionNode
     }
   }
 
-  private static final class FalseGlobalNode extends GlobalNode {
+  public static final class FalseGlobalNode extends GlobalNode {
     FalseGlobalNode(final SSymbol globalName) {
       super(globalName);
     }
@@ -214,7 +214,7 @@ public abstract class GlobalNode extends ExpressionNode
     }
   }
 
-  private static final class NilGlobalNode extends GlobalNode {
+  public static final class NilGlobalNode extends GlobalNode {
     NilGlobalNode(final SSymbol globalName) {
       super(globalName);
     }

@@ -21,6 +21,9 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
+import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
+import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
@@ -31,7 +34,6 @@ import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
-import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
 import trufflesom.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
@@ -127,7 +129,6 @@ public class AstInliningTests extends TruffleTestSetup {
     assertThat(literal, instanceOf(cls));
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueWithLiteralReturn() {
     literalTest("0", IntegerLiteralNode.class);
@@ -139,10 +140,9 @@ public class AstInliningTests extends TruffleTestSetup {
     literalTest("1.1", DoubleLiteralNode.class);
     literalTest("-2342.234", DoubleLiteralNode.class);
 
-    // TODO: TruffleSOM and PySOM don't yet agree
-    literalTest("true", LiteralNode.class);
-    literalTest("false", LiteralNode.class);
-    literalTest("nil", LiteralNode.class);
+    literalTest("true", TrueGlobalNode.class);
+    literalTest("false", FalseGlobalNode.class);
+    literalTest("nil", NilGlobalNode.class);
 
     literalTest("SomeGlobal", UninitializedGlobalReadNode.class);
     literalTest("[]", BlockNode.class);
