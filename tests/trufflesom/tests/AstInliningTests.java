@@ -465,7 +465,6 @@ public class AstInliningTests extends TruffleTestSetup {
     return read(seq, "expressions", 0);
   }
 
-  @Ignore("TODO")
   @Test
   public void testInliningOf() {
     assertThat(inliningOf("or:"), instanceOf(OrInlinedLiteralNode.class));
