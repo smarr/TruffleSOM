@@ -38,7 +38,8 @@ import trufflesom.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
-import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
+import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.FalseIfElseLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 
@@ -340,7 +341,7 @@ public class AstInliningTests extends TruffleTestSetup {
   }
 
   private void ifTrueIfFalseReturn(final String sel1, final String sel2,
-      final boolean expectedBool) {
+      final Class<?> cls) {
     initMgenc();
     SequenceNode seq = (SequenceNode) parseMethod(
         "test: arg1 with: arg2 = (\n"
@@ -348,18 +349,14 @@ public class AstInliningTests extends TruffleTestSetup {
             + "   ^ self method " + sel1 + " [ ^ arg1 ] " + sel2 + " [ arg2 ]\n"
             + "   )");
 
-    fail("TruffleSOM doesn't yet specialize both ifTrue:ifFalse: and ifFalse:ifTrue:");
-
-    IfTrueIfFalseInlinedLiteralsNode ifNode =
-        (IfTrueIfFalseInlinedLiteralsNode) read(seq, "expressions", 1);
-    assertEquals(expectedBool, read(ifNode, "expectedBool", Boolean.class));
+    Node ifNode = read(seq, "expressions", 1);
+    assertThat(ifNode, instanceOf(cls));
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueIfFalseReturn() {
-    ifTrueIfFalseReturn("ifTrue:", "ifFalse:", true);
-    ifTrueIfFalseReturn("ifFalse:", "ifTrue:", false);
+    ifTrueIfFalseReturn("ifTrue:", "ifFalse:", TrueIfElseLiteralNode.class);
+    ifTrueIfFalseReturn("ifFalse:", "ifTrue:", FalseIfElseLiteralNode.class);
   }
 
   private void whileInlining(final String whileSel, final boolean expectedBool) {

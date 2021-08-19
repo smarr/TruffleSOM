@@ -54,7 +54,8 @@ import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInli
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfMessageNodeGen.IfFalseMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IfMessageNodeGen.IfTrueMessageNodeFactory;
-import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
+import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.FalseIfElseLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IntDownToDoMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
@@ -309,7 +310,8 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     List<Class<? extends Node>> nodes = new ArrayList<>();
 
     nodes.add(IfInlinedLiteralNode.class);
-    nodes.add(IfTrueIfFalseInlinedLiteralsNode.class);
+    nodes.add(TrueIfElseLiteralNode.class);
+    nodes.add(FalseIfElseLiteralNode.class);
     nodes.add(AndInlinedLiteralNode.class);
     nodes.add(OrInlinedLiteralNode.class);
     nodes.add(WhileInlinedLiteralsNode.class);
