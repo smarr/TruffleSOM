@@ -40,6 +40,7 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
@@ -260,6 +261,11 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, source);
+    } else if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
+      IntegerLiteralNode lit = (IntegerLiteralNode) operand;
+      if (lit.executeLong(null) == 1) {
+        return IntIncrementNodeGen.create(receiver);
+      }
     }
     return MessageSendNode.create(msg, args, source, universe);
   }

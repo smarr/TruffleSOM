@@ -16,9 +16,7 @@ import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
-import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
@@ -31,15 +29,6 @@ public final class MessageSendNode {
 
   public static ExpressionNode create(final SSymbol selector,
       final ExpressionNode[] arguments, final SourceSection source, final Universe universe) {
-    if (selector.getString().charAt(0) == '+') {
-      if (arguments[1] instanceof IntegerLiteralNode) {
-        IntegerLiteralNode lit = (IntegerLiteralNode) arguments[1];
-        if (lit.executeLong(null) == 1) {
-          return IntIncrementNodeGen.create(arguments[0]);
-        }
-      }
-    }
-
     Primitives prims = universe.getPrimitives();
     Specializer<Universe, ExpressionNode, SSymbol> specializer =
         prims.getParserSpecializer(selector, arguments);
