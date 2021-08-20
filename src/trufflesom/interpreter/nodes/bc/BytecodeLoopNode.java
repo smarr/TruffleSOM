@@ -87,6 +87,7 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
+import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode;
@@ -910,8 +911,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         default:
-          Universe.errorPrintln("Nasty bug in interpreter");
-          break;
+          CompilerDirectives.transferToInterpreter();
+          throw new NotYetImplementedException("The bytecode " + bytecode + " ("
+              + Bytecodes.getBytecodeName(bytecode) + ") is not yet implemented.");
       }
 
       bytecodeIndex = nextBytecodeIndex;
