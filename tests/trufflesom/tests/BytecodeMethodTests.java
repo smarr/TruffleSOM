@@ -314,12 +314,11 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(25, bytecodes.length);
-    dump();
+    assertEquals(15, bytecodes.length);
     check(bytecodes,
-        t(8, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 7), // jump to pop bytecode, which is the dot
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        t(4, Bytecodes.SEND),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 5), // jump to pop bytecode, which is the dot
+        Bytecodes.PUSH_ARG1,
         Bytecodes.INC,
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
@@ -334,14 +333,11 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(22, bytecodes.length);
-    dump();
-
-    fail("TODO: change things so that we can eliminate the HALT bytecode, as in PySOM");
+    assertEquals(15, bytecodes.length);
     check(bytecodes,
-        t(8, Bytecodes.SEND),
-        new BC(jumpBytecode, 8), // jump to pop bytecode, which is the dot
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        t(4, Bytecodes.SEND),
+        new BC(jumpBytecode, 5), // jump to pop bytecode, which is the dot
+        Bytecodes.PUSH_ARG1,
         Bytecodes.RETURN_LOCAL,
         Bytecodes.POP);
   }

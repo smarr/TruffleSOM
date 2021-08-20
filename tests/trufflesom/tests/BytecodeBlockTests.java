@@ -129,11 +129,11 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
             + " #end\n"
             + "]");
 
-    assertEquals(17, bytecodes.length);
+    assertEquals(15, bytecodes.length);
     check(bytecodes,
         t(5, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 4),
+        Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
   }
@@ -165,11 +165,11 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
         + " #end\n"
         + "]");
 
-    assertEquals(19, bytecodes.length);
+    assertEquals(17, bytecodes.length);
     check(bytecodes,
         t(5, Bytecodes.SEND),
-        new BC(jumpBytecode, 8),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        new BC(jumpBytecode, 6),
+        Bytecodes.PUSH_ARG1,
         new BC(Bytecodes.RETURN_NON_LOCAL, 1),
         Bytecodes.POP);
   }
