@@ -2,8 +2,7 @@ package trufflesom.interpreter.nodes.bc;
 
 import static trufflesom.compiler.bc.BytecodeGenerator.emit1;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOffset;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emit3WithDummy;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
@@ -1312,42 +1311,32 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case JUMP:
-        case JUMP2: {
-          byte offset = bytecodes[i + 1];
-          int idxOffset = emitJumpWithDummyOffset(mgenc);
-          jumps.add(new Jump(JUMP, offset + i, idxOffset));
-          break;
-        }
-
+        case JUMP2:
         case JUMP_ON_TRUE_TOP_NIL:
-        case JUMP2_ON_TRUE_TOP_NIL: {
-          byte offset = bytecodes[i + 1];
-          int idxOffset = emitJumpOnBoolWithDummyOffset(mgenc, true, false);
-          jumps.add(new Jump(JUMP_ON_TRUE_TOP_NIL, offset + i, idxOffset));
-          break;
-        }
-
+        case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL: {
-          byte offset = bytecodes[i + 1];
-          int idxOffset = emitJumpOnBoolWithDummyOffset(mgenc, false, false);
-          jumps.add(new Jump(JUMP_ON_FALSE_TOP_NIL, offset + i, idxOffset));
+          int offset1 = bytecodes[i + 1];
+          int offset2 = bytecodes[i + 2];
+
+          int offset = offset1 + (offset2 << 8);
+
+          int idxOffset = emit3WithDummy(mgenc, bytecode, 0);
+          jumps.add(new Jump(bytecode, offset + i, idxOffset));
           break;
         }
 
         case JUMP_ON_TRUE_POP:
-        case JUMP2_ON_TRUE_POP: {
-          byte offset = bytecodes[i + 1];
-          int idxOffset = emitJumpOnBoolWithDummyOffset(mgenc, true, true);
-          jumps.add(new Jump(JUMP_ON_TRUE_POP, offset + i, idxOffset));
-          break;
-        }
-
+        case JUMP2_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
         case JUMP2_ON_FALSE_POP: {
-          byte offset = bytecodes[i + 1];
-          int idxOffset = emitJumpOnBoolWithDummyOffset(mgenc, false, true);
-          jumps.add(new Jump(JUMP_ON_FALSE_POP, offset + i, idxOffset));
+          int offset1 = bytecodes[i + 1];
+          int offset2 = bytecodes[i + 2];
+
+          int offset = offset1 + (offset2 << 8);
+
+          int idxOffset = emit3WithDummy(mgenc, bytecode, -1);
+          jumps.add(new Jump(bytecode, offset + i, idxOffset));
           break;
         }
 

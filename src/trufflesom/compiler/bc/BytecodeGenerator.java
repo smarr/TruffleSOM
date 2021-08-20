@@ -312,6 +312,14 @@ public final class BytecodeGenerator {
     return idx;
   }
 
+  public static int emit3WithDummy(final BytecodeMethodGenContext mgenc, final byte code,
+      final int stackEffect) {
+    mgenc.addBytecode(code, stackEffect);
+    int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    mgenc.addBytecodeArgument((byte) 0);
+    return idx;
+  }
+
   public static void patchJumpOffsetToPointToNextInstruction(
       final BytecodeMethodGenContext mgenc,
       final int idxOfOffset, final ParserBc parser) throws ParseError {
