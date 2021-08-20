@@ -16,7 +16,6 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 public class BytecodeTestSetup extends TruffleTestSetup {
 
   protected BytecodeMethodGenContext mgenc;
-  protected BytecodeMethodGenContext bgenc;
 
   public BytecodeTestSetup() {
     super();
@@ -25,13 +24,7 @@ public class BytecodeTestSetup extends TruffleTestSetup {
 
   public void initMgenc() {
     mgenc = new BytecodeMethodGenContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, null);
-  }
-
-  public void initBgenc() {
-    mgenc.setSignature(symbolFor("test"));
-    mgenc.setVarsOnMethodScope();
-    bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
+    mgenc.addArgumentIfAbsent(symSelf, sourceForTests.createSection(1, 1));
   }
 
   protected byte[] getBytecodesOfBlock(final int bytecodeIdx) {

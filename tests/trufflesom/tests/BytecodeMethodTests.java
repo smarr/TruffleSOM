@@ -36,19 +36,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     return mgenc.getBytecodeArray();
   }
 
-  private byte[] blockToBytecodes(final String source) {
-    initBgenc();
-    Source s = SomLanguage.getSyntheticSource(source, "test");
-
-    ParserBc parser = new ParserBc(source, s, probe, universe);
-    try {
-      parser.nestedBlock(bgenc);
-    } catch (ProgramDefinitionError e) {
-      throw new RuntimeException(e);
-    }
-    return bgenc.getBytecodeArray();
-  }
-
   private static class BC {
     final byte   bytecode;
     final Byte   arg1;
@@ -601,46 +588,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
   @Ignore("TODO")
   @Test
-  public void testBlockIfTrueArg() {
-    byte[] bytecodes = blockToBytecodes(
-        "[:arg | #start.\n"
-            + " self method ifTrue: [ arg ].\n"
-            + " #end\n"
-            + "]");
-
-    dump();
-    assertEquals(17, bytecodes.length);
-    check(bytecodes,
-        t(5, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
-        Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockIfTrueMethodArg() {
-    Source s = SomLanguage.getSyntheticSource("test arg", "arg");
-    mgenc.addArgumentIfAbsent(symbolFor("arg"), s.createSection(1));
-
-    byte[] bytecodes = blockToBytecodes(
-        "[ #start.\n"
-            + " self method ifTrue: [ arg ].\n"
-            + " #end\n"
-            + "]");
-
-    dump();
-    assertEquals(17, bytecodes.length);
-    check(bytecodes,
-        t(7, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6)),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 1),
-        Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
-  }
-
-  @Ignore("TODO")
-  @Test
   public void testIfTrueIfFalseArg() {
     byte[] bytecodes = methodToBytecodes(
         "test: arg1 with: arg2 = (\n"
@@ -777,109 +724,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     assertEquals("jump offset, should point to correct bytecode"
         + " and not be affected by changing length of bytecodes in the block",
         11, bytecodes[14]);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopArgumentPopReturnArg() {
-    byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. arg ]");
-
-    assertEquals(8, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.POP_ARGUMENT,
-        t(4, Bytecodes.PUSH_ARGUMENT),
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopArgumentPopImplicitReturn() {
-    byte[] bytecodes = blockToBytecodes("[:arg | arg := 1 ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_ARGUMENT,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopArgumentPopImplicitReturnDot() {
-    byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_ARGUMENT,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopLocalReturnLocal() {
-    byte[] bytecodes = blockToBytecodes("[| local | local := 1 ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_LOCAL,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupFieldReturnLocal() {
-    addField("field");
-    byte[] bytecodes = blockToBytecodes("[ field := 1 ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_FIELD,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupFieldReturnLocalDot() {
-    addField("field");
-    byte[] bytecodes = blockToBytecodes("[ field := 1. ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_FIELD,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  private void blockIfReturnNonLocal(final String sel, final byte jumpBytecode) {
-    byte[] bytecodes = blockToBytecodes("[:arg |\n"
-        + " #start.\n"
-        + " self method " + sel + " [ ^ arg ].\n"
-        + " #end\n"
-        + "]");
-
-    assertEquals(19, bytecodes.length);
-    check(bytecodes,
-        t(5, Bytecodes.SEND),
-        new BC(jumpBytecode, 8),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
-        new BC(Bytecodes.RETURN_NON_LOCAL, 1),
-        Bytecodes.POP);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockIfReturnNonLocal() {
-    blockIfReturnNonLocal("ifTrue:", Bytecodes.JUMP_ON_FALSE_TOP_NIL);
-    blockIfReturnNonLocal("ifFalse:", Bytecodes.JUMP_ON_TRUE_TOP_NIL);
   }
 
   private void whileInlining(final String sel, final byte jumpBytecode) {
