@@ -2,7 +2,6 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
-import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Test;
@@ -142,7 +141,7 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   @Test
   public void testBlockIfTrueMethodArg() {
     Source s = SomLanguage.getSyntheticSource("test arg", "arg");
-    mgenc.addArgumentIfAbsent(universe.symbolFor("arg"), s.createSection(1));
+    mgenc.addArgumentIfAbsent(symbolFor("arg"), s.createSection(1));
 
     byte[] bytecodes = blockToBytecodes(
         "[ #start.\n"

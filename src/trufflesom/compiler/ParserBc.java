@@ -31,7 +31,6 @@ import static trufflesom.vm.SymbolTable.symArraySizePlaceholder;
 import static trufflesom.vm.SymbolTable.symAtPutMsg;
 import static trufflesom.vm.SymbolTable.symMinus;
 import static trufflesom.vm.SymbolTable.symNewMsg;
-import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symPlus;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symSuper;
@@ -47,6 +46,7 @@ import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -100,8 +100,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       }
       if (mgenc.isBlockMethod() && !mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
-        mgenc.addLiteralIfAbsent(symNil, this);
-        emitPUSHGLOBAL(mgenc, symNil);
+        emitPUSHCONSTANT(mgenc, Nil.nilObject, this);
       }
       emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
@@ -368,13 +367,12 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     expect(Pound);
     expect(NewTerm);
 
-    mgenc.addLiteralIfAbsent(symArray, this);
     mgenc.addLiteralIfAbsent(symNewMsg, this);
     mgenc.addLiteralIfAbsent(symAtPutMsg, this);
     final byte arraySizeLiteralIndex = mgenc.addLiteral(symArraySizePlaceholder, this);
 
     // create empty array
-    emitPUSHGLOBAL(mgenc, symArray);
+    emitPUSHGLOBAL(mgenc, symArray, this);
     emitPUSHCONSTANT(mgenc, arraySizeLiteralIndex);
     emitSEND(mgenc, symNewMsg);
 
@@ -451,8 +449,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (!mgenc.isFinished()) {
       if (!mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
-        mgenc.addLiteralIfAbsent(symNil, this);
-        emitPUSHGLOBAL(mgenc, symNil);
+        emitPUSHCONSTANT(mgenc, Nil.nilObject, this);
       }
       emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
@@ -475,8 +472,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       if (mgenc.hasField(var)) {
         emitPUSHFIELD(mgenc, var);
       } else {
-        mgenc.addLiteralIfAbsent(var, this);
-        emitPUSHGLOBAL(mgenc, var);
+        emitPUSHGLOBAL(mgenc, var, this);
       }
     }
   }

@@ -1275,8 +1275,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case PUSH_GLOBAL: {
           byte literalIdx = bytecodes[i + 1];
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
-          mgenc.addLiteralIfAbsent(globalName, null);
-          emitPUSHGLOBAL(mgenc, globalName);
+          emitPUSHGLOBAL(mgenc, globalName, null);
           break;
         }
 

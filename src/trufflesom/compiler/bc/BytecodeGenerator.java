@@ -76,6 +76,9 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
+import static trufflesom.vm.SymbolTable.symFalse;
+import static trufflesom.vm.SymbolTable.symNil;
+import static trufflesom.vm.SymbolTable.symTrue;
 
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserBc;
@@ -221,11 +224,28 @@ public final class BytecodeGenerator {
   }
 
   public static void emitPUSHGLOBAL(final BytecodeMethodGenContext mgenc,
-      final SSymbol global) {
+      final SSymbol global, final ParserBc parser) throws ParseError {
+    if (symNil == global) {
+      emitPUSHCONSTANT(mgenc, Nil.nilObject, parser);
+      return;
+    }
+
+    if (symTrue == global) {
+      emitPUSHCONSTANT(mgenc, true, parser);
+      return;
+    }
+
+    if (symFalse == global) {
+      emitPUSHCONSTANT(mgenc, false, parser);
+      return;
+    }
+
     if (GlobalNode.isPotentiallyUnknown(global, mgenc.getUniverse())) {
       mgenc.markAccessingOuterScopes();
     }
-    emit2(mgenc, PUSH_GLOBAL, mgenc.findLiteralIndex(global), 1);
+    byte idx = mgenc.addLiteralIfAbsent(global, parser);
+    assert idx != -1;
+    emit2(mgenc, PUSH_GLOBAL, idx, 1);
   }
 
   public static void emitPOPARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
