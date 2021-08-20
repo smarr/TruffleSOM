@@ -52,44 +52,48 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   public void testDupPopArgumentPop() {
     byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. arg ]");
 
-    assertEquals(9, bytecodes.length);
-    assertEquals(Bytecodes.PUSH_CONSTANT, bytecodes[0]);
-    assertEquals(Bytecodes.POP_ARGUMENT, bytecodes[2]);
-    assertEquals(Bytecodes.PUSH_ARGUMENT, bytecodes[5]);
-    assertEquals(Bytecodes.RETURN_LOCAL, bytecodes[8]);
+    assertEquals(6, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.POP_ARGUMENT,
+        Bytecodes.PUSH_ARG1,
+        Bytecodes.RETURN_LOCAL);
   }
 
   @Test
   public void testDupPopArgumentPopImplicitReturn() {
     byte[] bytecodes = blockToBytecodes("[:arg | arg := 1 ]");
 
-    assertEquals(7, bytecodes.length);
-    assertEquals(Bytecodes.PUSH_CONSTANT, bytecodes[0]);
-    assertEquals(Bytecodes.DUP, bytecodes[2]);
-    assertEquals(Bytecodes.POP_ARGUMENT, bytecodes[3]);
-    assertEquals(Bytecodes.RETURN_LOCAL, bytecodes[6]);
+    assertEquals(6, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.DUP,
+        Bytecodes.POP_ARGUMENT,
+        Bytecodes.RETURN_LOCAL);
   }
 
   @Test
   public void testDupPopArgumentPopImplicitReturnDot() {
     byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. ]");
 
-    assertEquals(7, bytecodes.length);
-    assertEquals(Bytecodes.PUSH_CONSTANT, bytecodes[0]);
-    assertEquals(Bytecodes.DUP, bytecodes[2]);
-    assertEquals(Bytecodes.POP_ARGUMENT, bytecodes[3]);
-    assertEquals(Bytecodes.RETURN_LOCAL, bytecodes[6]);
+    assertEquals(6, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.DUP,
+        Bytecodes.POP_ARGUMENT,
+        Bytecodes.RETURN_LOCAL);
   }
 
   @Test
   public void testDupPopLocalReturnLocal() {
     byte[] bytecodes = blockToBytecodes("[| local | local := 1 ]");
 
-    assertEquals(7, bytecodes.length);
-    assertEquals(Bytecodes.PUSH_CONSTANT, bytecodes[0]);
-    assertEquals(Bytecodes.DUP, bytecodes[2]);
-    assertEquals(Bytecodes.POP_LOCAL, bytecodes[3]);
-    assertEquals(Bytecodes.RETURN_LOCAL, bytecodes[6]);
+    assertEquals(4, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.DUP,
+        Bytecodes.POP_LOCAL_0,
+        Bytecodes.RETURN_LOCAL);
   }
 
   @Test
@@ -97,11 +101,12 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     addField("field");
     byte[] bytecodes = blockToBytecodes("[ field := 1 ]");
 
-    assertEquals(7, bytecodes.length);
-    assertEquals(Bytecodes.PUSH_CONSTANT, bytecodes[0]);
-    assertEquals(Bytecodes.DUP, bytecodes[2]);
-    assertEquals(Bytecodes.POP_FIELD, bytecodes[3]);
-    assertEquals(Bytecodes.RETURN_LOCAL, bytecodes[6]);
+    assertEquals(6, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.DUP,
+        Bytecodes.POP_FIELD,
+        Bytecodes.RETURN_LOCAL);
   }
 
   @Test
@@ -109,11 +114,12 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     addField("field");
     byte[] bytecodes = blockToBytecodes("[ field := 1. ]");
 
-    assertEquals(7, bytecodes.length);
-    assertEquals(Bytecodes.PUSH_CONSTANT, bytecodes[0]);
-    assertEquals(Bytecodes.DUP, bytecodes[2]);
-    assertEquals(Bytecodes.POP_FIELD, bytecodes[3]);
-    assertEquals(Bytecodes.RETURN_LOCAL, bytecodes[6]);
+    assertEquals(6, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.DUP,
+        Bytecodes.POP_FIELD,
+        Bytecodes.RETURN_LOCAL);
   }
 
   @Test
