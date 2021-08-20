@@ -4,9 +4,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.oracle.truffle.api.nodes.Node;
@@ -20,7 +18,10 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
+import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
+import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
+import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
+import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
@@ -31,14 +32,15 @@ import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
-import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
 import trufflesom.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
-import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode;
+import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.FalseIfElseLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 
@@ -126,7 +128,6 @@ public class AstInliningTests extends TruffleTestSetup {
     assertThat(literal, instanceOf(cls));
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueWithLiteralReturn() {
     literalTest("0", IntegerLiteralNode.class);
@@ -138,10 +139,9 @@ public class AstInliningTests extends TruffleTestSetup {
     literalTest("1.1", DoubleLiteralNode.class);
     literalTest("-2342.234", DoubleLiteralNode.class);
 
-    // TODO: TruffleSOM and PySOM don't yet agree
-    literalTest("true", LiteralNode.class);
-    literalTest("false", LiteralNode.class);
-    literalTest("nil", LiteralNode.class);
+    literalTest("true", TrueGlobalNode.class);
+    literalTest("false", FalseGlobalNode.class);
+    literalTest("nil", NilGlobalNode.class);
 
     literalTest("SomeGlobal", UninitializedGlobalReadNode.class);
     literalTest("[]", BlockNode.class);
@@ -166,7 +166,6 @@ public class AstInliningTests extends TruffleTestSetup {
     ifArg("ifFalse:", false);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueAndIncField() {
     addField("field");
@@ -176,21 +175,15 @@ public class AstInliningTests extends TruffleTestSetup {
             + "(self key: 5) ifTrue: [ field := field + 1 ]. #end )");
 
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 1);
+    UninitFieldIncNode incNode = read(ifNode, "bodyNode", UninitFieldIncNode.class);
 
-    fail("TODO: PySOM doesn't match TruffleSOM. Inc node support not yet implemented in both");
-
-    FieldWriteNode fieldWrite = read(ifNode, "bodyNode", FieldWriteNode.class);
-    int fieldIdx = read(read(fieldWrite, "write"), "fieldIndex", Integer.class);
+    int fieldIdx = read(incNode, "fieldIndex", Integer.class);
     assertEquals(0, fieldIdx);
 
-    LocalArgumentReadNode selfNode = (LocalArgumentReadNode) fieldWrite.getSelf();
+    LocalArgumentReadNode selfNode = (LocalArgumentReadNode) incNode.getSelf();
     assertTrue(selfNode.isSelfRead());
-
-    ExpressionNode expr = fieldWrite.getValue();
-    fail("TODO: test that the right context level/field is accessed");
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueAndIncArg() {
     SequenceNode seq = (SequenceNode) parseMethod(
@@ -200,11 +193,10 @@ public class AstInliningTests extends TruffleTestSetup {
 
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 1);
 
-    fail("TODO: PySOM doesn't match TruffleSOM. Inc node support not yet implemented in both");
-
-    Node add = read(ifNode, "bodyNode");
-
-    fail("TODO:  test that the right context level/arg is accessed");
+    IntIncrementNode inc = read(ifNode, "bodyNode", IntIncrementNode.class);
+    LocalArgumentReadNode arg = (LocalArgumentReadNode) inc.getRcvr();
+    assertEquals(1, arg.argumentIndex);
+    assertEquals("arg", arg.getInvocationIdentifier().getString());
   }
 
   @Test
@@ -340,7 +332,7 @@ public class AstInliningTests extends TruffleTestSetup {
   }
 
   private void ifTrueIfFalseReturn(final String sel1, final String sel2,
-      final boolean expectedBool) {
+      final Class<?> cls) {
     initMgenc();
     SequenceNode seq = (SequenceNode) parseMethod(
         "test: arg1 with: arg2 = (\n"
@@ -348,18 +340,14 @@ public class AstInliningTests extends TruffleTestSetup {
             + "   ^ self method " + sel1 + " [ ^ arg1 ] " + sel2 + " [ arg2 ]\n"
             + "   )");
 
-    fail("TruffleSOM doesn't yet specialize both ifTrue:ifFalse: and ifFalse:ifTrue:");
-
-    IfTrueIfFalseInlinedLiteralsNode ifNode =
-        (IfTrueIfFalseInlinedLiteralsNode) read(seq, "expressions", 1);
-    assertEquals(expectedBool, read(ifNode, "expectedBool", Boolean.class));
+    Node ifNode = read(seq, "expressions", 1);
+    assertThat(ifNode, instanceOf(cls));
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueIfFalseReturn() {
-    ifTrueIfFalseReturn("ifTrue:", "ifFalse:", true);
-    ifTrueIfFalseReturn("ifFalse:", "ifTrue:", false);
+    ifTrueIfFalseReturn("ifTrue:", "ifFalse:", TrueIfElseLiteralNode.class);
+    ifTrueIfFalseReturn("ifFalse:", "ifTrue:", FalseIfElseLiteralNode.class);
   }
 
   private void whileInlining(final String whileSel, final boolean expectedBool) {
@@ -380,7 +368,6 @@ public class AstInliningTests extends TruffleTestSetup {
     whileInlining("whileFalse:", false);
   }
 
-  @Ignore("TODO")
   @Test
   public void testBlockBlockInlinedSelf() {
     addField("field");
@@ -405,14 +392,12 @@ public class AstInliningTests extends TruffleTestSetup {
     assertEquals("b", readB.getInvocationIdentifier().getString());
     assertEquals(1, readB.argumentIndex);
 
-    fail(
-        "TODO: TruffleSOM and PySOM don't yet implement the same optimizations. Inc node missing in PySOM.");
-    read(blockBIfTrue, "bodyNode", FieldWriteNode.class);
-
-    fail("TODO: test that the self is at the correct level (ctx level 2)");
+    UninitFieldIncNode incNode = read(blockBIfTrue, "bodyNode", UninitFieldIncNode.class);
+    NonLocalArgumentReadNode selfNode = (NonLocalArgumentReadNode) incNode.getSelf();
+    assertEquals(2, selfNode.getContextLevel());
+    assertEquals(0, (int) read(incNode, "fieldIndex", Integer.class));
   }
 
-  @Ignore("TODO")
   @Test
   public void testToDoBlockBlockInlinedSelf() {
     addField("field");
@@ -441,12 +426,10 @@ public class AstInliningTests extends TruffleTestSetup {
         read(blockBIfTrue, "bodyNode", NonLocalVariableWriteNode.class);
     assertEquals(1, writeNode.getContextLevel());
     assertEquals("l2", writeNode.getInvocationIdentifier().getString());
-    writeNode.getExp();
 
-    assertEquals(
-        "TODO: PySOM needs to add IncNode support like we have here, then we can fix this test",
-        true, false);
-
+    IntIncrementNode incNode = (IntIncrementNode) writeNode.getExp();
+    NonLocalVariableReadNode readL2 = (NonLocalVariableReadNode) incNode.getRcvr();
+    assertEquals("l2", readL2.getInvocationIdentifier().getString());
   }
 
   @Test
@@ -465,7 +448,6 @@ public class AstInliningTests extends TruffleTestSetup {
     return read(seq, "expressions", 0);
   }
 
-  @Ignore("TODO")
   @Test
   public void testInliningOf() {
     assertThat(inliningOf("or:"), instanceOf(OrInlinedLiteralNode.class));

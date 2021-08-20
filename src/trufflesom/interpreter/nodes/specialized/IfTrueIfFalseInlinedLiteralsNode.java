@@ -19,8 +19,7 @@ import trufflesom.interpreter.nodes.ExpressionNode;
  *
  * @author Stefan Marr
  */
-@Inline(selector = "ifTrue:ifFalse:", inlineableArgIdx = {1, 2})
-public final class IfTrueIfFalseInlinedLiteralsNode extends ExpressionNode {
+public abstract class IfTrueIfFalseInlinedLiteralsNode extends ExpressionNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
   @Child private ExpressionNode conditionNode;
@@ -58,6 +57,26 @@ public final class IfTrueIfFalseInlinedLiteralsNode extends ExpressionNode {
       return trueNode.executeGeneric(frame);
     } else {
       return falseNode.executeGeneric(frame);
+    }
+  }
+
+  @Inline(selector = "ifTrue:ifFalse:", inlineableArgIdx = {1, 2})
+  public static final class TrueIfElseLiteralNode extends IfTrueIfFalseInlinedLiteralsNode {
+    public TrueIfElseLiteralNode(final ExpressionNode conditionNode,
+        final ExpressionNode originalTrueNode, final ExpressionNode originalFalseNode,
+        final ExpressionNode inlinedTrueNode, final ExpressionNode inlinedFalseNode) {
+      super(conditionNode, originalTrueNode, originalFalseNode, inlinedTrueNode,
+          inlinedFalseNode);
+    }
+  }
+
+  @Inline(selector = "ifFalse:ifTrue:", inlineableArgIdx = {1, 2})
+  public static final class FalseIfElseLiteralNode extends IfTrueIfFalseInlinedLiteralsNode {
+    public FalseIfElseLiteralNode(final ExpressionNode conditionNode,
+        final ExpressionNode originalTrueNode, final ExpressionNode originalFalseNode,
+        final ExpressionNode inlinedTrueNode, final ExpressionNode inlinedFalseNode) {
+      super(conditionNode, originalFalseNode, originalTrueNode, inlinedFalseNode,
+          inlinedTrueNode);
     }
   }
 }

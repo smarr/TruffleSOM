@@ -17,6 +17,7 @@ import static trufflesom.interpreter.SNodeFactory.createSequence;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
@@ -39,6 +40,7 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.literals.StringLiteralNode;
 import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
@@ -245,11 +247,25 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     SSymbol msg = binarySelector();
     ExpressionNode operand = binaryOperand(mgenc);
 
-    ExpressionNode[] args = new ExpressionNode[] {receiver, operand};
     SourceSection source = getSource(coord);
+
+    ExpressionNode inlined =
+        inlinableNodes.inline(msg, Arrays.asList(receiver, operand), mgenc, source);
+    if (inlined != null) {
+      assert !isSuperSend;
+      return inlined;
+    }
+
+    ExpressionNode[] args = new ExpressionNode[] {receiver, operand};
+
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, source);
+    } else if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
+      IntegerLiteralNode lit = (IntegerLiteralNode) operand;
+      if (lit.executeLong(null) == 1) {
+        return IntIncrementNodeGen.create(receiver);
+      }
     }
     return MessageSendNode.create(msg, args, source, universe);
   }
