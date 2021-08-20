@@ -283,14 +283,14 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
   }
 
-  public boolean addLiteralIfAbsent(final Object lit, final ParserBc parser)
+  public byte addLiteralIfAbsent(final Object lit, final ParserBc parser)
       throws ParseError {
-    if (literals.contains(lit)) {
-      return false;
+    int idx = literals.indexOf(lit);
+    if (idx != -1) {
+      return (byte) idx;
     }
 
-    addLiteral(lit, parser);
-    return true;
+    return addLiteral(lit, parser);
   }
 
   public byte addLiteral(final Object lit, final ParserBc parser) throws ParseError {
@@ -940,8 +940,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipLoopBody, parser);
 
-    addLiteralIfAbsent(Nil.nilObject, parser);
-    emitPUSHCONSTANT(this, Nil.nilObject);
+    emitPUSHCONSTANT(this, Nil.nilObject, parser);
 
     resetLastBytecodeBuffer();
   }

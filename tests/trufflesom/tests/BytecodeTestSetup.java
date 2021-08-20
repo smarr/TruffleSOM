@@ -35,7 +35,7 @@ public class BytecodeTestSetup extends TruffleTestSetup {
   }
 
   protected byte[] getBytecodesOfBlock(final int bytecodeIdx) {
-    SMethod blockMethod = (SMethod) mgenc.getConstant(25);
+    SMethod blockMethod = (SMethod) mgenc.getConstant(bytecodeIdx);
     Method blockIvkbl = (Method) blockMethod.getInvokable();
     return read(blockIvkbl, "expressionOrSequence", BytecodeLoopNode.class).getBytecodeArray();
   }
@@ -58,6 +58,13 @@ public class BytecodeTestSetup extends TruffleTestSetup {
       this.arg1 = (byte) arg1;
       arg2 = null;
       note = null;
+    }
+
+    BC(final byte bytecode, final String note) {
+      this.bytecode = bytecode;
+      this.arg1 = null;
+      arg2 = null;
+      this.note = note;
     }
 
     BC(final byte bytecode, final int arg1, final String note) {

@@ -38,12 +38,17 @@ import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
@@ -52,6 +57,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.Q_PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
@@ -366,6 +372,42 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           Object value = literalsAndConstants[literalIdx];
           stackPointer += 1;
           stack[stackPointer] = value;
+          break;
+        }
+
+        case PUSH_CONSTANT_0: {
+          stackPointer += 1;
+          stack[stackPointer] = literalsAndConstants[0];
+          break;
+        }
+
+        case PUSH_CONSTANT_1: {
+          stackPointer += 1;
+          stack[stackPointer] = literalsAndConstants[1];
+          break;
+        }
+
+        case PUSH_CONSTANT_2: {
+          stackPointer += 1;
+          stack[stackPointer] = literalsAndConstants[2];
+          break;
+        }
+
+        case PUSH_0: {
+          stackPointer += 1;
+          stack[stackPointer] = 0L;
+          break;
+        }
+
+        case PUSH_1: {
+          stackPointer += 1;
+          stack[stackPointer] = 1L;
+          break;
+        }
+
+        case PUSH_NIL: {
+          stackPointer += 1;
+          stack[stackPointer] = Nil.nilObject;
           break;
         }
 
@@ -1202,8 +1244,22 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case PUSH_CONSTANT: {
           byte literalIdx = bytecodes[i + 1];
           Object value = literalsAndConstants[literalIdx];
-          mgenc.addLiteralIfAbsent(value, null);
-          emitPUSHCONSTANT(mgenc, value);
+          emitPUSHCONSTANT(mgenc, value, null);
+          break;
+        }
+
+        case PUSH_CONSTANT_0:
+        case PUSH_CONSTANT_1:
+        case PUSH_CONSTANT_2: {
+          int literalIdx = bytecode - PUSH_CONSTANT_0;
+          emitPUSHCONSTANT(mgenc, literalsAndConstants[literalIdx], null);
+          break;
+        }
+
+        case PUSH_0:
+        case PUSH_1:
+        case PUSH_NIL: {
+          emit1(mgenc, bytecode, 1);
           break;
         }
 
@@ -1434,6 +1490,12 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case PUSH_CONSTANT:
+        case PUSH_CONSTANT_0:
+        case PUSH_CONSTANT_1:
+        case PUSH_CONSTANT_2:
+        case PUSH_0:
+        case PUSH_1:
+        case PUSH_NIL:
         case PUSH_GLOBAL:
         case POP: {
           break;

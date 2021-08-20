@@ -334,16 +334,13 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
           literalArray(mgenc);
         } else {
           SSymbol sym = literalSymbol();
-          mgenc.addLiteralIfAbsent(sym, this);
-          emitPUSHCONSTANT(mgenc, sym);
+          emitPUSHCONSTANT(mgenc, sym, this);
         }
         break;
       }
       case STString: {
         String str = literalString();
-
-        mgenc.addLiteralIfAbsent(str, this);
-        emitPUSHCONSTANT(mgenc, str);
+        emitPUSHCONSTANT(mgenc, str, this);
         break;
       }
       default: {
@@ -364,8 +361,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       lit = literalDouble(isNegative);
     }
 
-    mgenc.addLiteralIfAbsent(lit, this);
-    emitPUSHCONSTANT(mgenc, lit);
+    emitPUSHCONSTANT(mgenc, lit, this);
   }
 
   private void literalArray(final BytecodeMethodGenContext mgenc) throws ParseError {
@@ -387,8 +383,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     while (sym != EndTerm) {
       emitDUP(mgenc); // dup the array for having it on the stack after the #at:put:
 
-      mgenc.addLiteralIfAbsent(i, this);
-      emitPUSHCONSTANT(mgenc, i);
+      emitPUSHCONSTANT(mgenc, i, this);
       literal(mgenc);
       emitSEND(mgenc, symAtPutMsg);
       emitPOP(mgenc);

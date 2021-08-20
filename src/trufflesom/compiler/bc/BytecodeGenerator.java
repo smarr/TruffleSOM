@@ -47,12 +47,17 @@ import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
@@ -61,6 +66,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_0;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_1;
@@ -74,6 +80,7 @@ import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserBc;
 import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
@@ -269,8 +276,40 @@ public final class BytecodeGenerator {
     emit2(mgenc, SEND, mgenc.findLiteralIndex(msg), stackEffect);
   }
 
-  public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final Object lit) {
-    emit2(mgenc, PUSH_CONSTANT, mgenc.findLiteralIndex(lit), 1);
+  public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final Object lit,
+      final ParserBc parser) throws ParseError {
+    if (lit instanceof Long) {
+      if (0 == (Long) lit) {
+        emit1(mgenc, PUSH_0, 1);
+        return;
+      }
+
+      if (1 == (Long) lit) {
+        emit1(mgenc, PUSH_1, 1);
+        return;
+      }
+    }
+
+    if (lit == Nil.nilObject) {
+      emit1(mgenc, PUSH_NIL, 1);
+      return;
+    }
+
+    byte idx = mgenc.addLiteralIfAbsent(lit, parser);
+    switch (idx) {
+      case 0:
+        emit1(mgenc, PUSH_CONSTANT_0, 1);
+        break;
+      case 1:
+        emit1(mgenc, PUSH_CONSTANT_1, 1);
+        break;
+      case 2:
+        emit1(mgenc, PUSH_CONSTANT_2, 1);
+        break;
+      default:
+        emit2(mgenc, PUSH_CONSTANT, idx, 1);
+        break;
+    }
   }
 
   public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc,
