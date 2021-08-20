@@ -292,20 +292,18 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(25, bytecodes.length);
-    dump();
+    assertEquals(17, bytecodes.length);
     check(bytecodes,
-        t(8, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 11), // jump to pop bytecode, which is the dot
-        new BC(Bytecodes.PUSH_FIELD, 0, 0),
+        t(4, Bytecodes.SEND),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 7), // jump to pop bytecode, which is the dot
+        Bytecodes.PUSH_FIELD_0,
         Bytecodes.INC,
         Bytecodes.DUP,
-        new BC(Bytecodes.POP_FIELD, 0, 0),
+        Bytecodes.POP_FIELD_0,
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueAndIncArg() {
     addField("field");

@@ -200,9 +200,14 @@ public final class BytecodeGenerator {
 
   public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc,
       final SSymbol fieldName) {
-    assert mgenc.hasField(fieldName);
-    byte ctx = mgenc.getMaxContextLevel();
     byte fieldIdx = mgenc.getFieldIndex(fieldName);
+    byte ctx = mgenc.getMaxContextLevel();
+    emitPUSHFIELD(mgenc, fieldIdx, ctx);
+  }
+
+  public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
+      final byte ctx) {
+    assert fieldIdx != -1;
     if (ctx == 0) {
       if (fieldIdx == 0) {
         emit1(mgenc, PUSH_FIELD_0, 1);
@@ -251,9 +256,14 @@ public final class BytecodeGenerator {
 
   public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc,
       final SSymbol fieldName) {
-    assert mgenc.hasField(fieldName);
-    byte ctx = mgenc.getMaxContextLevel();
     byte fieldIdx = mgenc.getFieldIndex(fieldName);
+    byte ctx = mgenc.getMaxContextLevel();
+    emitPOPFIELD(mgenc, fieldIdx, ctx);
+  }
+
+  public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
+      final byte ctx) {
+    assert fieldIdx != -1;
     if (ctx == 0) {
       if (fieldIdx == 0) {
         emit1(mgenc, POP_FIELD_0, -1);

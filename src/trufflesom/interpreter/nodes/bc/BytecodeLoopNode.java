@@ -4,8 +4,11 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emit1;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3WithDummy;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHGLOBAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
@@ -1208,11 +1211,17 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_ARGUMENT:
-        case PUSH_FIELD: {
+        case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1), 1);
+          emitPUSHARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case PUSH_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPUSHFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
           break;
         }
 
@@ -1294,11 +1303,17 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case POP_ARGUMENT:
-        case POP_FIELD: {
+        case POP_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
           emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1), -1);
+          break;
+        }
+
+        case POP_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPOPFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
           break;
         }
 
