@@ -29,7 +29,11 @@ public class TruffleTestSetup {
 
   protected final Universe universe;
 
+  protected final Source sourceForTests;
+
   protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe;
+
+  protected int fieldCount;
 
   private static Universe getUniverse() {
     return SomLanguage.getCurrent().getUniverse();
@@ -41,6 +45,8 @@ public class TruffleTestSetup {
 
     cgenc = new ClassGenerationContext(universe, null);
     cgenc.setName(symbolFor("Test"));
+
+    sourceForTests = SomLanguage.getSyntheticSource("dummy-source", "test");
   }
 
   private static void initTruffle() {
@@ -58,7 +64,9 @@ public class TruffleTestSetup {
   }
 
   protected void addField(final String name) {
-    cgenc.addInstanceField(symbolFor(name), null);
+    fieldCount += 1;
+    cgenc.addInstanceField(symbolFor(name),
+        sourceForTests.createSection(1, fieldCount, 1));
   }
 
   private java.lang.reflect.Field lookup(final Class<?> cls, final String fieldName) {
