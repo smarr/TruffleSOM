@@ -12,10 +12,7 @@ import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_BYTECODES;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
@@ -182,11 +179,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       final ParserBc parser) throws ParseError {
     int instructionStart = idxOfOffset - 1;
     byte bytecodeBeforeOffset = bytecode.get(instructionStart);
-    assert bytecodeBeforeOffset == JUMP_ON_TRUE_TOP_NIL ||
-        bytecodeBeforeOffset == JUMP_ON_FALSE_TOP_NIL ||
-        bytecodeBeforeOffset == JUMP_ON_TRUE_POP ||
-        bytecodeBeforeOffset == JUMP_ON_FALSE_POP ||
-        bytecodeBeforeOffset == JUMP : "Expected to patch a JUMP instruction, but got bc: "
+    assert isOneOf(bytecodeBeforeOffset,
+        JUMP_BYTECODES) : "Expected to patch a JUMP instruction, but got bc: "
             + bytecodeBeforeOffset;
     assert (JUMP2 - JUMP) == Bytecodes.NUM_1_BYTE_JUMP_BYTECODES // ~
         : "There's an unexpected number of JUMP bytecodes. Need to adapt the code below";

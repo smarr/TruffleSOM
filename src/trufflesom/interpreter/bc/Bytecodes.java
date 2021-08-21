@@ -145,6 +145,22 @@ public class Bytecodes {
   // Static array holding lengths of each bytecode
   @CompilationFinal(dimensions = 1) private static final int[] BYTECODE_LENGTH;
 
+  public static final byte[] JUMP_BYTECODES = new byte[] {
+      JUMP, JUMP_ON_TRUE_TOP_NIL, JUMP_ON_TRUE_POP,
+      JUMP_ON_FALSE_TOP_NIL, JUMP_ON_FALSE_POP, JUMP_BACKWARDS,
+      JUMP2, JUMP2_ON_TRUE_TOP_NIL, JUMP2_ON_TRUE_POP,
+      JUMP2_ON_FALSE_TOP_NIL, JUMP2_ON_FALSE_POP, JUMP_BACKWARDS
+  };
+
+  public static final boolean isOneOf(final byte bytecode, final byte[] arr) {
+    for (byte b : arr) {
+      if (b == bytecode) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   static {
     NUM_BYTECODES = Q_SEND_3 + 1;
 
