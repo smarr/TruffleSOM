@@ -153,7 +153,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
   @CompilationFinal(dimensions = 1) private final BackJump[] inlinedLoops;
 
-  @Children private Node[] quickened;
+  @Children private final Node[] quickened;
 
   private final int      numLocals;
   private final int      maxStackDepth;
@@ -174,6 +174,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     this.universe = universe;
 
     this.frameOnStackMarker = frameOnStackMarker;
+
+    this.quickened = new Node[bytecodes.length];
   }
 
   @Override
@@ -272,17 +274,19 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_LOCAL_0:
-        case PUSH_LOCAL_1:
-        case PUSH_LOCAL_2: {
-          byte localIdx = (byte) (bytecode - PUSH_LOCAL_0);
-
-          VirtualFrame currentOrContext = frame;
-          FrameSlot slot = localsAndOuters[localIdx];
-
-          Object value = currentOrContext.getValue(slot);
+        case PUSH_LOCAL_0: {
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = frame.getValue(localsAndOuters[0]);
+          break;
+        }
+        case PUSH_LOCAL_1: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getValue(localsAndOuters[1]);
+          break;
+        }
+        case PUSH_LOCAL_2: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getValue(localsAndOuters[2]);
           break;
         }
 
@@ -302,83 +306,90 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_SELF:
-        case PUSH_ARG1:
-        case PUSH_ARG2: {
-          byte argIdx = (byte) (bytecode - PUSH_SELF);
-          VirtualFrame currentOrContext = frame;
-          Object value = currentOrContext.getArguments()[argIdx];
+        case PUSH_SELF: {
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = frame.getArguments()[0];
+          break;
+        }
+        case PUSH_ARG1: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getArguments()[1];
+          break;
+        }
+        case PUSH_ARG2: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getArguments()[2];
           break;
         }
 
-        case PUSH_FIELD:
-        case PUSH_FIELD_0:
-        case PUSH_FIELD_1: {
-          byte fieldIdx;
-          byte contextIdx;
-          if (bytecode == PUSH_FIELD_0) {
-            fieldIdx = 0;
-            contextIdx = 0;
-          } else if (bytecode == PUSH_FIELD_1) {
-            fieldIdx = 1;
-            contextIdx = 0;
-          } else {
-            fieldIdx = bytecodes[bytecodeIndex + 1];
-            contextIdx = bytecodes[bytecodeIndex + 2];
+        case PUSH_FIELD_0: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
           }
+
+          stackPointer += 1;
+          stack[stackPointer] =
+              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          break;
+        }
+
+        case PUSH_FIELD_1: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
+          }
+
+          stackPointer += 1;
+          stack[stackPointer] =
+              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          break;
+        }
+
+        case PUSH_FIELD: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
 
           VirtualFrame currentOrContext = frame;
           if (contextIdx > 0) {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          SObject obj = (SObject) currentOrContext.getArguments()[0];
-
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(fieldIdx));
           }
 
-          Object value = ((AbstractReadFieldNode) node).read(obj);
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = ((AbstractReadFieldNode) node).read(
+              (SObject) currentOrContext.getArguments()[0]);
           break;
         }
 
         case PUSH_BLOCK: {
-          byte literalIdx = bytecodes[bytecodeIndex + 1];
-          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+          SMethod blockMethod = (SMethod) literalsAndConstants[bytecodes[bytecodeIndex + 1]];
 
-          Object value = new SBlock(blockMethod,
-              universe.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = new SBlock(blockMethod,
+              universe.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
           break;
         }
 
         case PUSH_BLOCK_NO_CTX: {
-          byte literalIdx = bytecodes[bytecodeIndex + 1];
-          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+          SMethod blockMethod = (SMethod) literalsAndConstants[bytecodes[bytecodeIndex + 1]];
 
-          Object value = new SBlock(blockMethod,
-              universe.getBlockClass(blockMethod.getNumberOfArguments()), null);
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = new SBlock(blockMethod,
+              universe.getBlockClass(blockMethod.getNumberOfArguments()), null);
           break;
         }
 
         case PUSH_CONSTANT: {
-          byte literalIdx = bytecodes[bytecodeIndex + 1];
-
-          Object value = literalsAndConstants[literalIdx];
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = literalsAndConstants[bytecodes[bytecodeIndex + 1]];
           break;
         }
 
@@ -428,10 +439,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
               GlobalNode.create(globalName, universe, null).initialize(sourceSection);
           quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quickened);
 
-          // TODO: what's the correct semantics here? the outer or the closed self? normally,
-          // I'd expect the outer
-          // determineOuterContext(frame);
-
           stackPointer += 1;
           stack[stackPointer] = quickened.executeGeneric(frame);
           break;
@@ -460,18 +467,19 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case POP_LOCAL_0:
-        case POP_LOCAL_1:
-        case POP_LOCAL_2: {
-          byte localIdx = (byte) (bytecode - POP_LOCAL_0);
-
-          VirtualFrame currentOrContext = frame;
-          FrameSlot slot = localsAndOuters[localIdx];
-
-          Object value = stack[stackPointer];
+        case POP_LOCAL_0: {
+          frame.setObject(localsAndOuters[0], stack[stackPointer]);
           stackPointer -= 1;
-
-          currentOrContext.setObject(slot, value);
+          break;
+        }
+        case POP_LOCAL_1: {
+          frame.setObject(localsAndOuters[1], stack[stackPointer]);
+          stackPointer -= 1;
+          break;
+        }
+        case POP_LOCAL_2: {
+          frame.setObject(localsAndOuters[2], stack[stackPointer]);
+          stackPointer -= 1;
           break;
         }
 
@@ -484,49 +492,56 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Object value = stack[stackPointer];
+          currentOrContext.getArguments()[argIdx] = stack[stackPointer];
           stackPointer -= 1;
-
-          currentOrContext.getArguments()[argIdx] = value;
           break;
         }
 
-        case POP_FIELD:
-        case POP_FIELD_0:
-        case POP_FIELD_1: {
-          byte fieldIdx;
-          byte contextIdx;
-          if (bytecode == POP_FIELD_0) {
-            fieldIdx = 0;
-            contextIdx = 0;
-          } else if (bytecode == POP_FIELD_1) {
-            fieldIdx = 1;
-            contextIdx = 0;
-          } else {
-            fieldIdx = bytecodes[bytecodeIndex + 1];
-            contextIdx = bytecodes[bytecodeIndex + 2];
-          }
+        case POP_FIELD: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
 
           VirtualFrame currentOrContext = frame;
           if (contextIdx > 0) {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Object value = stack[stackPointer];
-          stackPointer -= 1;
-
-          SObject obj = (SObject) currentOrContext.getArguments()[0];
-
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(fieldIdx));
           }
 
-          ((AbstractWriteFieldNode) node).write(obj, value);
+          ((AbstractWriteFieldNode) node).write((SObject) currentOrContext.getArguments()[0],
+              stack[stackPointer]);
+          stackPointer -= 1;
+          break;
+        }
+
+        case POP_FIELD_0: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(0));
+          }
+
+          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+              stack[stackPointer]);
+
+          stackPointer -= 1;
+          break;
+        }
+        case POP_FIELD_1: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(1));
+          }
+
+          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+              stack[stackPointer]);
+
+          stackPointer -= 1;
           break;
         }
 
@@ -670,23 +685,32 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           return frame.getArguments()[0];
         }
 
-        case RETURN_FIELD_0:
-        case RETURN_FIELD_1:
-        case RETURN_FIELD_2: {
-          byte fieldIdx = (byte) (bytecode - RETURN_FIELD_0);
-
-          SObject obj = (SObject) frame.getArguments()[0];
-
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
+        case RETURN_FIELD_0: {
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(fieldIdx));
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
           }
 
-          return ((AbstractReadFieldNode) node).read(obj);
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+        }
+        case RETURN_FIELD_1: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
+          }
+
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+        }
+        case RETURN_FIELD_2: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(2));
+          }
+
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
         }
 
         case INC: {
@@ -735,9 +759,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           SObject obj = (SObject) currentOrContext.getArguments()[0];
 
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -773,9 +794,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           SObject obj = (SObject) currentOrContext.getArguments()[0];
 
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -975,7 +993,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 1;
 
           try {
-            assert quickened[bytecodeIndex] instanceof UnaryExpressionNode;
             UnaryExpressionNode node = (UnaryExpressionNode) quickened[bytecodeIndex];
             Object result = node.executeEvaluated(frame, rcvr);
 
@@ -1005,7 +1022,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 2;
 
           try {
-            assert quickened[bytecodeIndex] instanceof BinaryExpressionNode;
             BinaryExpressionNode node = (BinaryExpressionNode) quickened[bytecodeIndex];
             Object result = node.executeEvaluated(frame, rcvr, arg);
 
@@ -1036,7 +1052,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 3;
 
           try {
-            assert quickened[bytecodeIndex] instanceof TernaryExpressionNode;
             TernaryExpressionNode node = (TernaryExpressionNode) quickened[bytecodeIndex];
             Object result = node.executeEvaluated(frame, rcvr, arg1, arg2);
 
@@ -1071,9 +1086,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
   private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,
       final Node quickenedNode) {
-    if (this.quickened == null) {
-      this.quickened = new Node[bytecodes.length];
-    }
     this.quickened[bytecodeIndex] = insert(quickenedNode);
     bytecodes[bytecodeIndex] = quickenedBytecode;
   }
