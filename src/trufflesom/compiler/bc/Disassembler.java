@@ -120,8 +120,11 @@ public class Disassembler {
   }
 
   private static SClass getClass(final BytecodeLoopNode m) {
-    Invokable i = (Invokable) m.getRootNode();
-    return i.getHolder();
+    if (m.getRootNode() instanceof Invokable) {
+      Invokable i = (Invokable) m.getRootNode();
+      return i.getHolder();
+    }
+    return null;
   }
 
   public static void dumpMethod(final BytecodeMethodGenContext mgenc) {
