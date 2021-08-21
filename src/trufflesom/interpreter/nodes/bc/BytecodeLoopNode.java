@@ -14,6 +14,7 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
+import static trufflesom.compiler.bc.BytecodeMethodGenContext.getJumpOffset;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
@@ -1468,10 +1469,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP2_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
         case JUMP2_ON_FALSE_POP: {
-          int offset1 = bytecodes[i + 1];
-          int offset2 = bytecodes[i + 2];
-
-          int offset = offset1 + (offset2 << 8);
+          int offset = getJumpOffset(bytecodes[i + 1], bytecodes[i + 2]);
 
           int idxOffset = emit3WithDummy(mgenc, bytecode, -1);
           jumps.add(new Jump(bytecode, offset + i, idxOffset));

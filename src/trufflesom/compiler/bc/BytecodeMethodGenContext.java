@@ -214,6 +214,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
   }
 
+  public static int getJumpOffset(final byte byte1, final byte byte2) {
+    int b1 = Byte.toUnsignedInt(byte1);
+    int b2 = Byte.toUnsignedInt(byte2);
+
+    return b1 + (b2 << 8);
+  }
+
   public void emitBackwardsJumpOffsetToTarget(final int targetAddress, final ParserBc parser)
       throws ParseError {
     int addressOfJumpBc = offsetOfNextInstruction();
