@@ -150,6 +150,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   @CompilationFinal(dimensions = 1) private final FrameSlot[] localsAndOuters;
   @CompilationFinal(dimensions = 1) private final Object[]    literalsAndConstants;
 
+  @CompilationFinal(dimensions = 1) private final BackJump[] inlinedLoops;
+
   @Children private Node[] quickened;
 
   private final int      numLocals;
@@ -159,14 +161,15 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   private final FrameSlot frameOnStackMarker;
 
   public BytecodeLoopNode(final byte[] bytecodes, final int numLocals,
-      final FrameSlot[] localsAndOuters,
-      final Object[] literals, final int maxStackDepth, final FrameSlot frameOnStackMarker,
+      final FrameSlot[] localsAndOuters, final Object[] literals, final int maxStackDepth,
+      final FrameSlot frameOnStackMarker, final BackJump[] inlinedLoops,
       final Universe universe) {
     this.bytecodes = bytecodes;
     this.numLocals = numLocals;
     this.localsAndOuters = localsAndOuters;
     this.literalsAndConstants = literals;
     this.maxStackDepth = maxStackDepth;
+    this.inlinedLoops = inlinedLoops;
     this.universe = universe;
 
     this.frameOnStackMarker = frameOnStackMarker;
@@ -176,7 +179,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   public Node deepCopy() {
     return new BytecodeLoopNode(
         bytecodes.clone(), numLocals, localsAndOuters, literalsAndConstants,
-        maxStackDepth, frameOnStackMarker, universe).initialize(sourceSection);
+        maxStackDepth, frameOnStackMarker, inlinedLoops, universe).initialize(sourceSection);
   }
 
   @ExplodeLoop
@@ -1172,16 +1175,81 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     }
   }
 
+  public static final class BackJump implements Comparable<BackJump> {
+    final int loopBeginIdx;
+    final int backwardsJumpIdx;
+
+    public BackJump(final int loopBeginIdx, final int backwardsJumpIdx) {
+      this.loopBeginIdx = loopBeginIdx;
+      this.backwardsJumpIdx = backwardsJumpIdx;
+    }
+
+    @Override
+    public int compareTo(final BackJump o) {
+      return this.loopBeginIdx - o.loopBeginIdx;
+    }
+
+    @Override
+    public String toString() {
+      return "Loop begin at: " + loopBeginIdx + " -> " + backwardsJumpIdx;
+    }
+  }
+
+  private static final class BackJumpPatch implements Comparable<BackJumpPatch> {
+    final int backwardsJumpIdx;
+    final int jumpTargetAddress;
+
+    BackJumpPatch(final int backwardsJumpIdx, final int jumpTargetAddress) {
+      this.backwardsJumpIdx = backwardsJumpIdx;
+      this.jumpTargetAddress = jumpTargetAddress;
+    }
+
+    @Override
+    public int compareTo(final BackJumpPatch o) {
+      return this.backwardsJumpIdx - o.backwardsJumpIdx;
+    }
+  }
+
+  private PriorityQueue<BackJump> createBackwardJumpQueue() {
+    PriorityQueue<BackJump> loops = new PriorityQueue<>();
+    if (inlinedLoops != null) {
+      for (BackJump l : inlinedLoops) {
+        loops.add(l);
+      }
+    }
+    return loops;
+  }
+
+  private void prepareBackJumpToCurrentAddress(final PriorityQueue<BackJump> backJumps,
+      final PriorityQueue<BackJumpPatch> backJumpsToPatch, final int i,
+      final BytecodeMethodGenContext mgenc) {
+    while (backJumps != null && !backJumps.isEmpty() && backJumps.peek().loopBeginIdx <= i) {
+      BackJump jump = backJumps.poll();
+      assert jump.loopBeginIdx == i : "we use the less or equal, but actually expect it to be strictly equal";
+      backJumpsToPatch.add(
+          new BackJumpPatch(jump.backwardsJumpIdx, mgenc.offsetOfNextInstruction()));
+    }
+  }
+
+  private void patchJumpToCurrentAddress(final int i, final PriorityQueue<Jump> jumps,
+      final BytecodeMethodGenContext mgenc) throws ParseError {
+    while (!jumps.isEmpty() && jumps.peek().originalTarget <= i) {
+      Jump j = jumps.poll();
+      assert j.originalTarget == i : "we use the less or equal, but actually expect it to be strictly equal";
+      mgenc.patchJumpOffsetToPointToNextInstruction(j.offsetIdx, null);
+    }
+  }
+
   private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel)
       throws ParseError {
     PriorityQueue<Jump> jumps = new PriorityQueue<>();
+    PriorityQueue<BackJump> loops = createBackwardJumpQueue();
+    PriorityQueue<BackJumpPatch> backJumps = new PriorityQueue<>();
 
     int i = 0;
     while (i < bytecodes.length) {
-      while (!jumps.isEmpty() && jumps.element().originalTarget == i) {
-        Jump j = jumps.remove();
-        mgenc.patchJumpOffsetToPointToNextInstruction(j.offsetIdx, null);
-      }
+      prepareBackJumpToCurrentAddress(loops, backJumps, i, mgenc);
+      patchJumpToCurrentAddress(i, jumps, mgenc);
 
       byte bytecode = bytecodes[i];
       final int bytecodeLength = getBytecodeLength(bytecode);
@@ -1412,9 +1480,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case JUMP_BACKWARDS:
         case JUMP2_BACKWARDS: {
-          byte offset1 = bytecodes[i + 1];
-          byte offset2 = bytecodes[i + 2];
-          emit3(mgenc, bytecode, offset1, offset2, 0);
+          BackJumpPatch backJumpPatch = backJumps.poll();
+          assert backJumpPatch.backwardsJumpIdx == i : "Jump should match with jump instruction";
+          mgenc.emitBackwardsJumpOffsetToTarget(backJumpPatch.jumpTargetAddress, null);
           break;
         }
 

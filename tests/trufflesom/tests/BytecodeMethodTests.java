@@ -444,7 +444,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
   }
 
-  @Ignore("TODO")
   @Test
   public void testNestedNonInlinedBlocks() {
     addField("field");
@@ -458,14 +457,16 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "       a. b. c. d. e ] ] ]\n"
             + ")");
 
-    assertEquals(20, bytecodes.length);
+    assertEquals(13, bytecodes.length);
     check(bytecodes,
-        t(2, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 17)),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0, "arg a"),
-        t(9, new BC(Bytecodes.PUSH_LOCAL, 0, 0, "local b")),
-        t(13, new BC(Bytecodes.PUSH_LOCAL, 1, 0, "local c")));
+        t(1, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 11)),
+        new BC(Bytecodes.PUSH_ARG1, "arg a"),
+        Bytecodes.POP,
+        new BC(Bytecodes.PUSH_LOCAL_0, "local b"),
+        Bytecodes.POP,
+        new BC(Bytecodes.PUSH_LOCAL_1, "local c"));
 
-    SMethod blockMethod = (SMethod) mgenc.getConstant(17);
+    SMethod blockMethod = (SMethod) mgenc.getConstant(10);
     BytecodeLoopNode blockNode =
         read(blockMethod.getInvokable(), "expressionOrSequence", BytecodeLoopNode.class);
     byte[] blockBytecodes = blockNode.getBytecodeArray();
@@ -474,9 +475,9 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         new BC(Bytecodes.PUSH_ARGUMENT, 1, 1, "arg a"),
         t(4, new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local b")),
         t(8, new BC(Bytecodes.PUSH_LOCAL, 1, 1, "local c")),
-        t(12, new BC(Bytecodes.PUSH_ARGUMENT, 1, 0, "arg d")));
+        t(12, new BC(Bytecodes.PUSH_ARG1, "arg d")));
 
-    blockMethod = (SMethod) blockNode.getConstant(16);
+    blockMethod = (SMethod) blockNode.getConstant(blockBytecodes[14 + 1]);
 
     check(
         read(blockMethod.getInvokable(), "expressionOrSequence",
@@ -485,7 +486,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         t(4, new BC(Bytecodes.PUSH_LOCAL, 0, 2, "local b")),
         t(8, new BC(Bytecodes.PUSH_LOCAL, 1, 2, "local c")),
         t(12, new BC(Bytecodes.PUSH_ARGUMENT, 1, 1, "arg d")),
-        t(16, new BC(Bytecodes.PUSH_ARGUMENT, 1, 0, "arg e")));
+        t(16, new BC(Bytecodes.PUSH_ARG1, "arg e")));
   }
 
   @Test
@@ -623,6 +624,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void whileInlining(final String sel, final byte jumpBytecode) {
+    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test: arg = (\n"
             + "  #start.\n"
@@ -634,21 +636,19 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     check(bytecodes,
         t(2, Bytecodes.PUSH_CONSTANT),
         jumpBytecode,
-        Bytecodes.PUSH_ARGUMENT,
+        Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
-        new BC(Bytecodes.JUMP_BACKWARDS, 9),
+        new BC(Bytecodes.JUMP_BACKWARDS, 7),
         Bytecodes.PUSH_NIL,
         Bytecodes.POP);
   }
 
-  @Ignore("backward branch adjustement ist broken, get's a 0 offset here")
   @Test
   public void testWhileInlining() {
     whileInlining("whileTrue:", Bytecodes.JUMP_ON_FALSE_POP);
     whileInlining("whileFalse:", Bytecodes.JUMP_ON_TRUE_POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testInliningWhileLoopWithExpandingBranches() {
     byte[] bytecodes = methodToBytecodes(
@@ -664,13 +664,13 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     assertEquals(38, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_0,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_1,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_2,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_0,
         new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 27,
             "jump to the pop BC after the if/right before the push #end"),
         Bytecodes.PUSH_CONSTANT,
@@ -689,15 +689,10 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         new BC(Bytecodes.JUMP_BACKWARDS, 20,
             "jump to push_nil as result of whileTrue"),
 
-        Bytecodes.PUSH_ARGUMENT,
-        Bytecodes.POP,
-        new BC(Bytecodes.JUMP_BACKWARDS, 9,
-            "jump back to the first push constant in the condition, pushing const3"),
-        Bytecodes.PUSH_CONSTANT, // TODO: push_nil
+        Bytecodes.PUSH_NIL,
         Bytecodes.POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testInliningWhileLoopWithContractingBranches() {
     byte[] bytecodes = methodToBytecodes(
@@ -712,23 +707,23 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     assertEquals(19, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_0,
         new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 15,
             "jump to the pop after the if, before pushing #end"),
 
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_1,
         Bytecodes.RETURN_LOCAL,
 
         new BC(Bytecodes.JUMP_ON_FALSE_POP, 9,
             "jump to push_nil as result of whileTrue"),
 
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_0,
         Bytecodes.RETURN_LOCAL,
         Bytecodes.POP,
 
         new BC(Bytecodes.JUMP_BACKWARDS, 8,
             "jump to the push_1 of the condition"),
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_NIL,
         Bytecodes.POP);
   }
 

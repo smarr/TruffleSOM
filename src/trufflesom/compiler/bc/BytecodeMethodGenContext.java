@@ -73,6 +73,7 @@ import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
+import trufflesom.interpreter.nodes.bc.BytecodeLoopNode.BackJump;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
@@ -88,6 +89,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   private final List<Object>                  literals;
   private final LinkedHashMap<SSymbol, Local> localAndOuterVars;
+
+  private final ArrayList<BackJump> inlinedLoops;
 
   private final ArrayList<Byte> bytecode;
   private final byte[]          last4Bytecodes;
@@ -120,6 +123,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     super(holderGenc, outerGenc, universe, isBlockMethod, structuralProbe);
     literals = new ArrayList<>();
     bytecode = new ArrayList<>();
+    inlinedLoops = new ArrayList<>();
     localAndOuterVars = new LinkedHashMap<>();
     last4Bytecodes = new byte[4];
   }
@@ -218,21 +222,21 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   public void emitBackwardsJumpOffsetToTarget(final int targetAddress, final ParserBc parser)
       throws ParseError {
-    int addressOfJumpBc = bytecode.size();
+    int addressOfJumpBc = offsetOfNextInstruction();
 
-    int jumpOffset = targetAddress - addressOfJumpBc;
-
-    // we get a negative offset, which we negate to get a positive offset
-    // using the JUMP_BACKWARDS bytecode here allows us to use unsigned offsets
-    // and thus a wider range of jumps
-    jumpOffset = -jumpOffset;
+    // we are going to jump backward and want a positive value
+    // thus we subtract target_address from address_of_jump
+    int jumpOffset = addressOfJumpBc - targetAddress;
 
     checkJumpOffset(parser, jumpOffset);
+    int backwardJumpIdx = offsetOfNextInstruction();
 
     byte byte1 = (byte) jumpOffset;
     byte byte2 = (byte) (jumpOffset >> 8);
 
     emitJumpBackwardsWithOffset(this, byte1, byte2);
+
+    inlinedLoops.add(new BackJump(targetAddress, backwardJumpIdx));
   }
 
   public int offsetOfNextInstruction() {
@@ -371,9 +375,11 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     FrameSlot frameOnStackMarker =
         throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
 
+    BackJump[] loops = inlinedLoops.toArray(new BackJump[0]);
+
     return new BytecodeLoopNode(
         bytecodes, locals.size(), localsAndOuters, literalsArr, maxStackDepth,
-        frameOnStackMarker, universe);
+        frameOnStackMarker, loops, universe);
   }
 
   public byte[] getBytecodeArray() {
