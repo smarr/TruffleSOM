@@ -521,7 +521,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private static final byte[] POP_FIELD_BYTECODES = new byte[] {
       POP_FIELD, POP_FIELD_0, POP_FIELD_1};
 
-  private LiteralNode optimizeLiteralReturn() {
+  private ExpressionNode optimizeLiteralReturn() {
     final byte pushCandidate = lastBytecodeIs(1, PUSH_CONSTANT);
     if (pushCandidate == INVALID) {
       return null;
