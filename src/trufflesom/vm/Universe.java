@@ -182,6 +182,8 @@ public final class Universe implements IdProvider<SSymbol> {
     this.primitives = new Primitives(this);
 
     symNil = symbolFor("nil");
+    symTrue = symbolFor("true");
+    symFalse = symbolFor("false");
     symSelf = symbolFor("self");
     symBlockSelf = symbolFor("$blockSelf");
     symSuper = symbolFor("super");
@@ -753,6 +755,8 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal private SClass systemClass;
 
   public final SSymbol symNil;
+  public final SSymbol symTrue;
+  public final SSymbol symFalse;
   public final SSymbol symSelf;
   public final SSymbol symBlockSelf;
   public final SSymbol symFrameOnStack;
