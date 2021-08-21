@@ -7,6 +7,7 @@ import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 
@@ -140,5 +141,14 @@ public class BytecodeTestSetup extends TruffleTestSetup {
 
   public void dump() {
     dumpMethod(mgenc);
+  }
+
+  public void dump(final byte[] bytecodes) {
+    ArrayList<Byte> bcs = new ArrayList<>(bytecodes.length);
+    for (byte b : bytecodes) {
+      bcs.add(b);
+    }
+
+    dumpMethod(bcs);
   }
 }
