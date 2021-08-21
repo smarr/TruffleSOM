@@ -5,21 +5,14 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOf
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
-import static trufflesom.interpreter.bc.Bytecodes.DEC;
+import static trufflesom.interpreter.bc.Bytecodes.BYTECODE_STACK_EFFECT;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
-import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -34,12 +27,9 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
-import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
-import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
-import static trufflesom.interpreter.bc.Bytecodes.SEND;
-import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
+import static trufflesom.interpreter.bc.Bytecodes.STACK_EFFECT_DEPENDS_ON_MESSAGE;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
 import java.util.ArrayList;
@@ -843,66 +833,15 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     while (i < bytecode.size()) {
       byte bc = bytecode.get(i);
-      switch (bc) {
-        case HALT:
-          break;
-        case DUP:
-        case PUSH_LOCAL:
-        case PUSH_ARGUMENT:
-        case PUSH_FIELD:
-        case PUSH_BLOCK:
-        case PUSH_BLOCK_NO_CTX:
-        case PUSH_CONSTANT:
-        case PUSH_GLOBAL:
-          depth++;
-          break;
-        case POP:
-        case POP_LOCAL:
-        case POP_ARGUMENT:
-        case POP_FIELD:
-          depth--;
-          break;
-        case SEND:
-        case SUPER_SEND: {
-          // these are special: they need to look at the number of
-          // arguments (extractable from the signature)
-          SSymbol sig = (SSymbol) literals.get(bytecode.get(i + 1));
 
-          depth -= sig.getNumberOfSignatureArguments();
-
-          depth++; // return value
-          break;
-        }
-        case INC:
-        case DEC:
-        case RETURN_LOCAL:
-        case RETURN_SELF:
-        case RETURN_NON_LOCAL:
-        case INC_FIELD:
-          break;
-        case INC_FIELD_PUSH:
-          depth++;
-          break;
-        case JUMP:
-        case JUMP_ON_TRUE_TOP_NIL:
-        case JUMP_ON_FALSE_TOP_NIL:
-        case JUMP_BACKWARDS:
-        case JUMP2:
-        case JUMP2_ON_TRUE_TOP_NIL:
-        case JUMP2_ON_FALSE_TOP_NIL:
-        case JUMP2_BACKWARDS:
-          break;
-        case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP:
-        case JUMP2_ON_TRUE_POP:
-        case JUMP2_ON_FALSE_POP:
-          depth--;
-          break;
-        default:
-          throw new IllegalStateException("Illegal bytecode "
-              + bytecode.get(i));
+      int effect = BYTECODE_STACK_EFFECT[bc];
+      if (effect == STACK_EFFECT_DEPENDS_ON_MESSAGE) {
+        // these are special: they need to look at the number of arguments
+        SSymbol sig = (SSymbol) literals.get(bytecode.get(i + 1));
+        effect = -sig.getNumberOfSignatureArguments() + 1; // return value;
       }
 
+      depth += effect;
       i += Bytecodes.getBytecodeLength(bc);
 
       if (depth > maxDepth) {

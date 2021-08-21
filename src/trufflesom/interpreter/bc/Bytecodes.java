@@ -109,6 +109,10 @@ public class Bytecodes {
   // Static array holding lengths of each bytecode
   @CompilationFinal(dimensions = 1) private static final int[] BYTECODE_LENGTH;
 
+  @CompilationFinal(dimensions = 1) public static final int[] BYTECODE_STACK_EFFECT;
+
+  public static final int STACK_EFFECT_DEPENDS_ON_MESSAGE = -1000;
+
   static {
     NUM_BYTECODES = Q_SEND_3 + 1;
 
@@ -201,6 +205,54 @@ public class Bytecodes {
         2, // Q_SEND_3
     };
 
+    BYTECODE_STACK_EFFECT = new int[] {
+        0, // HALT
+        1, // DUP
+        1, // PUSH_LOCAL
+        1, // PUSH_ARGUMENT
+        1, // PUSH_FIELD
+        1, // PUSH_BLOCK
+        1, // PUSH_BLOCK_NO_CTX
+        1, // PUSH_CONSTANT
+        1, // PUSH_GLOBAL
+        -1, // POP
+        -1, // POP_LOCAL
+        -1, // POP_ARGUMENT
+        -1, // POP_FIELD
+        STACK_EFFECT_DEPENDS_ON_MESSAGE, // SEND
+        STACK_EFFECT_DEPENDS_ON_MESSAGE, // SUPER_SEND
+        0, // RETURN_LOCAL
+        0, // RETURN_NON_LOCAL
+        0, // RETURN_SELF
+
+        0, // INC
+        0, // DEC
+
+        0, // INC_FIELD
+        0, // INC_FIELD_PUSH
+
+        0, // JUMP
+        0, // JUMP_ON_TRUE_TOP_NIL
+        0, // JUMP_ON_FALSE_TOP_NIL
+        -1, // JUMP_ON_TRUE_POP
+        -1, // JUMP_ON_FALSE_POP
+        0, // JUMP_BACKWARDS
+
+        0, // JUMP2
+        0, // JUMP2_ON_TRUE_TOP_NIL
+        0, // JUMP2_ON_FALSE_TOP_NIL
+        -1, // JUMP2_ON_TRUE_POP
+        -1, // JUMP2_ON_FALSE_POP
+        0, // JUMP2_BACKWARDS
+
+        1, // Q_PUSH_GLOBAL
+        STACK_EFFECT_DEPENDS_ON_MESSAGE, // Q_SEND
+        STACK_EFFECT_DEPENDS_ON_MESSAGE, // Q_SEND_1
+        STACK_EFFECT_DEPENDS_ON_MESSAGE, // Q_SEND_2
+        STACK_EFFECT_DEPENDS_ON_MESSAGE, // Q_SEND_3
+    };
+
     assert BYTECODE_LENGTH.length == NUM_BYTECODES : "The BYTECODE_LENGTH array is not having the same size as number of bytecodes";
+    assert BYTECODE_STACK_EFFECT.length == NUM_BYTECODES : "The BYTECODE_STACK_EFFECT array is not having the same size as number of bytecodes";
   }
 }
