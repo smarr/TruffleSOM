@@ -175,6 +175,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     if (jumpOffset <= 0xff) {
       bytecode.set(idxOfOffset, (byte) jumpOffset);
+      bytecode.set(idxOfOffset + 1, (byte) 0);
     } else {
       int offsetOfBytecode = idxOfOffset - 1;
       // we need two bytes for the jump offset
