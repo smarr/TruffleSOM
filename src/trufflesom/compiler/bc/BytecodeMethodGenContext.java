@@ -5,21 +5,13 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOf
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
-import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
-import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
-import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -34,12 +26,8 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
-import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
-import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
-import static trufflesom.interpreter.bc.Bytecodes.SEND;
-import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
 import java.util.ArrayList;
@@ -88,6 +76,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   private boolean finished;
   private boolean isCurrentlyInliningBlock = false;
+
+  private int currentStackDepth;
+  private int maxStackDepth;
 
   public BytecodeMethodGenContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -139,8 +130,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return (byte) literals.indexOf(lit);
   }
 
-  public void addBytecode(final byte code) {
+  public int getStackDepth() {
+    return maxStackDepth;
+  }
+
+  public void addBytecode(final byte code, final int stackEffect) {
     bytecode.add(code);
+
+    currentStackDepth += stackEffect;
+    maxStackDepth = Math.max(currentStackDepth, maxStackDepth);
+
     last4Bytecodes[0] = last4Bytecodes[1];
     last4Bytecodes[1] = last4Bytecodes[2];
     last4Bytecodes[2] = last4Bytecodes[3];
@@ -175,6 +174,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     if (jumpOffset <= 0xff) {
       bytecode.set(idxOfOffset, (byte) jumpOffset);
+      bytecode.set(idxOfOffset + 1, (byte) 0);
     } else {
       int offsetOfBytecode = idxOfOffset - 1;
       // we need two bytes for the jump offset
@@ -354,7 +354,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
 
     return new BytecodeLoopNode(
-        bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),
+        bytecodes, locals.size(), localsAndOuters, literalsArr, maxStackDepth,
         frameOnStackMarker, universe);
   }
 
@@ -833,83 +833,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     emitPUSHCONSTANT(this, Nil.nilObject);
 
     resetLastBytecodeBuffer();
-  }
-
-  public int computeStackDepth() {
-    int depth = 0;
-    int maxDepth = 0;
-    int i = 0;
-
-    while (i < bytecode.size()) {
-      byte bc = bytecode.get(i);
-      switch (bc) {
-        case HALT:
-          break;
-        case DUP:
-        case PUSH_LOCAL:
-        case PUSH_ARGUMENT:
-        case PUSH_FIELD:
-        case PUSH_BLOCK:
-        case PUSH_BLOCK_NO_CTX:
-        case PUSH_CONSTANT:
-        case PUSH_GLOBAL:
-          depth++;
-          break;
-        case POP:
-        case POP_LOCAL:
-        case POP_ARGUMENT:
-        case POP_FIELD:
-          depth--;
-          break;
-        case SEND:
-        case SUPER_SEND: {
-          // these are special: they need to look at the number of
-          // arguments (extractable from the signature)
-          SSymbol sig = (SSymbol) literals.get(bytecode.get(i + 1));
-
-          depth -= sig.getNumberOfSignatureArguments();
-
-          depth++; // return value
-          break;
-        }
-        case INC:
-        case DEC:
-        case RETURN_LOCAL:
-        case RETURN_SELF:
-        case RETURN_NON_LOCAL:
-        case INC_FIELD:
-          break;
-        case INC_FIELD_PUSH:
-          depth++;
-          break;
-        case JUMP:
-        case JUMP_ON_TRUE_TOP_NIL:
-        case JUMP_ON_FALSE_TOP_NIL:
-        case JUMP_BACKWARDS:
-        case JUMP2:
-        case JUMP2_ON_TRUE_TOP_NIL:
-        case JUMP2_ON_FALSE_TOP_NIL:
-        case JUMP2_BACKWARDS:
-          break;
-        case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP:
-        case JUMP2_ON_TRUE_POP:
-        case JUMP2_ON_FALSE_POP:
-          depth--;
-          break;
-        default:
-          throw new IllegalStateException("Illegal bytecode "
-              + bytecode.get(i));
-      }
-
-      i += Bytecodes.getBytecodeLength(bc);
-
-      if (depth > maxDepth) {
-        maxDepth = depth;
-      }
-    }
-
-    return maxDepth;
   }
 
   public ArrayList<Byte> getBytecodes() {

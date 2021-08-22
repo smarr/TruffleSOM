@@ -44,17 +44,17 @@ public abstract class GlobalNode extends ExpressionNode
     implements Invocation<SSymbol>, PreevaluatedExpression {
 
   public static boolean isPotentiallyUnknown(final SSymbol global, final Universe universe) {
-    return global != universe.symNil && !global.getString().equals("true")
-        && !global.getString().equals("false") && !universe.hasGlobal(global);
+    return global != universe.symNil && global != universe.symTrue
+        && global != universe.symFalse && !universe.hasGlobal(global);
   }
 
   public static GlobalNode create(final SSymbol globalName, final Universe universe,
       final MethodGenerationContext mgenc) {
     if (globalName == universe.symNil) {
       return new NilGlobalNode(globalName);
-    } else if (globalName.getString().equals("true")) {
+    } else if (globalName == universe.symTrue) {
       return new TrueGlobalNode(globalName);
-    } else if (globalName.getString().equals("false")) {
+    } else if (globalName == universe.symFalse) {
       return new FalseGlobalNode(globalName);
     }
 

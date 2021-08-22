@@ -275,7 +275,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
 
     // Load the super class, if it is not nil (break the dependency cycle)
-    if (!superName.getString().equals("nil")) {
+    if (superName != universe.symNil) {
       SClass superClass = universe.loadClass(superName);
       if (superClass == null) {
         throw new ParseError("Super class " + superName.getString() +
