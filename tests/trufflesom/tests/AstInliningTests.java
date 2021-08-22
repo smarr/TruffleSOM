@@ -4,6 +4,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static trufflesom.vm.SymbolTable.symSelf;
 
 import org.junit.Test;
 
@@ -56,7 +57,7 @@ public class AstInliningTests extends TruffleTestSetup {
 
   private void initMgenc() {
     mgenc = new MethodGenerationContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(universe.symSelf, null);
+    mgenc.addArgumentIfAbsent(symSelf, null);
   }
 
   protected ExpressionNode parseMethod(final String source) {

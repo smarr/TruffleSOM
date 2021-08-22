@@ -1,5 +1,7 @@
 package trufflesom.vmobjects;
 
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -31,7 +33,7 @@ public abstract class SAbstractObject implements TruffleObject {
       final String selectorString,
       final Object[] arguments, final Universe universe) {
     CompilerAsserts.neverPartOfCompilation("SAbstractObject.send()");
-    SSymbol selector = universe.symbolFor(selectorString);
+    SSymbol selector = symbolFor(selectorString);
 
     // Lookup the invokable
     SInvokable invokable = Types.getClassOf(arguments[0], universe).lookupInvokable(selector);

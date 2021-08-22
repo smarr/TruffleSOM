@@ -24,6 +24,8 @@
  */
 package trufflesom.compiler;
 
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -186,7 +188,7 @@ public final class ClassGenerationContext {
     // Initialize the class of the resulting class
     resultClass.setInstanceFields(classFields);
     resultClass.setInstanceInvokables(classMethods, classHasPrimitives);
-    resultClass.setName(universe.symbolFor(ccname));
+    resultClass.setName(symbolFor(ccname));
 
     SClass superMClass = superClass == null ? null : superClass.getSOMClass(universe);
     resultClass.setSuperClass(superMClass);

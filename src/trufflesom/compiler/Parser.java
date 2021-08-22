@@ -56,6 +56,11 @@ import static trufflesom.compiler.Symbol.Primitive;
 import static trufflesom.compiler.Symbol.STString;
 import static trufflesom.compiler.Symbol.Separator;
 import static trufflesom.compiler.Symbol.Star;
+import static trufflesom.vm.SymbolTable.symBlockSelf;
+import static trufflesom.vm.SymbolTable.symNil;
+import static trufflesom.vm.SymbolTable.symObject;
+import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -224,7 +229,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe);
 
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
-    cgenc.setName(universe.symbolFor(text));
+    cgenc.setName(symbolFor(text));
     SourceCoordinate coord = getCoordinate();
     if ("Object".equals(text)) {
       universe.selfSource = getSource(coord);
@@ -268,14 +273,14 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   private void superclass(final ClassGenerationContext cgenc) throws ParseError {
     SSymbol superName;
     if (sym == Identifier) {
-      superName = universe.symbolFor(text);
+      superName = symbolFor(text);
       accept(Identifier);
     } else {
-      superName = universe.symbolFor("Object");
+      superName = symObject;
     }
 
     // Load the super class, if it is not nil (break the dependency cycle)
-    if (superName != universe.symNil) {
+    if (superName != symNil) {
       SClass superClass = universe.loadClass(superName);
       if (superClass == null) {
         throw new ParseError("Super class " + superName.getString() +
@@ -392,7 +397,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     expect(NewBlock);
     SourceCoordinate coord = getCoordinate();
 
-    mgenc.addArgumentIfAbsent(universe.symBlockSelf, getEmptySource());
+    mgenc.addArgumentIfAbsent(symBlockSelf, getEmptySource());
 
     if (sym == Colon) {
       blockPattern(mgenc);
@@ -411,7 +416,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   private void pattern(final MGenC mgenc) throws ProgramDefinitionError {
     assert universe.selfSource != null;
-    mgenc.addArgumentIfAbsent(universe.symSelf, universe.selfSource);
+    mgenc.addArgumentIfAbsent(symSelf, universe.selfSource);
     switch (sym) {
       case Identifier:
       case Primitive:
@@ -444,7 +449,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       mgenc.addArgumentIfAbsent(argument(), getSource(coord));
     } while (sym == Keyword);
 
-    mgenc.setSignature(universe.symbolFor(kw.toString()));
+    mgenc.setSignature(symbolFor(kw.toString()));
   }
 
   protected SSymbol unarySelector() throws ParseError {
@@ -464,7 +469,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     } else { expect(NONE); }
     // Checkstyle: resume @formatter:on
 
-    return universe.symbolFor(s);
+    return symbolFor(s);
   }
 
   private SSymbol identifier() throws ParseError {
@@ -473,7 +478,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     if (!isPrimitive) {
       expect(Identifier);
     }
-    return universe.symbolFor(s);
+    return symbolFor(s);
   }
 
   protected String keyword() throws ParseError {
@@ -597,7 +602,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     expect(Pound);
     if (sym == STString) {
       String s = string();
-      symb = universe.symbolFor(s);
+      symb = symbolFor(s);
     } else {
       symb = selector();
     }
@@ -621,7 +626,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   private SSymbol keywordSelector() throws ParseError {
     String s = new String(text);
     expectOneOf(keywordSelectorSyms);
-    SSymbol symb = universe.symbolFor(s);
+    SSymbol symb = symbolFor(s);
     return symb;
   }
 

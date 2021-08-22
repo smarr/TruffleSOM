@@ -25,6 +25,8 @@
 
 package trufflesom.vm;
 
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -82,7 +84,7 @@ public class Shell {
           myObject = new SObject(myClass);
 
           // Lookup the run: method
-          SInvokable shellMethod = myClass.lookupInvokable(universe.symbolFor("run:"));
+          SInvokable shellMethod = myClass.lookupInvokable(symbolFor("run:"));
 
           // Invoke the run method
           it = shellMethod.invoke(new Object[] {myObject, it});

@@ -21,6 +21,10 @@
  */
 package trufflesom.interpreter.nodes;
 
+import static trufflesom.vm.SymbolTable.symFalse;
+import static trufflesom.vm.SymbolTable.symNil;
+import static trufflesom.vm.SymbolTable.symTrue;
+
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -44,17 +48,17 @@ public abstract class GlobalNode extends ExpressionNode
     implements Invocation<SSymbol>, PreevaluatedExpression {
 
   public static boolean isPotentiallyUnknown(final SSymbol global, final Universe universe) {
-    return global != universe.symNil && global != universe.symTrue
-        && global != universe.symFalse && !universe.hasGlobal(global);
+    return global != symNil && global != symTrue
+        && global != symFalse && !universe.hasGlobal(global);
   }
 
   public static GlobalNode create(final SSymbol globalName, final Universe universe,
       final MethodGenerationContext mgenc) {
-    if (globalName == universe.symNil) {
+    if (globalName == symNil) {
       return new NilGlobalNode(globalName);
-    } else if (globalName == universe.symTrue) {
+    } else if (globalName == symTrue) {
       return new TrueGlobalNode(globalName);
-    } else if (globalName == universe.symFalse) {
+    } else if (globalName == symFalse) {
       return new FalseGlobalNode(globalName);
     }
 

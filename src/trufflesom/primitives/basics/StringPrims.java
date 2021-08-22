@@ -1,5 +1,7 @@
 package trufflesom.primitives.basics;
 
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -47,7 +49,7 @@ public class StringPrims {
   public abstract static class AsSymbolPrim extends UnarySystemOperation {
     @Specialization
     public final SAbstractObject doString(final String receiver) {
-      return universe.symbolFor(receiver);
+      return symbolFor(receiver);
     }
 
     @Specialization
