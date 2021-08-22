@@ -1013,7 +1013,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
       switch (bytecode) {
         case HALT:
         case DUP: {
-          emit1(mgenc, bytecode);
+          emit1(mgenc, bytecode, bytecode == HALT ? 0 : 1);
           break;
         }
 
@@ -1029,7 +1029,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case PUSH_FIELD: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1));
+          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1), 1);
           break;
         }
 
@@ -1083,7 +1083,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case POP_FIELD: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1));
+          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1), -1);
           break;
         }
 
@@ -1130,7 +1130,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case INC:
         case DEC: {
-          emit1(mgenc, bytecode);
+          emit1(mgenc, bytecode, 0);
           break;
         }
 
@@ -1138,25 +1138,32 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case INC_FIELD_PUSH: {
           byte fieldIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emit3(mgenc, bytecode, fieldIdx, (byte) (contextIdx - 1));
+          emit3(mgenc, bytecode, fieldIdx, (byte) (contextIdx - 1),
+              bytecode == INC_FIELD ? 0 : 1);
           break;
         }
 
         case JUMP:
         case JUMP_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
-        case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP:
         case JUMP_BACKWARDS:
         case JUMP2:
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL:
-        case JUMP2_ON_TRUE_POP:
-        case JUMP2_ON_FALSE_POP:
         case JUMP2_BACKWARDS: {
           byte offset1 = bytecodes[i + 1];
           byte offset2 = bytecodes[i + 2];
-          emit3(mgenc, bytecode, offset1, offset2);
+          emit3(mgenc, bytecode, offset1, offset2, 0);
+          break;
+        }
+
+        case JUMP_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP:
+        case JUMP2_ON_TRUE_POP:
+        case JUMP2_ON_FALSE_POP: {
+          byte offset1 = bytecodes[i + 1];
+          byte offset2 = bytecodes[i + 2];
+          emit3(mgenc, bytecode, offset1, offset2, -1);
           break;
         }
 

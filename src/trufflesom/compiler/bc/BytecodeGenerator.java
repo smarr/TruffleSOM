@@ -66,34 +66,34 @@ public final class BytecodeGenerator {
   private BytecodeGenerator() {}
 
   public static void emitHALT(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, HALT);
+    emit1(mgenc, HALT, 0);
   }
 
   public static void emitINC(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, INC);
+    emit1(mgenc, INC, 0);
   }
 
   public static void emitDEC(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, DEC);
+    emit1(mgenc, DEC, 0);
   }
 
   public static void emitINCFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
       final byte ctx) {
     assert fieldIdx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, INC_FIELD, fieldIdx, ctx);
+    emit3(mgenc, INC_FIELD, fieldIdx, ctx, 0);
   }
 
   public static void emitINCFIELDPUSH(final BytecodeMethodGenContext mgenc,
       final byte fieldIdx, final byte ctx) {
     assert fieldIdx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, INC_FIELD_PUSH, fieldIdx, ctx);
+    emit3(mgenc, INC_FIELD_PUSH, fieldIdx, ctx, 1);
   }
 
   public static void emitPOP(final BytecodeMethodGenContext mgenc) {
     if (!mgenc.optimizeDupPopPopSequence()) {
-      emit1(mgenc, POP);
+      emit1(mgenc, POP, -1);
     }
   }
 
@@ -101,51 +101,51 @@ public final class BytecodeGenerator {
       final byte ctx) {
     assert idx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, PUSH_ARGUMENT, idx, ctx);
+    emit3(mgenc, PUSH_ARGUMENT, idx, ctx, 1);
   }
 
   public static void emitRETURNLOCAL(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, RETURN_LOCAL);
+    emit1(mgenc, RETURN_LOCAL, 0);
   }
 
   public static void emitRETURNSELF(final BytecodeMethodGenContext mgenc) {
     mgenc.optimizeDupPopPopSequence();
-    emit1(mgenc, RETURN_SELF);
+    emit1(mgenc, RETURN_SELF, 0);
   }
 
   public static void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {
-    emit2(mgenc, RETURN_NON_LOCAL, mgenc.getMaxContextLevel());
+    emit2(mgenc, RETURN_NON_LOCAL, mgenc.getMaxContextLevel(), 0);
   }
 
   public static void emitDUP(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, DUP);
+    emit1(mgenc, DUP, 1);
   }
 
   public static void emitPUSHBLOCK(final BytecodeMethodGenContext mgenc,
       final SMethod blockMethod, final boolean withContext) {
     byte litIdx = mgenc.findLiteralIndex(blockMethod);
     assert litIdx >= 0;
-    emit2(mgenc, withContext ? PUSH_BLOCK : PUSH_BLOCK_NO_CTX, litIdx);
+    emit2(mgenc, withContext ? PUSH_BLOCK : PUSH_BLOCK_NO_CTX, litIdx, 1);
   }
 
   public static void emitPUSHLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     assert idx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, PUSH_LOCAL, idx, ctx);
+    emit3(mgenc, PUSH_LOCAL, idx, ctx, 1);
   }
 
   public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc,
       final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
-    emit3(mgenc, PUSH_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
+    emit3(mgenc, PUSH_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel(), 1);
   }
 
   public static void emitPUSHFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
       final byte ctx) {
     assert fieldIdx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, PUSH_FIELD, fieldIdx, ctx);
+    emit3(mgenc, PUSH_FIELD, fieldIdx, ctx, 1);
   }
 
   public static void emitPUSHGLOBAL(final BytecodeMethodGenContext mgenc,
@@ -153,52 +153,54 @@ public final class BytecodeGenerator {
     if (GlobalNode.isPotentiallyUnknown(global, mgenc.getUniverse())) {
       mgenc.markAccessingOuterScopes();
     }
-    emit2(mgenc, PUSH_GLOBAL, mgenc.findLiteralIndex(global));
+    emit2(mgenc, PUSH_GLOBAL, mgenc.findLiteralIndex(global), 1);
   }
 
   public static void emitPOPARGUMENT(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     assert idx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, POP_ARGUMENT, idx, ctx);
+    emit3(mgenc, POP_ARGUMENT, idx, ctx, -1);
   }
 
   public static void emitPOPLOCAL(final BytecodeMethodGenContext mgenc, final byte idx,
       final byte ctx) {
     assert idx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, POP_LOCAL, idx, ctx);
+    emit3(mgenc, POP_LOCAL, idx, ctx, -1);
   }
 
   public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc,
       final SSymbol fieldName) {
     assert mgenc.hasField(fieldName);
-    emit3(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel());
+    emit3(mgenc, POP_FIELD, mgenc.getFieldIndex(fieldName), mgenc.getMaxContextLevel(), -1);
   }
 
   public static void emitPOPFIELD(final BytecodeMethodGenContext mgenc, final byte fieldIdx,
       final byte ctx) {
     assert fieldIdx >= 0;
     assert ctx >= 0;
-    emit3(mgenc, POP_FIELD, fieldIdx, ctx);
+    emit3(mgenc, POP_FIELD, fieldIdx, ctx, -1);
   }
 
   public static void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
-    emit2(mgenc, SUPER_SEND, mgenc.findLiteralIndex(msg));
+    int stackEffect = -msg.getNumberOfSignatureArguments() + 1; // +1 for the return value
+    emit2(mgenc, SUPER_SEND, mgenc.findLiteralIndex(msg), stackEffect);
   }
 
   public static void emitSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
-    emit2(mgenc, SEND, mgenc.findLiteralIndex(msg));
+    int stackEffect = -msg.getNumberOfSignatureArguments() + 1; // +1 for the return value
+    emit2(mgenc, SEND, mgenc.findLiteralIndex(msg), stackEffect);
   }
 
   public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final Object lit) {
-    emit2(mgenc, PUSH_CONSTANT, mgenc.findLiteralIndex(lit));
+    emit2(mgenc, PUSH_CONSTANT, mgenc.findLiteralIndex(lit), 1);
   }
 
   public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc,
       final byte literalIndex) {
     assert literalIndex >= 0;
-    emit2(mgenc, PUSH_CONSTANT, literalIndex);
+    emit2(mgenc, PUSH_CONSTANT, literalIndex, 1);
   }
 
   public static int emitJumpOnBoolWithDummyOffset(final BytecodeMethodGenContext mgenc,
@@ -208,10 +210,9 @@ public final class BytecodeGenerator {
     // if the test fails, we need to jump.
     // Thus, an #ifTrue: needs to generated a JUMP_ON_FALSE.
     if (isIfTrue) {
-
-      emit1(mgenc, needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL);
+      emit1(mgenc, needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL, needsPop ? -1 : 0);
     } else {
-      emit1(mgenc, needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL);
+      emit1(mgenc, needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL, needsPop ? -1 : 0);
     }
     int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
     mgenc.addBytecodeArgument((byte) 0);
@@ -220,16 +221,16 @@ public final class BytecodeGenerator {
 
   public static void emitJumpWithOffset(final BytecodeMethodGenContext mgenc,
       final byte offset1, final byte offset2) {
-    emit3(mgenc, offset2 == 0 ? JUMP : JUMP2, offset1, offset2);
+    emit3(mgenc, offset2 == 0 ? JUMP : JUMP2, offset1, offset2, 0);
   }
 
   public static void emitJumpBackwardsWithOffset(final BytecodeMethodGenContext mgenc,
       final byte offset1, final byte offset2) {
-    emit3(mgenc, offset2 == 0 ? JUMP_BACKWARDS : JUMP2_BACKWARDS, offset1, offset2);
+    emit3(mgenc, offset2 == 0 ? JUMP_BACKWARDS : JUMP2_BACKWARDS, offset1, offset2, 0);
   }
 
   public static int emitJumpWithDummyOffset(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, JUMP);
+    emit1(mgenc, JUMP, 0);
     int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
     mgenc.addBytecodeArgument((byte) 0);
     return idx;
@@ -241,19 +242,20 @@ public final class BytecodeGenerator {
     mgenc.patchJumpOffsetToPointToNextInstruction(idxOfOffset, parser);
   }
 
-  public static void emit1(final BytecodeMethodGenContext mgenc, final byte code) {
-    mgenc.addBytecode(code);
+  public static void emit1(final BytecodeMethodGenContext mgenc, final byte code,
+      final int stackEffect) {
+    mgenc.addBytecode(code, stackEffect);
   }
 
   public static void emit2(final BytecodeMethodGenContext mgenc, final byte code,
-      final byte idx) {
-    mgenc.addBytecode(code);
+      final byte idx, final int stackEffect) {
+    mgenc.addBytecode(code, stackEffect);
     mgenc.addBytecodeArgument(idx);
   }
 
   public static void emit3(final BytecodeMethodGenContext mgenc, final byte code,
-      final byte idx, final byte ctx) {
-    mgenc.addBytecode(code);
+      final byte idx, final byte ctx, final int stackEffect) {
+    mgenc.addBytecode(code, stackEffect);
     mgenc.addBytecodeArgument(idx);
     mgenc.addBytecodeArgument(ctx);
   }

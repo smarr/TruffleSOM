@@ -128,7 +128,7 @@ public class Disassembler {
   }
 
   public static void dumpMethod(final BytecodeMethodGenContext mgenc) {
-    dumpMethod(mgenc.getBytecodes(), "", mgenc.getNumberOfLocals(), mgenc.computeStackDepth(),
+    dumpMethod(mgenc.getBytecodes(), "", mgenc.getNumberOfLocals(), mgenc.getStackDepth(),
         null, null);
   }
 

@@ -5,7 +5,6 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOf
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
-import static trufflesom.interpreter.bc.Bytecodes.BYTECODE_STACK_EFFECT;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
@@ -29,7 +28,6 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
-import static trufflesom.interpreter.bc.Bytecodes.STACK_EFFECT_DEPENDS_ON_MESSAGE;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 
 import java.util.ArrayList;
@@ -78,6 +76,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   private boolean finished;
   private boolean isCurrentlyInliningBlock = false;
+
+  private int currentStackDepth;
+  private int maxStackDepth;
 
   public BytecodeMethodGenContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
@@ -129,8 +130,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return (byte) literals.indexOf(lit);
   }
 
-  public void addBytecode(final byte code) {
+  public int getStackDepth() {
+    return maxStackDepth;
+  }
+
+  public void addBytecode(final byte code, final int stackEffect) {
     bytecode.add(code);
+
+    currentStackDepth += stackEffect;
+    maxStackDepth = Math.max(currentStackDepth, maxStackDepth);
+
     last4Bytecodes[0] = last4Bytecodes[1];
     last4Bytecodes[1] = last4Bytecodes[2];
     last4Bytecodes[2] = last4Bytecodes[3];
@@ -345,7 +354,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
         throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
 
     return new BytecodeLoopNode(
-        bytecodes, locals.size(), localsAndOuters, literalsArr, computeStackDepth(),
+        bytecodes, locals.size(), localsAndOuters, literalsArr, maxStackDepth,
         frameOnStackMarker, universe);
   }
 
@@ -824,32 +833,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     emitPUSHCONSTANT(this, Nil.nilObject);
 
     resetLastBytecodeBuffer();
-  }
-
-  public int computeStackDepth() {
-    int depth = 0;
-    int maxDepth = 0;
-    int i = 0;
-
-    while (i < bytecode.size()) {
-      byte bc = bytecode.get(i);
-
-      int effect = BYTECODE_STACK_EFFECT[bc];
-      if (effect == STACK_EFFECT_DEPENDS_ON_MESSAGE) {
-        // these are special: they need to look at the number of arguments
-        SSymbol sig = (SSymbol) literals.get(bytecode.get(i + 1));
-        effect = -sig.getNumberOfSignatureArguments() + 1; // return value;
-      }
-
-      depth += effect;
-      i += Bytecodes.getBytecodeLength(bc);
-
-      if (depth > maxDepth) {
-        maxDepth = depth;
-      }
-    }
-
-    return maxDepth;
   }
 
   public ArrayList<Byte> getBytecodes() {
