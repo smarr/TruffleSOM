@@ -906,4 +906,31 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     returnFieldLessTrivial("fieldC", Bytecodes.RETURN_FIELD_2);
   }
 
+  private void trivialMethodInlining(final String source, final byte bytecode) {
+    initMgenc();
+    byte[] bytecodes = methodToBytecodes("test = ( true ifTrue: [ " + source + " ] )");
+
+    check(bytecodes,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.JUMP_ON_FALSE_TOP_NIL,
+        bytecode,
+        Bytecodes.RETURN_SELF);
+  }
+
+  @Test
+  public void testTrivialMethodInlining() {
+    trivialMethodInlining("0", Bytecodes.PUSH_0);
+    trivialMethodInlining("1", Bytecodes.PUSH_1);
+    trivialMethodInlining("-10", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("'str'", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("#sym", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("1.1", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("-2342.234", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("true", Bytecodes.PUSH_CONSTANT_0);
+    trivialMethodInlining("false", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("nil", Bytecodes.PUSH_NIL);
+    trivialMethodInlining("Nil", Bytecodes.PUSH_GLOBAL);
+    trivialMethodInlining("UnknownGlobal", Bytecodes.PUSH_GLOBAL);
+    trivialMethodInlining("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
+  }
 }

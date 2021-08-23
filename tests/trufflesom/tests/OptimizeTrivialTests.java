@@ -155,6 +155,13 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   @Test
+  public void testNonTrivialGlobalReturn() {
+    Method m = parseMethod("test = ( #foo. ^ system )");
+
+    assertFalse(m.isTrivial());
+  }
+
+  @Test
   public void testFieldGetter0() {
     addField("field");
     Method m = parseMethod("test = ( ^ field )");
@@ -177,6 +184,27 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     assertTrue(m.isTrivial());
     PreevaluatedExpression e = m.copyTrivialNode();
     assertThat(e, instanceOf(FieldReadNode.class));
+  }
+
+  @Test
+  public void testNonTrivialFieldGetter0() {
+    addField("field");
+    Method m = parseMethod("test = ( 0. ^ field )");
+
+    assertFalse(m.isTrivial());
+  }
+
+  @Test
+  public void testNonTrivialFieldGetterN() {
+    addField("a");
+    addField("b");
+    addField("c");
+    addField("d");
+    addField("e");
+    addField("field");
+    Method m = parseMethod("test = ( 0. ^ field )");
+
+    assertFalse(m.isTrivial());
   }
 
   private void fieldSetter(final String source, final int numExtraFields) {
@@ -206,6 +234,31 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     fieldSetter("field := val. ^ self", 5);
   }
 
+  private void nonTrivialFieldSetter(final String source, final int numExtraFields) {
+    initMgenc();
+    for (int i = 0; i < numExtraFields; i += 1) {
+      addField("f" + i);
+    }
+
+    addField("field");
+
+    Method m = parseMethod("test: val = ( 0. " + source + " )");
+
+    assertFalse(m.isTrivial());
+  }
+
+  @Test
+  public void testNonTrivialFieldSetter() {
+    nonTrivialFieldSetter("field := val", 0);
+    nonTrivialFieldSetter("field := val", 5);
+
+    nonTrivialFieldSetter("field := val.", 0);
+    nonTrivialFieldSetter("field := val.", 5);
+
+    nonTrivialFieldSetter("field := val. ^ self", 0);
+    nonTrivialFieldSetter("field := val. ^ self", 5);
+  }
+
   private void literalNoReturn(final String source) {
     initMgenc();
     Method m = parseMethod("test = ( " + source + " )");
@@ -225,6 +278,27 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     literalNoReturn("true");
     literalNoReturn("false");
     literalNoReturn("nil");
+  }
+
+  private void nonTrivialLiteralReturn(final String source) {
+    initMgenc();
+    Method m = parseMethod("test = ( 1. ^ " + source + " )");
+
+    assertFalse(m.isTrivial());
+  }
+
+  @Test
+  public void testNonTrivialLiteralReturn() {
+    nonTrivialLiteralReturn("0");
+    nonTrivialLiteralReturn("1");
+    nonTrivialLiteralReturn("-10");
+    nonTrivialLiteralReturn("'str'");
+    nonTrivialLiteralReturn("#sym");
+    nonTrivialLiteralReturn("1.1");
+    nonTrivialLiteralReturn("-2342.234");
+    nonTrivialLiteralReturn("true");
+    nonTrivialLiteralReturn("false");
+    nonTrivialLiteralReturn("nil");
   }
 
   @Test
