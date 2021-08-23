@@ -29,6 +29,10 @@ import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
 import static trufflesom.interpreter.SNodeFactory.createFieldRead;
 import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
 import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
+import static trufflesom.vm.SymbolTable.symBlockSelf;
+import static trufflesom.vm.SymbolTable.symFrameOnStack;
+import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -153,9 +157,9 @@ public class MethodGenerationContext
 
     if (frameOnStack == null) {
       assert needsToCatchNonLocalReturn;
-      assert !locals.containsKey(universe.symFrameOnStack);
+      assert !locals.containsKey(symFrameOnStack);
 
-      frameOnStack = new Internal(universe.symFrameOnStack, source);
+      frameOnStack = new Internal(symFrameOnStack, source);
       frameOnStack.init(
           currentScope.getFrameDescriptor().addFrameSlot(frameOnStack, FrameSlotKind.Object),
           currentScope.getFrameDescriptor());
@@ -223,7 +227,7 @@ public class MethodGenerationContext
 
     if (structuralProbe != null) {
       String id = meth.getIdentifier();
-      structuralProbe.recordNewMethod(universe.symbolFor(id), meth);
+      structuralProbe.recordNewMethod(symbolFor(id), meth);
     }
 
     // return the method - the holder field is to be set later on!
@@ -275,7 +279,7 @@ public class MethodGenerationContext
   }
 
   private void addArgument(final SSymbol arg, final SourceSection source) {
-    if ((universe.symSelf == arg || universe.symBlockSelf == arg) && arguments.size() > 0) {
+    if ((symSelf == arg || symBlockSelf == arg) && arguments.size() > 0) {
       throw new IllegalStateException(
           "The self argument always has to be the first argument of a method");
     }
@@ -422,7 +426,7 @@ public class MethodGenerationContext
   }
 
   private ExpressionNode getSelfRead(final SourceSection source) {
-    return getVariable(universe.symSelf).getReadNode(getContextLevel(universe.symSelf),
+    return getVariable(symSelf).getReadNode(getContextLevel(symSelf),
         source);
   }
 
@@ -456,7 +460,7 @@ public class MethodGenerationContext
     for (Variable v : scope.getVariables()) {
       Local l = v.splitToMergeIntoOuterScope(universe, currentScope.getFrameDescriptor());
       if (l != null) { // can happen for instance for the block self, which we omit
-        SSymbol name = l.getQualifiedName(universe);
+        SSymbol name = l.getQualifiedName();
         addLocal(l, name);
       }
     }
@@ -491,12 +495,12 @@ public class MethodGenerationContext
     if (blockOrVal instanceof BlockNode) {
       Argument[] args = ((BlockNode) blockOrVal).getArguments();
       assert args.length == 2;
-      loopIdx = getLocal(args[1].getQualifiedName(universe));
+      loopIdx = getLocal(args[1].getQualifiedName());
     } else {
       // if it is a literal, we still need a memory location for counting, so,
       // add a synthetic local
       loopIdx = addLocalAndUpdateScope(
-          universe.symbolFor("!i" + Universe.getLocationQualifier(source)), source);
+          symbolFor("!i" + Universe.getLocationQualifier(source)), source);
     }
     return loopIdx;
   }
@@ -547,7 +551,7 @@ public class MethodGenerationContext
       blockSig += ":";
     }
 
-    setSignature(universe.symbolFor(blockSig));
+    setSignature(symbolFor(blockSig));
   }
 
   @Override

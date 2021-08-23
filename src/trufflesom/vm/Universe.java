@@ -25,6 +25,9 @@
 
 package trufflesom.vm;
 
+import static trufflesom.vm.SymbolTable.symNil;
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -156,8 +159,7 @@ public final class Universe implements IdProvider<SSymbol> {
     this.language = language;
     this.compiler = new SourcecodeCompiler(language);
     this.globals = new HashMap<SSymbol, Association>();
-    this.symbolTable = new HashMap<>();
-    Primitives.initializeStaticSymbols(this.symbolTable);
+
     this.alreadyInitialized = false;
 
     this.blockClasses = new SClass[4];
@@ -180,20 +182,6 @@ public final class Universe implements IdProvider<SSymbol> {
     booleanClass = newSystemClass();
 
     this.primitives = new Primitives(this);
-
-    symNil = symbolFor("nil");
-    symTrue = symbolFor("true");
-    symFalse = symbolFor("false");
-    symSelf = symbolFor("self");
-    symBlockSelf = symbolFor("$blockSelf");
-    symSuper = symbolFor("super");
-
-    symPlus = symbolFor("+");
-    symMinus = symbolFor("-");
-
-    // Name for the frameOnStack slot,
-    // starting with ! to make it a name that's not possible in Smalltalk
-    symFrameOnStack = symbolFor("!frameOnStack");
   }
 
   public static final class SomExit extends ThreadDeath {
@@ -449,20 +437,6 @@ public final class Universe implements IdProvider<SSymbol> {
       errorExit("Initialization went wrong for class Blocks");
     }
     objectSystemInitialized = true;
-  }
-
-  @TruffleBoundary
-  public SSymbol symbolFor(final String string) {
-    String interned = string.intern();
-    // Lookup the symbol in the symbol table
-    SSymbol result = symbolTable.get(interned);
-    if (result != null) {
-      return result;
-    }
-
-    result = new SSymbol(interned);
-    symbolTable.put(interned, result);
-    return result;
   }
 
   @Override
@@ -754,17 +728,6 @@ public final class Universe implements IdProvider<SSymbol> {
   @CompilationFinal private SClass falseClass;
   @CompilationFinal private SClass systemClass;
 
-  public final SSymbol symNil;
-  public final SSymbol symTrue;
-  public final SSymbol symFalse;
-  public final SSymbol symSelf;
-  public final SSymbol symBlockSelf;
-  public final SSymbol symFrameOnStack;
-  public final SSymbol symSuper;
-
-  public final SSymbol symPlus;
-  public final SSymbol symMinus;
-
   private final HashMap<SSymbol, Association> globals;
 
   private String[]              classPath;
@@ -778,8 +741,6 @@ public final class Universe implements IdProvider<SSymbol> {
   private final SomLanguage language;
 
   private final SourcecodeCompiler compiler;
-
-  private final HashMap<String, SSymbol> symbolTable;
 
   // Optimizations
   @CompilationFinal(dimensions = 1) private final SClass[] blockClasses;

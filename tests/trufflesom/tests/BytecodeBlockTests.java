@@ -2,6 +2,8 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
+import static trufflesom.vm.SymbolTable.symBlockSelf;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Test;
 
@@ -19,10 +21,10 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   protected final BytecodeMethodGenContext bgenc;
 
   public BytecodeBlockTests() {
-    mgenc.setSignature(universe.symbolFor("outer"));
+    mgenc.setSignature(symbolFor("outer"));
 
     bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
-    bgenc.addArgumentIfAbsent(universe.symBlockSelf, null);
+    bgenc.addArgumentIfAbsent(symBlockSelf, null);
   }
 
   @Override

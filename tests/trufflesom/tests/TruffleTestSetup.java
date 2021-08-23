@@ -1,5 +1,7 @@
 package trufflesom.tests;
 
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Context.Builder;
 import org.junit.Ignore;
@@ -38,7 +40,7 @@ public class TruffleTestSetup {
     probe = null;
 
     cgenc = new ClassGenerationContext(universe, null);
-    cgenc.setName(universe.symbolFor("Test"));
+    cgenc.setName(symbolFor("Test"));
   }
 
   private static void initTruffle() {
@@ -56,7 +58,7 @@ public class TruffleTestSetup {
   }
 
   protected void addField(final String name) {
-    cgenc.addInstanceField(universe.symbolFor(name), null);
+    cgenc.addInstanceField(symbolFor(name), null);
   }
 
   private java.lang.reflect.Field lookup(final Class<?> cls, final String fieldName) {

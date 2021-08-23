@@ -14,6 +14,10 @@ import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
 import static trufflesom.compiler.Symbol.Pound;
 import static trufflesom.interpreter.SNodeFactory.createSequence;
+import static trufflesom.vm.SymbolTable.symNil;
+import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symSuper;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -87,7 +91,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       } else if (sym == EndTerm) {
         // the end of the method has been found (EndTerm) - make it implicitly return "self"
         ExpressionNode self =
-            variableRead(mgenc, universe.symSelf, getSource(getCoordinate()));
+            variableRead(mgenc, symSelf, getSource(getCoordinate()));
         expressions.add(self);
         return createSequenceNode(coord, expressions);
       }
@@ -104,7 +108,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private ExpressionNode createSequenceNode(final SourceCoordinate coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return GlobalNode.create(universe.symNil, universe, null).initialize(getSource(coord));
+      return GlobalNode.create(symNil, universe, null).initialize(getSource(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
@@ -285,7 +289,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       arguments.add(formula(mgenc));
     } while (sym == Keyword);
 
-    SSymbol msg = universe.symbolFor(kw.toString());
+    SSymbol msg = symbolFor(kw.toString());
 
     SourceSection source = getSource(coord);
 
@@ -385,7 +389,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         return literalDouble(isNegativeNumber());
       case Identifier:
         expect(Identifier);
-        return universe.getGlobal(universe.symbolFor(text));
+        return universe.getGlobal(symbolFor(text));
       default:
         throw new ParseError("Could not parse literal array value", NONE, this);
     }
@@ -399,11 +403,11 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         SourceCoordinate coord = getCoordinate();
         SSymbol v = variable();
 
-        if (v == universe.symSuper) {
+        if (v == symSuper) {
           assert !superSend : "Since super is consumed directly, it should never be true here";
           superSend = true;
           // sends to super push self as the receiver
-          v = universe.symSelf;
+          v = symSelf;
         }
 
         return variableRead(mgenc, v, getSource(coord));

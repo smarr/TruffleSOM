@@ -25,6 +25,8 @@
 
 package trufflesom.primitives;
 
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -148,7 +150,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
 
     if (probe != null) {
       String id = prim.getIdentifier();
-      probe.recordNewMethod(lang.getUniverse().symbolFor(id), prim);
+      probe.recordNewMethod(symbolFor(id), prim);
     }
     return prim;
   }

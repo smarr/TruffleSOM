@@ -1,6 +1,8 @@
 package trufflesom.tests;
 
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
+import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Ignore;
 
@@ -23,11 +25,11 @@ public class BytecodeTestSetup extends TruffleTestSetup {
 
   public void initMgenc() {
     mgenc = new BytecodeMethodGenContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(universe.symSelf, null);
+    mgenc.addArgumentIfAbsent(symSelf, null);
   }
 
   public void initBgenc() {
-    mgenc.setSignature(universe.symbolFor("test"));
+    mgenc.setSignature(symbolFor("test"));
     mgenc.setVarsOnMethodScope();
     bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
   }

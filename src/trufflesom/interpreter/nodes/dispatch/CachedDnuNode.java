@@ -1,5 +1,7 @@
 package trufflesom.interpreter.nodes.dispatch;
 
+import static trufflesom.vm.SymbolTable.symbolFor;
+
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -45,7 +47,7 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
 
   public static CallTarget getDnuCallTarget(final SClass rcvrClass, final Universe universe) {
     return rcvrClass.lookupInvokable(
-        universe.symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
+        symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
   }
 
   protected Object performDnu(final Object[] arguments, final Object rcvr) {

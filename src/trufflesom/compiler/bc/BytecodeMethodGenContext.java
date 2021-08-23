@@ -29,6 +29,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
+import static trufflesom.vm.SymbolTable.symSelf;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -556,7 +557,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     byte idx = getIndex(1);
     // because we don't handle block methods, we don't need to worry about ctx > 0
-    return new FieldReadNode(new LocalArgumentReadNode(arguments.get(universe.symSelf)), idx);
+    return new FieldReadNode(new LocalArgumentReadNode(arguments.get(symSelf)), idx);
   }
 
   private static int expectedSetterMethodLength =

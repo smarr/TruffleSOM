@@ -7,6 +7,9 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHLOCAL;
 import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
 import static trufflesom.interpreter.SNodeFactory.createArgumentWrite;
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static trufflesom.vm.SymbolTable.symBlockSelf;
+import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.Objects;
 
@@ -42,8 +45,8 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
   }
 
   /** Gets the name including lexical location. */
-  public final SSymbol getQualifiedName(final Universe u) {
-    return u.symbolFor(name.getString() + Universe.getLocationQualifier(source));
+  public final SSymbol getQualifiedName() {
+    return symbolFor(name.getString() + Universe.getLocationQualifier(source));
   }
 
   @Override
@@ -96,7 +99,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     public boolean isSelf(final Universe universe) {
-      return universe.symSelf == name || universe.symBlockSelf == name;
+      return symSelf == name || symBlockSelf == name;
     }
 
     @Override

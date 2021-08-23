@@ -26,6 +26,16 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNSELF;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
+import static trufflesom.vm.SymbolTable.symArray;
+import static trufflesom.vm.SymbolTable.symArraySizePlaceholder;
+import static trufflesom.vm.SymbolTable.symAtPutMsg;
+import static trufflesom.vm.SymbolTable.symMinus;
+import static trufflesom.vm.SymbolTable.symNewMsg;
+import static trufflesom.vm.SymbolTable.symNil;
+import static trufflesom.vm.SymbolTable.symPlus;
+import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symSuper;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,9 +100,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       }
       if (mgenc.isBlockMethod() && !mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
-        SSymbol nilSym = universe.symbolFor("nil");
-        mgenc.addLiteralIfAbsent(nilSym, this);
-        emitPUSHGLOBAL(mgenc, nilSym);
+        mgenc.addLiteralIfAbsent(symNil, this);
+        emitPUSHGLOBAL(mgenc, symNil);
       }
       emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
@@ -244,11 +253,11 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     SSymbol msg = binarySelector();
     mgenc.addLiteralIfAbsent(msg, this);
 
-    boolean isPossibleIncOrDec = msg == universe.symPlus || msg == universe.symMinus;
+    boolean isPossibleIncOrDec = msg == symPlus || msg == symMinus;
     if (isPossibleIncOrDec) {
       if (sym == Integer && text.equals("1")) {
         expect(Integer);
-        if (msg == universe.symPlus) {
+        if (msg == symPlus) {
           emitINC(mgenc);
         } else {
           emitDEC(mgenc);
@@ -291,7 +300,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       }
     }
 
-    SSymbol msg = universe.symbolFor(kwStr);
+    SSymbol msg = symbolFor(kwStr);
 
     mgenc.addLiteralIfAbsent(msg, this);
 
@@ -363,20 +372,15 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     expect(Pound);
     expect(NewTerm);
 
-    SSymbol arrayClassName = universe.symbolFor("Array");
-    SSymbol arraySizePlaceholder = universe.symbolFor("ArraySizeLiteralPlaceholder");
-    SSymbol newMessage = universe.symbolFor("new:");
-    SSymbol atPutMessage = universe.symbolFor("at:put:");
-
-    mgenc.addLiteralIfAbsent(arrayClassName, this);
-    mgenc.addLiteralIfAbsent(newMessage, this);
-    mgenc.addLiteralIfAbsent(atPutMessage, this);
-    final byte arraySizeLiteralIndex = mgenc.addLiteral(arraySizePlaceholder, this);
+    mgenc.addLiteralIfAbsent(symArray, this);
+    mgenc.addLiteralIfAbsent(symNewMsg, this);
+    mgenc.addLiteralIfAbsent(symAtPutMsg, this);
+    final byte arraySizeLiteralIndex = mgenc.addLiteral(symArraySizePlaceholder, this);
 
     // create empty array
-    emitPUSHGLOBAL(mgenc, arrayClassName);
+    emitPUSHGLOBAL(mgenc, symArray);
     emitPUSHCONSTANT(mgenc, arraySizeLiteralIndex);
-    emitSEND(mgenc, newMessage);
+    emitSEND(mgenc, symNewMsg);
 
     long i = 1;
 
@@ -386,14 +390,14 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       mgenc.addLiteralIfAbsent(i, this);
       emitPUSHCONSTANT(mgenc, i);
       literal(mgenc);
-      emitSEND(mgenc, atPutMessage);
+      emitSEND(mgenc, symAtPutMsg);
       emitPOP(mgenc);
       i += 1;
     }
 
     // replace the placeholder with the actual array size
     Object size = i - 1;
-    mgenc.updateLiteral(arraySizePlaceholder, arraySizeLiteralIndex, size);
+    mgenc.updateLiteral(symArraySizePlaceholder, arraySizeLiteralIndex, size);
     expect(EndTerm);
   }
 
@@ -403,10 +407,10 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       case Primitive: {
         SSymbol v = variable();
 
-        if (v == universe.symSuper) {
+        if (v == symSuper) {
           superSend = true;
           // sends to super push self as the receiver
-          v = universe.symSelf;
+          v = symSelf;
         }
 
         genPushVariable(mgenc, v);
@@ -452,9 +456,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (!mgenc.isFinished()) {
       if (!mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
-        SSymbol nilSym = universe.symbolFor("nil");
-        mgenc.addLiteralIfAbsent(nilSym, this);
-        emitPUSHGLOBAL(mgenc, nilSym);
+        mgenc.addLiteralIfAbsent(symNil, this);
+        emitPUSHGLOBAL(mgenc, symNil);
       }
       emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
