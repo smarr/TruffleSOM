@@ -1,7 +1,6 @@
 package trufflesom.compiler;
 
 import static trufflesom.compiler.Symbol.Assign;
-import static trufflesom.compiler.Symbol.Double;
 import static trufflesom.compiler.Symbol.EndBlock;
 import static trufflesom.compiler.Symbol.EndTerm;
 import static trufflesom.compiler.Symbol.Exit;
@@ -356,7 +355,6 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (sym == Integer) {
       lit = literalInteger(isNegative);
     } else {
-      assert sym == Double;
       lit = literalDouble(isNegative);
     }
 
