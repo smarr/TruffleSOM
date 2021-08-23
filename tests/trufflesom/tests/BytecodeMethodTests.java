@@ -1,7 +1,6 @@
 package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -399,7 +398,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         t(40, new BC(Bytecodes.PUSH_LOCAL, 3, 0)));
   }
 
-  @Ignore
   @Test
   public void testNestedIfsAndNonInlinedBlocks() {
     addField("field");
@@ -419,28 +417,123 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + " [ a ]\n"
             + ")");
 
-    fail(
-        "TODO: there seems to be an issue with merging scopes and looking up variable indexes");
     assertEquals(27, bytecodes.length);
     check(bytecodes,
-        t(2, Bytecodes.PUSH_CONSTANT_0),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 20),
-        t(7, new BC(Bytecodes.POP_LOCAL_1, "local e")),
-        t(13, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 10)),
-        t(17, new BC(Bytecodes.POP_LOCAL_2, "local h")));
-
-    check(getBytecodesOfBlock(8),
+        // a := 1
         Bytecodes.PUSH_1,
-        new BC(Bytecodes.POP_LOCAL, 0, 1, "local a"));
+        Bytecodes.POP_LOCAL_0, // a
 
-    check(getBytecodesOfBlock(18),
-        new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local h"),
-        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"),
-        t(8, new BC(Bytecodes.PUSH_LOCAL, 1, 1, "local e")));
+        Bytecodes.PUSH_CONSTANT_0,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 20),
+
+        // e := 0
+        Bytecodes.PUSH_0,
+        Bytecodes.POP_LOCAL_1, // e
+
+        t(13, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 10)),
+
+        Bytecodes.PUSH_1,
+        Bytecodes.POP_LOCAL_2); // h
+
+    check(getBytecodesOfBlock(8), // [ a := 1. a ].
+        Bytecodes.PUSH_1,
+        new BC(Bytecodes.POP_LOCAL, 0, 1, "local a"),
+        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
+
+    check(getBytecodesOfBlock(18), // [ h + a + e ].
+        // this is a bit confusing, but the order in the localsAndOuters array of the block
+        // is the same as in the outer method
+        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local h"),
+        new BC(Bytecodes.PUSH_LOCAL, 1, 1, "local a"),
+        t(8, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local e")));
 
     check(getBytecodesOfBlock(24),
         new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
+  }
 
+  @Test
+  public void testInliningOfLocals() {
+    byte[] bytecodes = methodToBytecodes(
+        "test = (\n"
+            + " | a b |\n"
+            + " a := b := 0.\n"
+            + " true ifTrue: [\n"
+            + "   | c d |\n"
+            + "   c := d := 1.\n"
+            + "   [ a := b := c := d := 2 ].\n"
+            + "   false ifFalse: [\n"
+            + "     | e f |\n"
+            + "     e := f := 3.\n"
+            + "     [ a := b := c := d := e := f := 4 ] ] ]\n"
+            + ")");
+
+    assertEquals(40, bytecodes.length);
+    check(bytecodes,
+        // a := b := 0.
+        Bytecodes.PUSH_0,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.POP_LOCAL_0, // a
+        Bytecodes.POP_LOCAL_1, // b
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_CONSTANT_0,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 32),
+
+        // c := d := 1.
+        Bytecodes.PUSH_1,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.POP_LOCAL_2, // c
+        new BC(Bytecodes.POP_LOCAL, 3, 0), // d
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_BLOCK,
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_CONSTANT,
+        new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 16),
+
+        // e := f := 3.
+        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        new BC(Bytecodes.POP_LOCAL, 4, 0), // e
+        new BC(Bytecodes.POP_LOCAL, 5, 0), // f
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_BLOCK,
+        Bytecodes.RETURN_SELF);
+
+    check(getBytecodesOfBlock(18),
+        // a := b := c := d := 2
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        new BC(Bytecodes.POP_LOCAL, 0, 1), // a
+        new BC(Bytecodes.POP_LOCAL, 1, 1), // b
+        new BC(Bytecodes.POP_LOCAL, 2, 1), // c
+        new BC(Bytecodes.POP_LOCAL, 3, 1), // d
+        Bytecodes.RETURN_LOCAL);
+
+    check(getBytecodesOfBlock(37),
+        // a := b := c := d := e := f := 4
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        new BC(Bytecodes.POP_LOCAL, 0, 1), // a
+        new BC(Bytecodes.POP_LOCAL, 1, 1), // b
+        new BC(Bytecodes.POP_LOCAL, 2, 1), // c
+        new BC(Bytecodes.POP_LOCAL, 3, 1), // d
+        new BC(Bytecodes.POP_LOCAL, 4, 1), // e
+        new BC(Bytecodes.POP_LOCAL, 5, 1), // f
+        Bytecodes.RETURN_LOCAL);
   }
 
   @Test
