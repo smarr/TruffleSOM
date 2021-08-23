@@ -136,6 +136,11 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
+    public boolean isTrivialInSequence() {
+      return isTrivial();
+    }
+
+    @Override
     public PreevaluatedExpression copyTrivialNode() {
       return new WriteAndReturnSelf(
           FieldWriteNodeGen.create(write.getFieldIndex(), null, null));

@@ -31,6 +31,11 @@ public class BlockNode extends LiteralNode {
     this.universe = universe;
   }
 
+  @Override
+  public boolean isTrivial() {
+    return false;
+  }
+
   public SMethod getMethod() {
     return blockMethod;
   }
@@ -107,11 +112,6 @@ public class BlockNode extends LiteralNode {
     @Override
     protected BlockNode createNode(final SMethod adapted) {
       return new BlockNodeWithContext(adapted, universe).initialize(sourceSection);
-    }
-
-    @Override
-    public boolean isTrivial() {
-      return false;
     }
 
     @Override

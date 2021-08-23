@@ -59,12 +59,12 @@ public final class SequenceNode extends ExpressionNode {
     }
 
     // and the last/second one is the self return
-    if (expressions[1].getClass() != LocalArgumentReadNode.class
-        || !((LocalArgumentReadNode) expressions[1]).isSelfRead()) {
-      return false;
+    if (expressions[1].getClass() == LocalArgumentReadNode.class
+        && ((LocalArgumentReadNode) expressions[1]).isSelfRead()) {
+      return expressions[0].isTrivialInSequence();
     }
 
-    return expressions[0].isTrivial();
+    return false;
   }
 
   @Override

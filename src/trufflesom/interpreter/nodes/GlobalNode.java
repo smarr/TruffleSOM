@@ -151,6 +151,16 @@ public abstract class GlobalNode extends ExpressionNode
 
       return SAbstractObject.sendUnknownGlobal(self, globalName, universe);
     }
+
+    @Override
+    public boolean isTrivial() {
+      return true;
+    }
+
+    @Override
+    public boolean isTrivialInBlock() {
+      return false;
+    }
   }
 
   public static final class UninitializedGlobalReadWithoutErrorNode

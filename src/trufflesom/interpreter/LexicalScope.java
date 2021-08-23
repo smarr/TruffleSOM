@@ -33,6 +33,10 @@ public final class LexicalScope implements Scope<LexicalScope, Method> {
     return outerScope;
   }
 
+  public boolean isBlock() {
+    return outerScope != null;
+  }
+
   public LexicalScope getOuterScope() {
     assert outerScope != null;
     return outerScope;
