@@ -2,7 +2,6 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -864,4 +863,47 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         t(6, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local b")),
         Bytecodes.POP);
   }
+
+  private void returnFieldTrivial(final String fieldName, final byte bytecode) {
+    initMgenc();
+    addField("fieldA");
+    addField("fieldB");
+    addField("fieldC");
+    addField("fieldD");
+    byte[] bytecodes = methodToBytecodes("test = ( ^ " + fieldName + " )");
+
+    assertEquals(1, bytecodes.length);
+    check(bytecodes,
+        bytecode);
+  }
+
+  @Test
+  public void testReturnFieldTrivial() {
+    returnFieldTrivial("fieldA", Bytecodes.RETURN_FIELD_0);
+    returnFieldTrivial("fieldB", Bytecodes.RETURN_FIELD_1);
+    returnFieldTrivial("fieldC", Bytecodes.RETURN_FIELD_2);
+  }
+
+  private void returnFieldLessTrivial(final String fieldName, final byte bytecode) {
+    initMgenc();
+    addField("fieldA");
+    addField("fieldB");
+    addField("fieldC");
+    addField("fieldD");
+    byte[] bytecodes = methodToBytecodes("test = ( #foo. ^ " + fieldName + " )");
+
+    assertEquals(3, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.POP,
+        bytecode);
+  }
+
+  @Test
+  public void testReturnFieldLessTrivial() {
+    returnFieldLessTrivial("fieldA", Bytecodes.RETURN_FIELD_0);
+    returnFieldLessTrivial("fieldB", Bytecodes.RETURN_FIELD_1);
+    returnFieldLessTrivial("fieldC", Bytecodes.RETURN_FIELD_2);
+  }
+
 }

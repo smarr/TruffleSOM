@@ -179,5 +179,4 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     blockIfReturnNonLocal("ifTrue:", Bytecodes.JUMP_ON_FALSE_TOP_NIL);
     blockIfReturnNonLocal("ifFalse:", Bytecodes.JUMP_ON_TRUE_TOP_NIL);
   }
-
 }
