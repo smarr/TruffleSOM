@@ -185,6 +185,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         maxStackDepth, frameOnStackMarker, inlinedLoops, universe).initialize(sourceSection);
   }
 
+  public String getNameOfLocal(final int idx) {
+    Local l = (Local) localsAndOuters[idx].getIdentifier();
+    return l.name.getString();
+  }
+
   @ExplodeLoop
   private VirtualFrame determineOuterContext(final VirtualFrame frame) {
     // TODO: change bytecode format to include the context level
