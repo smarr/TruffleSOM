@@ -393,7 +393,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     lastMethodsSourceSection = lastFullMethodsSourceSection = getSource(lastCoordinate);
   }
 
-  protected ExpressionNode nestedBlock(final MGenC mgenc) throws ProgramDefinitionError {
+  public ExpressionNode nestedBlock(final MGenC mgenc) throws ProgramDefinitionError {
     expect(NewBlock);
     SourceCoordinate coord = getCoordinate();
 
