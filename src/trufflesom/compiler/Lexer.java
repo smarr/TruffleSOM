@@ -136,6 +136,9 @@ public final class Lexer {
 
   public String getCurrentLine() {
     int endLine = content.indexOf("\n", state.lastLineEnd + 1);
+    if (endLine == -1) {
+      endLine = content.length() - 1;
+    }
     return content.substring(state.lastLineEnd + 1, endLine);
   }
 
