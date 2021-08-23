@@ -179,8 +179,13 @@ public class Disassembler {
       switch (bytecode) {
         case POP_LOCAL:
         case PUSH_LOCAL: {
-          Universe.errorPrintln("local: " + bytecodes.get(b + 1) + ", context: "
-              + bytecodes.get(b + 2));
+          int idx = bytecodes.get(b + 1);
+          String localName = "";
+          if (m != null) {
+            localName = " name: " + m.getNameOfLocal(idx);
+          }
+          Universe.errorPrintln("local: " + idx + ", context: "
+              + bytecodes.get(b + 2) + localName);
           break;
         }
 
