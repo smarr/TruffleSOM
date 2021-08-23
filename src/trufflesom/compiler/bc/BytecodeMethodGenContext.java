@@ -22,12 +22,17 @@ import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
@@ -36,6 +41,7 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_0;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_1;
@@ -394,25 +400,34 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private ExpressionNode constructTrivialBody() {
-    if (isBlockMethod()) {
-      return null;
+    byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
+    if (returnCandidate != INVALID) {
+      byte pushCandidate = lastBytecodeIsOneOf(1, PUSH_CONSTANT_BYTECODES);
+      if (pushCandidate != INVALID) {
+        return optimizeLiteralReturn(pushCandidate, returnCandidate);
+      }
+
+      pushCandidate = lastBytecodeIs(1, PUSH_GLOBAL);
+      if (pushCandidate != INVALID) {
+        return optimizeGlobalReturn(pushCandidate, returnCandidate);
+      }
+
+      return optimizeFieldGetter(false, returnCandidate);
     }
 
-    ExpressionNode expr = optimizeLiteralReturn();
-
-    if (expr == null) {
-      expr = optimizeGlobalReturn();
+    returnCandidate = lastBytecodeIsOneOf(0, RETURN_FIELD_BYTECODES);
+    if (returnCandidate != INVALID && bytecode.size() == 1) {
+      return optimizeFieldGetter(true, returnCandidate);
     }
 
-    if (expr == null) {
-      expr = optimizeFieldGetter();
+    // because we check for return_self here, we don't consider block methods
+    returnCandidate = lastBytecodeIs(0, RETURN_SELF);
+    if (returnCandidate != INVALID) {
+      assert !isBlockMethod();
+      return optimizeFieldSetter(returnCandidate);
     }
 
-    if (expr == null) {
-      expr = optimizeFieldSetter();
-    }
-
-    return expr;
+    return null;
   }
 
   @Override
@@ -521,38 +536,40 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   private static final byte[] POP_FIELD_BYTECODES = new byte[] {
       POP_FIELD, POP_FIELD_0, POP_FIELD_1};
 
-  private ExpressionNode optimizeLiteralReturn() {
-    final byte pushCandidate = lastBytecodeIs(1, PUSH_CONSTANT);
-    if (pushCandidate == INVALID) {
-      return null;
-    }
+  private static final byte[] PUSH_NON_SELF_ARGUMENTS = new byte[] {
+      PUSH_ARGUMENT, PUSH_ARG1, PUSH_ARG2};
 
-    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
-    if (returnCandidate == INVALID) {
-      return null;
-    }
+  private static final byte[] RETURN_FIELD_BYTECODES = new byte[] {
+      RETURN_FIELD_0, RETURN_FIELD_1, RETURN_FIELD_2};
+
+  private static final byte[] PUSH_CONSTANT_BYTECODES = new byte[] {
+      PUSH_CONSTANT, PUSH_CONSTANT_0, PUSH_CONSTANT_1, PUSH_CONSTANT_2,
+      PUSH_0, PUSH_1, PUSH_NIL};
+
+  private ExpressionNode optimizeLiteralReturn(final byte pushCandidate,
+      final byte returnCandidate) {
 
     if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
         + Bytecodes.getBytecodeLength(pushCandidate))) {
       return null;
     }
 
-    byte constantIdx = getIndex(1);
-    Object literal = literals.get(constantIdx);
+    Object literal;
+    if (pushCandidate == PUSH_0) {
+      literal = 0L;
+    } else if (pushCandidate == PUSH_1) {
+      literal = 1L;
+    } else if (pushCandidate == PUSH_NIL) {
+      literal = Nil.nilObject;
+    } else {
+      byte constantIdx = getIndex(1);
+      literal = literals.get(constantIdx);
+    }
     return LiteralNode.create(literal);
   }
 
-  private GlobalNode optimizeGlobalReturn() {
-    final byte pushCandidate = lastBytecodeIs(1, PUSH_GLOBAL);
-    if (pushCandidate == INVALID) {
-      return null;
-    }
-
-    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
-    if (returnCandidate == INVALID) {
-      return null;
-    }
-
+  private GlobalNode optimizeGlobalReturn(final byte pushCandidate,
+      final byte returnCandidate) {
     if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
         + Bytecodes.getBytecodeLength(pushCandidate))) {
       return null;
@@ -563,69 +580,60 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return GlobalNode.create(literal, universe, this);
   }
 
-  private FieldReadNode optimizeFieldGetter() {
-    final byte pushCandidate = lastBytecodeIsOneOf(1, PUSH_FIELD_BYTECODES);
-    if (pushCandidate == INVALID) {
+  private FieldReadNode optimizeFieldGetter(final boolean onlyReturnBytecode,
+      final byte returnCandidate) {
+    int idx = -1;
+
+    if (onlyReturnBytecode) {
+      idx = returnCandidate - RETURN_FIELD_0;
+    } else {
+      final byte pushCandidate = lastBytecodeIsOneOf(1, PUSH_FIELD_BYTECODES);
+      if (pushCandidate == INVALID) {
+        return null;
+      }
+
+      if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+          + Bytecodes.getBytecodeLength(pushCandidate))) {
+        return null;
+      }
+
+      idx = getIndex(1);
+    }
+
+    if (idx == -1) {
       return null;
     }
 
-    final byte returnCandidate = lastBytecodeIs(0, RETURN_LOCAL);
-    if (returnCandidate == INVALID) {
-      return null;
-    }
-
-    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
-        + Bytecodes.getBytecodeLength(pushCandidate))) {
-      return null;
-    }
-
-    byte idx = getIndex(1);
     // because we don't handle block methods, we don't need to worry about ctx > 0
     return new FieldReadNode(new LocalArgumentReadNode(arguments.get(symSelf)), idx);
   }
 
-  private static int expectedSetterMethodLength =
-      Bytecodes.getBytecodeLength(PUSH_ARGUMENT) + Bytecodes.getBytecodeLength(DUP)
-          + Bytecodes.getBytecodeLength(POP_FIELD) + Bytecodes.getBytecodeLength(RETURN_SELF);
-
-  private ExpressionNode optimizeFieldSetter() {
-    if (bytecode.size() != expectedSetterMethodLength) {
-      return null;
-    }
-
-    // example sequence: PUSH_ARG1 DUP POP_FIELD_1 RETURN_SELF
-    final byte pushCandidate = lastBytecodeIs(3, PUSH_ARGUMENT);
+  private ExpressionNode optimizeFieldSetter(final byte returnCandidate) {
+    // example sequence: PUSH_ARG1 POP_FIELD_1 RETURN_SELF
+    final byte pushCandidate = lastBytecodeIsOneOf(2, PUSH_NON_SELF_ARGUMENTS);
     if (pushCandidate == INVALID) {
       return null;
     }
 
-    if (getIndex(3) != 1) {
-      // we only support access to the only true argument of a setter
-      // (i.e. ignoring the receiver)
-      // though, there could possibly be other arguments
-      // TODO: lift the restriction
-      return null;
-    }
-
-    final byte dupCandidate = lastBytecodeIs(2, DUP);
-    if (dupCandidate == INVALID) {
-      return null;
-    }
-
-    final byte popCandidate = lastBytecodeIs(1, POP_FIELD);
+    final byte popCandidate = lastBytecodeIsOneOf(1, POP_FIELD_BYTECODES);
     if (popCandidate == INVALID) {
       return null;
     }
 
-    final byte returnCandidate = lastBytecodeIs(0, RETURN_SELF);
-    if (returnCandidate == INVALID) {
+    if (bytecode.size() != (Bytecodes.getBytecodeLength(returnCandidate)
+        + Bytecodes.getBytecodeLength(pushCandidate)
+        + Bytecodes.getBytecodeLength(popCandidate))) {
       return null;
     }
 
+    byte argIdx = getIndex(2);
     byte fieldIdx = getIndex(1);
     Iterator<Argument> i = arguments.values().iterator();
     Argument self = i.next();
-    Argument val = i.next();
+    Argument val = null;
+    for (int j = 0; j < argIdx; j += 1) {
+      val = i.next();
+    }
 
     return FieldWriteNode.createForMethod(fieldIdx, self, val);
   }
@@ -672,7 +680,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       case PUSH_FIELD_0:
       case POP_LOCAL_0:
       case POP_FIELD_0:
-      case RETURN_FIELD_0: {
+      case RETURN_FIELD_0:
+      case PUSH_CONSTANT_0: {
         return 0;
       }
 
@@ -681,14 +690,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       case PUSH_FIELD_1:
       case POP_LOCAL_1:
       case POP_FIELD_1:
-      case RETURN_FIELD_1: {
+      case RETURN_FIELD_1:
+      case PUSH_CONSTANT_1: {
         return 1;
       }
 
       case PUSH_LOCAL_2:
       case PUSH_ARG2:
       case POP_LOCAL_2:
-      case RETURN_FIELD_2: {
+      case RETURN_FIELD_2:
+      case PUSH_CONSTANT_2: {
         return 2;
       }
 
@@ -708,7 +719,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       }
 
       default:
-        throw new NotYetImplementedException("Need to add support for more bytecodes");
+        throw new NotYetImplementedException(
+            "Need to add support for more bytecodes: " + Bytecodes.getBytecodeName(actual));
     }
   }
 
