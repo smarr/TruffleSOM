@@ -1467,10 +1467,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL: {
-          int offset1 = bytecodes[i + 1];
-          int offset2 = bytecodes[i + 2];
-
-          int offset = offset1 + (offset2 << 8);
+          int offset = getJumpOffset(bytecodes[i + 1], bytecodes[i + 2]);
 
           int idxOffset = emit3WithDummy(mgenc, bytecode, 0);
           jumps.add(new Jump(bytecode, offset + i, idxOffset));
