@@ -582,6 +582,9 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   private FieldReadNode optimizeFieldGetter(final boolean onlyReturnBytecode,
       final byte returnCandidate) {
+    if (isBlockMethod()) {
+      return null;
+    }
     int idx = -1;
 
     if (onlyReturnBytecode) {
