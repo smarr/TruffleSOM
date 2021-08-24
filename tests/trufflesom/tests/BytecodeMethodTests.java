@@ -1111,4 +1111,34 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
       returnIncField(i);
     }
   }
+
+  private void returnField(final int fieldNum, final Object bytecode) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + fieldNum;
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( 1. ^ " + fieldName + " )");
+
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.POP,
+        bytecode);
+  }
+
+  @Test
+  public void testReturnField() {
+    returnField(0, Bytecodes.RETURN_FIELD_0);
+    returnField(1, Bytecodes.RETURN_FIELD_1);
+    returnField(2, Bytecodes.RETURN_FIELD_2);
+
+    returnField(3, new BC(Bytecodes.PUSH_FIELD, 3));
+    returnField(4, new BC(Bytecodes.PUSH_FIELD, 4));
+  }
 }

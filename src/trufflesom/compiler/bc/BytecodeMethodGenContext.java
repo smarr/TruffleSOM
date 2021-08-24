@@ -417,16 +417,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       return optimizeFieldGetter(false, returnCandidate);
     }
 
-    returnCandidate = lastBytecodeIsOneOf(0, RETURN_FIELD_BYTECODES);
-    if (returnCandidate != INVALID && bytecode.size() == 1) {
-      return optimizeFieldGetter(true, returnCandidate);
-    }
-
     // because we check for return_self here, we don't consider block methods
     returnCandidate = lastBytecodeIs(0, RETURN_SELF);
     if (returnCandidate != INVALID) {
       assert !isBlockMethod();
       return optimizeFieldSetter(returnCandidate);
+    }
+
+    returnCandidate = lastBytecodeIsOneOf(0, RETURN_FIELD_BYTECODES);
+    if (returnCandidate != INVALID && bytecode.size() == 1) {
+      return optimizeFieldGetter(true, returnCandidate);
     }
 
     return null;
@@ -845,6 +845,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     removeLastBytecodes(1); // remove the PUSH_FIELD_n bytecode
+    resetLastBytecodeBuffer();
 
     BytecodeGenerator.emitRETURNFIELD(this, idxCtxPushField[0]);
     return true;
