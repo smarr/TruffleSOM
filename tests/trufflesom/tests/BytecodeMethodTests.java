@@ -290,14 +290,11 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(17, bytecodes.length);
+    assertEquals(16, bytecodes.length);
     check(bytecodes,
         t(4, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 7), // jump to pop bytecode, which is the dot
-        Bytecodes.PUSH_FIELD_0,
-        Bytecodes.INC,
-        Bytecodes.DUP,
-        Bytecodes.POP_FIELD_0,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6), // jump to pop bytecode, which is the dot
+        new BC(Bytecodes.INC_FIELD_PUSH, 0, 0),
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
   }
@@ -1025,5 +1022,94 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     trivialMethodInlining("Nil", Bytecodes.PUSH_GLOBAL);
     trivialMethodInlining("UnknownGlobal", Bytecodes.PUSH_GLOBAL);
     trivialMethodInlining("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
+  }
+
+  private void incField(final int field) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + field;
+
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( " + fieldName + " := " + fieldName + " + 1 )");
+
+    assertEquals(4, bytecodes.length);
+    check(bytecodes,
+        new BC(Bytecodes.INC_FIELD_PUSH, field, 0),
+        Bytecodes.RETURN_SELF);
+  }
+
+  @Test
+  public void testIncField() {
+    for (int i = 0; i < 7; i += 1) {
+      incField(i);
+    }
+  }
+
+  private void incFieldNonTrivial(final int field) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + field;
+
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( 1. " + fieldName + " := " + fieldName + " + 1. 2 )");
+
+    assertEquals(8, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1, Bytecodes.POP,
+        new BC(Bytecodes.INC_FIELD_PUSH, field, 0),
+        Bytecodes.POP,
+        Bytecodes.PUSH_CONSTANT_1,
+        Bytecodes.RETURN_SELF);
+  }
+
+  @Test
+  public void testIncFieldNonTrivial() {
+    for (int i = 0; i < 7; i += 1) {
+      incFieldNonTrivial(i);
+    }
+  }
+
+  private void returnIncField(final int field) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + field;
+
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( #foo. ^ " + fieldName + " := " + fieldName + " + 1 )");
+
+    assertEquals(6, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.POP,
+        new BC(Bytecodes.INC_FIELD_PUSH, field, 0),
+        Bytecodes.RETURN_LOCAL);
+  }
+
+  @Test
+  public void testReturnIncField() {
+    for (int i = 0; i < 7; i += 1) {
+      returnIncField(i);
+    }
   }
 }

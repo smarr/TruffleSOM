@@ -90,28 +90,27 @@ public class Bytecodes {
   public static final byte INC = 40;
   public static final byte DEC = 41;
 
-  public static final byte INC_FIELD      = 42;
-  public static final byte INC_FIELD_PUSH = 43;
+  public static final byte INC_FIELD_PUSH = 42;
 
-  public static final byte JUMP                  = 44;
-  public static final byte JUMP_ON_TRUE_TOP_NIL  = 45;
-  public static final byte JUMP_ON_FALSE_TOP_NIL = 46;
-  public static final byte JUMP_ON_TRUE_POP      = 47;
-  public static final byte JUMP_ON_FALSE_POP     = 48;
-  public static final byte JUMP_BACKWARDS        = 49;
+  public static final byte JUMP                  = 43;
+  public static final byte JUMP_ON_TRUE_TOP_NIL  = 44;
+  public static final byte JUMP_ON_FALSE_TOP_NIL = 45;
+  public static final byte JUMP_ON_TRUE_POP      = 46;
+  public static final byte JUMP_ON_FALSE_POP     = 47;
+  public static final byte JUMP_BACKWARDS        = 48;
 
-  public static final byte JUMP2                  = 50;
-  public static final byte JUMP2_ON_TRUE_TOP_NIL  = 51;
-  public static final byte JUMP2_ON_FALSE_TOP_NIL = 52;
-  public static final byte JUMP2_ON_TRUE_POP      = 53;
-  public static final byte JUMP2_ON_FALSE_POP     = 54;
-  public static final byte JUMP2_BACKWARDS        = 55;
+  public static final byte JUMP2                  = 49;
+  public static final byte JUMP2_ON_TRUE_TOP_NIL  = 50;
+  public static final byte JUMP2_ON_FALSE_TOP_NIL = 51;
+  public static final byte JUMP2_ON_TRUE_POP      = 52;
+  public static final byte JUMP2_ON_FALSE_POP     = 53;
+  public static final byte JUMP2_BACKWARDS        = 54;
 
-  public static final byte Q_PUSH_GLOBAL = 56;
-  public static final byte Q_SEND        = 57;
-  public static final byte Q_SEND_1      = 58;
-  public static final byte Q_SEND_2      = 59;
-  public static final byte Q_SEND_3      = 60;
+  public static final byte Q_PUSH_GLOBAL = 55;
+  public static final byte Q_SEND        = 56;
+  public static final byte Q_SEND_1      = 57;
+  public static final byte Q_SEND_2      = 58;
+  public static final byte Q_SEND_3      = 59;
 
   public static final byte INVALID = -1;
 
@@ -221,7 +220,6 @@ public class Bytecodes {
         "INC             ",
         "DEC             ",
 
-        "INC_FIELD       ",
         "INC_FIELD_PUSH  ",
 
         "JUMP            ",
@@ -303,7 +301,6 @@ public class Bytecodes {
         1, // INC
         1, // DEC
 
-        3, // INC_FIELD
         3, // INC_FIELD_PUSH
 
         3, // JUMP

@@ -27,7 +27,6 @@
 package trufflesom.compiler.bc;
 
 import static trufflesom.compiler.bc.BytecodeMethodGenContext.getJumpOffset;
-import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
@@ -196,7 +195,6 @@ public class Disassembler {
           break;
         }
 
-        case INC_FIELD:
         case INC_FIELD_PUSH:
         case POP_FIELD:
         case PUSH_FIELD: {

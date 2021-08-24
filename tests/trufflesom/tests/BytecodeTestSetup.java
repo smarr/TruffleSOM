@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
 import static trufflesom.vm.SymbolTable.symSelf;
-import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ public class BytecodeTestSetup extends TruffleTestSetup {
   }
 
   public void initMgenc() {
+    fieldCount = 0;
     mgenc = new BytecodeMethodGenContext(cgenc, probe);
     mgenc.addArgumentIfAbsent(symSelf, sourceForTests.createSection(1, 1));
   }
