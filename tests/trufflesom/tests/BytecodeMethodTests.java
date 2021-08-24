@@ -1041,7 +1041,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     assertEquals(4, bytecodes.length);
     check(bytecodes,
-        new BC(Bytecodes.INC_FIELD_PUSH, field, 0),
+        new BC(Bytecodes.INC_FIELD, field, 0),
         Bytecodes.RETURN_SELF);
   }
 
@@ -1067,11 +1067,10 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     byte[] bytecodes = methodToBytecodes(
         "test = ( 1. " + fieldName + " := " + fieldName + " + 1. 2 )");
 
-    assertEquals(8, bytecodes.length);
+    assertEquals(7, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_1, Bytecodes.POP,
-        new BC(Bytecodes.INC_FIELD_PUSH, field, 0),
-        Bytecodes.POP,
+        new BC(Bytecodes.INC_FIELD, field, 0),
         Bytecodes.PUSH_CONSTANT_1,
         Bytecodes.RETURN_SELF);
   }

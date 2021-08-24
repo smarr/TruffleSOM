@@ -19,6 +19,7 @@ import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
@@ -752,6 +753,41 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case INC_FIELD: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            Object val = obj.getField(fieldIdx);
+            if (!(val instanceof Long)) {
+              throw new NotYetImplementedException();
+            }
+
+            try {
+              long longVal = Math.addExact((Long) val, 1);
+              obj.setField(fieldIdx, longVal);
+            } catch (ArithmeticException e) {
+              throw new NotYetImplementedException();
+            }
+
+            node = quickened[bytecodeIndex] =
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            break;
+          }
+
+          ((IncrementLongFieldNode) node).increment(obj);
+          break;
+        }
+
         case INC_FIELD_PUSH: {
           byte fieldIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
@@ -1421,6 +1457,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case INC_FIELD:
         case INC_FIELD_PUSH: {
           byte fieldIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
@@ -1618,6 +1655,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case INC_FIELD:
         case INC_FIELD_PUSH: {
           adaptContextIdx(inliner, i, requiresChangesToContextLevels);
           break;

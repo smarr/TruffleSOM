@@ -7,6 +7,7 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
@@ -282,6 +283,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       last4Bytecodes[0] = last4Bytecodes[1];
       last4Bytecodes[1] = last4Bytecodes[2];
       last4Bytecodes[2] = DUP;
+    } else if (last4Bytecodes[3] == INC_FIELD) {
+      // we optimized the sequence to an INC_FIELD, which doesn't modify the stack
+      // but since we need the value to return it from the block, we need to push it.
+      last4Bytecodes[3] = INC_FIELD_PUSH;
+
+      int bcOffset = bytecode.size() - 3;
+      assert Bytecodes.getBytecodeLength(INC_FIELD_PUSH) == 3;
+      assert Bytecodes.getBytecodeLength(INC_FIELD) == 3;
+      assert bytecode.get(bcOffset) == INC_FIELD;
+      bytecode.set(bcOffset, INC_FIELD_PUSH);
     }
   }
 
@@ -640,14 +651,17 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       return false;
     }
 
-    final byte dupCandidate = lastBytecodeIs(1, DUP);
-    if (dupCandidate == INVALID) {
-      return false;
+    if (lastBytecodeIs(0, INC_FIELD_PUSH) != INVALID) {
+      return optimizeIncFieldPush();
     }
 
     final byte popCandidate = lastBytecodeIsOneOf(0, POP_X_BYTECODES);
-
     if (popCandidate == INVALID) {
+      return false;
+    }
+
+    final byte dupCandidate = lastBytecodeIs(1, DUP);
+    if (dupCandidate == INVALID) {
       return false;
     }
 
@@ -748,6 +762,18 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return new byte[] {idx, ctx};
   }
 
+  private boolean optimizeIncFieldPush() {
+    assert Bytecodes.getBytecodeLength(INC_FIELD_PUSH) == 3;
+
+    int bcIdx = bytecode.size() - 3;
+    assert bytecode.get(bcIdx) == INC_FIELD_PUSH;
+
+    bytecode.set(bcIdx, INC_FIELD);
+    last4Bytecodes[3] = INC_FIELD;
+
+    return true;
+  }
+
   /**
    * Try using a INC_FIELD bytecode instead of the following sequence.
    *
@@ -761,6 +787,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
    * @return true, if it optimized it.
    */
   public boolean optimizeIncField(final byte fieldIdx, final byte ctx) {
+    if (isCurrentlyInliningBlock) {
+      return false;
+    }
+
     if (lastBytecodeIs(0, DUP) == INVALID) {
       return false;
     }
