@@ -290,14 +290,20 @@ public final class BytecodeGenerator {
     emit3(mgenc, POP_FIELD, fieldIdx, ctx, -1);
   }
 
-  public static void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
+  public static void emitSUPERSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg,
+      final ParserBc parser) throws ParseError {
     int stackEffect = -msg.getNumberOfSignatureArguments() + 1; // +1 for the return value
-    emit2(mgenc, SUPER_SEND, mgenc.findLiteralIndex(msg), stackEffect);
+
+    byte idx = mgenc.addLiteralIfAbsent(msg, parser);
+    emit2(mgenc, SUPER_SEND, idx, stackEffect);
   }
 
-  public static void emitSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg) {
+  public static void emitSEND(final BytecodeMethodGenContext mgenc, final SSymbol msg,
+      final ParserBc parser) throws ParseError {
     int stackEffect = -msg.getNumberOfSignatureArguments() + 1; // +1 for the return value
-    emit2(mgenc, SEND, mgenc.findLiteralIndex(msg), stackEffect);
+
+    byte idx = mgenc.addLiteralIfAbsent(msg, parser);
+    emit2(mgenc, SEND, idx, stackEffect);
   }
 
   public static void emitPUSHCONSTANT(final BytecodeMethodGenContext mgenc, final Object lit,

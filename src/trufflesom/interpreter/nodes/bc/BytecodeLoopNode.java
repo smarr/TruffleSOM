@@ -1410,16 +1410,14 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case SEND: {
           byte literalIdx = bytecodes[i + 1];
           SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
-          mgenc.addLiteralIfAbsent(signature, null);
-          emitSEND(mgenc, signature);
+          emitSEND(mgenc, signature, null);
           break;
         }
 
         case SUPER_SEND: {
           byte literalIdx = bytecodes[i + 1];
           SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
-          mgenc.addLiteralIfAbsent(signature, null);
-          emitSUPERSEND(mgenc, signature);
+          emitSUPERSEND(mgenc, signature, null);
           break;
         }
 

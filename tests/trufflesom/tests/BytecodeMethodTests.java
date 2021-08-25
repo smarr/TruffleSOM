@@ -1071,7 +1071,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     check(bytecodes,
         Bytecodes.PUSH_1, Bytecodes.POP,
         new BC(Bytecodes.INC_FIELD, field, 0),
-        Bytecodes.PUSH_CONSTANT_1,
+        Bytecodes.PUSH_CONSTANT_0,
         Bytecodes.RETURN_SELF);
   }
 
