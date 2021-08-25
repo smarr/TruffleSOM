@@ -266,6 +266,10 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (isSuperSend) {
       emitSUPERSEND(mgenc, msg, this);
     } else {
+      if ((msg.getString().equals("||") && mgenc.inlineAndOr(this, true))
+          || (msg.getString().equals("&&") && mgenc.inlineAndOr(this, false))) {
+        return;
+      }
       emitSEND(mgenc, msg, this);
     }
   }
@@ -289,7 +293,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
           ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, true)) ||
           ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, false)) ||
           ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, true)) ||
-          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false))) {
+          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false)) ||
+          ("or:".equals(kwStr) && mgenc.inlineAndOr(this, true)) ||
+          ("and:".equals(kwStr) && mgenc.inlineAndOr(this, false))) {
         // all done
         return;
       }

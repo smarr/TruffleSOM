@@ -817,15 +817,16 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void inliningOfAnd(final String sel) {
+    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test = ( true " + sel + " [ #val ] )");
 
-    assertEquals(12, bytecodes.length);
+    assertEquals(11, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_GLOBAL,
+        Bytecodes.PUSH_CONSTANT_0,
         new BC(Bytecodes.JUMP_ON_FALSE_POP, 7),
         // true branch
-        Bytecodes.PUSH_CONSTANT, // push the `#val`
+        Bytecodes.PUSH_CONSTANT_2, // push the `#val`
         new BC(Bytecodes.JUMP, 5),
         // false branch, jump_on_false target, push false
         Bytecodes.PUSH_CONSTANT,
@@ -833,7 +834,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("Not yet implemendeted bytecode and:/or:")
   @Test
   public void testInliningOfAnd() {
     inliningOfAnd("and:");
@@ -841,46 +841,45 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void inliningOfOr(final String sel) {
+    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test = ( true " + sel + " [ #val ] )");
 
-    assertEquals(12, bytecodes.length);
+    dump();
+    assertEquals(10, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_GLOBAL,
+        Bytecodes.PUSH_CONSTANT_0,
         new BC(Bytecodes.JUMP_ON_TRUE_POP, 7),
         // true branch
-        Bytecodes.PUSH_CONSTANT, // push the `#val`
-        new BC(Bytecodes.JUMP, 5),
+        Bytecodes.PUSH_CONSTANT_2, // push the `#val`
+        new BC(Bytecodes.JUMP, 4),
         // false branch, jump_on_false target, push false
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_0,
         // target of the jump in the true branch
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("Not yet implemendeted bytecode and:/or:")
   @Test
   public void testInliningOfOr() {
     inliningOfOr("or:");
     inliningOfOr("||");
   }
 
-  @Ignore("Not yet implemendeted bytecode and:/or:")
   @Test
   public void testFieldReadInlining() {
     addField("field");
     byte[] bytecodes = methodToBytecodes(
         "test = ( true and: [ field ] )");
 
-    dump();
-    assertEquals(6, bytecodes.length);
+    assertEquals(10, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
         new BC(Bytecodes.JUMP_ON_FALSE_POP, 7),
         // true branch
-        Bytecodes.PUSH_FIELD,
+        Bytecodes.PUSH_FIELD_0,
         new BC(Bytecodes.JUMP, 4),
         // false branch, jump_on_false target, push false
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_2,
         // target of the jump in the true branch
         Bytecodes.RETURN_SELF);
   }

@@ -923,6 +923,41 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return true;
   }
 
+  public boolean inlineAndOr(final ParserBc parser, final boolean isOr) throws ParseError {
+    // HACK: We do assume that the receiver on the stack is a boolean,
+    // HACK: similar to the IfTrueIfFalseNode.
+    // HACK: We don't support anything but booleans at the moment.
+    byte pushBlockCandidate = lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES);
+    if (pushBlockCandidate == INVALID) {
+      return false;
+    }
+
+    assert getBytecodeLength(pushBlockCandidate) == 2;
+    byte blockLiteralIdx = bytecode.get(bytecode.size() - 1);
+
+    removeLastBytecodes(1);
+
+    int jumpOffsetIdxToSkipBranch = emitJumpOnBoolWithDummyOffset(this, !isOr, true);
+
+    SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+
+    isCurrentlyInliningBlock = true;
+    toBeInlined.getInvokable().inline(this, toBeInlined);
+    isCurrentlyInliningBlock = false;
+
+    int jumpOffsetIdxToSkipPushTrue = emitJumpWithDummyOffset(this);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipBranch, parser);
+
+    emitPUSHCONSTANT(this, isOr, parser);
+
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipPushTrue, parser);
+
+    resetLastBytecodeBuffer();
+
+    return true;
+  }
+
   public boolean inlineWhileTrueOrFalse(final ParserBc parser, final boolean isWhileTrue)
       throws ParseError {
     if (!hasTwoLiteralBlockArguments()) {
