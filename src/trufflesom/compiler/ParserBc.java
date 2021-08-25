@@ -234,12 +234,10 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     superSend = false;
 
     SSymbol msg = unarySelector();
-    mgenc.addLiteralIfAbsent(msg, this);
-
     if (isSuperSend) {
-      emitSUPERSEND(mgenc, msg);
+      emitSUPERSEND(mgenc, msg, this);
     } else {
-      emitSEND(mgenc, msg);
+      emitSEND(mgenc, msg, this);
     }
   }
 
@@ -249,7 +247,6 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     superSend = false;
 
     SSymbol msg = binarySelector();
-    mgenc.addLiteralIfAbsent(msg, this);
 
     boolean isPossibleIncOrDec = msg == symPlus || msg == symMinus;
     if (isPossibleIncOrDec) {
@@ -267,9 +264,13 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     binaryOperand(mgenc);
 
     if (isSuperSend) {
-      emitSUPERSEND(mgenc, msg);
+      emitSUPERSEND(mgenc, msg, this);
     } else {
-      emitSEND(mgenc, msg);
+      if ((msg.getString().equals("||") && mgenc.inlineAndOr(this, true))
+          || (msg.getString().equals("&&") && mgenc.inlineAndOr(this, false))) {
+        return;
+      }
+      emitSEND(mgenc, msg, this);
     }
   }
 
@@ -292,7 +293,9 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
           ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, true)) ||
           ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, false)) ||
           ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, true)) ||
-          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false))) {
+          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false)) ||
+          ("or:".equals(kwStr) && mgenc.inlineAndOr(this, true)) ||
+          ("and:".equals(kwStr) && mgenc.inlineAndOr(this, false))) {
         // all done
         return;
       }
@@ -300,12 +303,10 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     SSymbol msg = symbolFor(kwStr);
 
-    mgenc.addLiteralIfAbsent(msg, this);
-
     if (isSuperSend) {
-      emitSUPERSEND(mgenc, msg);
+      emitSUPERSEND(mgenc, msg, this);
     } else {
-      emitSEND(mgenc, msg);
+      emitSEND(mgenc, msg, this);
     }
   }
 
@@ -365,14 +366,12 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     expect(Pound);
     expect(NewTerm);
 
-    mgenc.addLiteralIfAbsent(symNewMsg, this);
-    mgenc.addLiteralIfAbsent(symAtPutMsg, this);
     final byte arraySizeLiteralIndex = mgenc.addLiteral(symArraySizePlaceholder, this);
 
     // create empty array
     emitPUSHGLOBAL(mgenc, symArray, this);
     emitPUSHCONSTANT(mgenc, arraySizeLiteralIndex);
-    emitSEND(mgenc, symNewMsg);
+    emitSEND(mgenc, symNewMsg, this);
 
     long i = 1;
 
@@ -381,7 +380,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
       emitPUSHCONSTANT(mgenc, i, this);
       literal(mgenc);
-      emitSEND(mgenc, symAtPutMsg);
+      emitSEND(mgenc, symAtPutMsg, this);
       emitPOP(mgenc);
       i += 1;
     }
