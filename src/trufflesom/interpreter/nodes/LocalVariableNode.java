@@ -34,6 +34,10 @@ public abstract class LocalVariableNode extends ExpressionNode implements Invoca
     return slot.getIdentifier();
   }
 
+  public Local getLocal() {
+    return local;
+  }
+
   @Override
   public final SSymbol getInvocationIdentifier() {
     return local.name;
