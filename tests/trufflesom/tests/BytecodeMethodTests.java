@@ -1,13 +1,6 @@
 package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static trufflesom.vm.SymbolTable.symbolFor;
-
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,122 +29,14 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     return mgenc.getBytecodeArray();
   }
 
-  private byte[] blockToBytecodes(final String source) {
-    initBgenc();
-    Source s = SomLanguage.getSyntheticSource(source, "test");
-
-    ParserBc parser = new ParserBc(source, s, probe, universe);
-    try {
-      parser.nestedBlock(bgenc);
-    } catch (ProgramDefinitionError e) {
-      throw new RuntimeException(e);
-    }
-    return bgenc.getBytecodeArray();
-  }
-
-  private static class BC {
-    final byte   bytecode;
-    final Byte   arg1;
-    final Byte   arg2;
-    final String note;
-
-    BC(final byte bytecode, final int arg1, final int arg2, final String note) {
-      this.bytecode = bytecode;
-      this.arg1 = (byte) arg1;
-      this.arg2 = (byte) arg2;
-      this.note = note;
-    }
-
-    BC(final byte bytecode, final int arg1) {
-      this.bytecode = bytecode;
-      this.arg1 = (byte) arg1;
-      arg2 = null;
-      note = null;
-    }
-
-    BC(final byte bytecode, final int arg1, final String note) {
-      this.bytecode = bytecode;
-      this.arg1 = (byte) arg1;
-      arg2 = null;
-      this.note = note;
-    }
-
-    BC(final byte bytecode, final int arg1, final int arg2) {
-      this.bytecode = bytecode;
-      this.arg1 = (byte) arg1;
-      this.arg2 = (byte) arg2;
-      note = null;
-    }
-  }
-
-  private Object[] t(final int idx, final Object bc) {
-    return new Object[] {idx, bc};
-  }
-
-  private void check(final byte[] actual, final Object... expected) {
-    Deque<Object> expectedQ = new ArrayDeque<>(Arrays.asList(expected));
-
-    int i = 0;
-
-    while (i < actual.length && !expectedQ.isEmpty()) {
-      byte actualBc = actual[i];
-
-      int bcLength = Bytecodes.getBytecodeLength(actualBc);
-
-      Object expectedBc = expectedQ.peek();
-      if (expectedBc instanceof Object[]) {
-        Object[] tuple = (Object[]) expectedBc;
-        if ((Integer) tuple[0] == i) {
-          expectedBc = tuple[1];
-        } else {
-          assertTrue(((Integer) tuple[0]) > i);
-          i += bcLength;
-          continue;
-        }
-      }
-
-      if (expectedBc instanceof BC) {
-        BC bc = (BC) expectedBc;
-
-        assertEquals("Bytecode " + i + " expected " + Bytecodes.getBytecodeName(bc.bytecode)
-            + " but got " + Bytecodes.getBytecodeName(actualBc), actualBc, bc.bytecode);
-
-        if (bc.arg1 != null) {
-          assertEquals("Bytecode " + i + " expected " + Bytecodes.getBytecodeName(bc.bytecode)
-              + "(" + bc.arg1 + ", " + bc.arg2 + ") but got "
-              + Bytecodes.getBytecodeName(actualBc) + "(" + actual[i + 1] + ", "
-              + actual[i + 2] + ")", actual[i + 1], (byte) bc.arg1);
-        }
-
-        if (bc.arg2 != null) {
-          assertEquals(actual[i + 2], (byte) bc.arg2);
-        }
-      } else {
-        assertEquals(
-            "Bytecode " + i + " expected " + Bytecodes.getBytecodeName((byte) expectedBc)
-                + " but got " + Bytecodes.getBytecodeName(actualBc),
-            (byte) expectedBc, actualBc);
-      }
-
-      expectedQ.remove();
-      i += bcLength;
-    }
-
-    assertTrue(expectedQ.isEmpty());
-  }
-
   private void incDecBytecodes(final String op, final byte bytecode) {
     initMgenc();
     byte[] bytecodes = methodToBytecodes("test = ( 1 " + op + "  1 )");
 
-    assertEquals(4, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_CONSTANT, bytecode, Bytecodes.RETURN_SELF);
-
-    fail(
-        "TODO: first BC should really be a PUSH_1 bytecode, but the optimization is not yet implemented");
+    assertEquals(3, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_1, bytecode, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIncDecBytecodes() {
     incDecBytecodes("+", Bytecodes.INC);
@@ -174,55 +59,39 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     check(bytecodes, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testDupPopArgumentPop() {
     byte[] bytecodes = methodToBytecodes("test: arg = ( arg := 1. ^ self )");
 
-    assertEquals(6, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_CONSTANT, Bytecodes.POP_ARGUMENT, Bytecodes.RETURN_SELF);
-
-    fail(
-        "TODO: first BC should really be a PUSH_1 bytecode, but the optimization is not yet implemented");
+    assertEquals(5, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_1, Bytecodes.POP_ARGUMENT, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testDupPopArgumentPopImplicitReturnSelf() {
     byte[] bytecodes = methodToBytecodes("test: arg = ( arg := 1 )");
 
-    assertEquals(6, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_CONSTANT, Bytecodes.POP_ARGUMENT, Bytecodes.RETURN_SELF);
-
-    fail(
-        "TODO: first BC should really be a PUSH_1 bytecode, but the optimization is not yet implemented");
+    assertEquals(5, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_1, Bytecodes.POP_ARGUMENT, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testDupPopLocalPop() {
     byte[] bytecodes = methodToBytecodes("test = ( | local | local := 1. ^ self )");
 
-    assertEquals(6, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_CONSTANT, Bytecodes.POP_LOCAL, Bytecodes.RETURN_SELF);
-
-    fail(
-        "TODO: first BC should really be a PUSH_1 bytecode, but the optimization is not yet implemented");
+    assertEquals(3, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_1, Bytecodes.POP_LOCAL_0, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testDupPopField0Pop() {
     addField("field");
     byte[] bytecodes = methodToBytecodes("test = ( field := 1. ^ self )");
 
-    assertEquals(6, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_CONSTANT, Bytecodes.POP_FIELD, Bytecodes.RETURN_SELF);
-
-    fail("TODO: should be PUSH_1, POP_FIELD_0");
+    assertEquals(3, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_1, Bytecodes.POP_FIELD_0, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testDupPopFieldNPop() {
     addField("a");
@@ -233,20 +102,17 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     addField("field");
     byte[] bytecodes = methodToBytecodes("test = ( field := 1. ^ self )");
 
-    assertEquals(6, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_CONSTANT, Bytecodes.POP_FIELD, Bytecodes.RETURN_SELF);
-    fail("TODO: should be PUSH_1,...");
+    assertEquals(5, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_1, Bytecodes.POP_FIELD, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testDupPopFieldReturnSelf() {
     addField("field");
     byte[] bytecodes = methodToBytecodes("test: val = ( field := val )");
 
-    assertEquals(7, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_ARGUMENT, Bytecodes.POP_FIELD, Bytecodes.RETURN_SELF);
-    fail("TODO: should be ...,POP_FIELD_0,...");
+    assertEquals(3, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_ARG1, Bytecodes.POP_FIELD_0, Bytecodes.RETURN_SELF);
   }
 
   @Test
@@ -259,42 +125,36 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     addField("field");
     byte[] bytecodes = methodToBytecodes("test: val = ( field := val )");
 
-    assertEquals(7, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_ARGUMENT, Bytecodes.POP_FIELD, Bytecodes.RETURN_SELF);
+    assertEquals(5, bytecodes.length);
+    check(bytecodes, Bytecodes.PUSH_ARG1, Bytecodes.POP_FIELD, Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testSendDupPopFieldReturnLocal() {
     addField("field");
     byte[] bytecodes = methodToBytecodes("test = ( ^ field := self method )");
 
-    assertEquals(10, bytecodes.length);
+    assertEquals(6, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_ARGUMENT,
+        Bytecodes.PUSH_SELF,
         Bytecodes.SEND,
         Bytecodes.DUP,
-        Bytecodes.POP_FIELD,
+        Bytecodes.POP_FIELD_0,
         Bytecodes.RETURN_LOCAL);
-
-    fail("TODO: should be ...,POP_FIELD_0,...");
   }
 
-  @Ignore("TODO")
   @Test
   public void testSendDupPopFieldReturnLocalPeriod() {
     addField("field");
     byte[] bytecodes = methodToBytecodes("test = ( ^ field := self method. )");
 
-    assertEquals(10, bytecodes.length);
+    assertEquals(6, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_ARGUMENT,
+        Bytecodes.PUSH_SELF,
         Bytecodes.SEND,
         Bytecodes.DUP,
-        Bytecodes.POP_FIELD,
+        Bytecodes.POP_FIELD_0,
         Bytecodes.RETURN_LOCAL);
-
-    fail("TODO: should be ...,POP_FIELD_0,...");
   }
 
   private void ifTrueWithLiteralReturn(final String literal, final byte bytecode) {
@@ -305,9 +165,9 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     int bcLength = Bytecodes.getBytecodeLength(bytecode);
 
-    assertEquals(10 + bcLength, bytecodes.length);
+    assertEquals(8 + bcLength, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_ARGUMENT,
+        Bytecodes.PUSH_SELF,
         Bytecodes.SEND,
         Bytecodes.JUMP_ON_FALSE_TOP_NIL,
         bytecode,
@@ -316,25 +176,61 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueWithLiteralReturn() {
-    ifTrueWithLiteralReturn("0", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("1", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("-10", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("3333", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("'str'", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("#sym", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("1.1", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("-2342.234", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("true", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("false", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithLiteralReturn("nil", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithLiteralReturn("0", Bytecodes.PUSH_0);
+    ifTrueWithLiteralReturn("1", Bytecodes.PUSH_1);
+    ifTrueWithLiteralReturn("-10", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("3333", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("'str'", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("#sym", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("1.1", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("-2342.234", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("true", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("false", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("nil", Bytecodes.PUSH_NIL);
     ifTrueWithLiteralReturn("SomeGlobal", Bytecodes.PUSH_GLOBAL);
     ifTrueWithLiteralReturn("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
     ifTrueWithLiteralReturn("[ self ]", Bytecodes.PUSH_BLOCK);
+  }
 
-    fail("TODO: support for push_0, push_1, ...");
+  private void ifTrueWithSomethingAndLiteralReturn(final String literal, final byte bytecode) {
+    initMgenc();
+    byte[] bytecodes = methodToBytecodes("test = (\n"
+        + "  self method ifTrue: [ #fooBarNonTrivialBlock. " + literal + " ].\n"
+        + ")");
+
+    int bcLength = Bytecodes.getBytecodeLength(bytecode);
+
+    assertEquals(10 + bcLength, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_SELF,
+        Bytecodes.SEND,
+        Bytecodes.JUMP_ON_FALSE_TOP_NIL,
+        Bytecodes.PUSH_CONSTANT_2,
+        Bytecodes.POP,
+        bytecode,
+        Bytecodes.POP,
+        Bytecodes.RETURN_SELF);
+
+  }
+
+  @Test
+  public void testIfTrueWithSomethingAndLiteralReturn() {
+    ifTrueWithSomethingAndLiteralReturn("0", Bytecodes.PUSH_0);
+    ifTrueWithSomethingAndLiteralReturn("1", Bytecodes.PUSH_1);
+    ifTrueWithSomethingAndLiteralReturn("-10", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("3333", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("'str'", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("#sym", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("1.1", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("-2342.234", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("true", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("false", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("nil", Bytecodes.PUSH_NIL);
+    ifTrueWithSomethingAndLiteralReturn("SomeGlobal", Bytecodes.PUSH_GLOBAL);
+    ifTrueWithSomethingAndLiteralReturn("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
+    ifTrueWithSomethingAndLiteralReturn("[ self ]", Bytecodes.PUSH_BLOCK);
   }
 
   private void ifArg(final String selector, final byte jumpBytecode) {
@@ -346,22 +242,19 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(18, bytecodes.length);
+    assertEquals(13, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_0,
         Bytecodes.POP,
-        Bytecodes.PUSH_ARGUMENT,
+        Bytecodes.PUSH_SELF,
         Bytecodes.SEND,
-        new BC(jumpBytecode, 6),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        new BC(jumpBytecode, 4),
+        Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT,
         Bytecodes.RETURN_SELF);
-
-    fail("TODO: push_constant_0, ...");
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfArg() {
     ifArg("ifTrue:", Bytecodes.JUMP_ON_FALSE_TOP_NIL);
@@ -377,11 +270,11 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(20, bytecodes.length);
+    assertEquals(14, bytecodes.length);
     check(bytecodes,
-        t(8, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        t(4, Bytecodes.SEND),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 4),
+        Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
 
@@ -397,20 +290,15 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(25, bytecodes.length);
-    dump();
+    assertEquals(16, bytecodes.length);
     check(bytecodes,
-        t(8, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 11), // jump to pop bytecode, which is the dot
-        new BC(Bytecodes.PUSH_FIELD, 0, 0),
-        Bytecodes.INC,
-        Bytecodes.DUP,
-        new BC(Bytecodes.POP_FIELD, 0, 0),
+        t(4, Bytecodes.SEND),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6), // jump to pop bytecode, which is the dot
+        new BC(Bytecodes.INC_FIELD_PUSH, 0, 0),
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueAndIncArg() {
     addField("field");
@@ -421,12 +309,11 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(25, bytecodes.length);
-    dump();
+    assertEquals(15, bytecodes.length);
     check(bytecodes,
-        t(8, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 7), // jump to pop bytecode, which is the dot
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        t(4, Bytecodes.SEND),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 5), // jump to pop bytecode, which is the dot
+        Bytecodes.PUSH_ARG1,
         Bytecodes.INC,
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
@@ -441,26 +328,21 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(22, bytecodes.length);
-    dump();
-
-    fail("TODO: change things so that we can eliminate the HALT bytecode, as in PySOM");
+    assertEquals(15, bytecodes.length);
     check(bytecodes,
-        t(8, Bytecodes.SEND),
-        new BC(jumpBytecode, 8), // jump to pop bytecode, which is the dot
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        t(4, Bytecodes.SEND),
+        new BC(jumpBytecode, 5), // jump to pop bytecode, which is the dot
+        Bytecodes.PUSH_ARG1,
         Bytecodes.RETURN_LOCAL,
         Bytecodes.POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfReturnNonLocal() {
     ifReturnNonLocal("ifTrue:", Bytecodes.JUMP_ON_FALSE_TOP_NIL);
     ifReturnNonLocal("ifFalse:", Bytecodes.JUMP_ON_TRUE_TOP_NIL);
   }
 
-  @Ignore("TODO")
   @Test
   public void testNestedIfs() {
     addField("field");
@@ -473,19 +355,18 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  ]\n"
             + ")");
 
-    fail("TODO: change things so that we can eliminate the HALT bytecode, as in PySOM");
     check(bytecodes,
-        Bytecodes.PUSH_GLOBAL,
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 18),
-        t(7, Bytecodes.JUMP_ON_TRUE_TOP_NIL),
-        new BC(Bytecodes.PUSH_FIELD, 0, 0),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        Bytecodes.PUSH_CONSTANT_0,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 12),
+        Bytecodes.PUSH_CONSTANT_2,
+        new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 8),
+        Bytecodes.PUSH_FIELD_0,
+        Bytecodes.PUSH_ARG1,
         Bytecodes.SEND,
         Bytecodes.RETURN_LOCAL,
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testNestedIfsAndLocals() {
     addField("field");
@@ -502,19 +383,18 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "      h := 1.\n"
             + "      ^ i - j - f - g - d ] ] )");
 
-    assertEquals(55, bytecodes.length);
+    assertEquals(47, bytecodes.length);
     check(bytecodes,
-        new BC(Bytecodes.PUSH_LOCAL, 1, 0),
-        new BC(Bytecodes.POP_LOCAL, 0, 0),
-        t(8, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 46)),
-        t(13, new BC(Bytecodes.POP_LOCAL, 4, 0)),
-        t(18, new BC(Bytecodes.POP_LOCAL, 2, 0)),
-        t(23, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 31)),
-        t(27, new BC(Bytecodes.POP_LOCAL, 7, 0)),
-        t(48, new BC(Bytecodes.PUSH_LOCAL, 3, 0)));
+        Bytecodes.PUSH_LOCAL_1,
+        Bytecodes.POP_LOCAL_0,
+        t(3, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 43)),
+        t(7, new BC(Bytecodes.POP_LOCAL, 4, 0)),
+        t(12, Bytecodes.POP_LOCAL_2),
+        t(15, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 31)),
+        t(19, new BC(Bytecodes.POP_LOCAL, 7, 0)),
+        t(40, new BC(Bytecodes.PUSH_LOCAL, 3, 0)));
   }
 
-  @Ignore("TODO")
   @Test
   public void testNestedIfsAndNonInlinedBlocks() {
     addField("field");
@@ -534,28 +414,125 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + " [ a ]\n"
             + ")");
 
-    assertEquals(36, bytecodes.length);
+    assertEquals(27, bytecodes.length);
     check(bytecodes,
-        t(4, Bytecodes.PUSH_GLOBAL),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 26),
-        t(10, new BC(Bytecodes.POP_LOCAL, 1, 0, "local e")),
-        t(18, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 14)),
-        t(22, new BC(Bytecodes.POP_LOCAL, 2, 0, "local h")));
+        // a := 1
+        Bytecodes.PUSH_1,
+        Bytecodes.POP_LOCAL_0, // a
 
-    check(getBytecodesOfBlock(13),
-        t(1, new BC(Bytecodes.POP_LOCAL, 0, 1, "local a")));
+        Bytecodes.PUSH_CONSTANT_0,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 20),
 
-    check(getBytecodesOfBlock(25),
-        new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local h"),
-        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"),
-        t(8, new BC(Bytecodes.PUSH_LOCAL, 1, 1, "local e")));
+        // e := 0
+        Bytecodes.PUSH_0,
+        Bytecodes.POP_LOCAL_1, // e
 
-    check(getBytecodesOfBlock(33),
+        t(13, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 10)),
+
+        Bytecodes.PUSH_1,
+        Bytecodes.POP_LOCAL_2); // h
+
+    check(getBytecodesOfBlock(8), // [ a := 1. a ].
+        Bytecodes.PUSH_1,
+        new BC(Bytecodes.POP_LOCAL, 0, 1, "local a"),
         new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
 
+    check(getBytecodesOfBlock(18), // [ h + a + e ].
+        // this is a bit confusing, but the order in the localsAndOuters array of the block
+        // is the same as in the outer method
+        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local h"),
+        new BC(Bytecodes.PUSH_LOCAL, 1, 1, "local a"),
+        t(8, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local e")));
+
+    check(getBytecodesOfBlock(24),
+        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
   }
 
-  @Ignore("TODO")
+  @Test
+  public void testInliningOfLocals() {
+    byte[] bytecodes = methodToBytecodes(
+        "test = (\n"
+            + " | a b |\n"
+            + " a := b := 0.\n"
+            + " true ifTrue: [\n"
+            + "   | c d |\n"
+            + "   c := d := 1.\n"
+            + "   [ a := b := c := d := 2 ].\n"
+            + "   false ifFalse: [\n"
+            + "     | e f |\n"
+            + "     e := f := 3.\n"
+            + "     [ a := b := c := d := e := f := 4 ] ] ]\n"
+            + ")");
+
+    assertEquals(40, bytecodes.length);
+    check(bytecodes,
+        // a := b := 0.
+        Bytecodes.PUSH_0,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.POP_LOCAL_0, // a
+        Bytecodes.POP_LOCAL_1, // b
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_CONSTANT_0,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 32),
+
+        // c := d := 1.
+        Bytecodes.PUSH_1,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.POP_LOCAL_2, // c
+        new BC(Bytecodes.POP_LOCAL, 3, 0), // d
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_BLOCK,
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_CONSTANT,
+        new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 16),
+
+        // e := f := 3.
+        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        new BC(Bytecodes.POP_LOCAL, 4, 0), // e
+        new BC(Bytecodes.POP_LOCAL, 5, 0), // f
+        Bytecodes.POP,
+
+        Bytecodes.PUSH_BLOCK,
+        Bytecodes.RETURN_SELF);
+
+    check(getBytecodesOfBlock(18),
+        // a := b := c := d := 2
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        new BC(Bytecodes.POP_LOCAL, 0, 1), // a
+        new BC(Bytecodes.POP_LOCAL, 1, 1), // b
+        new BC(Bytecodes.POP_LOCAL, 2, 1), // c
+        new BC(Bytecodes.POP_LOCAL, 3, 1), // d
+        Bytecodes.RETURN_LOCAL);
+
+    check(getBytecodesOfBlock(37),
+        // a := b := c := d := e := f := 4
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        Bytecodes.DUP,
+        new BC(Bytecodes.POP_LOCAL, 0, 1), // a
+        new BC(Bytecodes.POP_LOCAL, 1, 1), // b
+        new BC(Bytecodes.POP_LOCAL, 2, 1), // c
+        new BC(Bytecodes.POP_LOCAL, 3, 1), // d
+        new BC(Bytecodes.POP_LOCAL, 4, 1), // e
+        new BC(Bytecodes.POP_LOCAL, 5, 1), // f
+        Bytecodes.RETURN_LOCAL);
+  }
+
   @Test
   public void testNestedNonInlinedBlocks() {
     addField("field");
@@ -569,14 +546,16 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "       a. b. c. d. e ] ] ]\n"
             + ")");
 
-    assertEquals(20, bytecodes.length);
+    assertEquals(13, bytecodes.length);
     check(bytecodes,
-        t(2, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 17)),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0, "arg a"),
-        t(9, new BC(Bytecodes.PUSH_LOCAL, 0, 0, "local b")),
-        t(13, new BC(Bytecodes.PUSH_LOCAL, 1, 0, "local c")));
+        t(1, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 11)),
+        new BC(Bytecodes.PUSH_ARG1, "arg a"),
+        Bytecodes.POP,
+        new BC(Bytecodes.PUSH_LOCAL_0, "local b"),
+        Bytecodes.POP,
+        new BC(Bytecodes.PUSH_LOCAL_1, "local c"));
 
-    SMethod blockMethod = (SMethod) mgenc.getConstant(17);
+    SMethod blockMethod = (SMethod) mgenc.getConstant(10);
     BytecodeLoopNode blockNode =
         read(blockMethod.getInvokable(), "expressionOrSequence", BytecodeLoopNode.class);
     byte[] blockBytecodes = blockNode.getBytecodeArray();
@@ -585,9 +564,9 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         new BC(Bytecodes.PUSH_ARGUMENT, 1, 1, "arg a"),
         t(4, new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local b")),
         t(8, new BC(Bytecodes.PUSH_LOCAL, 1, 1, "local c")),
-        t(12, new BC(Bytecodes.PUSH_ARGUMENT, 1, 0, "arg d")));
+        t(12, new BC(Bytecodes.PUSH_ARG1, "arg d")));
 
-    blockMethod = (SMethod) blockNode.getConstant(16);
+    blockMethod = (SMethod) blockNode.getConstant(blockBytecodes[14 + 1]);
 
     check(
         read(blockMethod.getInvokable(), "expressionOrSequence",
@@ -596,50 +575,9 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         t(4, new BC(Bytecodes.PUSH_LOCAL, 0, 2, "local b")),
         t(8, new BC(Bytecodes.PUSH_LOCAL, 1, 2, "local c")),
         t(12, new BC(Bytecodes.PUSH_ARGUMENT, 1, 1, "arg d")),
-        t(16, new BC(Bytecodes.PUSH_ARGUMENT, 1, 0, "arg e")));
+        t(16, new BC(Bytecodes.PUSH_ARG1, "arg e")));
   }
 
-  @Ignore("TODO")
-  @Test
-  public void testBlockIfTrueArg() {
-    byte[] bytecodes = blockToBytecodes(
-        "[:arg | #start.\n"
-            + " self method ifTrue: [ arg ].\n"
-            + " #end\n"
-            + "]");
-
-    dump();
-    assertEquals(17, bytecodes.length);
-    check(bytecodes,
-        t(5, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
-        Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockIfTrueMethodArg() {
-    Source s = SomLanguage.getSyntheticSource("test arg", "arg");
-    mgenc.addArgumentIfAbsent(symbolFor("arg"), s.createSection(1));
-
-    byte[] bytecodes = blockToBytecodes(
-        "[ #start.\n"
-            + " self method ifTrue: [ arg ].\n"
-            + " #end\n"
-            + "]");
-
-    dump();
-    assertEquals(17, bytecodes.length);
-    check(bytecodes,
-        t(7, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6)),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 1),
-        Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
-  }
-
-  @Ignore("TODO")
   @Test
   public void testIfTrueIfFalseArg() {
     byte[] bytecodes = methodToBytecodes(
@@ -649,16 +587,15 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + " #end\n"
             + ")");
 
-    assertEquals(23, bytecodes.length);
+    assertEquals(17, bytecodes.length);
     check(bytecodes,
-        t(7, new BC(Bytecodes.JUMP_ON_FALSE_POP, 9)),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
-        new BC(Bytecodes.JUMP, 6),
-        new BC(Bytecodes.PUSH_ARGUMENT, 2, 0),
+        t(5, new BC(Bytecodes.JUMP_ON_FALSE_POP, 7)),
+        Bytecodes.PUSH_ARG1,
+        new BC(Bytecodes.JUMP, 4),
+        Bytecodes.PUSH_ARG2,
         Bytecodes.POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueIfFalseNlrArg1() {
     byte[] bytecodes = methodToBytecodes(
@@ -668,17 +605,16 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(24, bytecodes.length);
+    assertEquals(18, bytecodes.length);
     check(bytecodes,
-        t(7, new BC(Bytecodes.JUMP_ON_FALSE_POP, 10)),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
+        t(5, new BC(Bytecodes.JUMP_ON_FALSE_POP, 8)),
+        Bytecodes.PUSH_ARG1,
         Bytecodes.RETURN_LOCAL,
-        new BC(Bytecodes.JUMP, 6),
-        new BC(Bytecodes.PUSH_ARGUMENT, 2, 0),
+        new BC(Bytecodes.JUMP, 4),
+        Bytecodes.PUSH_ARG2,
         Bytecodes.POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueIfFalseNlrArg2() {
     byte[] bytecodes = methodToBytecodes(
@@ -688,38 +624,37 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(24, bytecodes.length);
+    assertEquals(18, bytecodes.length);
     check(bytecodes,
-        t(7, new BC(Bytecodes.JUMP_ON_FALSE_POP, 9)),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
-        new BC(Bytecodes.JUMP, 7),
-        new BC(Bytecodes.PUSH_ARGUMENT, 2, 0),
+        t(5, new BC(Bytecodes.JUMP_ON_FALSE_POP, 7)),
+        Bytecodes.PUSH_ARG1,
+        new BC(Bytecodes.JUMP, 5),
+        Bytecodes.PUSH_ARG2,
         Bytecodes.RETURN_LOCAL,
         Bytecodes.POP);
   }
 
   private void ifTrueIfFalseReturn(final String sel1, final String sel2,
       final byte jumpBytecode) {
+    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test: arg1 with: arg2 = (\n"
             + "  #start.\n"
             + "  ^ self method " + sel1 + " [ ^ arg1 ] " + sel2 + " [ arg2 ]\n"
             + ")");
 
-    assertEquals(21, bytecodes.length);
+    assertEquals(15, bytecodes.length);
     check(bytecodes,
-        t(7, new BC(jumpBytecode, 10)),
-        t(17, new BC(Bytecodes.JUMP, 6)));
+        t(5, new BC(jumpBytecode, 8)),
+        t(10, new BC(Bytecodes.JUMP, 4)));
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfTrueIfFalseReturn() {
     ifTrueIfFalseReturn("ifTrue:", "ifFalse:", Bytecodes.JUMP_ON_FALSE_POP);
     ifTrueIfFalseReturn("ifFalse:", "ifTrue:", Bytecodes.JUMP_ON_TRUE_POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfPushConsantSame() {
     byte[] bytecodes = methodToBytecodes(
@@ -730,18 +665,17 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     assertEquals(23, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        t(2, Bytecodes.PUSH_CONSTANT),
-        t(4, Bytecodes.PUSH_CONSTANT),
+        Bytecodes.PUSH_CONSTANT_0,
+        t(2, Bytecodes.PUSH_CONSTANT_1),
+        t(4, Bytecodes.PUSH_CONSTANT_2),
         t(6, Bytecodes.PUSH_CONSTANT),
         t(11, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 11)),
-        t(14, Bytecodes.PUSH_CONSTANT),
-        t(16, Bytecodes.PUSH_CONSTANT),
-        t(18, Bytecodes.PUSH_CONSTANT),
+        t(14, Bytecodes.PUSH_CONSTANT_0),
+        t(16, Bytecodes.PUSH_CONSTANT_1),
+        t(18, Bytecodes.PUSH_CONSTANT_2),
         t(20, new BC(Bytecodes.PUSH_CONSTANT, 3)));
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfPushConsantDifferent() {
     byte[] bytecodes = methodToBytecodes(
@@ -752,9 +686,9 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     assertEquals(26, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        t(2, Bytecodes.PUSH_CONSTANT),
-        t(4, Bytecodes.PUSH_CONSTANT),
+        Bytecodes.PUSH_CONSTANT_0,
+        t(2, Bytecodes.PUSH_CONSTANT_1),
+        t(4, Bytecodes.PUSH_CONSTANT_2),
         t(6, Bytecodes.PUSH_CONSTANT),
         t(11, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 14)),
         t(14, new BC(Bytecodes.PUSH_CONSTANT, 6)),
@@ -763,7 +697,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         t(23, new BC(Bytecodes.PUSH_CONSTANT, 9)));
   }
 
-  @Ignore("TODO")
   @Test
   public void testIfInlineAndConstantBcLength() {
     byte[] bytecodes = methodToBytecodes(
@@ -779,110 +712,8 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         11, bytecodes[14]);
   }
 
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopArgumentPopReturnArg() {
-    byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. arg ]");
-
-    assertEquals(8, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.POP_ARGUMENT,
-        t(4, Bytecodes.PUSH_ARGUMENT),
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopArgumentPopImplicitReturn() {
-    byte[] bytecodes = blockToBytecodes("[:arg | arg := 1 ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_ARGUMENT,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopArgumentPopImplicitReturnDot() {
-    byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_ARGUMENT,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupPopLocalReturnLocal() {
-    byte[] bytecodes = blockToBytecodes("[| local | local := 1 ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_LOCAL,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupFieldReturnLocal() {
-    addField("field");
-    byte[] bytecodes = blockToBytecodes("[ field := 1 ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_FIELD,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockDupFieldReturnLocalDot() {
-    addField("field");
-    byte[] bytecodes = blockToBytecodes("[ field := 1. ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.DUP,
-        Bytecodes.POP_FIELD,
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  private void blockIfReturnNonLocal(final String sel, final byte jumpBytecode) {
-    byte[] bytecodes = blockToBytecodes("[:arg |\n"
-        + " #start.\n"
-        + " self method " + sel + " [ ^ arg ].\n"
-        + " #end\n"
-        + "]");
-
-    assertEquals(19, bytecodes.length);
-    check(bytecodes,
-        t(5, Bytecodes.SEND),
-        new BC(jumpBytecode, 8),
-        new BC(Bytecodes.PUSH_ARGUMENT, 1, 0),
-        new BC(Bytecodes.RETURN_NON_LOCAL, 1),
-        Bytecodes.POP);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testBlockIfReturnNonLocal() {
-    blockIfReturnNonLocal("ifTrue:", Bytecodes.JUMP_ON_FALSE_TOP_NIL);
-    blockIfReturnNonLocal("ifFalse:", Bytecodes.JUMP_ON_TRUE_TOP_NIL);
-  }
-
   private void whileInlining(final String sel, final byte jumpBytecode) {
+    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test: arg = (\n"
             + "  #start.\n"
@@ -890,25 +721,23 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(19, bytecodes.length);
+    assertEquals(17, bytecodes.length);
     check(bytecodes,
         t(2, Bytecodes.PUSH_CONSTANT),
         jumpBytecode,
-        Bytecodes.PUSH_ARGUMENT,
+        Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
-        new BC(Bytecodes.JUMP_BACKWARDS, 9),
-        Bytecodes.PUSH_CONSTANT, // TODO: push_nil
+        new BC(Bytecodes.JUMP_BACKWARDS, 7),
+        Bytecodes.PUSH_NIL,
         Bytecodes.POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testWhileInlining() {
     whileInlining("whileTrue:", Bytecodes.JUMP_ON_FALSE_POP);
     whileInlining("whileFalse:", Bytecodes.JUMP_ON_TRUE_POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testInliningWhileLoopWithExpandingBranches() {
     byte[] bytecodes = methodToBytecodes(
@@ -924,13 +753,13 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     assertEquals(38, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_0,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_1,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_2,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_0,
         new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 27,
             "jump to the pop BC after the if/right before the push #end"),
         Bytecodes.PUSH_CONSTANT,
@@ -949,15 +778,10 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         new BC(Bytecodes.JUMP_BACKWARDS, 20,
             "jump to push_nil as result of whileTrue"),
 
-        Bytecodes.PUSH_ARGUMENT,
-        Bytecodes.POP,
-        new BC(Bytecodes.JUMP_BACKWARDS, 9,
-            "jump back to the first push constant in the condition, pushing const3"),
-        Bytecodes.PUSH_CONSTANT, // TODO: push_nil
+        Bytecodes.PUSH_NIL,
         Bytecodes.POP);
   }
 
-  @Ignore("TODO")
   @Test
   public void testInliningWhileLoopWithContractingBranches() {
     byte[] bytecodes = methodToBytecodes(
@@ -972,23 +796,23 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     assertEquals(19, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_0,
         new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 15,
             "jump to the pop after the if, before pushing #end"),
 
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_1,
         Bytecodes.RETURN_LOCAL,
 
         new BC(Bytecodes.JUMP_ON_FALSE_POP, 9,
             "jump to push_nil as result of whileTrue"),
 
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_0,
         Bytecodes.RETURN_LOCAL,
         Bytecodes.POP,
 
         new BC(Bytecodes.JUMP_BACKWARDS, 8,
             "jump to the push_1 of the condition"),
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_NIL,
         Bytecodes.POP);
   }
 
@@ -1009,7 +833,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
+  @Ignore("Not yet implemendeted bytecode and:/or:")
   @Test
   public void testInliningOfAnd() {
     inliningOfAnd("and:");
@@ -1033,23 +857,24 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
+  @Ignore("Not yet implemendeted bytecode and:/or:")
   @Test
   public void testInliningOfOr() {
     inliningOfOr("or:");
     inliningOfOr("||");
   }
 
-  @Ignore("TODO")
+  @Ignore("Not yet implemendeted bytecode and:/or:")
   @Test
   public void testFieldReadInlining() {
     addField("field");
     byte[] bytecodes = methodToBytecodes(
         "test = ( true and: [ field ] )");
 
-    assertEquals(11, bytecodes.length);
+    dump();
+    assertEquals(6, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_GLOBAL,
+        Bytecodes.PUSH_CONSTANT_0,
         new BC(Bytecodes.JUMP_ON_FALSE_POP, 7),
         // true branch
         Bytecodes.PUSH_FIELD,
@@ -1127,5 +952,193 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             BytecodeLoopNode.class).getBytecodeArray(),
         t(6, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local b")),
         Bytecodes.POP);
+  }
+
+  private void returnFieldTrivial(final String fieldName, final byte bytecode) {
+    initMgenc();
+    addField("fieldA");
+    addField("fieldB");
+    addField("fieldC");
+    addField("fieldD");
+    byte[] bytecodes = methodToBytecodes("test = ( ^ " + fieldName + " )");
+
+    assertEquals(1, bytecodes.length);
+    check(bytecodes,
+        bytecode);
+  }
+
+  @Test
+  public void testReturnFieldTrivial() {
+    returnFieldTrivial("fieldA", Bytecodes.RETURN_FIELD_0);
+    returnFieldTrivial("fieldB", Bytecodes.RETURN_FIELD_1);
+    returnFieldTrivial("fieldC", Bytecodes.RETURN_FIELD_2);
+  }
+
+  private void returnFieldLessTrivial(final String fieldName, final byte bytecode) {
+    initMgenc();
+    addField("fieldA");
+    addField("fieldB");
+    addField("fieldC");
+    addField("fieldD");
+    byte[] bytecodes = methodToBytecodes("test = ( #foo. ^ " + fieldName + " )");
+
+    assertEquals(3, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.POP,
+        bytecode);
+  }
+
+  @Test
+  public void testReturnFieldLessTrivial() {
+    returnFieldLessTrivial("fieldA", Bytecodes.RETURN_FIELD_0);
+    returnFieldLessTrivial("fieldB", Bytecodes.RETURN_FIELD_1);
+    returnFieldLessTrivial("fieldC", Bytecodes.RETURN_FIELD_2);
+  }
+
+  private void trivialMethodInlining(final String source, final byte bytecode) {
+    initMgenc();
+    byte[] bytecodes = methodToBytecodes("test = ( true ifTrue: [ " + source + " ] )");
+
+    check(bytecodes,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.JUMP_ON_FALSE_TOP_NIL,
+        bytecode,
+        Bytecodes.RETURN_SELF);
+  }
+
+  @Test
+  public void testTrivialMethodInlining() {
+    trivialMethodInlining("0", Bytecodes.PUSH_0);
+    trivialMethodInlining("1", Bytecodes.PUSH_1);
+    trivialMethodInlining("-10", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("'str'", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("#sym", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("1.1", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("-2342.234", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("true", Bytecodes.PUSH_CONSTANT_0);
+    trivialMethodInlining("false", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("nil", Bytecodes.PUSH_NIL);
+    trivialMethodInlining("Nil", Bytecodes.PUSH_GLOBAL);
+    trivialMethodInlining("UnknownGlobal", Bytecodes.PUSH_GLOBAL);
+    trivialMethodInlining("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
+  }
+
+  private void incField(final int field) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + field;
+
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( " + fieldName + " := " + fieldName + " + 1 )");
+
+    assertEquals(4, bytecodes.length);
+    check(bytecodes,
+        new BC(Bytecodes.INC_FIELD, field, 0),
+        Bytecodes.RETURN_SELF);
+  }
+
+  @Test
+  public void testIncField() {
+    for (int i = 0; i < 7; i += 1) {
+      incField(i);
+    }
+  }
+
+  private void incFieldNonTrivial(final int field) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + field;
+
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( 1. " + fieldName + " := " + fieldName + " + 1. 2 )");
+
+    assertEquals(7, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_1, Bytecodes.POP,
+        new BC(Bytecodes.INC_FIELD, field, 0),
+        Bytecodes.PUSH_CONSTANT_1,
+        Bytecodes.RETURN_SELF);
+  }
+
+  @Test
+  public void testIncFieldNonTrivial() {
+    for (int i = 0; i < 7; i += 1) {
+      incFieldNonTrivial(i);
+    }
+  }
+
+  private void returnIncField(final int field) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + field;
+
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( #foo. ^ " + fieldName + " := " + fieldName + " + 1 )");
+
+    assertEquals(6, bytecodes.length);
+    check(bytecodes,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.POP,
+        new BC(Bytecodes.INC_FIELD_PUSH, field, 0),
+        Bytecodes.RETURN_LOCAL);
+  }
+
+  @Test
+  public void testReturnIncField() {
+    for (int i = 0; i < 7; i += 1) {
+      returnIncField(i);
+    }
+  }
+
+  private void returnField(final int fieldNum, final Object bytecode) {
+    initMgenc();
+    addField("field0");
+    addField("field1");
+    addField("field2");
+    addField("field3");
+    addField("field4");
+    addField("field5");
+    addField("field6");
+
+    String fieldName = "field" + fieldNum;
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( 1. ^ " + fieldName + " )");
+
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.POP,
+        bytecode);
+  }
+
+  @Test
+  public void testReturnField() {
+    returnField(0, Bytecodes.RETURN_FIELD_0);
+    returnField(1, Bytecodes.RETURN_FIELD_1);
+    returnField(2, Bytecodes.RETURN_FIELD_2);
+
+    returnField(3, new BC(Bytecodes.PUSH_FIELD, 3));
+    returnField(4, new BC(Bytecodes.PUSH_FIELD, 4));
   }
 }

@@ -31,9 +31,13 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import bd.inlining.ScopeAdaptationVisitor;
 import bd.primitives.nodes.PreevaluatedExpression;
 import bd.tools.nodes.Invocation;
 import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Parser.ParseError;
+import trufflesom.compiler.bc.BytecodeGenerator;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.vm.Universe;
@@ -151,6 +155,30 @@ public abstract class GlobalNode extends ExpressionNode
 
       return SAbstractObject.sendUnknownGlobal(self, globalName, universe);
     }
+
+    @Override
+    public boolean isTrivial() {
+      return true;
+    }
+
+    @Override
+    public boolean isTrivialInBlock() {
+      return false;
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      Object scope = inliner.getCurrentScope();
+
+      if (scope instanceof BytecodeMethodGenContext) {
+        BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+        try {
+          BytecodeGenerator.emitPUSHGLOBAL(mgenc, globalName, null);
+        } catch (ParseError e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
   }
 
   public static final class UninitializedGlobalReadWithoutErrorNode
@@ -187,7 +215,7 @@ public abstract class GlobalNode extends ExpressionNode
   }
 
   public static final class TrueGlobalNode extends GlobalNode {
-    TrueGlobalNode(final SSymbol globalName) {
+    public TrueGlobalNode(final SSymbol globalName) {
       super(globalName);
     }
 
@@ -200,10 +228,24 @@ public abstract class GlobalNode extends ExpressionNode
     public Object executeGeneric(final VirtualFrame frame) {
       return executeBoolean(frame);
     }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      Object scope = inliner.getCurrentScope();
+
+      if (scope instanceof BytecodeMethodGenContext) {
+        BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+        try {
+          BytecodeGenerator.emitPUSHCONSTANT(mgenc, true, null);
+        } catch (ParseError e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
   }
 
   public static final class FalseGlobalNode extends GlobalNode {
-    FalseGlobalNode(final SSymbol globalName) {
+    public FalseGlobalNode(final SSymbol globalName) {
       super(globalName);
     }
 
@@ -216,16 +258,44 @@ public abstract class GlobalNode extends ExpressionNode
     public Object executeGeneric(final VirtualFrame frame) {
       return executeBoolean(frame);
     }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      Object scope = inliner.getCurrentScope();
+
+      if (scope instanceof BytecodeMethodGenContext) {
+        BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+        try {
+          BytecodeGenerator.emitPUSHCONSTANT(mgenc, false, null);
+        } catch (ParseError e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
   }
 
   public static final class NilGlobalNode extends GlobalNode {
-    NilGlobalNode(final SSymbol globalName) {
+    public NilGlobalNode(final SSymbol globalName) {
       super(globalName);
     }
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       return Nil.nilObject;
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      Object scope = inliner.getCurrentScope();
+
+      if (scope instanceof BytecodeMethodGenContext) {
+        BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+        try {
+          BytecodeGenerator.emitPUSHCONSTANT(mgenc, Nil.nilObject, null);
+        } catch (ParseError e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
   }
 }

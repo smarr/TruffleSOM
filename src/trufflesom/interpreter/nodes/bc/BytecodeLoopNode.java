@@ -2,15 +2,19 @@ package trufflesom.interpreter.nodes.bc;
 
 import static trufflesom.compiler.bc.BytecodeGenerator.emit1;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitHALT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emit3WithDummy;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHGLOBAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
+import static trufflesom.compiler.bc.BytecodeMethodGenContext.getJumpOffset;
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
@@ -32,19 +36,41 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.POP_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARG2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD_1;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL_2;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.Q_PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_1;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_2;
 import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_3;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_0;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_1;
+import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_2;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_NON_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
@@ -56,6 +82,7 @@ import static trufflesom.interpreter.bc.Bytecodes.getBytecodeName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -124,7 +151,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   @CompilationFinal(dimensions = 1) private final FrameSlot[] localsAndOuters;
   @CompilationFinal(dimensions = 1) private final Object[]    literalsAndConstants;
 
-  @Children private Node[] quickened;
+  @CompilationFinal(dimensions = 1) private final BackJump[] inlinedLoops;
+
+  @Children private final Node[] quickened;
 
   private final int      numLocals;
   private final int      maxStackDepth;
@@ -133,24 +162,32 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   private final FrameSlot frameOnStackMarker;
 
   public BytecodeLoopNode(final byte[] bytecodes, final int numLocals,
-      final FrameSlot[] localsAndOuters,
-      final Object[] literals, final int maxStackDepth, final FrameSlot frameOnStackMarker,
+      final FrameSlot[] localsAndOuters, final Object[] literals, final int maxStackDepth,
+      final FrameSlot frameOnStackMarker, final BackJump[] inlinedLoops,
       final Universe universe) {
     this.bytecodes = bytecodes;
     this.numLocals = numLocals;
     this.localsAndOuters = localsAndOuters;
     this.literalsAndConstants = literals;
     this.maxStackDepth = maxStackDepth;
+    this.inlinedLoops = inlinedLoops;
     this.universe = universe;
 
     this.frameOnStackMarker = frameOnStackMarker;
+
+    this.quickened = new Node[bytecodes.length];
   }
 
   @Override
   public Node deepCopy() {
     return new BytecodeLoopNode(
         bytecodes.clone(), numLocals, localsAndOuters, literalsAndConstants,
-        maxStackDepth, frameOnStackMarker, universe).initialize(sourceSection);
+        maxStackDepth, frameOnStackMarker, inlinedLoops, universe).initialize(sourceSection);
+  }
+
+  public String getNameOfLocal(final int idx) {
+    Local l = (Local) localsAndOuters[idx].getIdentifier();
+    return l.name.getString();
   }
 
   @ExplodeLoop
@@ -242,6 +279,22 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case PUSH_LOCAL_0: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getValue(localsAndOuters[0]);
+          break;
+        }
+        case PUSH_LOCAL_1: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getValue(localsAndOuters[1]);
+          break;
+        }
+        case PUSH_LOCAL_2: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getValue(localsAndOuters[2]);
+          break;
+        }
+
         case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
@@ -258,6 +311,48 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case PUSH_SELF: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getArguments()[0];
+          break;
+        }
+        case PUSH_ARG1: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getArguments()[1];
+          break;
+        }
+        case PUSH_ARG2: {
+          stackPointer += 1;
+          stack[stackPointer] = frame.getArguments()[2];
+          break;
+        }
+
+        case PUSH_FIELD_0: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
+          }
+
+          stackPointer += 1;
+          stack[stackPointer] =
+              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          break;
+        }
+
+        case PUSH_FIELD_1: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
+          }
+
+          stackPointer += 1;
+          stack[stackPointer] =
+              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          break;
+        }
+
         case PUSH_FIELD: {
           byte fieldIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
@@ -267,51 +362,75 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          SObject obj = (SObject) currentOrContext.getArguments()[0];
-
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(fieldIdx));
           }
 
-          Object value = ((AbstractReadFieldNode) node).read(obj);
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = ((AbstractReadFieldNode) node).read(
+              (SObject) currentOrContext.getArguments()[0]);
           break;
         }
 
         case PUSH_BLOCK: {
-          byte literalIdx = bytecodes[bytecodeIndex + 1];
-          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+          SMethod blockMethod = (SMethod) literalsAndConstants[bytecodes[bytecodeIndex + 1]];
 
-          Object value = new SBlock(blockMethod,
-              universe.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = new SBlock(blockMethod,
+              universe.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
           break;
         }
 
         case PUSH_BLOCK_NO_CTX: {
-          byte literalIdx = bytecodes[bytecodeIndex + 1];
-          SMethod blockMethod = (SMethod) literalsAndConstants[literalIdx];
+          SMethod blockMethod = (SMethod) literalsAndConstants[bytecodes[bytecodeIndex + 1]];
 
-          Object value = new SBlock(blockMethod,
-              universe.getBlockClass(blockMethod.getNumberOfArguments()), null);
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = new SBlock(blockMethod,
+              universe.getBlockClass(blockMethod.getNumberOfArguments()), null);
           break;
         }
 
         case PUSH_CONSTANT: {
-          byte literalIdx = bytecodes[bytecodeIndex + 1];
-
-          Object value = literalsAndConstants[literalIdx];
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = literalsAndConstants[bytecodes[bytecodeIndex + 1]];
+          break;
+        }
+
+        case PUSH_CONSTANT_0: {
+          stackPointer += 1;
+          stack[stackPointer] = literalsAndConstants[0];
+          break;
+        }
+
+        case PUSH_CONSTANT_1: {
+          stackPointer += 1;
+          stack[stackPointer] = literalsAndConstants[1];
+          break;
+        }
+
+        case PUSH_CONSTANT_2: {
+          stackPointer += 1;
+          stack[stackPointer] = literalsAndConstants[2];
+          break;
+        }
+
+        case PUSH_0: {
+          stackPointer += 1;
+          stack[stackPointer] = 0L;
+          break;
+        }
+
+        case PUSH_1: {
+          stackPointer += 1;
+          stack[stackPointer] = 1L;
+          break;
+        }
+
+        case PUSH_NIL: {
+          stackPointer += 1;
+          stack[stackPointer] = Nil.nilObject;
           break;
         }
 
@@ -324,10 +443,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           GlobalNode quickened =
               GlobalNode.create(globalName, universe, null).initialize(sourceSection);
           quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quickened);
-
-          // TODO: what's the correct semantics here? the outer or the closed self? normally,
-          // I'd expect the outer
-          // determineOuterContext(frame);
 
           stackPointer += 1;
           stack[stackPointer] = quickened.executeGeneric(frame);
@@ -357,6 +472,22 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case POP_LOCAL_0: {
+          frame.setObject(localsAndOuters[0], stack[stackPointer]);
+          stackPointer -= 1;
+          break;
+        }
+        case POP_LOCAL_1: {
+          frame.setObject(localsAndOuters[1], stack[stackPointer]);
+          stackPointer -= 1;
+          break;
+        }
+        case POP_LOCAL_2: {
+          frame.setObject(localsAndOuters[2], stack[stackPointer]);
+          stackPointer -= 1;
+          break;
+        }
+
         case POP_ARGUMENT: {
           byte argIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
@@ -366,10 +497,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Object value = stack[stackPointer];
+          currentOrContext.getArguments()[argIdx] = stack[stackPointer];
           stackPointer -= 1;
-
-          currentOrContext.getArguments()[argIdx] = value;
           break;
         }
 
@@ -382,21 +511,42 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Object value = stack[stackPointer];
-          stackPointer -= 1;
-
-          SObject obj = (SObject) currentOrContext.getArguments()[0];
-
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(fieldIdx));
           }
 
-          ((AbstractWriteFieldNode) node).write(obj, value);
+          ((AbstractWriteFieldNode) node).write((SObject) currentOrContext.getArguments()[0],
+              stack[stackPointer]);
+          stackPointer -= 1;
+          break;
+        }
+
+        case POP_FIELD_0: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(0));
+          }
+
+          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+              stack[stackPointer]);
+
+          stackPointer -= 1;
+          break;
+        }
+        case POP_FIELD_1: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(1));
+          }
+
+          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+              stack[stackPointer]);
+
+          stackPointer -= 1;
           break;
         }
 
@@ -540,6 +690,34 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           return frame.getArguments()[0];
         }
 
+        case RETURN_FIELD_0: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
+          }
+
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+        }
+        case RETURN_FIELD_1: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
+          }
+
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+        }
+        case RETURN_FIELD_2: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(2));
+          }
+
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+        }
+
         case INC: {
           Object top = stack[stackPointer];
           if (top instanceof Long) {
@@ -586,9 +764,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           SObject obj = (SObject) currentOrContext.getArguments()[0];
 
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -624,9 +799,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           SObject obj = (SObject) currentOrContext.getArguments()[0];
 
-          if (this.quickened == null) {
-            this.quickened = new Node[bytecodes.length];
-          }
           Node node = quickened[bytecodeIndex];
           if (node == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -826,7 +998,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 1;
 
           try {
-            assert quickened[bytecodeIndex] instanceof UnaryExpressionNode;
             UnaryExpressionNode node = (UnaryExpressionNode) quickened[bytecodeIndex];
             Object result = node.executeEvaluated(frame, rcvr);
 
@@ -856,7 +1027,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 2;
 
           try {
-            assert quickened[bytecodeIndex] instanceof BinaryExpressionNode;
             BinaryExpressionNode node = (BinaryExpressionNode) quickened[bytecodeIndex];
             Object result = node.executeEvaluated(frame, rcvr, arg);
 
@@ -887,7 +1057,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 3;
 
           try {
-            assert quickened[bytecodeIndex] instanceof TernaryExpressionNode;
             TernaryExpressionNode node = (TernaryExpressionNode) quickened[bytecodeIndex];
             Object result = node.executeEvaluated(frame, rcvr, arg1, arg2);
 
@@ -922,9 +1091,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
   private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,
       final Node quickenedNode) {
-    if (this.quickened == null) {
-      this.quickened = new Node[bytecodes.length];
-    }
     this.quickened[bytecodeIndex] = insert(quickenedNode);
     bytecodes[bytecodeIndex] = quickenedBytecode;
   }
@@ -1003,10 +1169,106 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     }
   }
 
+  private static final class Jump implements Comparable<Jump> {
+    final byte jumpBc;
+
+    final int originalTarget;
+    final int offsetIdx;
+
+    Jump(final byte bc, final int target, final int offsetIdx) {
+      this.jumpBc = bc;
+      this.originalTarget = target;
+      this.offsetIdx = offsetIdx;
+      assert target > 0;
+    }
+
+    @Override
+    public int compareTo(final Jump o) {
+      return this.originalTarget - o.originalTarget;
+    }
+
+    @Override
+    public String toString() {
+      return Bytecodes.getBytecodeName(jumpBc) + " -> " + originalTarget;
+    }
+  }
+
+  public static final class BackJump implements Comparable<BackJump> {
+    final int loopBeginIdx;
+    final int backwardsJumpIdx;
+
+    public BackJump(final int loopBeginIdx, final int backwardsJumpIdx) {
+      this.loopBeginIdx = loopBeginIdx;
+      this.backwardsJumpIdx = backwardsJumpIdx;
+    }
+
+    @Override
+    public int compareTo(final BackJump o) {
+      return this.loopBeginIdx - o.loopBeginIdx;
+    }
+
+    @Override
+    public String toString() {
+      return "Loop begin at: " + loopBeginIdx + " -> " + backwardsJumpIdx;
+    }
+  }
+
+  private static final class BackJumpPatch implements Comparable<BackJumpPatch> {
+    final int backwardsJumpIdx;
+    final int jumpTargetAddress;
+
+    BackJumpPatch(final int backwardsJumpIdx, final int jumpTargetAddress) {
+      this.backwardsJumpIdx = backwardsJumpIdx;
+      this.jumpTargetAddress = jumpTargetAddress;
+    }
+
+    @Override
+    public int compareTo(final BackJumpPatch o) {
+      return this.backwardsJumpIdx - o.backwardsJumpIdx;
+    }
+  }
+
+  private PriorityQueue<BackJump> createBackwardJumpQueue() {
+    PriorityQueue<BackJump> loops = new PriorityQueue<>();
+    if (inlinedLoops != null) {
+      for (BackJump l : inlinedLoops) {
+        loops.add(l);
+      }
+    }
+    return loops;
+  }
+
+  private void prepareBackJumpToCurrentAddress(final PriorityQueue<BackJump> backJumps,
+      final PriorityQueue<BackJumpPatch> backJumpsToPatch, final int i,
+      final BytecodeMethodGenContext mgenc) {
+    while (backJumps != null && !backJumps.isEmpty() && backJumps.peek().loopBeginIdx <= i) {
+      BackJump jump = backJumps.poll();
+      assert jump.loopBeginIdx == i : "we use the less or equal, but actually expect it to be strictly equal";
+      backJumpsToPatch.add(
+          new BackJumpPatch(jump.backwardsJumpIdx, mgenc.offsetOfNextInstruction()));
+    }
+  }
+
+  private void patchJumpToCurrentAddress(final int i, final PriorityQueue<Jump> jumps,
+      final BytecodeMethodGenContext mgenc) throws ParseError {
+    while (!jumps.isEmpty() && jumps.peek().originalTarget <= i) {
+      Jump j = jumps.poll();
+      assert j.originalTarget == i : "we use the less or equal, but actually expect it to be strictly equal";
+      mgenc.patchJumpOffsetToPointToNextInstruction(j.offsetIdx, null);
+    }
+  }
+
   private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel)
       throws ParseError {
+    PriorityQueue<Jump> jumps = new PriorityQueue<>();
+    PriorityQueue<BackJump> loops = createBackwardJumpQueue();
+    PriorityQueue<BackJumpPatch> backJumps = new PriorityQueue<>();
+
     int i = 0;
     while (i < bytecodes.length) {
+      prepareBackJumpToCurrentAddress(loops, backJumps, i, mgenc);
+      patchJumpToCurrentAddress(i, jumps, mgenc);
+
       byte bytecode = bytecodes[i];
       final int bytecodeLength = getBytecodeLength(bytecode);
 
@@ -1025,12 +1287,36 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_ARGUMENT:
-        case PUSH_FIELD: {
+        case PUSH_LOCAL_0:
+        case PUSH_LOCAL_1:
+        case PUSH_LOCAL_2: {
+          byte localIdx = (byte) (bytecode - PUSH_LOCAL_0);
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPush(mgenc);
+          break;
+        }
+
+        case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1), 1);
+          emitPUSHARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
           break;
+        }
+
+        case PUSH_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPUSHFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case PUSH_SELF:
+        case PUSH_ARG1:
+        case PUSH_ARG2:
+        case PUSH_FIELD_0:
+        case PUSH_FIELD_1: {
+          throw new IllegalStateException("contextLevel is 0, so, not expected to be here");
         }
 
         case PUSH_BLOCK:
@@ -1053,16 +1339,29 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case PUSH_CONSTANT: {
           byte literalIdx = bytecodes[i + 1];
           Object value = literalsAndConstants[literalIdx];
-          mgenc.addLiteralIfAbsent(value, null);
-          emitPUSHCONSTANT(mgenc, value);
+          emitPUSHCONSTANT(mgenc, value, null);
+          break;
+        }
+
+        case PUSH_CONSTANT_0:
+        case PUSH_CONSTANT_1:
+        case PUSH_CONSTANT_2: {
+          int literalIdx = bytecode - PUSH_CONSTANT_0;
+          emitPUSHCONSTANT(mgenc, literalsAndConstants[literalIdx], null);
+          break;
+        }
+
+        case PUSH_0:
+        case PUSH_1:
+        case PUSH_NIL: {
+          emit1(mgenc, bytecode, 1);
           break;
         }
 
         case PUSH_GLOBAL: {
           byte literalIdx = bytecodes[i + 1];
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
-          mgenc.addLiteralIfAbsent(globalName, null);
-          emitPUSHGLOBAL(mgenc, globalName);
+          emitPUSHGLOBAL(mgenc, globalName, null);
           break;
         }
 
@@ -1079,12 +1378,33 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case POP_ARGUMENT:
-        case POP_FIELD: {
+        case POP_LOCAL_0:
+        case POP_LOCAL_1:
+        case POP_LOCAL_2: {
+          byte localIdx = (byte) (bytecode - POP_LOCAL_0);
+          FrameSlot frameSlot = localsAndOuters[localIdx];
+          Local local = (Local) frameSlot.getIdentifier();
+          local.emitPop(mgenc);
+          break;
+        }
+
+        case POP_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
           emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1), -1);
           break;
+        }
+
+        case POP_FIELD: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emitPOPFIELD(mgenc, fieldIdx, (byte) (contextIdx - 1));
+          break;
+        }
+
+        case POP_FIELD_0:
+        case POP_FIELD_1: {
+          throw new IllegalStateException("contextLevel is 0, so, not expected to be here");
         }
 
         case SEND: {
@@ -1114,9 +1434,6 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           byte newCtx = (byte) (contextIdx - 1);
           if (newCtx == 0) {
             emitRETURNLOCAL(mgenc);
-            // emitted to avoid having jumps being broken
-            // but should not be executed
-            emitHALT(mgenc);
           } else {
             emitRETURNNONLOCAL(mgenc);
           }
@@ -1128,6 +1445,12 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
               "I wouldn't expect RETURN_SELF ever to be inlined, since it's only generated in the most outer methods");
         }
 
+        case RETURN_FIELD_0:
+        case RETURN_FIELD_1:
+        case RETURN_FIELD_2:
+          throw new IllegalStateException(
+              "I wouldn't expect RETURN_FIELD_n ever to be inlined, since it's only generated in the most outer methods");
+
         case INC:
         case DEC: {
           emit1(mgenc, bytecode, 0);
@@ -1138,32 +1461,39 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case INC_FIELD_PUSH: {
           byte fieldIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emit3(mgenc, bytecode, fieldIdx, (byte) (contextIdx - 1),
-              bytecode == INC_FIELD ? 0 : 1);
+          emit3(mgenc, bytecode, fieldIdx, (byte) (contextIdx - 1), 1);
           break;
         }
 
         case JUMP:
-        case JUMP_ON_TRUE_TOP_NIL:
-        case JUMP_ON_FALSE_TOP_NIL:
-        case JUMP_BACKWARDS:
         case JUMP2:
+        case JUMP_ON_TRUE_TOP_NIL:
         case JUMP2_ON_TRUE_TOP_NIL:
-        case JUMP2_ON_FALSE_TOP_NIL:
-        case JUMP2_BACKWARDS: {
-          byte offset1 = bytecodes[i + 1];
-          byte offset2 = bytecodes[i + 2];
-          emit3(mgenc, bytecode, offset1, offset2, 0);
+        case JUMP_ON_FALSE_TOP_NIL:
+        case JUMP2_ON_FALSE_TOP_NIL: {
+          int offset = getJumpOffset(bytecodes[i + 1], bytecodes[i + 2]);
+
+          int idxOffset = emit3WithDummy(mgenc, bytecode, 0);
+          jumps.add(new Jump(bytecode, offset + i, idxOffset));
           break;
         }
 
         case JUMP_ON_TRUE_POP:
-        case JUMP_ON_FALSE_POP:
         case JUMP2_ON_TRUE_POP:
+        case JUMP_ON_FALSE_POP:
         case JUMP2_ON_FALSE_POP: {
-          byte offset1 = bytecodes[i + 1];
-          byte offset2 = bytecodes[i + 2];
-          emit3(mgenc, bytecode, offset1, offset2, -1);
+          int offset = getJumpOffset(bytecodes[i + 1], bytecodes[i + 2]);
+
+          int idxOffset = emit3WithDummy(mgenc, bytecode, -1);
+          jumps.add(new Jump(bytecode, offset + i, idxOffset));
+          break;
+        }
+
+        case JUMP_BACKWARDS:
+        case JUMP2_BACKWARDS: {
+          BackJumpPatch backJumpPatch = backJumps.poll();
+          assert backJumpPatch.backwardsJumpIdx == i : "Jump should match with jump instruction";
+          mgenc.emitBackwardsJumpOffsetToTarget(backJumpPatch.jumpTargetAddress, null);
           break;
         }
 
@@ -1174,6 +1504,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
       i += bytecodeLength;
     }
+
+    assert jumps.isEmpty();
   }
 
   private void adapt(final ScopeAdaptationVisitor inliner,
@@ -1191,14 +1523,24 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
-        case PUSH_LOCAL: {
-          byte localIdx = bytecodes[i + 1];
+        case PUSH_LOCAL:
+        case PUSH_LOCAL_0:
+        case PUSH_LOCAL_1:
+        case PUSH_LOCAL_2: {
+          byte localIdx;
+          if (bytecode == PUSH_LOCAL) {
+            localIdx = bytecodes[i + 1];
+          } else {
+            localIdx = (byte) (bytecode - PUSH_LOCAL_0);
+          }
           FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
           Local local = (Local) frameSlot.getIdentifier();
           ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
 
-          bytecodes[i + 2] = (byte) se.contextLevel;
-          assert bytecodes[i + 2] >= 0;
+          if (bytecode == PUSH_LOCAL) {
+            bytecodes[i + 2] = (byte) se.contextLevel;
+            assert bytecodes[i + 2] >= 0;
+          }
           localsAndOuters[localIdx] = ((Local) se.var).getSlot();
           break;
         }
@@ -1208,8 +1550,19 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case PUSH_SELF:
+        case PUSH_ARG1:
+        case PUSH_ARG2: {
+          break;
+        }
+
         case PUSH_FIELD: {
           adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
+
+        case PUSH_FIELD_0:
+        case PUSH_FIELD_1: {
           break;
         }
 
@@ -1230,19 +1583,35 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case PUSH_CONSTANT:
+        case PUSH_CONSTANT_0:
+        case PUSH_CONSTANT_1:
+        case PUSH_CONSTANT_2:
+        case PUSH_0:
+        case PUSH_1:
+        case PUSH_NIL:
         case PUSH_GLOBAL:
         case POP: {
           break;
         }
 
-        case POP_LOCAL: {
-          byte localIdx = bytecodes[i + 1];
+        case POP_LOCAL:
+        case POP_LOCAL_0:
+        case POP_LOCAL_1:
+        case POP_LOCAL_2: {
+          byte localIdx;
+          if (bytecode == POP_LOCAL) {
+            localIdx = bytecodes[i + 1];
+          } else {
+            localIdx = (byte) (bytecode - POP_LOCAL_0);
+          }
           FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
           Local local = (Local) frameSlot.getIdentifier();
           ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
 
-          bytecodes[i + 2] = (byte) se.contextLevel;
-          assert bytecodes[i + 2] >= 0;
+          if (bytecode == POP_LOCAL) {
+            bytecodes[i + 2] = (byte) se.contextLevel;
+            assert bytecodes[i + 2] >= 0;
+          }
           localsAndOuters[localIdx] = ((Local) se.var).getSlot();
           break;
         }
@@ -1257,6 +1626,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           break;
         }
 
+        case POP_FIELD_0:
+        case POP_FIELD_1:
         case SEND:
         case SUPER_SEND:
         case RETURN_LOCAL: {
@@ -1276,6 +1647,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case RETURN_SELF:
+        case RETURN_FIELD_0:
+        case RETURN_FIELD_1:
+        case RETURN_FIELD_2:
         case INC:
         case DEC: {
           break;

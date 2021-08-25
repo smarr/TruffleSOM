@@ -31,6 +31,10 @@ import bd.inlining.nodes.Inlinable;
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
+import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
+import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SSymbol;
@@ -39,7 +43,7 @@ import trufflesom.vmobjects.SSymbol;
 @NodeInfo(cost = NodeCost.NONE)
 public abstract class LiteralNode extends ExpressionNode
     implements PreevaluatedExpression, Inlinable<MethodGenerationContext> {
-  public static LiteralNode create(final Object literal) {
+  public static ExpressionNode create(final Object literal) {
     if (literal instanceof SArray) {
       return new ArrayLiteralNode((SArray) literal);
     }
@@ -67,6 +71,18 @@ public abstract class LiteralNode extends ExpressionNode
 
     if (literal instanceof SSymbol) {
       return new SymbolLiteralNode((SSymbol) literal);
+    }
+
+    if (literal == Boolean.TRUE) {
+      return new TrueGlobalNode(null);
+    }
+
+    if (literal == Boolean.FALSE) {
+      return new FalseGlobalNode(null);
+    }
+
+    if (literal == Nil.nilObject) {
+      return new NilGlobalNode(null);
     }
 
     throw new IllegalAccessError(

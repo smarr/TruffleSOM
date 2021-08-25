@@ -26,6 +26,7 @@
 
 package trufflesom.compiler.bc;
 
+import static trufflesom.compiler.bc.BytecodeMethodGenContext.getJumpOffset;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
@@ -178,8 +179,13 @@ public class Disassembler {
       switch (bytecode) {
         case POP_LOCAL:
         case PUSH_LOCAL: {
-          Universe.errorPrintln("local: " + bytecodes.get(b + 1) + ", context: "
-              + bytecodes.get(b + 2));
+          int idx = bytecodes.get(b + 1);
+          String localName = "";
+          if (m != null) {
+            localName = " name: " + m.getNameOfLocal(idx);
+          }
+          Universe.errorPrintln("local: " + idx + ", context: "
+              + bytecodes.get(b + 2) + localName);
           break;
         }
 
@@ -248,10 +254,7 @@ public class Disassembler {
         case JUMP2_ON_FALSE_TOP_NIL:
         case JUMP2_ON_TRUE_POP:
         case JUMP2_ON_FALSE_POP: {
-          int offset1 = Byte.toUnsignedInt(bytecodes.get(b + 1));
-          int offset2 = Byte.toUnsignedInt(bytecodes.get(b + 2));
-
-          int offset = (offset2 << 8) + offset1;
+          int offset = getJumpOffset(bytecodes.get(b + 1), bytecodes.get(b + 2));
 
           Universe.errorPrintln(
               "(jump offset: " + offset + " -> jump target: " + (b + offset) + ")");
@@ -260,10 +263,7 @@ public class Disassembler {
 
         case JUMP_BACKWARDS:
         case JUMP2_BACKWARDS: {
-          int offset1 = Byte.toUnsignedInt(bytecodes.get(b + 1));
-          int offset2 = Byte.toUnsignedInt(bytecodes.get(b + 2));
-
-          int offset = (offset2 << 8) + offset1;
+          int offset = getJumpOffset(bytecodes.get(b + 1), bytecodes.get(b + 2));
 
           Universe.errorPrintln(
               "(jump offset: " + offset + " -> jump target: " + (b - offset) + ")");

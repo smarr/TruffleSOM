@@ -117,4 +117,12 @@ public final class Method extends Invokable {
     return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc, 0, true,
         getLanguage(SomLanguage.class));
   }
+
+  @Override
+  public boolean isTrivial() {
+    if (currentLexicalScope.isBlock()) {
+      return expressionOrSequence.isTrivialInBlock();
+    }
+    return expressionOrSequence.isTrivial();
+  }
 }

@@ -316,7 +316,7 @@ if args.java_args:
 if 'Havlak' in args.args:
   # double the standard stack size
   # we don't do it always, because...
-  JAVA_ARGS += ['-Xss2048k']
+  JAVA_ARGS += ['-Xss3072k']
   
 all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + [BOOT_CLASSPATH] + flags + SOM_ARGS + unknown_args + args.args
 

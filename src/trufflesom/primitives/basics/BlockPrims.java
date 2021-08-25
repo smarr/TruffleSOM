@@ -12,6 +12,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import bd.primitives.Primitive;
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;
@@ -54,12 +55,21 @@ public abstract class BlockPrims {
     public abstract Object executeEvaluated(SBlock receiver);
 
     @Specialization(
-        guards = "receiver.getMethod() == method",
+        guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
     public final Object doSBlock(final SBlock receiver,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver);
+    }
+
+    @Specialization(
+        guards = {"receiver.getMethod() == method", "method.isTrivial()"},
+        limit = "InlineCacheSize")
+    public final Object doTrivial(final SBlock receiver,
+        @Cached("receiver.getMethod()") final SInvokable method,
+        @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
+      return expr.doPreEvaluated(null, new Object[] {receiver});
     }
 
     @Specialization
@@ -84,12 +94,21 @@ public abstract class BlockPrims {
     public abstract Object executeEvaluated(SBlock receiver, Object arg);
 
     @Specialization(
-        guards = "receiver.getMethod() == method",
+        guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
     public final Object doSBlock(final SBlock receiver, final Object arg,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver, arg);
+    }
+
+    @Specialization(
+        guards = {"receiver.getMethod() == method", "method.isTrivial()"},
+        limit = "InlineCacheSize")
+    public final Object doTrivial(final SBlock receiver, final Object arg,
+        @Cached("receiver.getMethod()") final SInvokable method,
+        @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
+      return expr.doPreEvaluated(null, new Object[] {receiver, arg});
     }
 
     @Specialization
@@ -109,12 +128,21 @@ public abstract class BlockPrims {
     public abstract Object executeEvaluated(SBlock receiver, Object arg1, Object arg2);
 
     @Specialization(
-        guards = "receiver.getMethod() == method",
+        guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
     public final Object doSBlock(final SBlock receiver, final Object arg1, final Object arg2,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver, arg1, arg2);
+    }
+
+    @Specialization(
+        guards = {"receiver.getMethod() == method", "method.isTrivial()"},
+        limit = "InlineCacheSize")
+    public final Object doTrivial(final SBlock receiver, final Object arg1, final Object arg2,
+        @Cached("receiver.getMethod()") final SInvokable method,
+        @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
+      return expr.doPreEvaluated(null, new Object[] {receiver, arg1, arg2});
     }
 
     @Specialization

@@ -290,4 +290,17 @@ public class SObject extends SAbstractObject {
     StorageLocation location = getLocation(index);
     location.write(this, value);
   }
+
+  @Override
+  public String toString() {
+    CompilerAsserts.neverPartOfCompilation();
+    if (this == Nil.nilObject) {
+      return "nil";
+    }
+
+    if (clazz == null) {
+      return "an Object(clazz==null)";
+    }
+    return "a " + clazz.getName().getString();
+  }
 }

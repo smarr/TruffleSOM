@@ -1,7 +1,6 @@
 package trufflesom.compiler;
 
 import static trufflesom.compiler.Symbol.Assign;
-import static trufflesom.compiler.Symbol.Double;
 import static trufflesom.compiler.Symbol.EndBlock;
 import static trufflesom.compiler.Symbol.EndTerm;
 import static trufflesom.compiler.Symbol.Exit;
@@ -31,7 +30,6 @@ import static trufflesom.vm.SymbolTable.symArraySizePlaceholder;
 import static trufflesom.vm.SymbolTable.symAtPutMsg;
 import static trufflesom.vm.SymbolTable.symMinus;
 import static trufflesom.vm.SymbolTable.symNewMsg;
-import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symPlus;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symSuper;
@@ -47,6 +45,7 @@ import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.Universe;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -100,8 +99,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       }
       if (mgenc.isBlockMethod() && !mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
-        mgenc.addLiteralIfAbsent(symNil, this);
-        emitPUSHGLOBAL(mgenc, symNil);
+        emitPUSHCONSTANT(mgenc, Nil.nilObject, this);
       }
       emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
@@ -334,16 +332,13 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
           literalArray(mgenc);
         } else {
           SSymbol sym = literalSymbol();
-          mgenc.addLiteralIfAbsent(sym, this);
-          emitPUSHCONSTANT(mgenc, sym);
+          emitPUSHCONSTANT(mgenc, sym, this);
         }
         break;
       }
       case STString: {
         String str = literalString();
-
-        mgenc.addLiteralIfAbsent(str, this);
-        emitPUSHCONSTANT(mgenc, str);
+        emitPUSHCONSTANT(mgenc, str, this);
         break;
       }
       default: {
@@ -360,25 +355,22 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (sym == Integer) {
       lit = literalInteger(isNegative);
     } else {
-      assert sym == Double;
       lit = literalDouble(isNegative);
     }
 
-    mgenc.addLiteralIfAbsent(lit, this);
-    emitPUSHCONSTANT(mgenc, lit);
+    emitPUSHCONSTANT(mgenc, lit, this);
   }
 
   private void literalArray(final BytecodeMethodGenContext mgenc) throws ParseError {
     expect(Pound);
     expect(NewTerm);
 
-    mgenc.addLiteralIfAbsent(symArray, this);
     mgenc.addLiteralIfAbsent(symNewMsg, this);
     mgenc.addLiteralIfAbsent(symAtPutMsg, this);
     final byte arraySizeLiteralIndex = mgenc.addLiteral(symArraySizePlaceholder, this);
 
     // create empty array
-    emitPUSHGLOBAL(mgenc, symArray);
+    emitPUSHGLOBAL(mgenc, symArray, this);
     emitPUSHCONSTANT(mgenc, arraySizeLiteralIndex);
     emitSEND(mgenc, symNewMsg);
 
@@ -387,8 +379,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     while (sym != EndTerm) {
       emitDUP(mgenc); // dup the array for having it on the stack after the #at:put:
 
-      mgenc.addLiteralIfAbsent(i, this);
-      emitPUSHCONSTANT(mgenc, i);
+      emitPUSHCONSTANT(mgenc, i, this);
       literal(mgenc);
       emitSEND(mgenc, symAtPutMsg);
       emitPOP(mgenc);
@@ -456,8 +447,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (!mgenc.isFinished()) {
       if (!mgenc.hasBytecodes()) {
         // if the block is empty, we need to return nil
-        mgenc.addLiteralIfAbsent(symNil, this);
-        emitPUSHGLOBAL(mgenc, symNil);
+        emitPUSHCONSTANT(mgenc, Nil.nilObject, this);
       }
       emitRETURNLOCAL(mgenc);
       mgenc.markFinished();
@@ -480,8 +470,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
       if (mgenc.hasField(var)) {
         emitPUSHFIELD(mgenc, var);
       } else {
-        mgenc.addLiteralIfAbsent(var, this);
-        emitPUSHGLOBAL(mgenc, var);
+        emitPUSHGLOBAL(mgenc, var, this);
       }
     }
   }
