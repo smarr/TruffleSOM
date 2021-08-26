@@ -17,6 +17,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.NodeState;
@@ -161,6 +162,50 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
       this.slot = slot;
       this.descriptor = descriptor;
+    }
+
+    public boolean isBoolKind(final VirtualFrame frame) {
+      FrameSlotKind kind = descriptor.getFrameSlotKind(slot);
+      if (kind == FrameSlotKind.Boolean) {
+        return true;
+      }
+      if (kind == FrameSlotKind.Illegal) {
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Boolean);
+        return true;
+      }
+      return false;
+    }
+
+    public boolean isLongKind(final VirtualFrame frame) {
+      FrameSlotKind kind = descriptor.getFrameSlotKind(slot);
+      if (kind == FrameSlotKind.Long) {
+        return true;
+      }
+      if (kind == FrameSlotKind.Illegal) {
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Long);
+        return true;
+      }
+      return false;
+    }
+
+    public boolean isDoubleKind(final VirtualFrame frame) {
+      FrameSlotKind kind = descriptor.getFrameSlotKind(slot);
+      if (kind == FrameSlotKind.Double) {
+        return true;
+      }
+      if (kind == FrameSlotKind.Illegal) {
+        descriptor.setFrameSlotKind(slot, FrameSlotKind.Double);
+        return true;
+      }
+      return false;
+    }
+
+    public boolean isUninitialized(final VirtualFrame frame) {
+      return descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal;
+    }
+
+    public void makeObject() {
+      descriptor.setFrameSlotKind(slot, FrameSlotKind.Object);
     }
 
     @Override

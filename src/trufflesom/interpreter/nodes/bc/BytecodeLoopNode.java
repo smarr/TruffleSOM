@@ -128,6 +128,10 @@ import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.bc.LocalNode.LocalPop;
+import trufflesom.interpreter.nodes.bc.LocalNode.LocalPush;
+import trufflesom.interpreter.nodes.bc.LocalNodeFactory.LocalPopNodeGen;
+import trufflesom.interpreter.nodes.bc.LocalNodeFactory.LocalPushNodeGen;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -157,7 +161,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   @CompilationFinal(dimensions = 1) private final byte[]   bytecodes;
   @CompilationFinal(dimensions = 1) private final Object[] literalsAndConstants;
 
-  @CompilationFinal(dimensions = 1) private FrameSlot[] localsAndOuters;
+  @CompilationFinal(dimensions = 1) private Local[] localsAndOuters;
 
   @CompilationFinal(dimensions = 1) private final BackJump[] inlinedLoops;
 
@@ -172,7 +176,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   private final LexicalScope scope;
 
   public BytecodeLoopNode(final byte[] bytecodes, final int numLocals,
-      final FrameSlot[] localsAndOuters, final Object[] literals, final int maxStackDepth,
+      final Local[] localsAndOuters, final Object[] literals, final int maxStackDepth,
       final FrameSlot frameOnStackMarker, final BackJump[] inlinedLoops,
       final LexicalScope scope, final Universe universe) {
     this.bytecodes = bytecodes;
@@ -191,14 +195,13 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
   @Override
   public Node deepCopy() {
-    return new BytecodeLoopNode(
-        bytecodes.clone(), numLocals, localsAndOuters, literalsAndConstants,
-        maxStackDepth, frameOnStackMarker, inlinedLoops, scope, universe).initialize(
-            sourceSection);
+    return new BytecodeLoopNode(bytecodes.clone(), numLocals, localsAndOuters,
+        literalsAndConstants, maxStackDepth, frameOnStackMarker, inlinedLoops, scope,
+        universe).initialize(sourceSection);
   }
 
   public String getNameOfLocal(final int idx) {
-    Local l = (Local) localsAndOuters[idx].getIdentifier();
+    Local l = localsAndOuters[idx];
     return l.name.getString();
   }
 
@@ -283,6 +286,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case PUSH_LOCAL: {
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPushNodeGen.create();
+          }
           byte localIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
 
@@ -290,27 +296,41 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           if (contextIdx > 0) {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
-          FrameSlot slot = localsAndOuters[localIdx];
 
-          Object value = currentOrContext.getValue(slot);
           stackPointer += 1;
-          stack[stackPointer] = value;
+          stack[stackPointer] = ((LocalPush) quickened[bytecodeIndex]).execute(
+              currentOrContext, localsAndOuters[localIdx]);
           break;
         }
 
         case PUSH_LOCAL_0: {
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPushNodeGen.create();
+          }
+
           stackPointer += 1;
-          stack[stackPointer] = frame.getValue(localsAndOuters[0]);
+          stack[stackPointer] =
+              ((LocalPush) quickened[bytecodeIndex]).execute(frame, localsAndOuters[0]);
           break;
         }
         case PUSH_LOCAL_1: {
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPushNodeGen.create();
+          }
+
           stackPointer += 1;
-          stack[stackPointer] = frame.getValue(localsAndOuters[1]);
+          stack[stackPointer] =
+              ((LocalPush) quickened[bytecodeIndex]).execute(frame, localsAndOuters[1]);
           break;
         }
         case PUSH_LOCAL_2: {
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPushNodeGen.create();
+          }
+
           stackPointer += 1;
-          stack[stackPointer] = frame.getValue(localsAndOuters[2]);
+          stack[stackPointer] =
+              ((LocalPush) quickened[bytecodeIndex]).execute(frame, localsAndOuters[2]);
           break;
         }
 
@@ -474,6 +494,10 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
 
         case POP_LOCAL: {
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPopNodeGen.create();
+          }
+
           byte localIdx = bytecodes[bytecodeIndex + 1];
           byte contextIdx = bytecodes[bytecodeIndex + 2];
 
@@ -482,27 +506,39 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          FrameSlot slot = localsAndOuters[localIdx];
-
-          Object value = stack[stackPointer];
+          ((LocalPop) quickened[bytecodeIndex]).execute(currentOrContext,
+              localsAndOuters[localIdx], stack[stackPointer]);
           stackPointer -= 1;
-
-          currentOrContext.setObject(slot, value);
           break;
         }
 
         case POP_LOCAL_0: {
-          frame.setObject(localsAndOuters[0], stack[stackPointer]);
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPopNodeGen.create();
+          }
+
+          ((LocalPop) quickened[bytecodeIndex]).execute(frame, localsAndOuters[0],
+              stack[stackPointer]);
           stackPointer -= 1;
           break;
         }
         case POP_LOCAL_1: {
-          frame.setObject(localsAndOuters[1], stack[stackPointer]);
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPopNodeGen.create();
+          }
+
+          ((LocalPop) quickened[bytecodeIndex]).execute(frame, localsAndOuters[1],
+              stack[stackPointer]);
           stackPointer -= 1;
           break;
         }
         case POP_LOCAL_2: {
-          frame.setObject(localsAndOuters[2], stack[stackPointer]);
+          if (quickened[bytecodeIndex] == null) {
+            quickened[bytecodeIndex] = LocalPopNodeGen.create();
+          }
+
+          ((LocalPop) quickened[bytecodeIndex]).execute(frame, localsAndOuters[2],
+              stack[stackPointer]);
           stackPointer -= 1;
           break;
         }
@@ -1328,9 +1364,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case PUSH_LOCAL: {
           byte localIdx = bytecodes[i + 1];
-          FrameSlot frameSlot = localsAndOuters[localIdx];
-          Local local = (Local) frameSlot.getIdentifier();
-          local.emitPush(mgenc);
+          localsAndOuters[localIdx].emitPush(mgenc);
           break;
         }
 
@@ -1338,9 +1372,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case PUSH_LOCAL_1:
         case PUSH_LOCAL_2: {
           byte localIdx = (byte) (bytecode - PUSH_LOCAL_0);
-          FrameSlot frameSlot = localsAndOuters[localIdx];
-          Local local = (Local) frameSlot.getIdentifier();
-          local.emitPush(mgenc);
+          localsAndOuters[localIdx].emitPush(mgenc);
           break;
         }
 
@@ -1425,9 +1457,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case POP_LOCAL: {
           byte localIdx = bytecodes[i + 1];
-          FrameSlot frameSlot = localsAndOuters[localIdx];
-          Local local = (Local) frameSlot.getIdentifier();
-          local.emitPop(mgenc);
+          localsAndOuters[localIdx].emitPop(mgenc);
           break;
         }
 
@@ -1435,9 +1465,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case POP_LOCAL_1:
         case POP_LOCAL_2: {
           byte localIdx = (byte) (bytecode - POP_LOCAL_0);
-          FrameSlot frameSlot = localsAndOuters[localIdx];
-          Local local = (Local) frameSlot.getIdentifier();
-          local.emitPop(mgenc);
+          localsAndOuters[localIdx].emitPop(mgenc);
           break;
         }
 
@@ -1576,7 +1604,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   private void adapt(final ScopeAdaptationVisitor inliner,
       final boolean requiresChangesToContextLevels) {
     CompilerAsserts.neverPartOfCompilation("Not a run-time thing, a parse time thing...");
-    FrameSlot[] oldLocalsAndOuters = Arrays.copyOf(localsAndOuters, localsAndOuters.length);
+    Local[] oldLocalsAndOuters = Arrays.copyOf(localsAndOuters, localsAndOuters.length);
 
     int i = 0;
     while (i < bytecodes.length) {
@@ -1600,15 +1628,14 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } else {
             localIdx = (byte) (bytecode - PUSH_LOCAL_0);
           }
-          FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
-          Local local = (Local) frameSlot.getIdentifier();
-          ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
+          ScopeElement<ExpressionNode> se =
+              inliner.getAdaptedVar(oldLocalsAndOuters[localIdx]);
 
           if (bytecode == PUSH_LOCAL) {
             bytecodes[i + 2] = (byte) se.contextLevel;
             assert bytecodes[i + 2] >= 0;
           }
-          localsAndOuters[localIdx] = ((Local) se.var).getSlot();
+          localsAndOuters[localIdx] = (Local) se.var;
           break;
         }
 
@@ -1627,11 +1654,10 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
               ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(arg1);
 
               assert se.contextLevel == ctxLevel;
-              FrameSlot slot = ((Local) se.var).getSlot();
 
               int foundIdx = -1;
               for (int j = 0; j < localsAndOuters.length; j += 1) {
-                if (localsAndOuters[j] == slot) {
+                if (localsAndOuters[j].equals(se.var)) {
                   foundIdx = j;
                   break;
                 }
@@ -1642,7 +1668,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
                 localsAndOuters = Arrays.copyOf(localsAndOuters, localsAndOuters.length + 1);
               }
 
-              localsAndOuters[foundIdx] = slot;
+              localsAndOuters[foundIdx] = (Local) se.var;
               bytecodes[i] = Bytecodes.PUSH_LOCAL;
               bytecodes[i + 1] = (byte) foundIdx;
             } else {
@@ -1708,15 +1734,14 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } else {
             localIdx = (byte) (bytecode - POP_LOCAL_0);
           }
-          FrameSlot frameSlot = oldLocalsAndOuters[localIdx];
-          Local local = (Local) frameSlot.getIdentifier();
-          ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(local);
+          ScopeElement<ExpressionNode> se =
+              inliner.getAdaptedVar(oldLocalsAndOuters[localIdx]);
 
           if (bytecode == POP_LOCAL) {
             bytecodes[i + 2] = (byte) se.contextLevel;
             assert bytecodes[i + 2] >= 0;
           }
-          localsAndOuters[localIdx] = ((Local) se.var).getSlot();
+          localsAndOuters[localIdx] = (Local) se.var;
           break;
         }
 

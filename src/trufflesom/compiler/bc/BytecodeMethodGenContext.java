@@ -383,13 +383,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte[] bytecodes = getBytecodeArray();
 
     Object[] literalsArr = literals.toArray();
-    FrameSlot[] localsAndOuters = new FrameSlot[localAndOuterVars.size()];
-
-    int i = 0;
-    for (Local l : localAndOuterVars.values()) {
-      localsAndOuters[i] = l.getSlot();
-      i += 1;
-    }
+    Local[] localsAndOuters = localAndOuterVars.values().toArray(new Local[0]);
 
     FrameSlot frameOnStackMarker =
         throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
