@@ -2,7 +2,6 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
@@ -845,7 +844,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     byte[] bytecodes = methodToBytecodes(
         "test = ( true " + sel + " [ #val ] )");
 
-    dump();
     assertEquals(10, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
@@ -884,32 +882,61 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
   @Test
   public void testInliningOfToDo() {
     byte[] bytecodes = methodToBytecodes(
         "test = ( 1 to: 2 do: [:i | i ] )");
 
-    assertEquals(21, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.PUSH_CONSTANT,
-        -1, // TODO: Bytecodes.DUP_SECOND, // stack: Top[1, 2, 1]
-        -1, // TODO new BC(Bytecodes.jump_if_greater, 17), // consume only on jump
+        Bytecodes.PUSH_1,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.DUP_SECOND, // stack: Top[1, 2, 1]
+        new BC(Bytecodes.JUMP_IF_GREATER, 11), // consume only on jump
         Bytecodes.DUP,
-        new BC(Bytecodes.POP_LOCAL, 0, 0), // store the i into the local (arg becomes local
-                                           // after inlining)
-        new BC(Bytecodes.PUSH_LOCAL, 0, 0), // push the local on the stack as part of the
-                                            // block's code
+        Bytecodes.POP_LOCAL_0, // store the i into the local (arg becomes local
+                               // after inlining)
+        Bytecodes.PUSH_LOCAL_0, // push the local on the stack as part of the
+                                // block's code
         Bytecodes.POP, // cleanup after block.
         Bytecodes.INC, // increment top, the iteration counter
-        -1, // TODO: Bytecodes.nil_local,
-        new BC(Bytecodes.JUMP_BACKWARDS, 14), // jump back to the jump_if_greater bytecode
+        new BC(Bytecodes.JUMP_BACKWARDS, 8), // jump back to the jump_if_greater bytecode
         // jump_if_greater target
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
+  @Test
+  public void testInliningOfToDoWithNestedBlocks() {
+    byte[] bytecodes = methodToBytecodes(
+        "test = ( 1 to: 2 do: [:i |\n"
+            + "   i := i + 1.\n"
+            + "   [ i := i + 1 ].\n"
+            + "   true ifTrue: [ i := i + 1. ]\n"
+            + "] )");
+
+    check(bytecodes,
+        Bytecodes.PUSH_1,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.DUP_SECOND,
+        new BC(Bytecodes.JUMP_IF_GREATER, 25),
+        Bytecodes.DUP,
+        Bytecodes.POP_LOCAL_0,
+        Bytecodes.PUSH_LOCAL_0,
+        Bytecodes.INC,
+        Bytecodes.POP_LOCAL_0,
+        Bytecodes.PUSH_BLOCK,
+        Bytecodes.POP,
+        Bytecodes.PUSH_CONSTANT,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 7),
+        Bytecodes.PUSH_LOCAL_0,
+        Bytecodes.INC,
+        Bytecodes.DUP,
+        Bytecodes.POP_LOCAL_0,
+        Bytecodes.POP,
+        Bytecodes.INC,
+        new BC(Bytecodes.JUMP_BACKWARDS, 22),
+        Bytecodes.RETURN_SELF);
+  }
+
   @Test
   public void testToDoBlockBlockInlinedSelf() {
     addField("field");
@@ -923,34 +950,42 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "       l2 := l2 + 1 ] ] ]\n"
             + ")");
 
-    assertEquals(25, bytecodes.length);
+    assertEquals(19, bytecodes.length);
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.PUSH_CONSTANT,
-        -1, // TODO: Bytecodes.DUP_SECOND, // stack: Top[1, 2, 1]
-        -1, // TODO new BC(Bytecodes.jump_if_greater, 21), // consume only on jump
+        Bytecodes.PUSH_1,
+        Bytecodes.PUSH_CONSTANT_0,
+        Bytecodes.DUP_SECOND, // stack: Top[1, 2, 1]
+        new BC(Bytecodes.JUMP_IF_GREATER, 15), // consume only on jump
         Bytecodes.DUP,
-        new BC(Bytecodes.POP_LOCAL, 2, 0), // store the i into the local (arg becomes local
-                                           // after inlining)
-        new BC(Bytecodes.PUSH_LOCAL, 0, 0), // push the local on the stack as part of the
-                                            // block's code
+        Bytecodes.POP_LOCAL_2, // store the i into the local (arg becomes local
+                               // after inlining)
+        Bytecodes.PUSH_LOCAL_0, // push the local on the stack as part of the
+                                // block's code
         new BC(Bytecodes.PUSH_BLOCK, 2),
         Bytecodes.SEND,
         Bytecodes.POP, // cleanup after block.
         Bytecodes.INC, // increment top, the iteration counter
-        -1, // TODO: Bytecodes.nil_local,
-        new BC(Bytecodes.JUMP_BACKWARDS, 10), // jump back to the jump_if_greater bytecode
+        new BC(Bytecodes.JUMP_BACKWARDS, 12), // jump back to the jump_if_greater bytecode
         // jump_if_greater target
         Bytecodes.RETURN_SELF);
 
-    // TODO: fix bcIdx to the PUSH_BLOCK bc
-    SMethod blockMethod = (SMethod) mgenc.getConstant(-1);
-
+    // the #do: block
+    SMethod blockMethod = (SMethod) mgenc.getConstant(9);
     check(
         read(blockMethod.getInvokable(), "expressionOrSequence",
             BytecodeLoopNode.class).getBytecodeArray(),
-        t(6, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local b")),
-        Bytecodes.POP);
+        Bytecodes.PUSH_ARG1,
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 15),
+
+        // read a (it's now a local, because we inlined the block
+        new BC(Bytecodes.PUSH_LOCAL, 1, 1),
+
+        Bytecodes.POP,
+        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "read local l2"),
+        Bytecodes.INC,
+        Bytecodes.DUP,
+        new BC(Bytecodes.POP_LOCAL, 0, 1, "store local l2"),
+        Bytecodes.RETURN_LOCAL);
   }
 
   private void returnFieldTrivial(final String fieldName, final byte bytecode) {

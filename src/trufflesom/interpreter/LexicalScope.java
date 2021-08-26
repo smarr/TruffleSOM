@@ -159,6 +159,13 @@ public final class LexicalScope implements Scope<LexicalScope, Method> {
     return variables;
   }
 
+  public Variable getVariable(final int idx, final int ctxLevel) {
+    if (ctxLevel == 0) {
+      return variables[idx];
+    }
+    return outerScope.getVariable(idx, ctxLevel - 1);
+  }
+
   @Override
   public LexicalScope getScope(final Method method) {
     if (method.equals(this.method)) {

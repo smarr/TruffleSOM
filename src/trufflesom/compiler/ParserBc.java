@@ -279,25 +279,34 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     boolean isSuperSend = superSend;
     superSend = false;
 
+    int numArgs = 0;
     StringBuilder kw = new StringBuilder();
     do {
       kw.append(keyword());
       formula(mgenc);
+      numArgs += 1;
     } while (sym == Keyword);
 
     String kwStr = kw.toString();
 
     if (!isSuperSend) {
-      if (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, true)) ||
-          ("ifFalse:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, false)) ||
-          ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, true)) ||
-          ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, false)) ||
-          ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, true)) ||
-          ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false)) ||
-          ("or:".equals(kwStr) && mgenc.inlineAndOr(this, true)) ||
-          ("and:".equals(kwStr) && mgenc.inlineAndOr(this, false))) {
-        // all done
-        return;
+      if (numArgs == 1) {
+        if (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, true)) ||
+            ("ifFalse:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, false)) ||
+            ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, true)) ||
+            ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false)) ||
+            ("or:".equals(kwStr) && mgenc.inlineAndOr(this, true)) ||
+            ("and:".equals(kwStr) && mgenc.inlineAndOr(this, false))) {
+          // all done
+          return;
+        }
+      } else if (numArgs == 2) {
+        if (("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, true)) ||
+            ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, false)) ||
+            ("to:do:".equals(kwStr) && mgenc.inlineToDo(this))) {
+          // all done
+          return;
+        }
       }
     }
 

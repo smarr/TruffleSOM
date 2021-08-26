@@ -118,6 +118,16 @@ public final class Method extends Invokable {
         getLanguage(SomLanguage.class));
   }
 
+  public void mergeScopeInto(final MethodGenerationContext mgenc, final SMethod toBeInlined) {
+    mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
+  }
+
+  public ExpressionNode inlineScopeAlreadyMerged(final MethodGenerationContext mgenc,
+      final SMethod toBeInlined) {
+    return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc, 0, true,
+        getLanguage(SomLanguage.class));
+  }
+
   @Override
   public boolean isTrivial() {
     if (currentLexicalScope.isBlock()) {

@@ -2,6 +2,7 @@ package trufflesom.tests;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static trufflesom.vm.SymbolTable.symSelf;
@@ -24,6 +25,7 @@ import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
@@ -463,5 +465,40 @@ public class AstInliningTests extends TruffleTestSetup {
     IntToDoInlinedLiteralsNode toDo =
         (IntToDoInlinedLiteralsNode) read(seq, "expressions", 0);
     assertEquals("i", toDo.getIndexName());
+  }
+
+  @Test
+  public void testInliningOfToDoWithNestedBlocks() {
+    SequenceNode seq = (SequenceNode) parseMethod(
+        "test = ( 1 to: 2 do: [:i |\n"
+            + "   i := i + 1.\n"
+            + "   [ i := i + 1 ].\n"
+            + "   true ifTrue: [ i := i + 1. ]\n"
+            + "] )");
+    IntToDoInlinedLiteralsNode toDo =
+        (IntToDoInlinedLiteralsNode) read(seq, "expressions", 0);
+    assertEquals("i", toDo.getIndexName());
+
+    SequenceNode loopSeq = read(toDo, "body", SequenceNode.class);
+    BlockNodeWithContext block = (BlockNodeWithContext) read(loopSeq, "expressions", 1);
+    IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(loopSeq, "expressions", 2);
+
+    LocalVariableWriteNode writeI = (LocalVariableWriteNode) read(loopSeq, "expressions", 0);
+    IntIncrementNode incNode = (IntIncrementNode) writeI.getExp();
+    LocalVariableReadNode readI = (LocalVariableReadNode) incNode.getRcvr();
+    assertSame(writeI.getSlotIdentifier(), readI.getSlotIdentifier());
+
+    NonLocalVariableWriteNode writeI2 = read(block.getMethod().getInvokable(),
+        "expressionOrSequence", NonLocalVariableWriteNode.class);
+    incNode = (IntIncrementNode) writeI2.getExp();
+    NonLocalVariableReadNode readI2 = (NonLocalVariableReadNode) incNode.getRcvr();
+    assertSame(writeI.getSlotIdentifier(), writeI2.getSlotIdentifier());
+    assertSame(writeI2.getSlotIdentifier(), readI2.getSlotIdentifier());
+
+    writeI = read(ifNode, "bodyNode", LocalVariableWriteNode.class);
+    incNode = (IntIncrementNode) writeI.getExp();
+    readI = (LocalVariableReadNode) incNode.getRcvr();
+    assertSame(writeI.getSlotIdentifier(), readI.getSlotIdentifier());
+    assertSame(writeI.getSlotIdentifier(), writeI2.getSlotIdentifier());
   }
 }

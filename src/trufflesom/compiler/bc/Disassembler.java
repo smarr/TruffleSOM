@@ -32,11 +32,13 @@ import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_IF_GREATER;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_IF_GREATER;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -249,11 +251,13 @@ public class Disassembler {
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
+        case JUMP_IF_GREATER:
         case JUMP2:
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL:
         case JUMP2_ON_TRUE_POP:
-        case JUMP2_ON_FALSE_POP: {
+        case JUMP2_ON_FALSE_POP:
+        case JUMP2_IF_GREATER: {
           int offset = getJumpOffset(bytecodes.get(b + 1), bytecodes.get(b + 2));
 
           Universe.errorPrintln(

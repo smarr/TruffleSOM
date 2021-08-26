@@ -26,6 +26,7 @@ package trufflesom.compiler.bc;
 
 import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
+import static trufflesom.interpreter.bc.Bytecodes.DUP_SECOND;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
 import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
@@ -33,6 +34,7 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_IF_GREATER;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
@@ -92,6 +94,14 @@ public final class BytecodeGenerator {
 
   public static void emitHALT(final BytecodeMethodGenContext mgenc) {
     emit1(mgenc, HALT, 0);
+  }
+
+  public static void emitDUP(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, DUP, 1);
+  }
+
+  public static void emitDUPSECOND(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, DUP_SECOND, 1);
   }
 
   public static void emitINC(final BytecodeMethodGenContext mgenc) {
@@ -161,10 +171,6 @@ public final class BytecodeGenerator {
       return;
     }
     throw new IllegalArgumentException("RETURN_FIELD bytecode does not support idx=" + idx);
-  }
-
-  public static void emitDUP(final BytecodeMethodGenContext mgenc) {
-    emit1(mgenc, DUP, 1);
   }
 
   public static void emitPUSHBLOCK(final BytecodeMethodGenContext mgenc,
@@ -367,6 +373,13 @@ public final class BytecodeGenerator {
   public static void emitJumpWithOffset(final BytecodeMethodGenContext mgenc,
       final byte offset1, final byte offset2) {
     emit3(mgenc, offset2 == 0 ? JUMP : JUMP2, offset1, offset2, 0);
+  }
+
+  public static int emitJumpIfGreaterWithDummyOffset(final BytecodeMethodGenContext mgenc) {
+    emit1(mgenc, JUMP_IF_GREATER, 0);
+    int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
+    mgenc.addBytecodeArgument((byte) 0);
+    return idx;
   }
 
   public static void emitJumpBackwardsWithOffset(final BytecodeMethodGenContext mgenc,

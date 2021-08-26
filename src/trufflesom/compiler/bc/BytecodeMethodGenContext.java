@@ -1,9 +1,14 @@
 package trufflesom.compiler.bc;
 
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDUPSECOND;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpBackwardsWithOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpIfGreaterWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.INC;
@@ -69,6 +74,7 @@ import trufflesom.compiler.Symbol;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method;
 import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -326,7 +332,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     literals.set(index, newVal);
   }
 
-  private byte getPositionIn(final Local local, final LinkedHashMap<SSymbol, Local> map) {
+  private byte getPositionIn(final Variable local, final LinkedHashMap<SSymbol, Local> map) {
     byte i = 0;
     for (Local l : map.values()) {
       if (l.equals(local)) {
@@ -335,6 +341,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       i += 1;
     }
     return -1;
+  }
+
+  public byte getVarIndex(final Variable var) {
+    return getPositionIn(var, localAndOuterVars);
   }
 
   /**
@@ -388,7 +398,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     return new BytecodeLoopNode(
         bytecodes, locals.size(), localsAndOuters, literalsArr, maxStackDepth,
-        frameOnStackMarker, loops, universe);
+        frameOnStackMarker, loops, currentScope, universe);
   }
 
   public byte[] getBytecodeArray() {
@@ -954,6 +964,50 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToSkipPushTrue, parser);
 
     resetLastBytecodeBuffer();
+
+    return true;
+  }
+
+  public boolean inlineToDo(final ParserBc parser) throws ParseError {
+    // HACK: We do assume that the receiver on the stack is a integer,
+    // HACK: similar to the other inlined messages.
+    // HACK: We don't support anything but integer at the moment.
+    byte pushBlockCandidate = lastBytecodeIsOneOf(0, PUSH_BLOCK_BYTECODES);
+    if (pushBlockCandidate == INVALID) {
+      return false;
+    }
+
+    assert getBytecodeLength(pushBlockCandidate) == 2;
+    byte blockLiteralIdx = bytecode.get(bytecode.size() - 1);
+    SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+    Method toBeInlinedMethod = (Method) toBeInlined.getInvokable();
+
+    removeLastBytecodes(1);
+
+    isCurrentlyInliningBlock = true;
+
+    emitDUPSECOND(this);
+
+    int loopBeginIdx = offsetOfNextInstruction();
+    int jumpOffsetIdxToEnd = emitJumpIfGreaterWithDummyOffset(this);
+
+    emitDUP(this);
+
+    toBeInlinedMethod.mergeScopeInto(this, toBeInlined);
+
+    Argument blockArg = (Argument) toBeInlinedMethod.getScope().getVariables()[1];
+
+    emitPOPLOCAL(this, getVarIndex(blockArg), (byte) 0);
+
+    toBeInlinedMethod.inlineScopeAlreadyMerged(this, toBeInlined);
+
+    emitPOP(this);
+    emitINC(this);
+
+    emitBackwardsJumpOffsetToTarget(loopBeginIdx, parser);
+    patchJumpOffsetToPointToNextInstruction(jumpOffsetIdxToEnd, parser);
+
+    isCurrentlyInliningBlock = false;
 
     return true;
   }
