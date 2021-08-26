@@ -4,8 +4,8 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emit1;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3WithDummy;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
@@ -1615,7 +1615,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         case PUSH_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte ctxLevel = bytecodes[i + 2];
-          if (ctxLevel == inliner.contextLevel) {
+          if (ctxLevel == inliner.contextLevel && requiresChangesToContextLevels) {
             if (argIdx == 1) {
               // at this point, because of the context level,
               // we know we refer to a block that got inlined
@@ -1648,9 +1648,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             } else {
               throw new RuntimeException("This should really never happen");
             }
-          } else {
-            adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+            break;
           }
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
           break;
         }
 
