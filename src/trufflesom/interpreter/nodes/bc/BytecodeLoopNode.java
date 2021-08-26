@@ -269,6 +269,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case PUSH_LOCAL: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPushNodeGen.create();
           }
           byte localIdx = bytecodes[bytecodeIndex + 1];
@@ -287,6 +288,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case PUSH_LOCAL_0: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPushNodeGen.create();
           }
 
@@ -297,6 +299,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
         case PUSH_LOCAL_1: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPushNodeGen.create();
           }
 
@@ -307,6 +310,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
         case PUSH_LOCAL_2: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPushNodeGen.create();
           }
 
@@ -477,6 +481,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case POP_LOCAL: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPopNodeGen.create();
           }
 
@@ -496,6 +501,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case POP_LOCAL_0: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPopNodeGen.create();
           }
 
@@ -506,6 +512,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
         case POP_LOCAL_1: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPopNodeGen.create();
           }
 
@@ -516,6 +523,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
         }
         case POP_LOCAL_2: {
           if (quickened[bytecodeIndex] == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             quickened[bytecodeIndex] = LocalPopNodeGen.create();
           }
 
