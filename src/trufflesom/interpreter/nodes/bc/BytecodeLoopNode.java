@@ -259,6 +259,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
       CompilerAsserts.partialEvaluationConstant(bytecodeIndex);
       CompilerAsserts.partialEvaluationConstant(bytecode);
+      CompilerDirectives.ensureVirtualized(stack);
 
       switch (bytecode) {
         case HALT: {
@@ -970,9 +971,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case Q_SEND: {
           AbstractMessageSendNode node = (AbstractMessageSendNode) quickened[bytecodeIndex];
-
-          int numberOfArguments =
-              node.getInvocationIdentifier().getNumberOfSignatureArguments();
+          int numberOfArguments = node.getNumberOfArguments();
 
           Object[] callArgs = new Object[numberOfArguments];
           System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
