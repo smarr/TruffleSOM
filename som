@@ -289,7 +289,7 @@ if not args.interpreter and args.trace_splitting:
 if not args.interpreter and args.only_compile:
     flags.append("-Dpolyglot.engine.CompileOnly=%s" % args.only_compile)
 if args.visual_vm:
-    flags += ['-agentpath:/Users/smarr/Downloads/visualvm_138/profiler/lib/deployed/jdk16/mac/libprofilerinterface.jnilib=/Users/smarr/Downloads/visualvm_138/profiler/lib,5140']
+    flags += ['-agentpath:/Users/smarr/Downloads/visualvm_205/visualvm/lib/deployed/jdk16/mac/libprofilerinterface.jnilib=/Users/smarr/Downloads/visualvm_205/visualvm/lib,5140']
 if args.flight_recorder:
     flags += ['-XX:+UnlockCommercialFeatures', '-XX:+FlightRecorder',
               '-XX:StartFlightRecording=delay=10s,duration=10d,name=fr-recording2,filename=fr-recording2.jfr,settings=profile']
