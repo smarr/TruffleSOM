@@ -974,15 +974,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           int numberOfArguments = node.getNumberOfArguments();
 
           Object[] callArgs = new Object[numberOfArguments];
-          System.arraycopy(stack, stackPointer - numberOfArguments + 1, callArgs, 0,
-              numberOfArguments);
-          stackPointer -= numberOfArguments;
+          stackPointer = stackPointer - numberOfArguments + 1;
+          System.arraycopy(stack, stackPointer, callArgs, 0, numberOfArguments);
 
           try {
-            Object result = node.doPreEvaluated(frame, callArgs);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
+            stack[stackPointer] = node.doPreEvaluated(frame, callArgs);
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
             stackPointer = -1;
@@ -990,27 +986,18 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
-            Object result =
+            stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
           }
-
           break;
         }
 
         case Q_SEND_1: {
           Object rcvr = stack[stackPointer];
 
-          stackPointer -= 1;
-
           try {
             UnaryExpressionNode node = (UnaryExpressionNode) quickened[bytecodeIndex];
-            Object result = node.executeEvaluated(frame, rcvr);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
+            stack[stackPointer] = node.executeEvaluated(frame, rcvr);
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
             stackPointer = -1;
@@ -1018,13 +1005,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
-            Object result =
+            stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
           }
-
           break;
         }
 
@@ -1032,14 +1015,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           Object rcvr = stack[stackPointer - 1];
           Object arg = stack[stackPointer];
 
-          stackPointer -= 2;
+          stackPointer -= 1;
 
           try {
             BinaryExpressionNode node = (BinaryExpressionNode) quickened[bytecodeIndex];
-            Object result = node.executeEvaluated(frame, rcvr, arg);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
+            stack[stackPointer] = node.executeEvaluated(frame, rcvr, arg);
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
             stackPointer = -1;
@@ -1047,13 +1027,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
-            Object result =
+            stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
           }
-
           break;
         }
 
@@ -1062,14 +1038,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           Object arg1 = stack[stackPointer - 1];
           Object arg2 = stack[stackPointer];
 
-          stackPointer -= 3;
+          stackPointer -= 2;
 
           try {
             TernaryExpressionNode node = (TernaryExpressionNode) quickened[bytecodeIndex];
-            Object result = node.executeEvaluated(frame, rcvr, arg1, arg2);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
+            stack[stackPointer] = node.executeEvaluated(frame, rcvr, arg1, arg2);
           } catch (RestartLoopException e) {
             nextBytecodeIndex = 0;
             stackPointer = -1;
@@ -1077,13 +1050,9 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
-            Object result =
+            stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
-
-            stackPointer += 1;
-            stack[stackPointer] = result;
           }
-
           break;
         }
 
