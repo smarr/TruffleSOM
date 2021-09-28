@@ -1,6 +1,7 @@
 stages:
   - build-and-test
   - benchmark
+  - benchmark-completion
 
 variables:
   PYTHONUNBUFFERED: "true"
@@ -13,19 +14,87 @@ before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
 
-build_and_test_job:
+test:
   stage: build-and-test
-  tags: [benchmarks, infinity]
+  tags: [yuria]
   script:
     - ${ANT} tests native-obj-storage-test native-tests
     - ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives core-lib/SomSom/tests/SomSomTests.som
 
-benchmark_job:
-  stage: benchmark
-  tags: [benchmarks, infinity]
-  allow_failure: true
+build-native-interp-ast:
+  stage: build-and-test
+  tags: [yuria2]
   script:
     - ${ANT} compile native-ast -Dno.jit=true
+    - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
+    
+    # Package and Upload
+    - lz4 som-native-interp-ast som-native-interp-ast.lz4
+    - |
+      sftp tmp-artifacts << EOF
+        -mkdir incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-ast.lz4 incoming/${CI_PIPELINE_ID}/
+      EOF
+
+build-native-interp-bc:
+  stage: build-and-test
+  tags: [yuria3]
+  script:
     - ${ANT} compile native-bc  -Dno.jit=true
-    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf
+    - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
+    
+    - lz4 som-native-interp-bc som-native-interp-bc.lz4
+    - |
+      sftp tmp-artifacts << EOF
+        -mkdir incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-bc.lz4 incoming/${CI_PIPELINE_ID}/
+      EOF
+
+
+benchmark-y1:
+  stage: benchmark
+  tags: [yuria]
+  script:
+    - ${ANT} compile
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    
+    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
+    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+
+    # Run Benchmarks
+    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
+
+benchmark-y2:
+  stage: benchmark
+  tags: [yuria2]
+  script:
+    - ${ANT} compile
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    
+    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
+    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+
+    # Run Benchmarks
+    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
+
+benchmark-y3:
+  stage: benchmark
+  tags: [yuria3]
+  script:
+    - ${ANT} compile
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    
+    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
+    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+
+    # Run Benchmarks
+    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
+
+report-completion:
+  stage: benchmark-completion
+  tags: [yuria]
+  script:
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --report-completion rebench.conf
