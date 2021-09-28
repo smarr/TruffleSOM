@@ -18,14 +18,14 @@ public abstract class ArgumentReadNode {
     protected final Argument arg;
 
     public LocalArgumentReadNode(final Argument arg) {
-      assert arg.index >= 0;
+      assert arg.index >= 2;
       this.arg = arg;
       this.argumentIndex = arg.index;
     }
 
     /** Only to be used in primitives. */
     public LocalArgumentReadNode(final boolean useInPrim, final int idx) {
-      assert idx >= 0;
+      assert idx >= 2;
       this.arg = null;
       this.argumentIndex = idx;
       assert useInPrim;
@@ -48,6 +48,86 @@ public abstract class ArgumentReadNode {
 
     public boolean isSelfRead() {
       return argumentIndex == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ")";
+    }
+  }
+
+  public static class LocalArgument1ReadNode extends ExpressionNode
+      implements Invocation<SSymbol> {
+
+    protected final Argument arg;
+
+    public LocalArgument1ReadNode(final Argument arg) {
+      this.arg = arg;
+    }
+
+    /** Only to be used in primitives. */
+    public LocalArgument1ReadNode(final boolean useInPrim) {
+      this.arg = null;
+      assert useInPrim;
+    }
+
+    @Override
+    public final Object executeGeneric(final VirtualFrame frame) {
+      return frame.getArgument1();
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(arg, this, 0);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return arg.name;
+    }
+
+    public boolean isSelfRead() {
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ")";
+    }
+  }
+
+  public static class LocalArgument2ReadNode extends ExpressionNode
+      implements Invocation<SSymbol> {
+
+    protected final Argument arg;
+
+    public LocalArgument2ReadNode(final Argument arg) {
+      this.arg = arg;
+    }
+
+    /** Only to be used in primitives. */
+    public LocalArgument2ReadNode(final boolean useInPrim) {
+      this.arg = null;
+      assert useInPrim;
+    }
+
+    @Override
+    public final Object executeGeneric(final VirtualFrame frame) {
+      return frame.getArgument2();
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(arg, this, 0);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return arg.name;
+    }
+
+    public boolean isSelfRead() {
+      return false;
     }
 
     @Override

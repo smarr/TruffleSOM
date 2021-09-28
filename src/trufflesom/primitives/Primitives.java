@@ -47,6 +47,8 @@ import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Primitive;
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.specialized.AndBoolMessageNodeFactory;
@@ -140,7 +142,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
 
-    ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0), signature)
+    ExpressionNode primNode = EmptyPrim.create(new LocalArgument1ReadNode(true), signature)
                                        .initialize(sourceSection, false);
     Primitive primMethodNode =
         new Primitive(signature.getString(), sourceSection, primNode,
@@ -220,7 +222,13 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     MethodGenerationContext mgen = new MethodGenerationContext(lang.getUniverse(), probe);
     ExpressionNode[] args = new ExpressionNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
-      args[i] = new LocalArgumentReadNode(true, i).initialize(source);
+      if (i == 0) {
+        args[i] = new LocalArgument1ReadNode(true).initialize(source);
+      } else if (i == 1) {
+        args[i] = new LocalArgument2ReadNode(true).initialize(source);
+      } else {
+        args[i] = new LocalArgumentReadNode(true, i).initialize(source);
+      }
     }
 
     ExpressionNode primNode =

@@ -80,11 +80,12 @@ public final class MessageSendNode {
   }
 
   public abstract static class AbstractMessageSendNode extends ExpressionNode
-      implements PreevaluatedExpression, Invocation<SSymbol> {
+      implements PreevaluatedExpression, Invocation<SSymbol> {}
 
+  public abstract static class AbstractNaryMessageSendNode extends AbstractMessageSendNode {
     @Children protected final ExpressionNode[] argumentNodes;
 
-    protected AbstractMessageSendNode(final ExpressionNode[] arguments) {
+    protected AbstractNaryMessageSendNode(final ExpressionNode[] arguments) {
       this.argumentNodes = arguments;
     }
 
@@ -106,7 +107,7 @@ public final class MessageSendNode {
   }
 
   public abstract static class AbstractUninitializedMessageSendNode
-      extends AbstractMessageSendNode {
+      extends AbstractNaryMessageSendNode {
 
     protected final SSymbol  selector;
     protected final Universe universe;
@@ -167,7 +168,14 @@ public final class MessageSendNode {
       return result;
     }
 
-    private GenericMessageSendNode makeGenericSend() {
+    private AbstractMessageSendNode makeGenericSend() {
+      if (argumentNodes.length == 2) {
+        BinaryMessageSendNode send =
+            new BinaryMessageSendNode(selector, argumentNodes[0], argumentNodes[1],
+                new UninitializedDispatchNode(selector, universe)).initialize(sourceSection);
+        return replace(send);
+      }
+
       GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
           new UninitializedDispatchNode(selector, universe)).initialize(sourceSection);
       return replace(send);
@@ -202,7 +210,7 @@ public final class MessageSendNode {
   // classified as 'value' sends in the OMOP branch. Is that a problem?
 
   public static final class GenericMessageSendNode
-      extends AbstractMessageSendNode {
+      extends AbstractNaryMessageSendNode {
 
     private final SSymbol selector;
 
@@ -243,7 +251,58 @@ public final class MessageSendNode {
     }
   }
 
-  public static final class SuperSendNode extends AbstractMessageSendNode {
+  public static final class BinaryMessageSendNode extends AbstractMessageSendNode {
+    @Child private ExpressionNode       rcvr;
+    @Child private ExpressionNode       arg;
+    @Child private AbstractDispatchNode dispatchNode;
+
+    private final SSymbol selector;
+
+    private BinaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
+        final ExpressionNode arg, final AbstractDispatchNode dispatchNode) {
+      this.rcvr = rcvr;
+      this.arg = arg;
+      this.dispatchNode = dispatchNode;
+      this.selector = selector;
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      Object rcvr = this.rcvr.executeGeneric(frame);
+      Object arg = this.arg.executeGeneric(frame);
+
+      return dispatchNode.executeBinary(frame, rcvr, arg);
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame,
+        final Object[] arguments) {
+      return dispatchNode.executeDispatch(frame, arguments);
+    }
+
+    public void replaceDispatchListHead(
+        final GenericDispatchNode replacement) {
+      CompilerAsserts.neverPartOfCompilation();
+      dispatchNode.replace(replacement);
+    }
+
+    @Override
+    public String toString() {
+      return "GMsgSend(" + selector.getString() + ")";
+    }
+
+    @Override
+    public NodeCost getCost() {
+      return Cost.getCost(dispatchNode);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return selector;
+    }
+  }
+
+  public static final class SuperSendNode extends AbstractNaryMessageSendNode {
     private final SSymbol selector;
 
     @Child private DirectCallNode cachedSuperMethod;
@@ -272,7 +331,7 @@ public final class MessageSendNode {
     }
   }
 
-  private static final class SuperExprNode extends AbstractMessageSendNode {
+  private static final class SuperExprNode extends AbstractNaryMessageSendNode {
     private final SSymbol                 selector;
     @Child private PreevaluatedExpression expr;
 

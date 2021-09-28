@@ -7,6 +7,8 @@ import com.oracle.truffle.api.source.SourceSection;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
@@ -51,6 +53,12 @@ public final class SNodeFactory {
   public static ExpressionNode createArgumentRead(final Argument variable,
       final int contextLevel, final SourceSection source) {
     if (contextLevel == 0) {
+      if (variable.index == 0) {
+        return new LocalArgument1ReadNode(variable).initialize(source);
+      }
+      if (variable.index == 1) {
+        return new LocalArgument2ReadNode(variable).initialize(source);
+      }
       return new LocalArgumentReadNode(variable).initialize(source);
     } else {
       return new NonLocalArgumentReadNode(variable, contextLevel).initialize(source);

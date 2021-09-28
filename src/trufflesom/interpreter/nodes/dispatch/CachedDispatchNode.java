@@ -33,4 +33,18 @@ public final class CachedDispatchNode extends AbstractCachedDispatchNode {
       return replace(nextInCache).executeDispatch(frame, arguments);
     }
   }
+
+  @Override
+  public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        return cachedMethod.call2(rcvr, arg);
+      } else {
+        return nextInCache.executeBinary(frame, rcvr, arg);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeBinary(frame, rcvr, arg);
+    }
+  }
 }

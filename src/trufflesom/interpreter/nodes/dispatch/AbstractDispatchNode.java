@@ -12,6 +12,8 @@ public abstract class AbstractDispatchNode extends Node implements DispatchChain
 
   public abstract Object executeDispatch(VirtualFrame frame, Object[] arguments);
 
+  public abstract Object executeBinary(VirtualFrame frame, Object rcvr, Object arg);
+
   public abstract static class AbstractCachedDispatchNode
       extends AbstractDispatchNode {
 

@@ -30,6 +30,8 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
@@ -177,10 +179,11 @@ public abstract class FieldNode extends ExpressionNode {
 
     public static ExpressionNode createForMethod(final int fieldIdx, final Argument self,
         final Argument val) {
+      assert val.index == 1;
       FieldWriteNode node = FieldWriteNodeGen.create(
           fieldIdx,
-          new LocalArgumentReadNode(self),
-          new LocalArgumentReadNode(val));
+          new LocalArgument1ReadNode(self),
+          new LocalArgument2ReadNode(val));
       return new WriteAndReturnSelf(node);
     }
   }
