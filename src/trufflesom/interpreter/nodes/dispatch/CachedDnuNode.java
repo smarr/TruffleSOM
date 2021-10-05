@@ -62,4 +62,18 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
         rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments)};
     return cachedMethod.call(argsArr);
   }
+
+  @Override
+  public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        return performDnu(new Object[] {rcvr, arg}, rcvr);
+      } else {
+        return nextInCache.executeBinary(frame, rcvr, arg);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeBinary(frame, rcvr, arg);
+    }
+  }
 }

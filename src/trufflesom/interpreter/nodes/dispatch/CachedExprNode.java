@@ -42,4 +42,18 @@ public class CachedExprNode extends AbstractDispatchNode {
   public final int lengthOfDispatchChain() {
     return 1 + nextInCache.lengthOfDispatchChain();
   }
+
+  @Override
+  public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        return expr.doPreEvaluated(frame, new Object[] {rcvr, arg});
+      } else {
+        return nextInCache.executeBinary(frame, rcvr, arg);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeBinary(frame, rcvr, arg);
+    }
+  }
 }

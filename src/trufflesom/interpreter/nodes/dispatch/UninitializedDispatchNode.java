@@ -26,6 +26,10 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   }
 
   private AbstractDispatchNode specialize(final Object[] arguments) {
+    return specializeObj(arguments[0]);
+  }
+
+  private AbstractDispatchNode specializeObj(final Object rcvr) {
     // Determine position in dispatch node chain, i.e., size of inline cache
     Node i = this;
     int chainDepth = 0;
@@ -35,7 +39,6 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     }
     AbstractDispatchNode first = (AbstractDispatchNode) i;
 
-    Object rcvr = arguments[0];
     assert rcvr != null;
 
     if (rcvr instanceof SObject) {
@@ -92,5 +95,11 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   @Override
   public int lengthOfDispatchChain() {
     return 0;
+  }
+
+  @Override
+  public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
+    return specializeObj(rcvr).executeBinary(frame, rcvr, arg);
   }
 }

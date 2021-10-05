@@ -21,4 +21,10 @@ public final class GenericBlockDispatchNode extends AbstractDispatchNode {
   public int lengthOfDispatchChain() {
     return 1000;
   }
+
+  @Override
+  public Object executeBinary(final VirtualFrame frame, final Object arg0, final Object arg) {
+    SBlock rcvr = (SBlock) arg0;
+    return call.call2(rcvr.getMethod().getCallTarget(), arg0, arg);
+  }
 }

@@ -65,4 +65,26 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
   public int lengthOfDispatchChain() {
     return 1000;
   }
+
+  @Override
+  public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+    SClass rcvrClass = classNode.executeEvaluated(rcvr);
+    SInvokable method = rcvrClass.lookupInvokable(selector);
+
+    CallTarget target;
+    Object[] args;
+
+    if (method != null) {
+      target = method.getCallTarget();
+      args = new Object[] {rcvr, arg};
+    } else {
+      // TODO: actually do use node
+      CompilerDirectives.transferToInterpreter();
+      // Won't use DNU caching here, because it is already a megamorphic node
+      SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(new Object[] {rcvr, arg});
+      args = new Object[] {rcvr, selector, argumentsArray};
+      target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+    }
+    return call.call(target, args);
+  }
 }
