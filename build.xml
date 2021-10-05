@@ -193,8 +193,16 @@
     </target>
 
     <target name="ideinit" depends="core-lib">
-        <exec executable="${mx.cmd}" dir="${compiler.dir}">
+        <exec executable="${mx.cmd}" dir="${svm.dir}">
           <env key="JAVA_HOME" value="${jvmci.home}" />
+          <!-- <env key="DYNAMIC_IMPORTS" value="/substratevm,/truffle,/tools,/sdk,/compiler" /> -->
+          <!-- <env key="DYNAMIC_IMPORTS" value="/sdk" /> -->
+          <env key="FORCE_BASH_LAUNCHERS" value="true" />
+          <env key="DISABLE_LIBPOLYGLOT" value="true" />
+          <env key="EXCLUDE_COMPONENTS" value="svmag,nju,nic,ni,nil" />
+          <!-- <env key="EXCLUDE_COMPONENTS" value="svmag,nju,nic,ni,nil,LibGraal" /> -->
+          <env key="MX_BUILD_EXPLODED" value="true" />
+          <env key="LINKY_LAYOUT" value="*.jar" />
           <arg value="--dynamicimports"/>
           <arg value="../sdk"/>
           <arg value="eclipseinit"/>
