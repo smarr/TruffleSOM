@@ -99,7 +99,7 @@ public abstract class BlockPrims {
     public final Object doSBlock(final SBlock receiver, final Object arg,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
-      return call.call(receiver, arg);
+      return call.call2(receiver, arg);
     }
 
     @Specialization(
@@ -114,7 +114,7 @@ public abstract class BlockPrims {
     @Specialization
     @Megamorphic
     public final Object generic(final SBlock receiver, final Object arg) {
-      return receiver.getMethod().invoke(new Object[] {receiver, arg});
+      return receiver.getMethod().invoke2(receiver, arg);
     }
   }
 

@@ -5,7 +5,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Argument;
-import trufflesom.interpreter.SArguments;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -33,7 +32,7 @@ public abstract class ArgumentReadNode {
 
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
-      return SArguments.arg(frame, argumentIndex);
+      return frame.getArguments()[argumentIndex];
     }
 
     @Override
@@ -162,7 +161,7 @@ public abstract class ArgumentReadNode {
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
       Object value = valueNode.executeGeneric(frame);
-      SArguments.setArg(frame, argumentIndex, value);
+      frame.getArguments()[argumentIndex] = value;
       return value;
     }
 
@@ -180,13 +179,78 @@ public abstract class ArgumentReadNode {
     public NonLocalArgumentReadNode(final Argument arg, final int contextLevel) {
       super(contextLevel);
       assert contextLevel > 0;
+      assert arg.index >= 2;
       this.arg = arg;
       this.argumentIndex = arg.index;
     }
 
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
-      return SArguments.arg(determineContext(frame), argumentIndex);
+      return determineContext(frame).getArguments()[argumentIndex];
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(arg, this, contextLevel);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return arg.name;
+    }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ", ctx: " + contextLevel + ")";
+    }
+  }
+
+  public static class NonLocalArgument1ReadNode extends ContextualNode
+      implements Invocation<SSymbol> {
+
+    protected final Argument arg;
+
+    public NonLocalArgument1ReadNode(final Argument arg, final int contextLevel) {
+      super(contextLevel);
+      assert contextLevel > 0;
+      this.arg = arg;
+    }
+
+    @Override
+    public final Object executeGeneric(final VirtualFrame frame) {
+      return determineContext(frame).getArgument1();
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      inliner.updateRead(arg, this, contextLevel);
+    }
+
+    @Override
+    public SSymbol getInvocationIdentifier() {
+      return arg.name;
+    }
+
+    @Override
+    public String toString() {
+      return "ArgRead(" + arg.name + ", ctx: " + contextLevel + ")";
+    }
+  }
+
+  public static class NonLocalArgument2ReadNode extends ContextualNode
+      implements Invocation<SSymbol> {
+
+    protected final Argument arg;
+
+    public NonLocalArgument2ReadNode(final Argument arg, final int contextLevel) {
+      super(contextLevel);
+      assert contextLevel > 0;
+      this.arg = arg;
+    }
+
+    @Override
+    public final Object executeGeneric(final VirtualFrame frame) {
+      return determineContext(frame).getArgument2();
     }
 
     @Override
@@ -224,7 +288,7 @@ public abstract class ArgumentReadNode {
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
       Object value = valueNode.executeGeneric(frame);
-      SArguments.setArg(determineContext(frame), argumentIndex, value);
+      determineContext(frame).getArguments()[argumentIndex] = value;
       return value;
     }
 

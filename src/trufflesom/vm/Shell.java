@@ -87,7 +87,7 @@ public class Shell {
           SInvokable shellMethod = myClass.lookupInvokable(symbolFor("run:"));
 
           // Invoke the run method
-          it = shellMethod.invoke(new Object[] {myObject, it});
+          it = shellMethod.invoke2(myObject, it);
         }
       } catch (Exception e) {
         Universe.errorPrintln("Caught exception: " + e.getMessage());

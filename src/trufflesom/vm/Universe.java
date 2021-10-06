@@ -360,8 +360,7 @@ public final class Universe implements IdProvider<SSymbol> {
     // Lookup the initialize invokable on the system class
     SInvokable initialize = systemClass.lookupInvokable(symbolFor("initialize:"));
 
-    return initialize.invoke(new Object[] {systemObject,
-        SArray.create(arrStorage)});
+    return initialize.invoke2(systemObject, SArray.create(arrStorage));
   }
 
   @TruffleBoundary

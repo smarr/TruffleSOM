@@ -38,7 +38,6 @@ import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
-import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.Association;
@@ -145,7 +144,7 @@ public abstract class GlobalNode extends ExpressionNode
       CompilerAsserts.neverPartOfCompilation();
 
       // find outer self
-      Object self = SArguments.rcvr(frame);
+      Object self = frame.getArgument1();
       while (self instanceof SBlock) {
         self = ((SBlock) self).getOuterSelf();
       }

@@ -38,6 +38,9 @@ public abstract class SAbstractObject implements TruffleObject {
     // Lookup the invokable
     SInvokable invokable = Types.getClassOf(arguments[0], universe).lookupInvokable(selector);
 
+    if (arguments.length == 2) {
+      return invokable.invoke2(arguments[0], arguments[1]);
+    }
     return invokable.invoke(arguments);
   }
 

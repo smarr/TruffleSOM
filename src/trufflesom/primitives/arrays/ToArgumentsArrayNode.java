@@ -7,7 +7,6 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 
-import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -34,13 +33,13 @@ public abstract class ToArgumentsArrayNode extends ExpressionNode {
   public final Object[] doEmptyArray(final SArray somArray, final Object rcvr) {
     Object[] result = new Object[somArray.getEmptyStorage() + 1];
     Arrays.fill(result, Nil.nilObject);
-    result[SArguments.RCVR_IDX] = rcvr;
+    result[0] = rcvr;
     return result;
   }
 
   private Object[] addRcvrToObjectArray(final Object rcvr, final Object[] storage) {
     Object[] argsArray = new Object[storage.length + 1];
-    argsArray[SArguments.RCVR_IDX] = rcvr;
+    argsArray[0] = rcvr;
     System.arraycopy(storage, 0, argsArray, 1, storage.length);
     return argsArray;
   }

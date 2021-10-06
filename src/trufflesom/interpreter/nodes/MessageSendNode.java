@@ -277,7 +277,7 @@ public final class MessageSendNode {
     @Override
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return dispatchNode.executeDispatch(frame, arguments);
+      return dispatchNode.executeBinary(frame, arguments[0], arguments[1]);
     }
 
     public void replaceDispatchListHead(

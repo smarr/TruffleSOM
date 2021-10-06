@@ -11,6 +11,8 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument2ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -61,6 +63,12 @@ public final class SNodeFactory {
       }
       return new LocalArgumentReadNode(variable).initialize(source);
     } else {
+      if (variable.index == 0) {
+        return new NonLocalArgument1ReadNode(variable, contextLevel).initialize(source);
+      }
+      if (variable.index == 1) {
+        return new NonLocalArgument2ReadNode(variable, contextLevel).initialize(source);
+      }
       return new NonLocalArgumentReadNode(variable, contextLevel).initialize(source);
     }
   }
