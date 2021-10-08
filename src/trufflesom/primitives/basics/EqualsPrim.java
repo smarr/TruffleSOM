@@ -82,7 +82,7 @@ public abstract class EqualsPrim extends BinarySystemOperation {
 
   @Specialization
   public final boolean doSSymbol(final SSymbol receiver, final String argument) {
-    return receiver.getString().equals(argument);
+    return false;
   }
 
   @Specialization
