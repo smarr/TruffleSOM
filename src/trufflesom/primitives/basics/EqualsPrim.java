@@ -61,18 +61,23 @@ public abstract class EqualsPrim extends BinarySystemOperation {
   @Specialization
   @TruffleBoundary
   public final boolean doBigInteger(final BigInteger left, final long right) {
-    return doBigInteger(left, BigInteger.valueOf(right));
+    return left.compareTo(BigInteger.valueOf(right)) == 0;
   }
 
   @Specialization
   @TruffleBoundary
   public final boolean doLong(final long left, final BigInteger right) {
-    return doBigInteger(BigInteger.valueOf(left), right);
+    return BigInteger.valueOf(left).compareTo(right) == 0;
   }
 
   @Specialization
   public final boolean doDouble(final double left, final long right) {
-    return doDouble(left, (double) right);
+    return left == right;
+  }
+
+  @Specialization
+  public final boolean doDouble(final double left, final BigInteger right) {
+    return left == right.doubleValue();
   }
 
   @Specialization
