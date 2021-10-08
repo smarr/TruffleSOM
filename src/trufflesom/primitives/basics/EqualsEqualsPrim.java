@@ -107,6 +107,11 @@ public abstract class EqualsEqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
+  public final boolean doString(final String receiver, final SSymbol argument) {
+    return false;
+  }
+
+  @Specialization
   public final boolean doString(final String receiver, final SObject argument) {
     return false;
   }
