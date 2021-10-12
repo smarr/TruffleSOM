@@ -48,6 +48,24 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
     }
   }
 
+  @Specialization
+  public final double doDoubleToDo(final double receiver, final double limit,
+      final SBlock block) {
+    try {
+      if (receiver <= limit) {
+        blockNode.executeDispatch(new Object[] {block, receiver});
+      }
+      for (double i = receiver + 1.0; i <= limit; i += 1.0) {
+        blockNode.executeDispatch(new Object[] {block, i});
+      }
+    } finally {
+      if (CompilerDirectives.inInterpreter() && (limit - receiver) > 0) {
+        reportLoopCount((int) (limit - receiver));
+      }
+    }
+    return receiver;
+  }
+
   private void reportLoopCount(final long count) {
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");
     Node current = getParent();

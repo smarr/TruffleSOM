@@ -51,4 +51,9 @@ public abstract class GreaterThanPrim extends ArithmeticPrim {
   public final boolean doDouble(final double left, final long right) {
     return doDouble(left, (double) right);
   }
+
+  @Specialization
+  public final boolean doDouble(final double left, final BigInteger right) {
+    return left > right.doubleValue();
+  }
 }

@@ -93,6 +93,34 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
     }
   }
 
+  @Specialization
+  public final double doDoubleToDo(final VirtualFrame frame, final double from,
+      final double to) {
+    loopIndex.setKind(FrameSlotKind.Double);
+    if (CompilerDirectives.inInterpreter()) {
+      try {
+        doLoopingDouble(frame, from, to);
+      } finally {
+        reportLoopCount((int) (to - from));
+      }
+    } else {
+      doLoopingDouble(frame, from, to);
+    }
+    return from;
+  }
+
+  protected final void doLoopingDouble(final VirtualFrame frame, final double from,
+      final double to) {
+    if (from <= to) {
+      frame.setDouble(loopIndex, from);
+      body.executeGeneric(frame);
+    }
+    for (double i = from + 1.0; i <= to; i += 1.0) {
+      frame.setDouble(loopIndex, i);
+      body.executeGeneric(frame);
+    }
+  }
+
   private void reportLoopCount(final long count) {
     if (count < 1) {
       return;
