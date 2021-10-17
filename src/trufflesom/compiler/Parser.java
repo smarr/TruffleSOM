@@ -250,7 +250,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       ExpressionNode methodBody = method(mgenc);
 
       cgenc.addInstanceMethod(
-          mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection));
+          mgenc.assemble(methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection),
+          this);
     }
 
     if (accept(Separator)) {
@@ -263,7 +264,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
         ExpressionNode methodBody = method(mgenc);
 
         cgenc.addClassMethod(mgenc.assemble(
-            methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection));
+            methodBody, lastMethodsSourceSection, lastFullMethodsSourceSection),
+            this);
       }
     }
     expect(EndTerm);
