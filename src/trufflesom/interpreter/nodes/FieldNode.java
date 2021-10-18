@@ -32,7 +32,7 @@ import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
-import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentRead;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
@@ -134,7 +134,7 @@ public abstract class FieldNode extends ExpressionNode {
       ExpressionNode val = getValue();
       // can't be a NonLocalArgumentReadNode, then it wouldn't be a setter
       // can't be a super access either. So that's why we have the == compare here
-      return val.getClass() == LocalArgumentReadNode.class;
+      return val instanceof LocalArgumentRead;
     }
 
     @Override

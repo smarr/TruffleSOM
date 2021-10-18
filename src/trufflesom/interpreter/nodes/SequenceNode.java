@@ -27,7 +27,7 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
 import bd.primitives.nodes.PreevaluatedExpression;
-import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
 
 
 @NodeInfo(cost = NodeCost.NONE)
@@ -59,8 +59,7 @@ public final class SequenceNode extends ExpressionNode {
     }
 
     // and the last/second one is the self return
-    if (expressions[1].getClass() == LocalArgumentReadNode.class
-        && ((LocalArgumentReadNode) expressions[1]).isSelfRead()) {
+    if (expressions[1].getClass() == LocalArgument1ReadNode.class) {
       return expressions[0].isTrivialInSequence();
     }
 
