@@ -78,10 +78,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doUncached(final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("create()") final IndirectCallNode call) {
     SInvokable invokable = Types.getClassOf(receiver, universe).lookupInvokable(selector);
-
-    Object[] arguments = {receiver};
-
-    return call.call(invokable.getCallTarget(), arguments);
+    return call.call1(invokable.getCallTarget(), receiver);
   }
 
   @TruffleBoundary

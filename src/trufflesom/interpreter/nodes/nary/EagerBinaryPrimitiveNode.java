@@ -6,7 +6,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 
@@ -56,8 +56,8 @@ public final class EagerBinaryPrimitiveNode extends EagerPrimitive {
     return executeEvaluated(frame, arguments[0], arguments[1]);
   }
 
-  private GenericMessageSendNode makeGenericSend() {
-    GenericMessageSendNode node = MessageSendNode.createGeneric(selector,
+  private AbstractMessageSendNode makeGenericSend() {
+    AbstractMessageSendNode node = MessageSendNode.createGeneric(selector,
         new ExpressionNode[] {receiver, argument}, sourceSection, universe);
     return replace(node);
   }

@@ -60,7 +60,7 @@ public abstract class BlockPrims {
     public final Object doSBlock(final SBlock receiver,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
-      return call.call(receiver);
+      return call.call1(receiver);
     }
 
     @Specialization(
@@ -133,7 +133,7 @@ public abstract class BlockPrims {
     public final Object doSBlock(final SBlock receiver, final Object arg1, final Object arg2,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
-      return call.call(receiver, arg1, arg2);
+      return call.call3(receiver, arg1, arg2);
     }
 
     @Specialization(

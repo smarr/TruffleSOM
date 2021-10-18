@@ -49,6 +49,8 @@ import trufflesom.interpreter.Primitive;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument3ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument4ReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.specialized.AndBoolMessageNodeFactory;
@@ -226,6 +228,10 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
         args[i] = new LocalArgument1ReadNode(true).initialize(source);
       } else if (i == 1) {
         args[i] = new LocalArgument2ReadNode(true).initialize(source);
+      } else if (i == 2) {
+        args[i] = new LocalArgument3ReadNode(true).initialize(source);
+      } else if (i == 3) {
+        args[i] = new LocalArgument4ReadNode(true).initialize(source);
       } else {
         args[i] = new LocalArgumentReadNode(true, i).initialize(source);
       }

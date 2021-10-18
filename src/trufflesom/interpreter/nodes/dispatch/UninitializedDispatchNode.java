@@ -8,7 +8,7 @@ import com.oracle.truffle.api.nodes.Node;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -81,7 +81,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     // thus, this callsite is considered to be megaprophic, and we generalize
     // it.
     GenericDispatchNode genericReplacement = new GenericDispatchNode(selector, universe);
-    GenericMessageSendNode sendNode = (GenericMessageSendNode) first.getParent();
+    AbstractMessageSendNode sendNode = (AbstractMessageSendNode) first.getParent();
     sendNode.replaceDispatchListHead(genericReplacement);
     return genericReplacement;
   }
@@ -98,8 +98,28 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
   }
 
   @Override
+  public Object executeUnary(final VirtualFrame frame, final Object rcvr) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
+    return specializeObj(rcvr).executeUnary(frame, rcvr);
+  }
+
+  @Override
   public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
     transferToInterpreterAndInvalidate("Initialize a dispatch node.");
     return specializeObj(rcvr).executeBinary(frame, rcvr, arg);
+  }
+
+  @Override
+  public Object executeTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
+    return specializeObj(rcvr).executeTernary(frame, rcvr, arg1, arg2);
+  }
+
+  @Override
+  public Object executeQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
+    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
+    return specializeObj(rcvr).executeQuat(frame, rcvr, arg1, arg2, arg3);
   }
 }

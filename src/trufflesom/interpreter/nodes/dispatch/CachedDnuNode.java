@@ -14,6 +14,7 @@ import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCached
 import trufflesom.primitives.basics.SystemPrims.PrintStackTracePrim;
 import trufflesom.vm.Universe;
 import trufflesom.vm.VmSettings;
+import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
@@ -58,22 +59,90 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
           + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
     }
 
-    Object[] argsArr = new Object[] {
-        rcvr, selector, SArguments.getArgumentsWithoutReceiver(arguments)};
-    return cachedMethod.call(argsArr);
+    return cachedMethod.call(rcvr, selector,
+        SArguments.getArgumentsWithoutReceiver(arguments));
+  }
+
+  @Override
+  public Object executeUnary(final VirtualFrame frame, final Object rcvr) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        if (VmSettings.PrintStackTraceOnDNU) {
+          CompilerDirectives.transferToInterpreter();
+          PrintStackTracePrim.printStackTrace(0, getSourceSection());
+          Universe.errorPrintln("Lookup of " + selector + " failed in "
+              + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
+        }
+        return cachedMethod.call3(rcvr, selector, SArray.create(0));
+      } else {
+        return nextInCache.executeUnary(frame, rcvr);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeUnary(frame, rcvr);
+    }
   }
 
   @Override
   public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
     try {
       if (guard.entryMatches(rcvr)) {
-        return performDnu(new Object[] {rcvr, arg}, rcvr);
+        if (VmSettings.PrintStackTraceOnDNU) {
+          CompilerDirectives.transferToInterpreter();
+          PrintStackTracePrim.printStackTrace(0, getSourceSection());
+          Universe.errorPrintln("Lookup of " + selector + " failed in "
+              + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
+        }
+        return cachedMethod.call3(rcvr, selector, SArray.create(new Object[] {arg}));
       } else {
         return nextInCache.executeBinary(frame, rcvr, arg);
       }
     } catch (InvalidAssumptionException e) {
       CompilerDirectives.transferToInterpreter();
       return replace(nextInCache).executeBinary(frame, rcvr, arg);
+    }
+  }
+
+  @Override
+  public Object executeTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        if (VmSettings.PrintStackTraceOnDNU) {
+          CompilerDirectives.transferToInterpreter();
+          PrintStackTracePrim.printStackTrace(0, getSourceSection());
+          Universe.errorPrintln("Lookup of " + selector + " failed in "
+              + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
+        }
+        return cachedMethod.call3(rcvr, selector, SArray.create(new Object[] {arg1, arg2}));
+      } else {
+        return nextInCache.executeTernary(frame, rcvr, arg1, arg2);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeTernary(frame, rcvr, arg1, arg2);
+    }
+  }
+
+  @Override
+  public Object executeQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        if (VmSettings.PrintStackTraceOnDNU) {
+          CompilerDirectives.transferToInterpreter();
+          PrintStackTracePrim.printStackTrace(0, getSourceSection());
+          Universe.errorPrintln("Lookup of " + selector + " failed in "
+              + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
+        }
+        return cachedMethod.call3(rcvr, selector,
+            SArray.create(new Object[] {arg1, arg2, arg3}));
+      } else {
+        return nextInCache.executeQuat(frame, rcvr, arg1, arg2, arg3);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeQuat(frame, rcvr, arg1, arg2, arg3);
     }
   }
 }

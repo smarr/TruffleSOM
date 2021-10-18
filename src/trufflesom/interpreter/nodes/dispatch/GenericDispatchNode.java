@@ -38,21 +38,17 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
     SClass rcvrClass = classNode.executeEvaluated(rcvr);
     SInvokable method = rcvrClass.lookupInvokable(selector);
 
-    CallTarget target;
-    Object[] args;
-
     if (method != null) {
-      target = method.getCallTarget();
-      args = arguments;
+      CallTarget target = method.getCallTarget();
+      return call.call(target, arguments);
     } else {
       // TODO: actually do use node
       CompilerDirectives.transferToInterpreter();
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
-      args = new Object[] {arguments[0], selector, argumentsArray};
-      target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      CallTarget target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      return call.call3(target, arguments[0], selector, argumentsArray);
     }
-    return call.call(target, args);
   }
 
   @Override
@@ -67,24 +63,75 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
   }
 
   @Override
+  public Object executeUnary(final VirtualFrame frame, final Object rcvr) {
+    SClass rcvrClass = classNode.executeEvaluated(rcvr);
+    SInvokable method = rcvrClass.lookupInvokable(selector);
+
+    if (method != null) {
+      CallTarget target = method.getCallTarget();
+      return call.call1(target, rcvr);
+    } else {
+      CompilerDirectives.transferToInterpreter();
+      // Won't use DNU caching here, because it is already a megamorphic node
+      SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(new Object[] {rcvr});
+      CallTarget target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      return call.call3(target, rcvr, selector, argumentsArray);
+    }
+  }
+
+  @Override
   public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
     SClass rcvrClass = classNode.executeEvaluated(rcvr);
     SInvokable method = rcvrClass.lookupInvokable(selector);
 
-    CallTarget target;
-    Object[] args;
-
     if (method != null) {
-      target = method.getCallTarget();
-      args = new Object[] {rcvr, arg};
+      CallTarget target = method.getCallTarget();
+      return call.call2(target, rcvr, arg);
     } else {
       // TODO: actually do use node
       CompilerDirectives.transferToInterpreter();
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(new Object[] {rcvr, arg});
-      args = new Object[] {rcvr, selector, argumentsArray};
-      target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      CallTarget target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      return call.call3(target, rcvr, selector, argumentsArray);
     }
-    return call.call(target, args);
+  }
+
+  @Override
+  public Object executeTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2) {
+    SClass rcvrClass = classNode.executeEvaluated(rcvr);
+    SInvokable method = rcvrClass.lookupInvokable(selector);
+
+    if (method != null) {
+      CallTarget target = method.getCallTarget();
+      return call.call3(target, rcvr, arg1, arg2);
+    } else {
+      CompilerDirectives.transferToInterpreter();
+      // Won't use DNU caching here, because it is already a megamorphic node
+      SArray argumentsArray =
+          SArguments.getArgumentsWithoutReceiver(new Object[] {rcvr, arg1, arg2});
+      CallTarget target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      return call.call3(target, rcvr, selector, argumentsArray);
+    }
+  }
+
+  @Override
+  public Object executeQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
+    SClass rcvrClass = classNode.executeEvaluated(rcvr);
+    SInvokable method = rcvrClass.lookupInvokable(selector);
+
+    if (method != null) {
+      CallTarget target = method.getCallTarget();
+      return call.call3(target, rcvr, arg1, arg2);
+    } else {
+      CompilerDirectives.transferToInterpreter();
+      // Won't use DNU caching here, because it is already a megamorphic node
+      SArray argumentsArray =
+          SArguments.getArgumentsWithoutReceiver(new Object[] {rcvr, arg1, arg2, arg3});
+      CallTarget target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      return call.call3(target, rcvr, selector, argumentsArray);
+    }
   }
 }

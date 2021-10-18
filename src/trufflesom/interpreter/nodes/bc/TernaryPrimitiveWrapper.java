@@ -9,7 +9,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.MessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
@@ -53,8 +53,8 @@ public class TernaryPrimitiveWrapper extends TernaryExpressionNode {
     }
   }
 
-  private GenericMessageSendNode makeGenericSend() {
-    GenericMessageSendNode node =
+  private AbstractMessageSendNode makeGenericSend() {
+    AbstractMessageSendNode node =
         MessageSendNode.createGeneric(selector, null, sourceSection, universe);
 
     assert getParent() instanceof BytecodeLoopNode : "TernaryPrimitiveWrapper are expected to be direct children of a `BytecodeLoopNode`.";

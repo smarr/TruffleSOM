@@ -343,7 +343,7 @@ public final class Universe implements IdProvider<SSymbol> {
 
     // Lookup the initialize invokable on the system class
     SInvokable initialize = clazz.getSOMClass(this).lookupInvokable(symbolFor(selector));
-    return initialize.invoke(new Object[] {clazz});
+    return initialize.invoke1(clazz);
   }
 
   private Object execute(final String[] arguments) {

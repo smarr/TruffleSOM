@@ -9,8 +9,8 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.dispatch.BlockDispatchNode;
-import trufflesom.interpreter.nodes.dispatch.BlockDispatchNodeGen;
+import trufflesom.interpreter.nodes.dispatch.BlockBinaryDispatch;
+import trufflesom.interpreter.nodes.dispatch.BlockBinaryDispatchNodeGen;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.vmobjects.SBlock;
 
@@ -19,7 +19,7 @@ import trufflesom.vmobjects.SBlock;
 @Primitive(selector = "to:do:", noWrapper = true, disabled = true, inParser = false)
 public abstract class IntToDoMessageNode extends TernaryExpressionNode {
 
-  @Child private BlockDispatchNode blockNode = BlockDispatchNodeGen.create();
+  @Child private BlockBinaryDispatch blockNode = BlockBinaryDispatchNodeGen.create();
 
   @Specialization
   public final long doIntToDo(final long receiver, final long limit, final SBlock block) {
@@ -41,10 +41,10 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
 
   protected final void doLooping(final long receiver, final long limit, final SBlock block) {
     if (receiver <= limit) {
-      blockNode.executeDispatch(new Object[] {block, receiver});
+      blockNode.executeDispatch(block, receiver);
     }
     for (long i = receiver + 1; i <= limit; i++) {
-      blockNode.executeDispatch(new Object[] {block, i});
+      blockNode.executeDispatch(block, i);
     }
   }
 
@@ -53,10 +53,10 @@ public abstract class IntToDoMessageNode extends TernaryExpressionNode {
       final SBlock block) {
     try {
       if (receiver <= limit) {
-        blockNode.executeDispatch(new Object[] {block, receiver});
+        blockNode.executeDispatch(block, receiver);
       }
       for (double i = receiver + 1.0; i <= limit; i += 1.0) {
-        blockNode.executeDispatch(new Object[] {block, i});
+        blockNode.executeDispatch(block, i);
       }
     } finally {
       if (CompilerDirectives.inInterpreter() && (limit - receiver) > 0) {

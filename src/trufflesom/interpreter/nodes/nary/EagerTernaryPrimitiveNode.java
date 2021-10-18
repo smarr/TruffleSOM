@@ -7,7 +7,6 @@ import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 
@@ -61,7 +60,7 @@ public final class EagerTernaryPrimitiveNode extends EagerPrimitive {
   }
 
   private AbstractMessageSendNode makeGenericSend() {
-    GenericMessageSendNode node = MessageSendNode.createGeneric(selector,
+    AbstractMessageSendNode node = MessageSendNode.createGeneric(selector,
         new ExpressionNode[] {receiver, argument1, argument2}, sourceSection, universe);
     return replace(node);
   }

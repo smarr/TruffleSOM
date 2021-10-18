@@ -44,6 +44,20 @@ public class CachedExprNode extends AbstractDispatchNode {
   }
 
   @Override
+  public Object executeUnary(final VirtualFrame frame, final Object rcvr) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        return expr.doPreEvaluated(frame, new Object[] {rcvr});
+      } else {
+        return nextInCache.executeUnary(frame, rcvr);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeUnary(frame, rcvr);
+    }
+  }
+
+  @Override
   public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
     try {
       if (guard.entryMatches(rcvr)) {
@@ -54,6 +68,36 @@ public class CachedExprNode extends AbstractDispatchNode {
     } catch (InvalidAssumptionException e) {
       CompilerDirectives.transferToInterpreter();
       return replace(nextInCache).executeBinary(frame, rcvr, arg);
+    }
+  }
+
+  @Override
+  public Object executeTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        return expr.doPreEvaluated(frame, new Object[] {rcvr, arg1, arg2});
+      } else {
+        return nextInCache.executeTernary(frame, rcvr, arg1, arg2);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeTernary(frame, rcvr, arg1, arg2);
+    }
+  }
+
+  @Override
+  public Object executeQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
+    try {
+      if (guard.entryMatches(rcvr)) {
+        return expr.doPreEvaluated(frame, new Object[] {rcvr, arg1, arg2, arg3});
+      } else {
+        return nextInCache.executeQuat(frame, rcvr, arg1, arg2, arg3);
+      }
+    } catch (InvalidAssumptionException e) {
+      CompilerDirectives.transferToInterpreter();
+      return replace(nextInCache).executeQuat(frame, rcvr, arg1, arg2, arg3);
     }
   }
 }

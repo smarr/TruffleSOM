@@ -119,7 +119,6 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -615,7 +614,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             }
 
             if (!done) {
-              GenericMessageSendNode quick =
+              AbstractMessageSendNode quick =
                   MessageSendNode.createGeneric(signature, null, sourceSection, universe);
               quickenBytecode(bytecodeIndex, Q_SEND, quick);
 

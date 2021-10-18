@@ -8,11 +8,23 @@ import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1WriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2WriteNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument3ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument3WriteNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument4ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument4WriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument1WriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument2ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument2WriteNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument3ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument3WriteNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument4ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument4WriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -61,6 +73,13 @@ public final class SNodeFactory {
       if (variable.index == 1) {
         return new LocalArgument2ReadNode(variable).initialize(source);
       }
+      if (variable.index == 2) {
+        return new LocalArgument3ReadNode(variable).initialize(source);
+      }
+      if (variable.index == 3) {
+        return new LocalArgument4ReadNode(variable).initialize(source);
+      }
+
       return new LocalArgumentReadNode(variable).initialize(source);
     } else {
       if (variable.index == 0) {
@@ -68,6 +87,12 @@ public final class SNodeFactory {
       }
       if (variable.index == 1) {
         return new NonLocalArgument2ReadNode(variable, contextLevel).initialize(source);
+      }
+      if (variable.index == 2) {
+        return new NonLocalArgument3ReadNode(variable, contextLevel).initialize(source);
+      }
+      if (variable.index == 3) {
+        return new NonLocalArgument4ReadNode(variable, contextLevel).initialize(source);
       }
       return new NonLocalArgumentReadNode(variable, contextLevel).initialize(source);
     }
@@ -81,8 +106,32 @@ public final class SNodeFactory {
   public static ExpressionNode createArgumentWrite(final Argument variable,
       final int contextLevel, final ExpressionNode exp, final SourceSection source) {
     if (contextLevel == 0) {
+      if (variable.index == 0) {
+        return new LocalArgument1WriteNode(variable, exp).initialize(source);
+      }
+      if (variable.index == 1) {
+        return new LocalArgument2WriteNode(variable, exp).initialize(source);
+      }
+      if (variable.index == 2) {
+        return new LocalArgument3WriteNode(variable, exp).initialize(source);
+      }
+      if (variable.index == 3) {
+        return new LocalArgument4WriteNode(variable, exp).initialize(source);
+      }
       return new LocalArgumentWriteNode(variable, exp).initialize(source);
     } else {
+      if (variable.index == 0) {
+        return new NonLocalArgument1WriteNode(variable, contextLevel, exp).initialize(source);
+      }
+      if (variable.index == 1) {
+        return new NonLocalArgument2WriteNode(variable, contextLevel, exp).initialize(source);
+      }
+      if (variable.index == 2) {
+        return new NonLocalArgument3WriteNode(variable, contextLevel, exp).initialize(source);
+      }
+      if (variable.index == 3) {
+        return new NonLocalArgument4WriteNode(variable, contextLevel, exp).initialize(source);
+      }
       return new NonLocalArgumentWriteNode(variable, contextLevel, exp).initialize(source);
     }
   }
