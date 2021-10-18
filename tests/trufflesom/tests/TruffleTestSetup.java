@@ -69,7 +69,7 @@ public class TruffleTestSetup {
         sourceForTests.createSection(1, fieldCount, 1));
   }
 
-  private java.lang.reflect.Field lookup(final Class<?> cls, final String fieldName) {
+  private static java.lang.reflect.Field lookup(final Class<?> cls, final String fieldName) {
     try {
       return cls.getDeclaredField(fieldName);
     } catch (NoSuchFieldException e) {
@@ -82,20 +82,21 @@ public class TruffleTestSetup {
     throw new RuntimeException("Didn't find field: " + fieldName);
   }
 
-  protected Node read(final Object obj, final String fieldName) {
+  protected static Node read(final Object obj, final String fieldName) {
     return read(obj, fieldName, Node.class);
   }
 
-  protected ExpressionNode read(final Object obj, final String fieldName, final int idx) {
+  protected static ExpressionNode read(final Object obj, final String fieldName,
+      final int idx) {
     return read(obj, fieldName, ExpressionNode[].class)[idx];
   }
 
-  protected ExpressionNode[] getBlockExprs(final BlockNode blockNode) {
+  protected static ExpressionNode[] getBlockExprs(final BlockNode blockNode) {
     return read(read(blockNode.getMethod().getInvokable(), "expressionOrSequence"),
         "expressions", ExpressionNode[].class);
   }
 
-  protected <T> T read(final Object obj, final String fieldName, final Class<T> c) {
+  public static <T> T read(final Object obj, final String fieldName, final Class<T> c) {
     java.lang.reflect.Field field = lookup(obj.getClass(), fieldName);
     field.setAccessible(true);
     try {

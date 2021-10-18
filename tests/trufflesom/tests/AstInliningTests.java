@@ -15,8 +15,12 @@ import bd.basic.ProgramDefinitionError;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.ParserAst;
 import trufflesom.interpreter.SomLanguage;
-import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
-import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument2ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgument3ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentRead;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument1ReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgument2ReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
@@ -71,22 +75,23 @@ public class AstInliningTests extends TruffleTestSetup {
     }
   }
 
-  private void accessArgFromInlinedBlock(final String argName, final int argIdx) {
+  private void accessArgFromInlinedBlock(final String argName, final int argIdx,
+      final Class<?> cls) {
     initMgenc();
     SequenceNode seq =
         (SequenceNode) parseMethod(
             "test: arg1 and: arg2 = ( true ifTrue: [ " + argName + " ] )");
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 0);
-    LocalArgumentReadNode arg = read(ifNode, "bodyNode", LocalArgumentReadNode.class);
+    LocalArgumentRead arg = read(ifNode, "bodyNode", LocalArgumentRead.class);
 
     assertEquals(argName, arg.getInvocationIdentifier().getString());
-    assertEquals(argIdx, arg.argumentIndex);
+    assertThat(arg, instanceOf(cls));
   }
 
   @Test
   public void testAccessArgFromInlinedBlock() {
-    accessArgFromInlinedBlock("arg1", 1);
-    accessArgFromInlinedBlock("arg2", 2);
+    accessArgFromInlinedBlock("arg1", 1, LocalArgument2ReadNode.class);
+    accessArgFromInlinedBlock("arg2", 2, LocalArgument3ReadNode.class);
   }
 
   @Test
@@ -95,7 +100,7 @@ public class AstInliningTests extends TruffleTestSetup {
         (SequenceNode) parseMethod(
             "test: arg1 and: arg2 = ( true ifTrue: [ self ] )");
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 0);
-    LocalArgumentReadNode arg = read(ifNode, "bodyNode", LocalArgumentReadNode.class);
+    LocalArgument1ReadNode arg = read(ifNode, "bodyNode", LocalArgument1ReadNode.class);
 
     assertTrue(arg.isSelfRead());
   }
@@ -110,14 +115,12 @@ public class AstInliningTests extends TruffleTestSetup {
     BlockNode blockNode = (BlockNode) read(seq, "expressions", 0);
     ExpressionNode[] blockExprs = getBlockExprs(blockNode);
 
-    LocalArgumentReadNode argRead = (LocalArgumentReadNode) blockExprs[0];
-    assertEquals(1, argRead.argumentIndex);
+    LocalArgument2ReadNode argRead = (LocalArgument2ReadNode) blockExprs[0];
     assertEquals("arg", argRead.getInvocationIdentifier().getString());
 
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) blockExprs[1];
-    LocalArgumentReadNode body = read(ifNode, "bodyNode", LocalArgumentReadNode.class);
+    LocalArgument2ReadNode body = read(ifNode, "bodyNode", LocalArgument2ReadNode.class);
     assertEquals("arg", body.getInvocationIdentifier().getString());
-    assertEquals(1, body.argumentIndex);
   }
 
   private void literalTest(final String literalStr, final Class<?> cls) {
@@ -181,7 +184,7 @@ public class AstInliningTests extends TruffleTestSetup {
     int fieldIdx = read(incNode, "fieldIndex", Integer.class);
     assertEquals(0, fieldIdx);
 
-    LocalArgumentReadNode selfNode = (LocalArgumentReadNode) incNode.getSelf();
+    LocalArgument1ReadNode selfNode = (LocalArgument1ReadNode) incNode.getSelf();
     assertTrue(selfNode.isSelfRead());
   }
 
@@ -195,8 +198,7 @@ public class AstInliningTests extends TruffleTestSetup {
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 1);
 
     IntIncrementNode inc = read(ifNode, "bodyNode", IntIncrementNode.class);
-    LocalArgumentReadNode arg = (LocalArgumentReadNode) inc.getRcvr();
-    assertEquals(1, arg.argumentIndex);
+    LocalArgument2ReadNode arg = (LocalArgument2ReadNode) inc.getRcvr();
     assertEquals("arg", arg.getInvocationIdentifier().getString());
   }
 
@@ -218,12 +220,11 @@ public class AstInliningTests extends TruffleTestSetup {
         read(returnNode, "expression", EagerBinaryPrimitiveNode.class);
 
     FieldReadNode rcvr = read(subMsg, "receiver", FieldReadNode.class);
-    LocalArgumentReadNode selfRead = (LocalArgumentReadNode) rcvr.getSelf();
+    LocalArgument1ReadNode selfRead = (LocalArgument1ReadNode) rcvr.getSelf();
     assertTrue(selfRead.isSelfRead());
 
-    LocalArgumentReadNode argNode = read(subMsg, "argument", LocalArgumentReadNode.class);
+    LocalArgument2ReadNode argNode = read(subMsg, "argument", LocalArgument2ReadNode.class);
     assertEquals("arg", argNode.getInvocationIdentifier().getString());
-    assertEquals(1, argNode.argumentIndex);
   }
 
   @Test
@@ -311,10 +312,9 @@ public class AstInliningTests extends TruffleTestSetup {
         (BlockNode) read(read(ifFalseNode, "bodyNode"), "expressions", 3);
     ExpressionNode[] blockExprs = getBlockExprs(blockNode);
 
-    NonLocalArgumentReadNode readA = (NonLocalArgumentReadNode) blockExprs[0];
+    NonLocalArgument2ReadNode readA = (NonLocalArgument2ReadNode) blockExprs[0];
     assertEquals(1, readA.getContextLevel());
     assertEquals("a", readA.getInvocationIdentifier().getString());
-    assertEquals(1, (int) read(readA, "argumentIndex", Integer.class));
 
     NonLocalVariableReadNode readB = (NonLocalVariableReadNode) blockExprs[1];
     assertEquals(1, readB.getContextLevel());
@@ -322,10 +322,9 @@ public class AstInliningTests extends TruffleTestSetup {
 
     blockNode = (BlockNode) blockExprs[4];
     blockExprs = getBlockExprs(blockNode);
-    readA = (NonLocalArgumentReadNode) blockExprs[0];
+    readA = (NonLocalArgument2ReadNode) blockExprs[0];
     assertEquals(2, readA.getContextLevel());
     assertEquals("a", readA.getInvocationIdentifier().getString());
-    assertEquals(1, (int) read(readA, "argumentIndex", Integer.class));
 
     readB = (NonLocalVariableReadNode) blockExprs[1];
     assertEquals(2, readB.getContextLevel());
@@ -388,13 +387,12 @@ public class AstInliningTests extends TruffleTestSetup {
         (IfInlinedLiteralNode) read(blockNodeB.getMethod().getInvokable(),
             "expressionOrSequence");
 
-    LocalArgumentReadNode readB =
-        read(blockBIfTrue, "conditionNode", LocalArgumentReadNode.class);
+    LocalArgument2ReadNode readB =
+        read(blockBIfTrue, "conditionNode", LocalArgument2ReadNode.class);
     assertEquals("b", readB.getInvocationIdentifier().getString());
-    assertEquals(1, readB.argumentIndex);
 
     UninitFieldIncNode incNode = read(blockBIfTrue, "bodyNode", UninitFieldIncNode.class);
-    NonLocalArgumentReadNode selfNode = (NonLocalArgumentReadNode) incNode.getSelf();
+    NonLocalArgument1ReadNode selfNode = (NonLocalArgument1ReadNode) incNode.getSelf();
     assertEquals(2, selfNode.getContextLevel());
     assertEquals(0, (int) read(incNode, "fieldIndex", Integer.class));
   }
@@ -418,10 +416,9 @@ public class AstInliningTests extends TruffleTestSetup {
         read(blockA.getMethod().getInvokable(), "expressionOrSequence",
             IfInlinedLiteralNode.class);
 
-    LocalArgumentReadNode readNode =
-        read(blockBIfTrue, "conditionNode", LocalArgumentReadNode.class);
+    LocalArgument2ReadNode readNode =
+        read(blockBIfTrue, "conditionNode", LocalArgument2ReadNode.class);
     assertEquals("b", readNode.getInvocationIdentifier().getString());
-    assertEquals(1, readNode.argumentIndex);
 
     NonLocalVariableWriteNode writeNode =
         read(blockBIfTrue, "bodyNode", NonLocalVariableWriteNode.class);

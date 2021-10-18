@@ -23,7 +23,6 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static trufflesom.tests.SomTests.readValue;
 
 import java.util.Arrays;
 
@@ -177,14 +176,14 @@ public class BasicInterpreterTests {
 
     if (resultType == SClass.class) {
       String expected = (String) expectedResult;
-      String actual = ((SClass) readValue((Value) actualResult)).getName().getString();
+      String actual = ((SClass) actualResult).getName().getString();
       assertEquals(expected, actual);
       return;
     }
 
     if (resultType == SSymbol.class) {
       String expected = (String) expectedResult;
-      String actual = ((SSymbol) readValue((Value) actualResult)).getString();
+      String actual = ((SSymbol) actualResult).getString();
       assertEquals(expected, actual);
       return;
     }
@@ -203,6 +202,7 @@ public class BasicInterpreterTests {
     Context context = builder.build();
     Value actualResult = context.eval(SomLanguage.START);
 
-    assertEqualsSOMValue(expectedResult, actualResult.as(Object.class));
+    Object actual = TruffleTestSetup.read(actualResult, "receiver", Object.class);
+    assertEqualsSOMValue(expectedResult, actual);
   }
 }
