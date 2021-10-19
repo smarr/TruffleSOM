@@ -1,6 +1,7 @@
 package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -119,6 +120,32 @@ public final class MessageSendNode {
   public abstract static class AbstractMessageSendNode extends ExpressionNode
       implements PreevaluatedExpression, Invocation<SSymbol> {
     public abstract void replaceDispatchListHead(GenericDispatchNode replacement);
+
+    @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
   }
 
   public abstract static class AbstractNaryMessageSendNode extends AbstractMessageSendNode {
@@ -167,6 +194,29 @@ public final class MessageSendNode {
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
       return specialize(arguments).doPreEvaluated(frame, arguments);
+    }
+
+    @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      return specialize(new Object[] {rcvr}).doPreUnary(frame, rcvr);
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      return specialize(new Object[] {rcvr, arg}).doPreBinary(frame, rcvr, arg);
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      return specialize(new Object[] {rcvr, arg1, arg2}).doPreTernary(frame, rcvr, arg1, arg2);
+    }
+
+    @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      return specialize(new Object[] {rcvr, arg1, arg2, arg3}).doPreQuat(frame, rcvr, arg1,
+          arg2, arg3);
     }
 
     @Override
@@ -348,6 +398,11 @@ public final class MessageSendNode {
     }
 
     @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      return dispatchNode.executeUnary(frame, rcvr);
+    }
+
+    @Override
     public void replaceDispatchListHead(
         final GenericDispatchNode replacement) {
       CompilerAsserts.neverPartOfCompilation();
@@ -397,6 +452,11 @@ public final class MessageSendNode {
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
       return dispatchNode.executeBinary(frame, arguments[0], arguments[1]);
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      return dispatchNode.executeBinary(frame, rcvr, arg);
     }
 
     @Override
@@ -453,6 +513,12 @@ public final class MessageSendNode {
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
       return dispatchNode.executeTernary(frame, arguments[0], arguments[1], arguments[2]);
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      return dispatchNode.executeTernary(frame, rcvr, arg1, arg2);
     }
 
     @Override
@@ -513,6 +579,12 @@ public final class MessageSendNode {
         final Object[] arguments) {
       return dispatchNode.executeQuat(frame, arguments[0], arguments[1], arguments[2],
           arguments[3]);
+    }
+
+    @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      return dispatchNode.executeQuat(frame, rcvr, arg1, arg2, arg3);
     }
 
     @Override
@@ -594,6 +666,11 @@ public final class MessageSendNode {
     }
 
     @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      return cachedSuperMethod.call1(rcvr);
+    }
+
+    @Override
     public Object executeGeneric(final VirtualFrame frame) {
       Object rcvr = this.rcvr.executeGeneric(frame);
       return cachedSuperMethod.call1(rcvr);
@@ -635,6 +712,11 @@ public final class MessageSendNode {
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
       return cachedSuperMethod.call2(arguments[0], arguments[1]);
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      return cachedSuperMethod.call2(rcvr, arg);
     }
 
     @Override
@@ -683,6 +765,12 @@ public final class MessageSendNode {
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
       return cachedSuperMethod.call3(arguments[0], arguments[1], arguments[2]);
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      return cachedSuperMethod.call3(rcvr, arg1, arg2);
     }
 
     @Override
@@ -737,6 +825,12 @@ public final class MessageSendNode {
     }
 
     @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      return cachedSuperMethod.call4(rcvr, arg1, arg2, arg3);
+    }
+
+    @Override
     public Object executeGeneric(final VirtualFrame frame) {
       Object rcvr = this.rcvr.executeGeneric(frame);
       Object arg1 = this.arg1.executeGeneric(frame);
@@ -777,6 +871,28 @@ public final class MessageSendNode {
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
       return expr.doPreEvaluated(frame, arguments);
+    }
+
+    @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      return expr.doPreUnary(frame, rcvr);
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      return expr.doPreBinary(frame, rcvr, arg);
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      return expr.doPreTernary(frame, rcvr, arg1, arg2);
+    }
+
+    @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      return expr.doPreQuat(frame, rcvr, arg1, arg2, arg3);
     }
 
     @Override

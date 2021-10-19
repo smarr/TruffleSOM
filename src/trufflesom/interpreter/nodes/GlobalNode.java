@@ -99,7 +99,31 @@ public abstract class GlobalNode extends ExpressionNode
   }
 
   @Override
-  public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+  public final Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+    return executeGeneric(frame);
+  }
+
+  @Override
+  public final Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+    return executeGeneric(frame);
+  }
+
+  @Override
+  public final Object doPreBinary(final VirtualFrame frame, final Object rcvr,
+      final Object arg) {
+    return executeGeneric(frame);
+  }
+
+  @Override
+  public final Object doPreTernary(final VirtualFrame frame, final Object rcvr,
+      final Object arg1,
+      final Object arg2) {
+    return executeGeneric(frame);
+  }
+
+  @Override
+  public final Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
     return executeGeneric(frame);
   }
 

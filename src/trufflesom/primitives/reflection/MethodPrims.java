@@ -1,5 +1,6 @@
 package trufflesom.primitives.reflection;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -64,6 +65,33 @@ public final class MethodPrims {
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] args) {
       return executeEvaluated(frame, (SInvokable) args[0], args[1], (SArray) args[2]);
+    }
+
+    @Override
+    public final Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final Object doPreBinary(final VirtualFrame frame, final Object rcvr,
+        final Object arg) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final Object doPreTernary(final VirtualFrame frame, final Object rcvr,
+        final Object arg1, final Object arg2) {
+      return executeEvaluated(frame, (SInvokable) rcvr, arg1, (SArray) arg2);
+    }
+
+    @Override
+    public final Object doPreQuat(final VirtualFrame frame, final Object rcvr,
+        final Object arg1,
+        final Object arg2, final Object arg3) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
     }
 
     @Specialization

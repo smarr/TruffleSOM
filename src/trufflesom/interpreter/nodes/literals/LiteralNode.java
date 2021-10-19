@@ -95,6 +95,29 @@ public abstract class LiteralNode extends ExpressionNode
   }
 
   @Override
+  public final Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+    return executeGeneric(frame);
+  }
+
+  @Override
+  public final Object doPreBinary(final VirtualFrame frame, final Object rcvr,
+      final Object arg) {
+    return executeGeneric(frame);
+  }
+
+  @Override
+  public final Object doPreTernary(final VirtualFrame frame, final Object rcvr,
+      final Object arg1, final Object arg2) {
+    return executeGeneric(frame);
+  }
+
+  @Override
+  public final Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
+    return executeGeneric(frame);
+  }
+
+  @Override
   public ExpressionNode inline(final MethodGenerationContext mgenc) {
     return this;
   }

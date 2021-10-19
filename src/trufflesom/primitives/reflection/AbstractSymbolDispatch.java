@@ -55,10 +55,7 @@ public abstract class AbstractSymbolDispatch extends Node {
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("selector") final SSymbol cachedSelector,
       @Cached("createForPerformNodes(selector, universe)") final AbstractMessageSendNode cachedSend) {
-    Object[] arguments = {receiver};
-
-    PreevaluatedExpression realCachedSend = cachedSend;
-    return realCachedSend.doPreEvaluated(frame, arguments);
+    return cachedSend.doPreUnary(frame, receiver);
   }
 
   @Specialization(limit = "INLINE_CACHE_SIZE", guards = "selector == cachedSelector")

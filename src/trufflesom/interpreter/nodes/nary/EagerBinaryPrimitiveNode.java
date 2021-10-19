@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -45,8 +46,7 @@ public final class EagerBinaryPrimitiveNode extends EagerPrimitive {
     } catch (UnsupportedSpecializationException e) {
       TruffleCompiler.transferToInterpreterAndInvalidate(
           "Eager Primitive with unsupported specialization.");
-      return makeGenericSend().doPreEvaluated(frame,
-          new Object[] {receiver, argument});
+      return makeGenericSend().doPreBinary(frame, receiver, argument);
     }
   }
 
@@ -54,6 +54,31 @@ public final class EagerBinaryPrimitiveNode extends EagerPrimitive {
   public Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0], arguments[1]);
+  }
+
+  @Override
+  public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+    CompilerDirectives.transferToInterpreter();
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+    return executeEvaluated(frame, rcvr, arg);
+  }
+
+  @Override
+  public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2) {
+    CompilerDirectives.transferToInterpreter();
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
+    CompilerDirectives.transferToInterpreter();
+    throw new UnsupportedOperationException();
   }
 
   private AbstractMessageSendNode makeGenericSend() {

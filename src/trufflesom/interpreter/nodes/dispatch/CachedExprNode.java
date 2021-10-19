@@ -47,7 +47,7 @@ public class CachedExprNode extends AbstractDispatchNode {
   public Object executeUnary(final VirtualFrame frame, final Object rcvr) {
     try {
       if (guard.entryMatches(rcvr)) {
-        return expr.doPreEvaluated(frame, new Object[] {rcvr});
+        return expr.doPreUnary(frame, rcvr);
       } else {
         return nextInCache.executeUnary(frame, rcvr);
       }
@@ -61,7 +61,7 @@ public class CachedExprNode extends AbstractDispatchNode {
   public Object executeBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
     try {
       if (guard.entryMatches(rcvr)) {
-        return expr.doPreEvaluated(frame, new Object[] {rcvr, arg});
+        return expr.doPreBinary(frame, rcvr, arg);
       } else {
         return nextInCache.executeBinary(frame, rcvr, arg);
       }
@@ -76,7 +76,7 @@ public class CachedExprNode extends AbstractDispatchNode {
       final Object arg2) {
     try {
       if (guard.entryMatches(rcvr)) {
-        return expr.doPreEvaluated(frame, new Object[] {rcvr, arg1, arg2});
+        return expr.doPreTernary(frame, rcvr, arg1, arg2);
       } else {
         return nextInCache.executeTernary(frame, rcvr, arg1, arg2);
       }
@@ -91,7 +91,7 @@ public class CachedExprNode extends AbstractDispatchNode {
       final Object arg2, final Object arg3) {
     try {
       if (guard.entryMatches(rcvr)) {
-        return expr.doPreEvaluated(frame, new Object[] {rcvr, arg1, arg2, arg3});
+        return expr.doPreQuat(frame, rcvr, arg1, arg2, arg3);
       } else {
         return nextInCache.executeQuat(frame, rcvr, arg1, arg2, arg3);
       }

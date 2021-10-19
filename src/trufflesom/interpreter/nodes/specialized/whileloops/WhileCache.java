@@ -48,15 +48,15 @@ public abstract class WhileCache extends BinaryExpressionNode {
     // no caching, direct invokes, no loop count reporting...
     CompilerAsserts.neverPartOfCompilation("WhileCache.GenericDispatch");
 
-    Object conditionResult = loopCondition.getMethod().invoke(new Object[] {loopCondition});
+    Object conditionResult = loopCondition.getMethod().invoke1(loopCondition);
 
     // TODO: this is a simplification, we don't cover the case receiver isn't a boolean
     boolean loopConditionResult = obj2bool(conditionResult);
 
     // TODO: this is a simplification, we don't cover the case receiver isn't a boolean
     while (loopConditionResult == predicateBool) {
-      loopBody.getMethod().invoke(new Object[] {loopBody});
-      conditionResult = loopCondition.getMethod().invoke(new Object[] {loopCondition});
+      loopBody.getMethod().invoke1(loopBody);
+      conditionResult = loopCondition.getMethod().invoke1(loopCondition);
       loopConditionResult = obj2bool(conditionResult);
     }
     return Nil.nilObject;

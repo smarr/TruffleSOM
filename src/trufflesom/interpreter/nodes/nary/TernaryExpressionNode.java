@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -22,6 +23,32 @@ public abstract class TernaryExpressionNode extends EagerlySpecializableNode {
   public final Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return executeEvaluated(frame, arguments[0], arguments[1], arguments[2]);
+  }
+
+  @Override
+  public final Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+    CompilerDirectives.transferToInterpreter();
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public final Object doPreBinary(final VirtualFrame frame, final Object rcvr,
+      final Object arg) {
+    CompilerDirectives.transferToInterpreter();
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public final Object doPreTernary(final VirtualFrame frame, final Object rcvr,
+      final Object arg1, final Object arg2) {
+    return executeEvaluated(frame, rcvr, arg1, arg2);
+  }
+
+  @Override
+  public final Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+      final Object arg2, final Object arg3) {
+    CompilerDirectives.transferToInterpreter();
+    throw new UnsupportedOperationException();
   }
 
   @Override

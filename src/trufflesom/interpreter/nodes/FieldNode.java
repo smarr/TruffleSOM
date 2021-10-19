@@ -72,7 +72,32 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return executeEvaluated((SObject) arguments[0]);
+      return read.read((SObject) arguments[0]);
+    }
+
+    @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      return read.read((SObject) rcvr);
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
     }
 
     @Override
@@ -156,23 +181,48 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return executeEvaluated(frame, (SObject) arguments[0], arguments[1]);
+      return write.write((SObject) arguments[0], arguments[1]);
+    }
+
+    @Override
+    public final Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final Object doPreBinary(final VirtualFrame frame, final Object rcvr,
+        final Object arg) {
+      return write.write((SObject) rcvr, arg);
+    }
+
+    @Override
+    public final Object doPreTernary(final VirtualFrame frame, final Object rcvr,
+        final Object arg1, final Object arg2) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final Object doPreQuat(final VirtualFrame frame, final Object rcvr,
+        final Object arg1, final Object arg2, final Object arg3) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
     }
 
     @Specialization
-    public long doLong(final VirtualFrame frame, final SObject self,
-        final long value) {
+    public final long doLong(final VirtualFrame frame, final SObject self, final long value) {
       return write.write(self, value);
     }
 
     @Specialization
-    public double doDouble(final VirtualFrame frame, final SObject self,
+    public final double doDouble(final VirtualFrame frame, final SObject self,
         final double value) {
       return write.write(self, value);
     }
 
     @Specialization
-    public Object doObject(final VirtualFrame frame, final SObject self,
+    public final Object doObject(final VirtualFrame frame, final SObject self,
         final Object value) {
       return executeEvaluated(frame, self, value);
     }
@@ -279,6 +329,31 @@ public abstract class FieldNode extends ExpressionNode {
     public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
       write.doPreEvaluated(frame, args);
       return args[0];
+    }
+
+    @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      return write.executeEvaluated(frame, (SObject) rcvr, arg);
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
     }
 
     @Override

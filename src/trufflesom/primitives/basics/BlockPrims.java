@@ -69,13 +69,13 @@ public abstract class BlockPrims {
     public final Object doTrivial(final SBlock receiver,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
-      return expr.doPreEvaluated(null, new Object[] {receiver});
+      return expr.doPreUnary(null, receiver);
     }
 
     @Specialization
     @Megamorphic
     public final Object generic(final SBlock receiver) {
-      return receiver.getMethod().invoke(new Object[] {receiver});
+      return receiver.getMethod().invoke1(receiver);
     }
 
     @Specialization
@@ -108,7 +108,7 @@ public abstract class BlockPrims {
     public final Object doTrivial(final SBlock receiver, final Object arg,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
-      return expr.doPreEvaluated(null, new Object[] {receiver, arg});
+      return expr.doPreBinary(null, receiver, arg);
     }
 
     @Specialization
@@ -142,13 +142,13 @@ public abstract class BlockPrims {
     public final Object doTrivial(final SBlock receiver, final Object arg1, final Object arg2,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
-      return expr.doPreEvaluated(null, new Object[] {receiver, arg1, arg2});
+      return expr.doPreTernary(null, receiver, arg1, arg2);
     }
 
     @Specialization
     @Megamorphic
     public final Object generic(final SBlock receiver, final Object arg1, final Object arg2) {
-      return receiver.getMethod().invoke(new Object[] {receiver, arg1, arg2});
+      return receiver.getMethod().invoke3(receiver, arg1, arg2);
     }
   }
 

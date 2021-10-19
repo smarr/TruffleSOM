@@ -29,33 +29,27 @@ public abstract class SAbstractObject implements TruffleObject {
     return "a " + clazz.getName().getString();
   }
 
-  private static Object send(
+  private static Object send2(
       final String selectorString,
-      final Object[] arguments, final Universe universe) {
+      final Object rcvr, final Object arg, final Universe universe) {
     CompilerAsserts.neverPartOfCompilation("SAbstractObject.send()");
     SSymbol selector = symbolFor(selectorString);
 
     // Lookup the invokable
-    SInvokable invokable = Types.getClassOf(arguments[0], universe).lookupInvokable(selector);
-
-    if (arguments.length == 2) {
-      return invokable.invoke2(arguments[0], arguments[1]);
-    }
-    return invokable.invoke(arguments);
+    SInvokable invokable = Types.getClassOf(rcvr, universe).lookupInvokable(selector);
+    return invokable.invoke2(rcvr, arg);
   }
 
   @TruffleBoundary
   public static final Object sendUnknownGlobal(final Object receiver,
       final SSymbol globalName, final Universe universe) {
-    Object[] arguments = {receiver, globalName};
-    return send("unknownGlobal:", arguments, universe);
+    return send2("unknownGlobal:", receiver, globalName, universe);
   }
 
   @TruffleBoundary
   public static final Object sendEscapedBlock(final Object receiver,
       final SBlock block, final Universe universe) {
-    Object[] arguments = {receiver, block};
-    return send("escapedBlock:", arguments, universe);
+    return send2("escapedBlock:", receiver, block, universe);
   }
 
   @ExportMessage
