@@ -55,7 +55,7 @@ public abstract class ArgumentReadNode {
 
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
-      return frame.getArguments()[argumentIndex];
+      return frame.getArgument(argumentIndex);
     }
 
     @Override
@@ -182,7 +182,7 @@ public abstract class ArgumentReadNode {
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
       Object value = valueNode.executeGeneric(frame);
-      frame.getArguments()[argumentIndex] = value;
+      frame.setArgument(argumentIndex, value);
       return value;
     }
 
@@ -331,7 +331,7 @@ public abstract class ArgumentReadNode {
 
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
-      return determineContext(frame).getArguments()[argumentIndex];
+      return determineContext(frame).getArgument(argumentIndex);
     }
 
     @Override
@@ -497,7 +497,7 @@ public abstract class ArgumentReadNode {
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
       Object value = valueNode.executeGeneric(frame);
-      determineContext(frame).getArguments()[argumentIndex] = value;
+      determineContext(frame).setArgument(argumentIndex, value);
       return value;
     }
 

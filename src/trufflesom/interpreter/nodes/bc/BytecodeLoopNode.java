@@ -192,7 +192,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   @ExplodeLoop
   private VirtualFrame determineOuterContext(final VirtualFrame frame) {
     // TODO: change bytecode format to include the context level
-    Object object = frame.getArguments()[0];
+    Object object = frame.getArgument1();
 
     if (!(object instanceof SBlock)) {
       return frame;
@@ -202,7 +202,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     MaterializedFrame outer = self.getContext();
 
     while (true) {
-      Object rcvr = outer.getArguments()[0];
+      Object rcvr = outer.getArgument1();
 
       if (rcvr instanceof SBlock) {
         outer = ((SBlock) rcvr).getContext();
@@ -215,7 +215,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   @ExplodeLoop
   private MaterializedFrame determineContext(final VirtualFrame frame,
       final int contextLevel) {
-    SBlock self = (SBlock) frame.getArguments()[0];
+    SBlock self = (SBlock) frame.getArgument1();
     int i = contextLevel - 1;
 
     while (i > 0) {
@@ -310,7 +310,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          Object value = currentOrContext.getArguments()[argIdx];
+          Object value = currentOrContext.getArgument(argIdx);
           stackPointer += 1;
           stack[stackPointer] = value;
           break;
@@ -318,17 +318,17 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case PUSH_SELF: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[0];
+          stack[stackPointer] = frame.getArgument1();
           break;
         }
         case PUSH_ARG1: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[1];
+          stack[stackPointer] = frame.getArgument2();
           break;
         }
         case PUSH_ARG2: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[2];
+          stack[stackPointer] = frame.getArgument3();
           break;
         }
 
@@ -341,7 +341,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           stackPointer += 1;
           stack[stackPointer] =
-              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+              ((AbstractReadFieldNode) node).read((SObject) frame.getArgument1());
           break;
         }
 
@@ -354,7 +354,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           stackPointer += 1;
           stack[stackPointer] =
-              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+              ((AbstractReadFieldNode) node).read((SObject) frame.getArgument1());
           break;
         }
 
@@ -375,7 +375,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           stackPointer += 1;
           stack[stackPointer] = ((AbstractReadFieldNode) node).read(
-              (SObject) currentOrContext.getArguments()[0]);
+              (SObject) currentOrContext.getArgument1());
           break;
         }
 
@@ -502,7 +502,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          currentOrContext.getArguments()[argIdx] = stack[stackPointer];
+          currentOrContext.setArgument(argIdx, stack[stackPointer]);
           stackPointer -= 1;
           break;
         }
@@ -522,7 +522,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(fieldIdx));
           }
 
-          ((AbstractWriteFieldNode) node).write((SObject) currentOrContext.getArguments()[0],
+          ((AbstractWriteFieldNode) node).write((SObject) currentOrContext.getArgument1(),
               stack[stackPointer]);
           stackPointer -= 1;
           break;
@@ -535,7 +535,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(0));
           }
 
-          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+          ((AbstractWriteFieldNode) node).write((SObject) frame.getArgument1(),
               stack[stackPointer]);
 
           stackPointer -= 1;
@@ -548,7 +548,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(1));
           }
 
-          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+          ((AbstractWriteFieldNode) node).write((SObject) frame.getArgument1(),
               stack[stackPointer]);
 
           stackPointer -= 1;
@@ -629,7 +629,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            SObject sendOfBlockValueMsg = (SObject) outer.getArgument1();
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
 
@@ -665,7 +665,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            SObject sendOfBlockValueMsg = (SObject) outer.getArgument1();
 
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
@@ -692,7 +692,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
         case RETURN_SELF: {
           LoopNode.reportLoopCount(this, backBranchesTaken);
-          return frame.getArguments()[0];
+          return frame.getArgument1();
         }
 
         case RETURN_FIELD_0: {
@@ -702,7 +702,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArgument1());
         }
         case RETURN_FIELD_1: {
           Node node = quickened[bytecodeIndex];
@@ -711,7 +711,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArgument1());
         }
         case RETURN_FIELD_2: {
           Node node = quickened[bytecodeIndex];
@@ -720,7 +720,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(2));
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) frame.getArgument1());
         }
 
         case INC: {
@@ -767,7 +767,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          SObject obj = (SObject) currentOrContext.getArguments()[0];
+          SObject obj = (SObject) currentOrContext.getArgument1();
 
           Node node = quickened[bytecodeIndex];
           if (node == null) {
@@ -802,7 +802,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             currentOrContext = determineContext(currentOrContext, contextIdx);
           }
 
-          SObject obj = (SObject) currentOrContext.getArguments()[0];
+          SObject obj = (SObject) currentOrContext.getArgument1();
 
           Node node = quickened[bytecodeIndex];
           if (node == null) {
@@ -986,7 +986,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            SObject sendOfBlockValueMsg = (SObject) outer.getArgument1();
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
 
@@ -1014,7 +1014,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            SObject sendOfBlockValueMsg = (SObject) outer.getArgument1();
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
 
@@ -1043,7 +1043,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            SObject sendOfBlockValueMsg = (SObject) outer.getArgument1();
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
 
@@ -1073,7 +1073,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
             VirtualFrame outer = determineOuterContext(frame);
-            SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
+            SObject sendOfBlockValueMsg = (SObject) outer.getArgument1();
             Object result =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
 

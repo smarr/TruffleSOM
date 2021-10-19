@@ -327,7 +327,7 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
-      write.doPreEvaluated(frame, args);
+      write.executeEvaluated(frame, (SObject) args[0], args[1]);
       return args[0];
     }
 
@@ -339,7 +339,8 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
-      return write.executeEvaluated(frame, (SObject) rcvr, arg);
+      write.executeEvaluated(frame, (SObject) rcvr, arg);
+      return rcvr;
     }
 
     @Override
@@ -358,7 +359,8 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      return doPreEvaluated(frame, frame.getArguments());
+      write.executeEvaluated(frame, (SObject) frame.getArgument1(), frame.getArgument2());
+      return frame.getArgument1();
     }
 
     @Override
