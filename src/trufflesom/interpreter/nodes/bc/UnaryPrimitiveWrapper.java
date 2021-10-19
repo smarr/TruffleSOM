@@ -1,6 +1,6 @@
 package trufflesom.interpreter.nodes.bc;
 
-import static trufflesom.interpreter.bc.Bytecodes.Q_SEND;
+import static trufflesom.interpreter.bc.Bytecodes.Q_SEND_1;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
@@ -8,8 +8,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.TruffleCompiler;
-import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.UnaryMessageSendNode;
+import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
@@ -53,11 +54,13 @@ public class UnaryPrimitiveWrapper extends UnaryExpressionNode {
   }
 
   private AbstractMessageSendNode makeGenericSend() {
-    AbstractMessageSendNode node =
-        MessageSendNode.createGeneric(selector, null, sourceSection, universe);
+    UninitializedDispatchNode uninit = new UninitializedDispatchNode(selector, universe);
+    UnaryMessageSendNode node =
+        new UnaryMessageSendNode(selector, null, uninit);
+    node.initialize(sourceSection);
 
     assert getParent() instanceof BytecodeLoopNode : "UnaryPrimitiveWrapper are expected to be direct children of a `BytecodeLoopNode`.";
-    ((BytecodeLoopNode) getParent()).requicken(bytecodeIndex, Q_SEND, node);
+    ((BytecodeLoopNode) getParent()).requicken(bytecodeIndex, Q_SEND_1, node);
 
     return node;
   }

@@ -335,10 +335,11 @@ public final class MessageSendNode {
 
     @Child private AbstractDispatchNode dispatchNode;
 
-    private GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
+    public GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
         final AbstractDispatchNode dispatchNode) {
       super(arguments);
-      assert arguments.length > 4 : "Use Unary, Binary... variants instead";
+      assert arguments == null
+          || arguments.length > 4 : "Use Unary, Binary... variants instead";
       this.selector = selector;
       this.dispatchNode = dispatchNode;
     }
@@ -378,7 +379,7 @@ public final class MessageSendNode {
 
     private final SSymbol selector;
 
-    private UnaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public UnaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final AbstractDispatchNode dispatchNode) {
       this.rcvr = rcvr;
       this.dispatchNode = dispatchNode;
@@ -432,7 +433,7 @@ public final class MessageSendNode {
 
     private final SSymbol selector;
 
-    private BinaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public BinaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final ExpressionNode arg, final AbstractDispatchNode dispatchNode) {
       this.rcvr = rcvr;
       this.arg = arg;
@@ -490,7 +491,7 @@ public final class MessageSendNode {
 
     private final SSymbol selector;
 
-    private TernaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public TernaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final ExpressionNode arg1, final ExpressionNode arg2,
         final AbstractDispatchNode dispatchNode) {
       this.rcvr = rcvr;
@@ -553,7 +554,7 @@ public final class MessageSendNode {
 
     private final SSymbol selector;
 
-    private QuaternaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public QuaternaryMessageSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final ExpressionNode arg1, final ExpressionNode arg2, final ExpressionNode arg3,
         final AbstractDispatchNode dispatchNode) {
       this.rcvr = rcvr;
@@ -615,10 +616,10 @@ public final class MessageSendNode {
 
     @Child private DirectCallNode cachedSuperMethod;
 
-    private SuperSendNode(final SSymbol selector, final ExpressionNode[] arguments,
+    public SuperSendNode(final SSymbol selector, final ExpressionNode[] arguments,
         final DirectCallNode superMethod) {
       super(arguments);
-      assert arguments.length > 4;
+      assert arguments == null || arguments.length > 4;
       this.selector = selector;
       this.cachedSuperMethod = superMethod;
     }
@@ -652,7 +653,7 @@ public final class MessageSendNode {
 
     @Child private DirectCallNode cachedSuperMethod;
 
-    private UnarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public UnarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final DirectCallNode superMethod) {
       this.rcvr = rcvr;
       this.selector = selector;
@@ -700,7 +701,7 @@ public final class MessageSendNode {
 
     @Child private DirectCallNode cachedSuperMethod;
 
-    private BinarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public BinarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final ExpressionNode arg1, final DirectCallNode superMethod) {
       this.rcvr = rcvr;
       this.arg1 = arg1;
@@ -751,7 +752,7 @@ public final class MessageSendNode {
 
     @Child private DirectCallNode cachedSuperMethod;
 
-    private TernarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public TernarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final ExpressionNode arg1, final ExpressionNode arg2,
         final DirectCallNode superMethod) {
       this.rcvr = rcvr;
@@ -807,7 +808,7 @@ public final class MessageSendNode {
 
     @Child private DirectCallNode cachedSuperMethod;
 
-    private QuaternarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
+    public QuaternarySuperSendNode(final SSymbol selector, final ExpressionNode rcvr,
         final ExpressionNode arg1, final ExpressionNode arg2, final ExpressionNode arg3,
         final DirectCallNode superMethod) {
       this.rcvr = rcvr;
@@ -856,11 +857,11 @@ public final class MessageSendNode {
     }
   }
 
-  private static final class SuperExprNode extends AbstractNaryMessageSendNode {
+  public static final class SuperExprNode extends AbstractNaryMessageSendNode {
     private final SSymbol                 selector;
     @Child private PreevaluatedExpression expr;
 
-    private SuperExprNode(final SSymbol selector, final ExpressionNode[] arguments,
+    public SuperExprNode(final SSymbol selector, final ExpressionNode[] arguments,
         final PreevaluatedExpression expr) {
       super(arguments);
       this.selector = selector;

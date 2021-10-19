@@ -88,10 +88,12 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.LoopNode;
@@ -117,8 +119,19 @@ import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode;
-import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.BinaryMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.BinarySuperSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.QuaternaryMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.QuaternarySuperSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.SuperExprNode;
+import trufflesom.interpreter.nodes.MessageSendNode.SuperSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.TernaryMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.TernarySuperSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.UnaryMessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.UnarySuperSendNode;
+import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -614,11 +627,35 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             }
 
             if (!done) {
-              AbstractMessageSendNode quick =
-                  MessageSendNode.createGeneric(signature, null, sourceSection, universe);
-              quickenBytecode(bytecodeIndex, Q_SEND, quick);
-
-              result = quick.doPreEvaluated(frame, callArgs);
+              UninitializedDispatchNode uninit =
+                  new UninitializedDispatchNode(signature, universe);
+              if (numberOfArguments == 1) {
+                UnaryMessageSendNode q = new UnaryMessageSendNode(signature, null, uninit);
+                quickenBytecode(bytecodeIndex, Q_SEND_1, q);
+                result = q.doPreUnary(frame, callArgs[0]);
+              } else if (numberOfArguments == 2) {
+                BinaryMessageSendNode q =
+                    new BinaryMessageSendNode(signature, null, null, uninit);
+                quickenBytecode(bytecodeIndex, Q_SEND_2, q);
+                result = q.doPreBinary(frame, callArgs[0], callArgs[1]);
+              } else if (numberOfArguments == 3) {
+                TernaryMessageSendNode q =
+                    new TernaryMessageSendNode(signature, null, null, null, uninit);
+                quickenBytecode(bytecodeIndex, Q_SEND_3, q);
+                result = q.doPreTernary(frame, callArgs[0], callArgs[1], callArgs[2]);
+              } else if (numberOfArguments == 4) {
+                QuaternaryMessageSendNode q =
+                    new QuaternaryMessageSendNode(signature, null, null, null, null, uninit);
+                quickenBytecode(bytecodeIndex, Q_SEND, q);
+                result =
+                    q.doPreQuat(frame, callArgs[0], callArgs[1], callArgs[2], callArgs[3]);
+              } else {
+                GenericMessageSendNode q =
+                    new GenericMessageSendNode(signature, null, uninit).initialize(
+                        sourceSection);
+                quickenBytecode(bytecodeIndex, Q_SEND, q);
+                result = q.doPreEvaluated(frame, callArgs);
+              }
             }
 
             stackPointer += 1;
@@ -651,11 +688,59 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
                 numberOfArguments);
             stackPointer -= numberOfArguments;
 
-            PreevaluatedExpression quick = MessageSendNode.createSuperSend(
-                (SClass) getHolder().getSuperClass(), signature, null, sourceSection);
-            quickenBytecode(bytecodeIndex, Q_SEND, (Node) quick);
+            SInvokable method =
+                ((SClass) getHolder().getSuperClass()).lookupInvokable(signature);
 
-            Object result = quick.doPreEvaluated(frame, callArgs);
+            if (method == null) {
+              throw new NotYetImplementedException(
+                  "Currently #dnu with super sent is not yet implemented. ");
+            }
+
+            AbstractMessageSendNode q = null;
+            byte quickBytecode = 0;
+
+            if (method.isTrivial()) {
+              PreevaluatedExpression node = method.copyTrivialNode();
+              q = new SuperExprNode(signature, null, node).initialize(sourceSection);
+              if (numberOfArguments == 1) {
+                quickBytecode = Q_SEND_1;
+              } else if (numberOfArguments == 2) {
+                quickBytecode = Q_SEND_2;
+              } else if (numberOfArguments == 3) {
+                quickBytecode = Q_SEND_3;
+              } else {
+                quickBytecode = Q_SEND;
+              }
+            } else {
+              DirectCallNode superMethodNode =
+                  Truffle.getRuntime().createDirectCallNode(method.getCallTarget());
+              if (numberOfArguments == 1) {
+                q = new UnarySuperSendNode(signature, null, superMethodNode).initialize(
+                    sourceSection);
+                quickBytecode = Q_SEND_1;
+              } else if (numberOfArguments == 2) {
+                q = new BinarySuperSendNode(signature, null, null, superMethodNode).initialize(
+                    sourceSection);
+                quickBytecode = Q_SEND_2;
+              } else if (numberOfArguments == 3) {
+                q = new TernarySuperSendNode(signature, null, null, null,
+                    superMethodNode).initialize(sourceSection);
+                quickBytecode = Q_SEND_3;
+              } else if (numberOfArguments == 2) {
+                q = new QuaternarySuperSendNode(signature, null, null, null, null,
+                    superMethodNode).initialize(sourceSection);
+                quickBytecode = Q_SEND;
+              } else {
+                q = new SuperSendNode(signature, null, superMethodNode).initialize(
+                    sourceSection);
+                quickBytecode = Q_SEND;
+              }
+            }
+
+            assert quickBytecode != 0;
+            quickenBytecode(bytecodeIndex, quickBytecode, q);
+
+            Object result = q.doPreEvaluated(frame, callArgs);
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -1003,8 +1088,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 1;
 
           try {
-            UnaryExpressionNode node = (UnaryExpressionNode) quickened[bytecodeIndex];
-            Object result = node.executeEvaluated(frame, rcvr);
+            PreevaluatedExpression node = (PreevaluatedExpression) quickened[bytecodeIndex];
+            Object result = node.doPreUnary(frame, rcvr);
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -1032,8 +1117,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 2;
 
           try {
-            BinaryExpressionNode node = (BinaryExpressionNode) quickened[bytecodeIndex];
-            Object result = node.executeEvaluated(frame, rcvr, arg);
+            PreevaluatedExpression node = (PreevaluatedExpression) quickened[bytecodeIndex];
+            Object result = node.doPreBinary(frame, rcvr, arg);
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -1062,8 +1147,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           stackPointer -= 3;
 
           try {
-            TernaryExpressionNode node = (TernaryExpressionNode) quickened[bytecodeIndex];
-            Object result = node.executeEvaluated(frame, rcvr, arg1, arg2);
+            PreevaluatedExpression node = (PreevaluatedExpression) quickened[bytecodeIndex];
+            Object result = node.doPreTernary(frame, rcvr, arg1, arg2);
 
             stackPointer += 1;
             stack[stackPointer] = result;
