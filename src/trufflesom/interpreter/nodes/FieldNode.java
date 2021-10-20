@@ -82,8 +82,7 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
-      CompilerDirectives.transferToInterpreter();
-      throw new UnsupportedOperationException();
+      return read.read((SObject) rcvr);
     }
 
     @Override
