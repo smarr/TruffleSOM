@@ -41,10 +41,10 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
       final long limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
-        valueSend.call(new Object[] {block, receiver});
+        valueSend.call2(block, receiver);
       }
       for (long i = receiver + step; i <= limit; i += step) {
-        valueSend.call(new Object[] {block, i});
+        valueSend.call2(block, i);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -59,10 +59,10 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
       final double limit, final long step, final SBlock block) {
     try {
       if (receiver <= limit) {
-        valueSend.call(new Object[] {block, receiver});
+        valueSend.call2(block, receiver);
       }
       for (long i = receiver + step; i <= limit; i += step) {
-        valueSend.call(new Object[] {block, i});
+        valueSend.call2(block, i);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {

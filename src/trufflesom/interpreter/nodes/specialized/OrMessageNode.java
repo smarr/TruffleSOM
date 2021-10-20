@@ -45,7 +45,7 @@ public abstract class OrMessageNode extends BinaryExpressionNode {
     if (receiver) {
       return true;
     } else {
-      return (boolean) blockValueSend.call(new Object[] {argument});
+      return (boolean) blockValueSend.call1(argument);
     }
   }
 }

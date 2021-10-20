@@ -53,7 +53,7 @@ public abstract class IfMessageNode extends BinaryExpressionNode {
       @Cached("arg.getMethod()") final SInvokable method,
       @Cached("createDirect(method)") final DirectCallNode callTarget) {
     if (condProf.profile(rcvr == expected)) {
-      return callTarget.call(new Object[] {arg});
+      return callTarget.call1(arg);
     } else {
       return Nil.nilObject;
     }

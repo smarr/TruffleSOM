@@ -64,9 +64,9 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   public final Object doIfTrueIfFalseWithInliningTwoBlocks(final boolean receiver,
       final SBlock trueBlock, final SBlock falseBlock) {
     if (condProf.profile(receiver)) {
-      return trueValueSend.call(new Object[] {trueBlock});
+      return trueValueSend.call1(trueBlock);
     } else {
-      return falseValueSend.call(new Object[] {falseBlock});
+      return falseValueSend.call1(falseBlock);
     }
   }
 
@@ -88,7 +88,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
     if (condProf.profile(receiver)) {
       return trueValue;
     } else {
-      return falseValueSend.call(new Object[] {falseBlock});
+      return falseValueSend.call1(falseBlock);
     }
   }
 
@@ -96,7 +96,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   public final Object doIfTrueIfFalseWithInliningFalseValue(final boolean receiver,
       final SBlock trueBlock, final Object falseValue) {
     if (condProf.profile(receiver)) {
-      return trueValueSend.call(new Object[] {trueBlock});
+      return trueValueSend.call1(trueBlock);
     } else {
       return falseValue;
     }
@@ -110,7 +110,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
       return trueValue;
     } else {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.20");
-      return falseBlock.getMethod().invoke(call, new Object[] {falseBlock});
+      return falseBlock.getMethod().invoke1(call, falseBlock);
     }
   }
 
@@ -120,7 +120,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
       final Object falseValue) {
     if (condProf.profile(receiver)) {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.30");
-      return trueBlock.getMethod().invoke(call, new Object[] {trueBlock});
+      return trueBlock.getMethod().invoke1(call, trueBlock);
     } else {
       return falseValue;
     }

@@ -631,6 +631,28 @@ public final class MessageSendNode {
     }
 
     @Override
+    public Object doPreUnary(final VirtualFrame frame, final Object rcvr) {
+      return cachedSuperMethod.call1(rcvr);
+    }
+
+    @Override
+    public Object doPreBinary(final VirtualFrame frame, final Object rcvr, final Object arg) {
+      return cachedSuperMethod.call2(rcvr, arg);
+    }
+
+    @Override
+    public Object doPreTernary(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2) {
+      return cachedSuperMethod.call3(rcvr, arg1, arg2);
+    }
+
+    @Override
+    public Object doPreQuat(final VirtualFrame frame, final Object rcvr, final Object arg1,
+        final Object arg2, final Object arg3) {
+      return cachedSuperMethod.call4(rcvr, arg1, arg2, arg3);
+    }
+
+    @Override
     public SSymbol getInvocationIdentifier() {
       return selector;
     }

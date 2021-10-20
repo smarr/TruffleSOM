@@ -89,7 +89,7 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     if (receiver == false) {
       return false;
     } else {
-      return (boolean) blockValueSend.call(new Object[] {argument});
+      return (boolean) blockValueSend.call1(argument);
     }
   }
 }
