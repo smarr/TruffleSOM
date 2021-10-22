@@ -122,12 +122,20 @@ public class SomLanguage extends TruffleLanguage<Universe> {
       try {
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         if (!TruffleOptions.AOT && VmSettings.UsePinning) {
-          try {
-            int numCores = AffinityLock.cpuLayout().cpus();
-            affinity = AffinityLock.acquireLock(numCores > 1 ? 2 : 0);
-            System.out.println(AffinityLock.dumpLocks());
-          } catch (IllegalStateException e) {
-            Universe.errorExit("Pinning is activated, but pinning failed: " + e.getMessage());
+          boolean didPin = false;
+          int numCores = AffinityLock.cpuLayout().cpus();
+          int i = 0;
+          while (i < numCores && !didPin) {
+            try {
+              affinity = AffinityLock.acquireLock(i);
+              didPin = true;
+            } catch (IllegalStateException e) {
+              i += 1;
+            }
+          }
+
+          if (!didPin) {
+            Universe.errorExit("Pinning is active, but didn't find a core to pin it to");
           }
         }
         return executeWithThreadPinned();
