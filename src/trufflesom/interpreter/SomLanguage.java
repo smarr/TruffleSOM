@@ -120,7 +120,6 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     public Object execute(final VirtualFrame frame) {
       AffinityLock affinity = null;
       try {
-        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         if (!TruffleOptions.AOT && VmSettings.UsePinning) {
           try {
             int numCores = AffinityLock.cpuLayout().cpus();
