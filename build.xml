@@ -73,6 +73,12 @@
         <pathelement location="${classes.dir}" />
         <pathelement location="${bd.dir}/build/classes" />
 
+        <pathelement location="${lib.dir}/affinity.jar" />
+        <pathelement location="${lib.dir}/slf4j-api.jar" />
+        <pathelement location="${lib.dir}/slf4j-simple.jar" />
+        <pathelement location="${lib.dir}/jna-platform.jar" />
+        <pathelement location="${lib.dir}/jna.jar" />
+
         <pathelement location="${svm.build}/svm-core.jar" />
     </path>
     
@@ -230,6 +236,29 @@
         <get src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
             usetimestamp="true"
             dest="${lib.dir}/hamcrest-core-1.3.jar" />
+
+        <get src="https://repo1.maven.org/maven2/net/openhft/affinity/3.21ea80/affinity-3.21ea80.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/affinity.jar" />
+        <get src="https://repo1.maven.org/maven2/net/openhft/affinity/3.21ea80/affinity-3.21ea80-sources.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/affinity-sources.jar" />
+                        
+        <get src="https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.32/slf4j-api-1.7.32.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/slf4j-api.jar" />
+        <get src="https://repo1.maven.org/maven2/org/slf4j/slf4j-nop/1.7.32/slf4j-nop-1.7.32.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/slf4j-nop.jar" />
+        <get src="https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/1.7.32/slf4j-simple-1.7.32.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/slf4j-simple.jar" />
+        <get src="https://repo1.maven.org/maven2/net/java/dev/jna/jna-platform/5.8.0/jna-platform-5.8.0.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/jna-platform.jar" />
+        <get src="https://repo1.maven.org/maven2/net/java/dev/jna/jna/5.8.0/jna-5.8.0.jar"
+            usetimestamp="true"
+            dest="${lib.dir}/jna.jar" />
     </target>
 
     <target name="eclipseformat">

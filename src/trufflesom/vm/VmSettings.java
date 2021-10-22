@@ -8,6 +8,7 @@ public class VmSettings implements Settings {
   public static final boolean UseAstInterp;
   public static final boolean UseBcInterp;
   public static final boolean UseJitCompiler;
+  public static final boolean UsePinning;
   public static final boolean PrintStackTraceOnDNU;
 
   static {
@@ -25,6 +26,11 @@ public class VmSettings implements Settings {
 
     val = System.getProperty("som.printStackTraceOnDNU", "false");
     PrintStackTraceOnDNU = "true".equals(val);
+
+    String osName = System.getProperty("os.name", "generic").toLowerCase();
+    boolean isLinux = osName.contains("linux");
+    val = System.getProperty("som.usePinning", "true");
+    UsePinning = "true".equals(val) && isLinux;
   }
 
   @Override

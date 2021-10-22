@@ -13,14 +13,17 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.Option;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.TruffleOptions;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
+import net.openhft.affinity.AffinityLock;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.SomExit;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SAbstractObject;
 
 
@@ -115,6 +118,25 @@ public class SomLanguage extends TruffleLanguage<Universe> {
 
     @Override
     public Object execute(final VirtualFrame frame) {
+      AffinityLock affinity = null;
+      try {
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+        if (!TruffleOptions.AOT && VmSettings.UsePinning) {
+          try {
+            affinity = AffinityLock.acquireLock();
+          } catch (IllegalStateException e) {
+            Universe.errorExit("Pinning is activated, but pinning failed: " + e.getMessage());
+          }
+        }
+        return executeWithThreadPinned();
+      } finally {
+        if (!TruffleOptions.AOT && VmSettings.UsePinning && affinity != null) {
+          affinity.release();
+        }
+      }
+    }
+
+    public Object executeWithThreadPinned() {
       if (testSelector != null && !testSelector.equals("")) {
         assert classPath != null;
         assert testClass != null;
