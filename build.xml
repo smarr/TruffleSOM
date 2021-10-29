@@ -3,8 +3,8 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="jvmci.version" value="jvmci-20.3-b09" />
-    <property name="jdk8.version"  value="282+07" />
+    <property name="jvmci.version" value="jvmci-21.3-b05" />
+    <property name="jdk8.version"  value="302+06" />
 
     <macrodef name="travis">
         <attribute name="target" />
