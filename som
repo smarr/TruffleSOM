@@ -42,8 +42,6 @@ explore.add_argument('-ts', '--trace-splitting', help='trace splitting decisions
                     dest='trace_splitting', action='store_true', default=False)
 explore.add_argument('-w', '--perf-warnings', help='enable performance warnings',
                     dest='perf_warnings', action='store_true', default=False)
-explore.add_argument('-v', '--visual-vm', help='connect to VisualVM for profiling',
-                    dest='visual_vm', action='store_true', default=False)
 
 profile = parser.add_argument_group('Profile', 'Profile Execution')
 profile.add_argument('-gp', '--graal-profile', help='enable Graal-level profiling after warmup',
@@ -56,6 +54,10 @@ profile.add_argument('-gb', '--graal-branch-profile', help='enable Graal-level b
                     dest='graal_branch_profile', action='store_true', default=False)
 profile.add_argument('-tp', '--truffle-profile', help='enable Graal-level profiling after warmup',
                     dest='truffle_profile', action='store_true', default=False)
+explore.add_argument('-v', '--visual-vm', help='connect to VisualVM for profiling',
+                    dest='visual_vm', action='store_true', default=False)
+explore.add_argument('-fr', '--flight-recorder', help='profile with Java Flight Recorder',
+                    dest='flight_recorder', action='store_true', default=False)
 
 
 parser.add_argument('-o', '--only', help='only compile give methods, comma separated list',
@@ -101,6 +103,9 @@ args, unknown_args = parser.parse_known_args()
 
 
 if args.java_interpreter:
+    args.interpreter = True
+
+if args.flight_recorder:
     args.interpreter = True
 
 if args.interpreter:
@@ -284,6 +289,11 @@ if not args.interpreter and args.only_compile:
     flags.append("-Dpolyglot.engine.CompileOnly=%s" % args.only_compile)
 if args.visual_vm:
     flags += ['-agentpath:/Users/smarr/Downloads/visualvm_138/profiler/lib/deployed/jdk16/mac/libprofilerinterface.jnilib=/Users/smarr/Downloads/visualvm_138/profiler/lib,5140']
+if args.flight_recorder:
+    flags += ['-XX:+UnlockCommercialFeatures', '-XX:+FlightRecorder',
+              '-XX:StartFlightRecording=delay=10s,duration=10d,name=fr-recording2,filename=fr-recording2.jfr,settings=profile']
+
+
 if args.assert_:
     flags += ['-esa', '-ea']
 else:
