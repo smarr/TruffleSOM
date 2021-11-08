@@ -62,8 +62,10 @@ benchmark-y1:
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
 
+    # Profile
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
     # Run Benchmarks
-    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
 
 benchmark-y2:
   stage: benchmark
@@ -76,8 +78,10 @@ benchmark-y2:
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
 
+    # Profile
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
     # Run Benchmarks
-    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
 
 benchmark-y3:
   stage: benchmark
@@ -90,8 +94,10 @@ benchmark-y3:
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
 
+    # Profile
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
     # Run Benchmarks
-    - rebench --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
 
 report-completion:
   stage: benchmark-completion
