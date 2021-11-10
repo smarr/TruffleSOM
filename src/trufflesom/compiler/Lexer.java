@@ -110,7 +110,7 @@ public final class Lexer {
     state.text = new StringBuilder();
     state.ptr = 0;
     state.lineNumber = 1;
-    state.lastLineEnd = 0;
+    state.lastLineEnd = -1;
     state.lastNonWhiteCharIdx = 0;
   }
 
