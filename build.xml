@@ -409,7 +409,14 @@
     
     <target name="tests" depends="test,som-test" />
     
-    <target name="native-ast" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native-ast"></target>
+    <target name="native-ast" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-ast"></target>
+    
+    <target name="compile-svm">
+      <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">
+        <env key="JAVA_HOME" value="${jvmci.home}" />
+        <arg line="build" />
+      </exec>
+    </target>
 
     <target name="compile-native-ast">
       <travis target="native" start="Build Native Image" />
@@ -440,7 +447,7 @@
       <travis target="native" />
     </target>
 
-    <target name="native-bc" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native-bc"></target>
+    <target name="native-bc" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-bc"></target>
 
     <target name="compile-native-bc">
       <travis target="native" start="Build Native Image" />
@@ -472,7 +479,7 @@
     </target>
 
     
-    <target name="native-obj-storage-test" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native-obj-storage-test"></target>
+    <target name="native-obj-storage-test" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-obj-storage-test"></target>
 
     <target name="compile-native-obj-storage-test">
       <travis target="native" start="Build Native Image" />
