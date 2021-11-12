@@ -25,7 +25,8 @@ import trufflesom.vmobjects.SAbstractObject;
 
 
 @TruffleLanguage.Registration(id = "som", name = "som", version = "0.1.0",
-    mimeType = SomLanguage.MIME_TYPE)
+    defaultMimeType = SomLanguage.MIME_TYPE,
+    characterMimeTypes = SomLanguage.MIME_TYPE)
 public class SomLanguage extends TruffleLanguage<Universe> {
 
   public static final String MIME_TYPE = "application/x-som-smalltalk";
