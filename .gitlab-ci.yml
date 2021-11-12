@@ -7,8 +7,8 @@ variables:
   PYTHONUNBUFFERED: "true"
   JVMCI_VERSION_CHECK: ignore
   ECLIPSE_EXE: /home/gitlab-runner/.local/eclipse/eclipse
-  GRAALEE_HOME: /home/gitlab-runner/.local/graalvm-ee-java8-21.3.0
-  JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+  GRAALEE_HOME: /home/gitlab-runner/.local/graalvm-ee-java17-22.0.0.2
+  JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64/
   ANT: "ant -e"
 
 before_script:

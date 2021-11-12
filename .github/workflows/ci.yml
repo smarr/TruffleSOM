@@ -13,18 +13,18 @@ jobs:
       
       - name: Tests
         run: |
-          export JAVA_HOME=$JAVA_HOME_8_X64
+          export JAVA_HOME=$JAVA_HOME_17_X64
           ant -e tests native-obj-storage-test
       
       - name: Tool Tests
         continue-on-error: true
         run: |
-          export JAVA_HOME=$JAVA_HOME_8_X64
+          export JAVA_HOME=$JAVA_HOME_17_X64
           ant -e nodestats-test coverage-test
       
       - name: SomSom Tests
         run: |
-          export JAVA_HOME=$JAVA_HOME_8_X64
+          export JAVA_HOME=$JAVA_HOME_17_X64
           ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives \
             core-lib/SomSom/tests/SomSomTests.som
 
@@ -53,6 +53,6 @@ jobs:
       - name: AWFY Test Run
         run: |
           pwd
-          export JAVA_HOME=$JAVA_HOME_8_X64
+          export JAVA_HOME=$JAVA_HOME_17_X64
           pip install ReBench
           rebench awfy-test.conf
