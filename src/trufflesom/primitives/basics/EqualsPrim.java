@@ -76,6 +76,7 @@ public abstract class EqualsPrim extends BinarySystemOperation {
   }
 
   @Specialization
+  @TruffleBoundary
   public final boolean doDouble(final double left, final BigInteger right) {
     return left == right.doubleValue();
   }

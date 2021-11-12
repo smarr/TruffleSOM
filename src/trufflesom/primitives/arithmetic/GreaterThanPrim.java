@@ -53,6 +53,7 @@ public abstract class GreaterThanPrim extends ArithmeticPrim {
   }
 
   @Specialization
+  @TruffleBoundary
   public final boolean doDouble(final double left, final BigInteger right) {
     return left > right.doubleValue();
   }
