@@ -845,7 +845,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     byte[] bytecodes = methodToBytecodes(
         "test = ( true " + sel + " [ #val ] )");
 
-    dump();
     assertEquals(10, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
