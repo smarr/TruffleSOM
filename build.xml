@@ -6,12 +6,6 @@
     <property name="jvmci.version" value="jvmci-22.0-b05" />
     <property name="jdk.version"   value="17.0.2+8" />
 
-    <condition property="is.atLeastJava9" value="true" else="false">
-      <or>
-        <matches string="${java.version}" pattern="^9"/>
-        <matches string="${java.version}" pattern="^1[0-9]"/>
-      </or>
-    </condition>
     <condition property="kernel" value="darwin-amd64" else="linux-amd64">
         <os family="mac"/>
     </condition>
@@ -22,7 +16,6 @@
     <echo>
         ant.java.version: ${ant.java.version}
         java.version:     ${java.version}
-        is.atLeastJava9:  ${is.atLeastJava9}
         kernel:           ${kernel}
     </echo>
 
@@ -314,7 +307,7 @@
     <target name="som-test" depends="compile-for-jar" description="Test som script">
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
-            <arg value="--no-libgraal" />
+            <arg value="--no-embedded-graal" />
             <arg value="-Dsom.interp=AST" />
             <arg value="-cp" />
             <arg value="Smalltalk" />
@@ -323,7 +316,7 @@
         
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
-            <arg value="--no-libgraal" />
+            <arg value="--no-embedded-graal" />
             <arg value="-Dsom.interp=BC" />
             <arg value="-cp" />
             <arg value="Smalltalk" />
