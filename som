@@ -320,6 +320,11 @@ if args.java_properties:
 if args.java_args:
     JAVA_ARGS += ['-' + property for property in args.java_args]
 
+if not args.interpreter:
+    flags += ['-Dpolyglot.engine.MultiTier=false',
+              '-Dpolyglot.engine.DynamicCompilationThresholds=false',
+              '-Dpolyglot.engine.SingleTierCompilationThreshold=253']
+
 # HACK: Havlak needs a lot of stack to run reliably...
 if 'Havlak' in args.args:
   # double the standard stack size
