@@ -48,7 +48,6 @@ public abstract class SInvokable extends SAbstractObject {
     this.sourceSection = source;
 
     this.invokable = invokable;
-    this.callTarget = invokable.createCallTarget();
   }
 
   public static final class SMethod extends SInvokable {
@@ -123,7 +122,7 @@ public abstract class SInvokable extends SAbstractObject {
   }
 
   public final RootCallTarget getCallTarget() {
-    return callTarget;
+    return invokable.getCallTarget();
   }
 
   public final Invokable getInvokable() {
@@ -149,11 +148,11 @@ public abstract class SInvokable extends SAbstractObject {
   }
 
   public final Object invoke(final Object[] arguments) {
-    return callTarget.call(arguments);
+    return invokable.getCallTarget().call(arguments);
   }
 
   public final Object invoke(final IndirectCallNode node, final Object[] arguments) {
-    return node.call(callTarget, arguments);
+    return node.call(invokable.getCallTarget(), arguments);
   }
 
   @Override
@@ -169,10 +168,9 @@ public abstract class SInvokable extends SAbstractObject {
 
   public abstract String getIdentifier();
 
-  private final SourceSection  sourceSection;
-  protected final Invokable    invokable;
-  private final RootCallTarget callTarget;
-  protected final SSymbol      signature;
+  private final SourceSection sourceSection;
+  protected final Invokable   invokable;
+  protected final SSymbol     signature;
 
   @CompilationFinal protected SClass holder;
 

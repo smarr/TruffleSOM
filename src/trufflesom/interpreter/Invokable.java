@@ -1,7 +1,5 @@
 package trufflesom.interpreter;
 
-import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -57,10 +55,6 @@ public abstract class Invokable extends RootNode {
   @Override
   public final boolean isCloningAllowed() {
     return true;
-  }
-
-  public final RootCallTarget createCallTarget() {
-    return Truffle.getRuntime().createCallTarget(this);
   }
 
   public abstract void propagateLoopCountThroughoutLexicalScope(long count);
