@@ -314,9 +314,6 @@ if args.java_interpreter:
 if args.print_graal_options:
     flags += ['-XX:+JVMCIPrintProperties']
 
-if not args.interpreter:
-    flags += ['-Dpolyglot.engine.LanguageAgnosticInlining=false']
-
 if args.java_properties:
     flags += ['-D' + property for property in args.java_properties]
 
