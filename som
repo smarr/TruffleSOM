@@ -188,8 +188,8 @@ CLASSPATH = (BASE_DIR + '/build/classes:'
            + BASE_DIR + '/libs/black-diamonds/build/classes')
 
 BOOT_CLASSPATH = ('-Xbootclasspath/a:'
-             + TRUFFLE_DIR + '/sdk/mxbuild/dists/jdk1.8/graal-sdk.jar:'
-             + TRUFFLE_DIR + '/truffle/mxbuild/dists/jdk1.8/truffle-api.jar')
+             + TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar:'
+             + TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar')
 
 if args.use_libgraal:
   GRAAL_JAVA_8_FLAGS = ['-XX:+UseJVMCICompiler', '-XX:+UseJVMCINativeLibrary',
@@ -197,7 +197,7 @@ if args.use_libgraal:
   GRAAL_JVMCI_FLAGS = []
 else:
   GRAAL_JAVA_8_FLAGS = ['-Djvmci.Compiler=graal',
-    '-Djvmci.class.path.append=' + TRUFFLE_DIR + '/compiler/mxbuild/dists/jdk1.8/graal.jar']
+    '-Djvmci.class.path.append=' + TRUFFLE_DIR + '/compiler/mxbuild/dists/graal.jar']
   GRAAL_JVMCI_FLAGS = ['-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:-UseJVMCICompiler']
 
 
