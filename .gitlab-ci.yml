@@ -21,7 +21,7 @@ test:
     - ${ANT} tests native-obj-storage-test native-tests
     - ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives core-lib/SomSom/tests/SomSomTests.som
 
-build-native-interp-ast:
+build:native-interp-ast:
   stage: build-and-test
   tags: [yuria2]
   script:
@@ -38,7 +38,7 @@ build-native-interp-ast:
         put som-native-interp-ast.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
 
-build-native-interp-bc:
+build:native-interp-bc:
   stage: build-and-test
   tags: [yuria3]
   script:
@@ -57,6 +57,7 @@ build-native-interp-bc:
 
 benchmark-y1:
   stage: benchmark
+  needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria]
   script:
     - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
@@ -75,6 +76,7 @@ benchmark-y1:
 
 benchmark-y2:
   stage: benchmark
+  needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria2]
   script:
     - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
@@ -93,6 +95,7 @@ benchmark-y2:
 
 benchmark-y3:
   stage: benchmark
+  needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria3]
   script:
     - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
