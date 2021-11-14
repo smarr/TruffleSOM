@@ -11,7 +11,6 @@ import org.graalvm.options.OptionValues;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.Option;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -25,7 +24,8 @@ import trufflesom.vmobjects.SAbstractObject;
 
 
 @TruffleLanguage.Registration(id = "som", name = "som", version = "0.1.0",
-    mimeType = SomLanguage.MIME_TYPE)
+    defaultMimeType = SomLanguage.MIME_TYPE,
+    characterMimeTypes = SomLanguage.MIME_TYPE)
 public class SomLanguage extends TruffleLanguage<Universe> {
 
   public static final String MIME_TYPE = "application/x-som-smalltalk";
@@ -145,11 +145,20 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   }
 
   private CallTarget createStartCallTarget() {
-    return Truffle.getRuntime().createCallTarget(new StartInterpretation());
+    StartInterpretation start = new StartInterpretation();
+    CallTarget ct = start.getCallTarget();
+
+    assert ct != null : "Expect the StartInterpretation callTarget to be available";
+    return ct;
   }
 
   private CallTarget createInitCallTarget() {
-    return Truffle.getRuntime().createCallTarget(new InitializeContext(this));
+    InitializeContext init = new InitializeContext(this);
+
+    CallTarget ct = init.getCallTarget();
+
+    assert ct != null : "Expect the InitializeContext callTarget to be available";
+    return ct;
   }
 
   private static boolean isStartSource(final Source source) {

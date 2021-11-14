@@ -3,8 +3,8 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="jvmci.version" value="jvmci-20.3-b09" />
-    <property name="jdk8.version"  value="282+07" />
+    <property name="jvmci.version" value="jvmci-21.3-b05" />
+    <property name="jdk8.version"  value="302+06" />
 
     <macrodef name="travis">
         <attribute name="target" />
@@ -44,13 +44,13 @@
     <property name="bd.dir"      location="${lib.dir}/black-diamonds/" />
     <property name="unit.dir"    location="tests"/>
     <property name="sdk.dir"     location="${lib.dir}/truffle/sdk" />
-    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists/jdk1.8" />
+    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
     <property name="truffle.dir" location="${lib.dir}/truffle/truffle" />
     <property name="svm.dir"     location="${lib.dir}/truffle/substratevm" />
     <property name="vm.dir"        location="${lib.dir}/truffle/vm" />
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
-    <property name="compiler.build" location="${truffle.dir}/mxbuild/dists/jdk1.8" />
-    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists/jdk1.8" />
+    <property name="compiler.build" location="${truffle.dir}/mxbuild/dists" />
+    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
 
     <property name="checkstyle.version" value="8.36" />
@@ -336,6 +336,7 @@
             <jvmarg value="-ea" />
             <jvmarg value="-esa" />
             <jvmarg value="-Dsom.interp=AST" />
+            <jvmarg value="-Dpolyglot.engine.WarnInterpreterOnly=false" />
             <classpath refid="som.cp" />
             <batchtest fork="yes" filtertrace="false">
               <fileset dir="tests">
@@ -350,6 +351,7 @@
             <jvmarg value="-ea" />
             <jvmarg value="-esa" />
             <jvmarg value="-Dsom.interp=BC" />
+            <jvmarg value="-Dpolyglot.engine.WarnInterpreterOnly=false" />
             <classpath refid="som.cp" />
             <batchtest fork="yes" filtertrace="false">
               <fileset dir="tests">
@@ -363,6 +365,7 @@
             <classpath refid="som.cp" />
             <jvmarg value="-ea" />
             <jvmarg value="-esa" />
+            <jvmarg value="-Dpolyglot.engine.WarnInterpreterOnly=false" />
             <arg line="-cp Smalltalk TestSuite/TestHarness.som --ignore-inefficacies" />
         </java>
         <fail message="Basic tests failed for AST interpreter." if="test.failed.ast" />
@@ -409,7 +412,14 @@
     
     <target name="tests" depends="test,som-test" />
     
-    <target name="native-ast" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native-ast"></target>
+    <target name="native-ast" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-ast"></target>
+    
+    <target name="compile-svm">
+      <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">
+        <env key="JAVA_HOME" value="${jvmci.home}" />
+        <arg line="build" />
+      </exec>
+    </target>
 
     <target name="compile-native-ast">
       <travis target="native" start="Build Native Image" />
@@ -440,7 +450,7 @@
       <travis target="native" />
     </target>
 
-    <target name="native-bc" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native-bc"></target>
+    <target name="native-bc" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-bc"></target>
 
     <target name="compile-native-bc">
       <travis target="native" start="Build Native Image" />
@@ -472,7 +482,7 @@
     </target>
 
     
-    <target name="native-obj-storage-test" depends="truffle-libs,libs,jvmci-libs,compile-som,compile-native-obj-storage-test"></target>
+    <target name="native-obj-storage-test" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-obj-storage-test"></target>
 
     <target name="compile-native-obj-storage-test">
       <travis target="native" start="Build Native Image" />
