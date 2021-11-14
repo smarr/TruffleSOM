@@ -25,6 +25,8 @@ build-native-interp-ast:
   stage: build-and-test
   tags: [yuria2]
   script:
+    - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
+    - sed -i'' '45,56d' libs/truffle/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java
     - ${ANT} compile native-ast -Dno.jit=true
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
     
@@ -40,6 +42,8 @@ build-native-interp-bc:
   stage: build-and-test
   tags: [yuria3]
   script:
+    - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
+    - sed -i'' '45,56d' libs/truffle/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java
     - ${ANT} compile native-bc  -Dno.jit=true
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
     
@@ -55,6 +59,8 @@ benchmark-y1:
   stage: benchmark
   tags: [yuria]
   script:
+    - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
+    - sed -i'' '45,56d' libs/truffle/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java
     - ${ANT} compile
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
@@ -71,6 +77,8 @@ benchmark-y2:
   stage: benchmark
   tags: [yuria2]
   script:
+    - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
+    - sed -i'' '45,56d' libs/truffle/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java
     - ${ANT} compile
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
@@ -87,6 +95,8 @@ benchmark-y3:
   stage: benchmark
   tags: [yuria3]
   script:
+    - (cd libs/truffle; git checkout compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java)
+    - sed -i'' '45,56d' libs/truffle/compiler/src/org.graalvm.compiler.truffle.compiler/src/org/graalvm/compiler/truffle/compiler/phases/TruffleCompilerPhases.java
     - ${ANT} compile
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
