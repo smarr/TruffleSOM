@@ -11,6 +11,7 @@ import org.graalvm.options.OptionValues;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.Option;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -145,6 +146,10 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     StartInterpretation start = new StartInterpretation();
     CallTarget ct = start.getCallTarget();
 
+    if (ct == null) {
+      ct = Truffle.getRuntime().createCallTarget(start);
+    }
+
     assert ct != null : "Expect the StartInterpretation callTarget to be available";
     return ct;
   }
@@ -153,6 +158,9 @@ public class SomLanguage extends TruffleLanguage<Universe> {
     InitializeContext init = new InitializeContext(this);
 
     CallTarget ct = init.getCallTarget();
+    if (ct == null) {
+      ct = Truffle.getRuntime().createCallTarget(init);
+    }
 
     assert ct != null : "Expect the InitializeContext callTarget to be available";
     return ct;
