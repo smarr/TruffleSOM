@@ -88,6 +88,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.HostCompilerDirectives.BytecodeInterpreterSwitch;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
@@ -237,6 +238,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
   @Override
   @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
+  @BytecodeInterpreterSwitch
   public Object executeGeneric(final VirtualFrame frame) {
     Object[] stack = new Object[maxStackDepth];
 

@@ -31,7 +31,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -121,8 +123,13 @@ public abstract class SInvokable extends SAbstractObject {
     return sourceSection;
   }
 
+  @TruffleBoundary
   public final RootCallTarget getCallTarget() {
-    return invokable.getCallTarget();
+    RootCallTarget ct = invokable.getCallTarget();
+    if (ct == null) {
+      ct = Truffle.getRuntime().createCallTarget(invokable);
+    }
+    return ct;
   }
 
   public final Invokable getInvokable() {
@@ -148,11 +155,11 @@ public abstract class SInvokable extends SAbstractObject {
   }
 
   public final Object invoke(final Object[] arguments) {
-    return invokable.getCallTarget().call(arguments);
+    return getCallTarget().call(arguments);
   }
 
   public final Object invoke(final IndirectCallNode node, final Object[] arguments) {
-    return node.call(invokable.getCallTarget(), arguments);
+    return node.call(getCallTarget(), arguments);
   }
 
   @Override

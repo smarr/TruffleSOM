@@ -355,9 +355,7 @@
     </target>
     
     <target name="tests" depends="test,som-test" />
-    
-    <target name="native-ast" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-ast"></target>
-    
+
     <target name="compile-svm">
       <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">
         <env key="JAVA_HOME" value="${jvmci.home}" />
@@ -365,58 +363,68 @@
       </exec>
     </target>
 
+    <macrodef name="native-image">
+        <attribute name="exe"/>
+        <attribute name="dir"/>
+        <attribute name="java-home"/>
+        <attribute name="is-ce" default="true" />
+        <attribute name="type" />
+        <attribute name="out" />
+        <attribute name="out-interp" />
+
+        <sequential>
+            <exec executable="@{exe}" dir="@{dir}" failonerror="true">
+              <env key="JAVA_HOME" value="@{java-home}" />
+              <arg line="native-image" if:true="@{is-ce}" if:blank="${home.ext}" /> <!--  -->
+              <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
+              <!-- <arg line="- -gc=G1" unless:true="@{is-ce}" /> -->
+              <arg line="-H:-DeleteLocalSymbols" />
+              <arg line="-Dsom.interp=@{type}" />
+              <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
+              <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
+
+              <!-- <arg line="-H:+PrintRuntimeCompileMethods" /> -->
+              <!-- <arg line="-H:+PrintMethodHistogram" />
+                   <arg line="-H:+RuntimeAssertions" />
+                   <arg line="-H:+EnforceMaxRuntimeCompileMethods" /> -->
+
+              <arg line="-cp ${ant.refid:common.cp}" />
+              <arg line="trufflesom.vm.Universe" />
+              <arg line="@{out}" />
+            </exec>
+            <move file="@{dir}/@{out}" todir="${src.dir}/../" />
+            <move file="${src.dir}/../@{out}" tofile="${src.dir}/../@{out-interp}" if:true="${no.jit}" />
+        </sequential>
+    </macrodef>
+
+    <target name="native-deps" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som" />
+
+    <target name="native-ast" depends="native-deps,compile-native-ast"></target>
     <target name="compile-native-ast">
-      <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">
-        <env key="JAVA_HOME" value="${jvmci.home}" />
-        <arg line="native-image" />
-        <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
-        <arg line="-H:-DeleteLocalSymbols" />
-        <arg line="-Dsom.interp=AST" />
-        <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
-        <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
-
-        <!-- <arg line="-H:+PrintRuntimeCompileMethods" /> -->
-        <!-- <arg line="-H:+PrintMethodHistogram" />
-             <arg line="-H:+RuntimeAssertions" />
-             <arg line="-H:+EnforceMaxRuntimeCompileMethods" /> -->
-
-        <arg line="-cp ${ant.refid:common.cp}" />
-        <arg line="trufflesom.vm.Universe" />
-        <arg line="som-native-ast" />
-      </exec>
-
-
-      <move file="${svm.dir}/som-native-ast" todir="${src.dir}/../" />
-      <move file="${src.dir}/../som-native-ast" tofile="${src.dir}/../som-native-interp-ast" if:true="${no.jit}" />
+      <native-image exe="${mx.cmd}" dir="${svm.dir}" java-home="${jvmci.home}"
+          type="AST" out="som-native-ast" out-interp="som-native-interp-ast" />
     </target>
 
-    <target name="native-bc" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-bc"></target>
-
+    <target name="native-bc" depends="native-deps,compile-native-bc"></target>
     <target name="compile-native-bc">
-      <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">
-        <env key="JAVA_HOME" value="${jvmci.home}" />
-        <arg line="native-image" />
-        <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
-        <arg line="-H:-DeleteLocalSymbols" />
-        <arg line="-Dsom.interp=BC" />
-        <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
-        <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
-
-        <!-- <arg line="-H:+PrintRuntimeCompileMethods" /> -->
-        <!-- <arg line="-H:+PrintMethodHistogram" />
-             <arg line="-H:+RuntimeAssertions" />
-             <arg line="-H:+EnforceMaxRuntimeCompileMethods" /> -->
-
-        <arg line="-cp ${ant.refid:common.cp}" />
-        <arg line="trufflesom.vm.Universe" />
-        <arg line="som-native-bc" />
-      </exec>
-
-      <move file="${svm.dir}/som-native-bc" todir="${src.dir}/../" />
-      <move file="${src.dir}/../som-native-bc" tofile="${src.dir}/../som-native-interp-bc" if:true="${no.jit}" />
+      <native-image exe="${mx.cmd}" dir="${svm.dir}" java-home="${jvmci.home}"
+          type="BC" out="som-native-bc" out-interp="som-native-interp-bc" />
+    </target>
+    
+    <target name="native-ast-ee" depends="native-deps,compile-native-ast-ee"></target>
+    <target name="compile-native-ast-ee">
+      <native-image exe="${env.GRAALEE_HOME}/bin/native-image"
+          dir="${build.dir}" java-home="${env.GRAALEE_HOME}" is-ce="false"
+          type="AST" out="som-native-ast-ee" out-interp="som-native-interp-ast-ee" />
     </target>
 
-    
+    <target name="native-bc-ee" depends="native-deps,compile-native-bc-ee"></target>
+    <target name="compile-native-bc-ee">
+      <native-image exe="${env.GRAALEE_HOME}/bin/native-image"
+          dir="${build.dir}" java-home="${env.GRAALEE_HOME}" is-ce="false"
+          type="BC" out="som-native-bc-ee" out-interp="som-native-interp-bc-ee" />
+    </target>
+
     <target name="native-obj-storage-test" depends="truffle-libs,libs,jvmci-libs,compile-svm,compile-som,compile-native-obj-storage-test"></target>
 
     <target name="compile-native-obj-storage-test">
