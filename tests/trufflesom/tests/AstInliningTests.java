@@ -32,9 +32,8 @@ import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
+import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
-import trufflesom.interpreter.nodes.literals.StringLiteralNode;
-import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
 import trufflesom.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
@@ -135,8 +134,8 @@ public class AstInliningTests extends TruffleTestSetup {
     literalTest("1", IntegerLiteralNode.class);
     literalTest("-10", IntegerLiteralNode.class);
     literalTest("3333", IntegerLiteralNode.class);
-    literalTest("'str'", StringLiteralNode.class);
-    literalTest("#sym", SymbolLiteralNode.class);
+    literalTest("'str'", GenericLiteralNode.class);
+    literalTest("#sym", GenericLiteralNode.class);
     literalTest("1.1", DoubleLiteralNode.class);
     literalTest("-2342.234", DoubleLiteralNode.class);
 

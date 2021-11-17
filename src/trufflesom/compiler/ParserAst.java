@@ -35,15 +35,12 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
-import trufflesom.interpreter.nodes.literals.ArrayLiteralNode;
-import trufflesom.interpreter.nodes.literals.BigIntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
+import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
-import trufflesom.interpreter.nodes.literals.StringLiteralNode;
-import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Universe;
@@ -324,23 +321,24 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     switch (sym) {
       case Pound: {
         peekForNextSymbolFromLexerIfNecessary();
+        Object value;
         if (nextSym == NewTerm) {
-          return new ArrayLiteralNode(literalArray()).initialize(getSource(coord));
+          value = literalArray();
         } else {
-          return new SymbolLiteralNode(literalSymbol()).initialize(getSource(coord));
+          value = literalSymbol();
         }
+        return new GenericLiteralNode(value).initialize(getSource(coord));
       }
       case STString:
-        return new StringLiteralNode(literalString()).initialize(getSource(coord));
+        return new GenericLiteralNode(literalString()).initialize(getSource(coord));
       default:
         boolean isNegative = isNegativeNumber();
         if (sym == Integer) {
           Object value = literalInteger(isNegative);
           if (value instanceof BigInteger) {
-            return new BigIntegerLiteralNode(
-                (BigInteger) value).initialize(getSource(coord));
+            return new GenericLiteralNode(value).initialize(getSource(coord));
           } else {
-            return new IntegerLiteralNode((Long) value).initialize(getSource(coord));
+            return new IntegerLiteralNode((long) value).initialize(getSource(coord));
           }
         } else {
           if (sym != Double) {

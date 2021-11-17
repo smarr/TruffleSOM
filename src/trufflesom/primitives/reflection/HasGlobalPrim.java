@@ -2,12 +2,10 @@ package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.nodes.Node;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.SOMNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
@@ -30,15 +28,10 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
     return hasGlobal.hasGlobal(argument);
   }
 
-  private abstract static class HasGlobalNode extends SOMNode {
+  private abstract static class HasGlobalNode extends Node {
     protected static final int INLINE_CACHE_SIZE = 6;
 
     public abstract boolean hasGlobal(SSymbol argument);
-
-    @Override
-    public ExpressionNode getFirstMethodBodyNode() {
-      throw new NotYetImplementedException();
-    }
   }
 
   private static final class UninitializedHasGlobal extends HasGlobalNode {

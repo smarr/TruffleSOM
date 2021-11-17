@@ -29,9 +29,8 @@ import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
+import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
-import trufflesom.interpreter.nodes.literals.StringLiteralNode;
-import trufflesom.interpreter.nodes.literals.SymbolLiteralNode;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SInvokable;
 
@@ -129,8 +128,8 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     literalReturn("1", "1", IntegerLiteralNode.class);
     literalReturn("-10", "-10", IntegerLiteralNode.class);
     literalReturn("3333", "3333", IntegerLiteralNode.class);
-    literalReturn("'str'", "str", StringLiteralNode.class);
-    literalReturn("#sym", "#sym", SymbolLiteralNode.class);
+    literalReturn("'str'", "str", GenericLiteralNode.class);
+    literalReturn("#sym", "#sym", GenericLiteralNode.class);
     literalReturn("1.1", "1.1", DoubleLiteralNode.class);
     literalReturn("-2342.234", "-2342.234", DoubleLiteralNode.class);
     literalReturn("true", "true", TrueGlobalNode.class);
@@ -326,8 +325,8 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     literalBlock("1", "1", IntegerLiteralNode.class);
     literalBlock("-10", "-10", IntegerLiteralNode.class);
     literalBlock("3333", "3333", IntegerLiteralNode.class);
-    literalBlock("'str'", "str", StringLiteralNode.class);
-    literalBlock("#sym", "#sym", SymbolLiteralNode.class);
+    literalBlock("'str'", "str", GenericLiteralNode.class);
+    literalBlock("#sym", "#sym", GenericLiteralNode.class);
     literalBlock("1.1", "1.1", DoubleLiteralNode.class);
     literalBlock("-2342.234", "-2342.234", DoubleLiteralNode.class);
     literalBlock("true", "true", TrueGlobalNode.class);

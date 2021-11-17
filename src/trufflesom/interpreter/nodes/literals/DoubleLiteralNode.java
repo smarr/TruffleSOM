@@ -16,6 +16,11 @@ public final class DoubleLiteralNode extends LiteralNode {
   }
 
   @Override
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+    return value;
+  }
+
+  @Override
   public double executeDouble(final VirtualFrame frame) {
     return value;
   }
