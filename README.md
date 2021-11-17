@@ -58,6 +58,16 @@ the Truffle framework:
     cd libs/truffle/truffle
     ../../mx/mx intellijinit
 
+TruffleSOM uses the Graal compiler to reach state-of-the-art performance.
+To use it, we need to compile it together with TruffleSOM:
+
+    ant compile
+
+Afterwards, we can run a benchmark, and observe that the initial iterations
+take much longer, but after a while we reach magnitudes faster execution speeds:
+
+    ./som -cp Smalltalk Examples/Benchmarks/BenchmarkHarness.som Mandelbrot 100 500
+
 Information on previous authors are included in the AUTHORS file. This code is
 distributed under the MIT License. Please see the LICENSE file for details.
 
