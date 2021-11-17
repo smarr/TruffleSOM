@@ -21,9 +21,6 @@
  */
 package trufflesom.interpreter.nodes.literals;
 
-import java.math.BigInteger;
-
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
@@ -35,23 +32,13 @@ import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
 import trufflesom.vm.constants.Nil;
-import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
-import trufflesom.vmobjects.SSymbol;
 
 
 @NodeInfo(cost = NodeCost.NONE)
 public abstract class LiteralNode extends ExpressionNode
     implements PreevaluatedExpression, Inlinable<MethodGenerationContext> {
   public static ExpressionNode create(final Object literal) {
-    if (literal instanceof SArray) {
-      return new ArrayLiteralNode((SArray) literal);
-    }
-
-    if (literal instanceof BigInteger) {
-      return new BigIntegerLiteralNode((BigInteger) literal);
-    }
-
     if (literal instanceof SBlock) {
       throw new IllegalArgumentException(
           "SBlock isn't supported here, BlockNodes need to be constructed directly.");
@@ -63,14 +50,6 @@ public abstract class LiteralNode extends ExpressionNode
 
     if (literal instanceof Double) {
       return new DoubleLiteralNode((Double) literal);
-    }
-
-    if (literal instanceof String) {
-      return new StringLiteralNode((String) literal);
-    }
-
-    if (literal instanceof SSymbol) {
-      return new SymbolLiteralNode((SSymbol) literal);
     }
 
     if (literal == Boolean.TRUE) {
@@ -85,13 +64,7 @@ public abstract class LiteralNode extends ExpressionNode
       return new NilGlobalNode(null);
     }
 
-    throw new IllegalAccessError(
-        "Can't create a literal node for " + literal.getClass().getSimpleName());
-  }
-
-  @Override
-  public final Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
-    return executeGeneric(frame);
+    return new GenericLiteralNode(literal);
   }
 
   @Override

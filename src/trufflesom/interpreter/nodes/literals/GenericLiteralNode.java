@@ -1,7 +1,5 @@
 package trufflesom.interpreter.nodes.literals;
 
-import java.math.BigInteger;
-
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
@@ -10,16 +8,15 @@ import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 
 
-public final class BigIntegerLiteralNode extends LiteralNode {
+public final class GenericLiteralNode extends LiteralNode {
+  private final Object value;
 
-  private final BigInteger value;
-
-  public BigIntegerLiteralNode(final BigInteger value) {
+  public GenericLiteralNode(final Object value) {
     this.value = value;
   }
 
   @Override
-  public BigInteger executeBigInteger(final VirtualFrame frame) {
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
     return value;
   }
 

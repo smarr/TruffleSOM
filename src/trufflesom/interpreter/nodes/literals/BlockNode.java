@@ -66,6 +66,11 @@ public class BlockNode extends LiteralNode {
   }
 
   @Override
+  public final Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+    return executeSBlock(frame);
+  }
+
+  @Override
   public final Object executeGeneric(final VirtualFrame frame) {
     return executeSBlock(frame);
   }

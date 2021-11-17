@@ -17,6 +17,11 @@ public final class IntegerLiteralNode extends LiteralNode {
   }
 
   @Override
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+    return value;
+  }
+
+  @Override
   public long executeLong(final VirtualFrame frame) {
     return value;
   }
