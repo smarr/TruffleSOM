@@ -75,10 +75,10 @@ distributed under the MIT License. Please see the LICENSE file for details.
 Build Status
 ------------
 
-Thanks to Travis CI, all commits of this repository are tested.
-The current build status is: [![Build Status](https://travis-ci.org/SOM-st/TruffleSOM.png?branch=master)](https://travis-ci.org/SOM-st/TruffleSOM)
+Thanks to GitHub Actions, all commits of this repository are tested.
+The current build status is: ![Build Status](https://github.com/SOM-st/TruffleSOM/actions/workflows/ci.yml/badge.svg)
 
- [SOM]: http://www.hpi.uni-potsdam.de/hirschfeld/projects/som/
- [SOMst]: https://travis-ci.org/SOM-st/
- [RS]:  http://dx.doi.org/10.1016/j.cl.2005.02.003
- [T]:   http://www.christianwimmer.at/Publications/Wuerthinger12a/
+ [SOM]: https://www.hpi.uni-potsdam.de/hirschfeld/projects/som/
+ [SOMst]: https://github.com/SOM-st/TruffleSOM/actions
+ [RS]:  https://dx.doi.org/10.1016/j.cl.2005.02.003
+ [T]:   https://www.christianwimmer.at/Publications/Wuerthinger12a/
