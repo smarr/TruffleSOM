@@ -42,42 +42,38 @@ public abstract class StorageLocation {
     void writeDouble(SObject obj, double value);
   }
 
-  public static StorageLocation createForLong(final ObjectLayout layout,
-      final long fieldIndex, final int primFieldIndex) {
+  public static StorageLocation createForLong(final long fieldIndex,
+      final int primFieldIndex) {
     CompilerAsserts.neverPartOfCompilation("StorageLocation");
     if (primFieldIndex < SObject.NUM_PRIMITIVE_FIELDS) {
-      return new LongDirectStoreLocation(layout, fieldIndex, primFieldIndex);
+      return new LongDirectStoreLocation(fieldIndex, primFieldIndex);
     } else {
-      return new LongArrayStoreLocation(layout, fieldIndex, primFieldIndex);
+      return new LongArrayStoreLocation(fieldIndex, primFieldIndex);
     }
   }
 
-  public static StorageLocation createForDouble(final ObjectLayout layout,
-      final long fieldIndex, final int primFieldIndex) {
+  public static StorageLocation createForDouble(final long fieldIndex,
+      final int primFieldIndex) {
     CompilerAsserts.neverPartOfCompilation("StorageLocation");
     if (primFieldIndex < SObject.NUM_PRIMITIVE_FIELDS) {
-      return new DoubleDirectStoreLocation(layout, fieldIndex, primFieldIndex);
+      return new DoubleDirectStoreLocation(fieldIndex, primFieldIndex);
     } else {
-      return new DoubleArrayStoreLocation(layout, fieldIndex, primFieldIndex);
+      return new DoubleArrayStoreLocation(fieldIndex, primFieldIndex);
     }
   }
 
-  public static StorageLocation createForObject(final ObjectLayout layout,
-      final int objFieldIndex) {
+  public static StorageLocation createForObject(final int objFieldIndex) {
     CompilerAsserts.neverPartOfCompilation("StorageLocation");
     if (objFieldIndex < SObject.NUM_PRIMITIVE_FIELDS) {
-      return new ObjectDirectStorageLocation(layout, objFieldIndex);
+      return new ObjectDirectStorageLocation(objFieldIndex);
     } else {
-      return new ObjectArrayStorageLocation(layout, objFieldIndex);
+      return new ObjectArrayStorageLocation(objFieldIndex);
     }
   }
-
-  @SuppressWarnings("unused") private final ObjectLayout layout; // for debugging only
 
   protected final long fieldIndex;
 
-  protected StorageLocation(final ObjectLayout layout, final long fieldIndex) {
-    this.layout = layout;
+  protected StorageLocation(final long fieldIndex) {
     this.fieldIndex = fieldIndex;
   }
 
@@ -95,8 +91,8 @@ public abstract class StorageLocation {
 
   protected static final class UnwrittenStorageLocation extends StorageLocation {
 
-    public UnwrittenStorageLocation(final ObjectLayout layout, final long index) {
-      super(layout, index);
+    public UnwrittenStorageLocation(final long index) {
+      super(index);
     }
 
     @Override
@@ -139,8 +135,8 @@ public abstract class StorageLocation {
 
   public abstract static class AbstractObjectStorageLocation extends StorageLocation {
 
-    public AbstractObjectStorageLocation(final ObjectLayout layout, final int fieldIndex) {
-      super(layout, fieldIndex);
+    public AbstractObjectStorageLocation(final int fieldIndex) {
+      super(fieldIndex);
     }
 
     @Override
@@ -165,8 +161,8 @@ public abstract class StorageLocation {
       extends AbstractObjectStorageLocation {
     private final long fieldOffset;
 
-    protected ObjectDirectStorageLocation(final ObjectLayout layout, final int fieldIndex) {
-      super(layout, fieldIndex);
+    protected ObjectDirectStorageLocation(final int fieldIndex) {
+      super(fieldIndex);
       fieldOffset = StorageAnalyzer.getObjectFieldOffset(fieldIndex);
     }
 
@@ -198,8 +194,8 @@ public abstract class StorageLocation {
       extends AbstractObjectStorageLocation {
     private final int extensionIndex;
 
-    public ObjectArrayStorageLocation(final ObjectLayout layout, final int fieldIndex) {
-      super(layout, fieldIndex);
+    public ObjectArrayStorageLocation(final int fieldIndex) {
+      super(fieldIndex);
       extensionIndex = fieldIndex - SObject.NUM_OBJECT_FIELDS;
     }
 
@@ -232,9 +228,8 @@ public abstract class StorageLocation {
   protected abstract static class PrimitiveStorageLocation extends StorageLocation {
     protected final int mask;
 
-    protected PrimitiveStorageLocation(final ObjectLayout layout,
-        final long fieldIndex, final int primField) {
-      super(layout, fieldIndex);
+    protected PrimitiveStorageLocation(final long fieldIndex, final int primField) {
+      super(fieldIndex);
       mask = SObject.getPrimitiveFieldMask(primField);
     }
 
@@ -252,18 +247,16 @@ public abstract class StorageLocation {
       extends PrimitiveStorageLocation {
     protected final long fieldMemoryOffset;
 
-    protected PrimitiveDirectStoreLocation(final ObjectLayout layout, final long fieldIndex,
-        final int primField) {
-      super(layout, fieldIndex, primField);
+    protected PrimitiveDirectStoreLocation(final long fieldIndex, final int primField) {
+      super(fieldIndex, primField);
       this.fieldMemoryOffset = StorageAnalyzer.getPrimitiveFieldOffset(primField);
     }
   }
 
   public static final class DoubleDirectStoreLocation extends PrimitiveDirectStoreLocation
       implements DoubleStorageLocation {
-    public DoubleDirectStoreLocation(final ObjectLayout layout,
-        final long fieldIndex, final int primField) {
-      super(layout, fieldIndex, primField);
+    public DoubleDirectStoreLocation(final long fieldIndex, final int primField) {
+      super(fieldIndex, primField);
     }
 
     @Override
@@ -327,9 +320,8 @@ public abstract class StorageLocation {
   protected static final class LongDirectStoreLocation extends PrimitiveDirectStoreLocation
       implements LongStorageLocation {
 
-    public LongDirectStoreLocation(final ObjectLayout layout, final long fieldIndex,
-        final int primField) {
-      super(layout, fieldIndex, primField);
+    public LongDirectStoreLocation(final long fieldIndex, final int primField) {
+      super(fieldIndex, primField);
     }
 
     @Override
@@ -400,9 +392,8 @@ public abstract class StorageLocation {
   public abstract static class PrimitiveArrayStoreLocation extends PrimitiveStorageLocation {
     protected final int extensionIndex;
 
-    public PrimitiveArrayStoreLocation(final ObjectLayout layout,
-        final long fieldIndex, final int primField) {
-      super(layout, fieldIndex, primField);
+    public PrimitiveArrayStoreLocation(final long fieldIndex, final int primField) {
+      super(fieldIndex, primField);
       extensionIndex = primField - SObject.NUM_PRIMITIVE_FIELDS;
       assert extensionIndex >= 0;
     }
@@ -410,9 +401,8 @@ public abstract class StorageLocation {
 
   public static final class LongArrayStoreLocation extends PrimitiveArrayStoreLocation
       implements LongStorageLocation {
-    public LongArrayStoreLocation(final ObjectLayout layout,
-        final long fieldIndex, final int primField) {
-      super(layout, fieldIndex, primField);
+    public LongArrayStoreLocation(final long fieldIndex, final int primField) {
+      super(fieldIndex, primField);
     }
 
     @Override
@@ -484,9 +474,8 @@ public abstract class StorageLocation {
 
   public static final class DoubleArrayStoreLocation extends PrimitiveArrayStoreLocation
       implements DoubleStorageLocation {
-    public DoubleArrayStoreLocation(final ObjectLayout layout,
-        final long fieldIndex, final int primField) {
-      super(layout, fieldIndex, primField);
+    public DoubleArrayStoreLocation(final long fieldIndex, final int primField) {
+      super(fieldIndex, primField);
     }
 
     @Override
