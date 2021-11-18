@@ -72,7 +72,6 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.basic.ProgramDefinitionError;
 import bd.source.SourceCoordinate;
 import bd.tools.structure.StructuralProbe;
-import trufflesom.compiler.Lexer.Peek;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.GlobalNode;
@@ -682,8 +681,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   protected void peekForNextSymbolFromLexer() {
-    Peek peek = lexer.peek();
-    nextSym = peek.nextSym;
+    nextSym = lexer.peek();
   }
 
   protected static boolean isIdentifier(final Symbol sym) {
