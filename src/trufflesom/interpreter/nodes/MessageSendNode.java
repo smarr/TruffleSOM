@@ -141,19 +141,21 @@ public final class MessageSendNode {
 
       GuardedDispatchNode cache = dispatchCache;
 
-      Object rcvr = arguments[0];
+      if (cache != null) {
+        Object rcvr = arguments[0];
 
-      while (cache != null) {
-        try {
-          if (cache.entryMatches(rcvr)) {
-            return cache.doPreEvaluated(frame, arguments);
+        do {
+          try {
+            if (cache.entryMatches(rcvr)) {
+              return cache.doPreEvaluated(frame, arguments);
+            }
+          } catch (InvalidAssumptionException e) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            cache = removeInvalidEntryAndReturnNext(cache);
+            continue;
           }
-        } catch (InvalidAssumptionException e) {
-          CompilerDirectives.transferToInterpreterAndInvalidate();
-          cache = removeInvalidEntryAndReturnNext(cache);
-          continue;
-        }
-        cache = cache.next;
+          cache = cache.next;
+        } while (cache != null);
       }
 
       CompilerDirectives.transferToInterpreterAndInvalidate();
