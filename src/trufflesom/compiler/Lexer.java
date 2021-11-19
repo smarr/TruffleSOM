@@ -32,16 +32,6 @@ public final class Lexer {
   private static final String SEPARATOR = "----";
   private static final String PRIMITIVE = "primitive";
 
-  public static final class Peek {
-    public final Symbol nextSym;
-    public final String nextText;
-
-    private Peek(final Symbol sym, final String text) {
-      nextSym = sym;
-      nextText = text;
-    }
-  }
-
   private static class LexerState {
     LexerState() {
       startCoord = SourceCoordinate.createEmpty();
@@ -376,18 +366,18 @@ public final class Lexer {
     return peekDone;
   }
 
-  protected Peek peek() {
+  protected Symbol peek() {
     LexerState old = new LexerState(state);
     if (peekDone) {
       throw new IllegalStateException("SOM lexer: cannot peek twice!");
     }
     getSym();
-    Peek peek = new Peek(state.sym, state.text.toString());
+    Symbol nextSym = state.sym;
     stateAfterPeek = state;
     state = old;
 
     peekDone = true;
-    return peek;
+    return nextSym;
   }
 
   protected String getText() {

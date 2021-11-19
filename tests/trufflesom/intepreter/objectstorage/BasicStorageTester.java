@@ -92,7 +92,7 @@ public class BasicStorageTester {
   }
 
   private static void testDirectDouble(final SObject obj) {
-    StorageLocation sl = StorageLocation.createForDouble(null, 0, 0);
+    StorageLocation sl = StorageLocation.createForDouble(0, 0);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, 5.5);
@@ -104,7 +104,7 @@ public class BasicStorageTester {
   }
 
   private static void testDirectLong(final SObject obj) {
-    StorageLocation sl = StorageLocation.createForLong(null, 1, 1);
+    StorageLocation sl = StorageLocation.createForLong(1, 1);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, 32L);
@@ -116,7 +116,7 @@ public class BasicStorageTester {
   }
 
   private static void testDirectObject(final SObject obj) {
-    StorageLocation sl = StorageLocation.createForObject(null, 2);
+    StorageLocation sl = StorageLocation.createForObject(2);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, obj);
@@ -128,7 +128,7 @@ public class BasicStorageTester {
   }
 
   private static void testExtDouble(final SObject obj) {
-    StorageLocation sl = StorageLocation.createForDouble(null, 0, 10);
+    StorageLocation sl = StorageLocation.createForDouble(0, 10);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, 5.5);
@@ -139,7 +139,7 @@ public class BasicStorageTester {
   }
 
   private static void testExtLong(final SObject obj) {
-    StorageLocation sl = StorageLocation.createForLong(null, 1, 11);
+    StorageLocation sl = StorageLocation.createForLong(1, 11);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, 32L);
@@ -150,7 +150,7 @@ public class BasicStorageTester {
   }
 
   private static void testExtObject(final SObject obj) {
-    StorageLocation sl = StorageLocation.createForObject(null, 12);
+    StorageLocation sl = StorageLocation.createForObject(12);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, obj);
@@ -162,7 +162,7 @@ public class BasicStorageTester {
 
   private static StorageLocation testDouble(final SObject obj, final int idx,
       final double value) {
-    StorageLocation sl = StorageLocation.createForDouble(null, idx, idx);
+    StorageLocation sl = StorageLocation.createForDouble(idx, idx);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, value);
@@ -174,7 +174,7 @@ public class BasicStorageTester {
   }
 
   private static StorageLocation testLong(final SObject obj, final int idx, final long value) {
-    StorageLocation sl = StorageLocation.createForLong(null, idx, idx);
+    StorageLocation sl = StorageLocation.createForLong(idx, idx);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, value);
@@ -187,7 +187,7 @@ public class BasicStorageTester {
 
   private static StorageLocation testObject(final SObject obj, final int idx,
       final Object value) {
-    StorageLocation sl = StorageLocation.createForObject(null, idx);
+    StorageLocation sl = StorageLocation.createForObject(idx);
     assertIsInitiallyNil(obj, sl);
 
     sl.write(obj, value);
