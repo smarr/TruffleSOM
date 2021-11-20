@@ -103,6 +103,8 @@ public final class MessageSendNode {
       }
       return arguments;
     }
+
+    public abstract int getNumberOfArguments();
   }
 
   public abstract static class AbstractUninitializedMessageSendNode
@@ -178,6 +180,11 @@ public final class MessageSendNode {
       return selector;
     }
 
+    @Override
+    public int getNumberOfArguments() {
+      return selector.getNumberOfSignatureArguments();
+    }
+
   }
 
   private static final class UninitializedMessageSendNode
@@ -205,6 +212,7 @@ public final class MessageSendNode {
       extends AbstractMessageSendNode {
 
     private final SSymbol selector;
+    private final int     numberOfSignatureArguments;
 
     @Child private AbstractDispatchNode dispatchNode;
 
@@ -213,6 +221,7 @@ public final class MessageSendNode {
       super(arguments);
       this.selector = selector;
       this.dispatchNode = dispatchNode;
+      this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
     }
 
     @Override
@@ -241,10 +250,16 @@ public final class MessageSendNode {
     public SSymbol getInvocationIdentifier() {
       return selector;
     }
+
+    @Override
+    public int getNumberOfArguments() {
+      return numberOfSignatureArguments;
+    }
   }
 
   public static final class SuperSendNode extends AbstractMessageSendNode {
     private final SSymbol selector;
+    private final int     numberOfSignatureArguments;
 
     @Child private DirectCallNode cachedSuperMethod;
 
@@ -253,6 +268,7 @@ public final class MessageSendNode {
       super(arguments);
       this.selector = selector;
       this.cachedSuperMethod = superMethod;
+      this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
     }
 
     @Override
@@ -270,10 +286,17 @@ public final class MessageSendNode {
     public String toString() {
       return "SuperSend(" + selector.getString() + ")";
     }
+
+    @Override
+    public int getNumberOfArguments() {
+      return numberOfSignatureArguments;
+    }
   }
 
   private static final class SuperExprNode extends AbstractMessageSendNode {
-    private final SSymbol                 selector;
+    private final SSymbol selector;
+    private final int     numberOfSignatureArguments;
+
     @Child private PreevaluatedExpression expr;
 
     private SuperExprNode(final SSymbol selector, final ExpressionNode[] arguments,
@@ -281,6 +304,7 @@ public final class MessageSendNode {
       super(arguments);
       this.selector = selector;
       this.expr = expr;
+      this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
     }
 
     @Override
@@ -297,6 +321,11 @@ public final class MessageSendNode {
     @Override
     public String toString() {
       return "SendExpr(" + selector.getString() + ")";
+    }
+
+    @Override
+    public int getNumberOfArguments() {
+      return numberOfSignatureArguments;
     }
   }
 }
