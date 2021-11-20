@@ -31,7 +31,6 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import bd.primitives.nodes.PreevaluatedExpression;
-import trufflesom.interpreter.TypesGen;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SObject;
 
@@ -64,23 +63,43 @@ public abstract class ExpressionNode extends SOMNode implements InstrumentableNo
   }
 
   public boolean executeBoolean(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectBoolean(executeGeneric(frame));
+    Object value = executeGeneric(frame);
+    if (value instanceof Boolean) {
+      return (boolean) value;
+    }
+    throw new UnexpectedResultException(value);
   }
 
   public long executeLong(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectLong(executeGeneric(frame));
+    Object value = executeGeneric(frame);
+    if (value instanceof Long) {
+      return (long) value;
+    }
+    throw new UnexpectedResultException(value);
   }
 
   public double executeDouble(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectDouble(executeGeneric(frame));
+    Object value = executeGeneric(frame);
+    if (value instanceof Double) {
+      return (double) value;
+    }
+    throw new UnexpectedResultException(value);
   }
 
   public SBlock executeSBlock(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectSBlock(executeGeneric(frame));
+    Object value = executeGeneric(frame);
+    if (value instanceof SBlock) {
+      return (SBlock) value;
+    }
+    throw new UnexpectedResultException(value);
   }
 
   public SObject executeSObject(final VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectSObject(executeGeneric(frame));
+    Object value = executeGeneric(frame);
+    if (value instanceof SObject) {
+      return (SObject) value;
+    }
+    throw new UnexpectedResultException(value);
   }
 
   @Override
