@@ -31,8 +31,6 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import bd.primitives.nodes.PreevaluatedExpression;
-import trufflesom.vmobjects.SBlock;
-import trufflesom.vmobjects.SObject;
 
 
 @GenerateWrapper
@@ -82,22 +80,6 @@ public abstract class ExpressionNode extends SOMNode implements InstrumentableNo
     Object value = executeGeneric(frame);
     if (value instanceof Double) {
       return (double) value;
-    }
-    throw new UnexpectedResultException(value);
-  }
-
-  public SBlock executeSBlock(final VirtualFrame frame) throws UnexpectedResultException {
-    Object value = executeGeneric(frame);
-    if (value instanceof SBlock) {
-      return (SBlock) value;
-    }
-    throw new UnexpectedResultException(value);
-  }
-
-  public SObject executeSObject(final VirtualFrame frame) throws UnexpectedResultException {
-    Object value = executeGeneric(frame);
-    if (value instanceof SObject) {
-      return (SObject) value;
     }
     throw new UnexpectedResultException(value);
   }

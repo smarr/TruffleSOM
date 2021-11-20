@@ -28,16 +28,12 @@ import com.oracle.truffle.api.dsl.TypeSystem;
 
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
-import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
-import trufflesom.vmobjects.SObject;
 
 
 @TypeSystem({boolean.class,
     long.class,
     double.class,
-    SObject.class,
-    SBlock.class,
     SAbstractObject.class,
     Object[].class}) // Object[] is only for argument passing
 public class Types {
