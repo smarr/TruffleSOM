@@ -151,21 +151,26 @@ public class AstNode {
     return height;
   }
 
-  public void prettyPrint(final StringBuilder builder, final int level) {
-    // add indentation
-    for (int i = 0; i < level; i++) {
-      builder.append("  ");
-    }
-
+  public void yamlPrint(final StringBuilder builder, final String indent, final int level) {
     builder.append(nodeClass.getSimpleName());
-    builder.append('\n');
 
     if (children == null) {
+      builder.append('\n');
       return;
     }
 
+    builder.append(':');
+    builder.append('\n');
+
     for (AstNode c : children) {
-      c.prettyPrint(builder, level + 1);
+      for (int i = 0; i < level; i += 1) {
+        builder.append(indent);
+      }
+
+      builder.append('-');
+      builder.append(' ');
+
+      c.yamlPrint(builder, indent, level + 1);
     }
   }
 

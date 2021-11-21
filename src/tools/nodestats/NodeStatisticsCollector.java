@@ -20,6 +20,9 @@ public class NodeStatisticsCollector {
 
   private final int maxCandidateTreeHeight;
 
+  private int numberOfNodes;
+  private int numberOfNodeClasses;
+
   @SuppressWarnings({"unchecked", "rawtypes"})
   public NodeStatisticsCollector(final int maxCandidateTreeHeight) {
     fullTrees = new HashSet<>();
@@ -33,6 +36,24 @@ public class NodeStatisticsCollector {
     for (RootNode root : roots) {
       add(root);
     }
+  }
+
+  public Map<Class<?>, Integer> getNodeNumbers() {
+    return nodeNumbers;
+  }
+
+  public int getNumberOfNodes() {
+    if (numberOfNodes == 0) {
+      numberOfNodes = nodeNumbers.values().stream().reduce(0, Integer::sum);
+    }
+    return numberOfNodes;
+  }
+
+  public int getNumberOfNodeTypes() {
+    if (numberOfNodeClasses == 0) {
+      numberOfNodeClasses = nodeNumbers.size();
+    }
+    return numberOfNodeClasses;
   }
 
   public void add(final RootNode root) {
@@ -52,7 +73,7 @@ public class NodeStatisticsCollector {
     return ast;
   }
 
-  public void collectCandidates() {
+  public void collectStats() {
     for (AstNode tree : fullTrees) {
       tree.collectTreesAndDetermineHeight(maxCandidateTreeHeight, this);
     }

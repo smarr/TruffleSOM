@@ -5,9 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.graalvm.polyglot.Engine;
 import org.graalvm.polyglot.Instrument;
@@ -18,8 +16,6 @@ import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
 import com.oracle.truffle.api.nodes.RootNode;
-
-import tools.nodestats.SubTree.ScoredAlphabeticRootOrder;
 
 
 /**
@@ -69,33 +65,21 @@ public class NodeStatsTool extends TruffleInstrument {
 
   private void collectStatistics(final String outputFile) {
     println("[ns] AST Node Statistics");
-    println("[ns] -------------------");
-    println("[ns] Number of Methods: " + rootNodes.size());
+    println("[ns] -------------------\n");
 
     NodeStatisticsCollector collector = new NodeStatisticsCollector(3);
     collector.addAll(rootNodes);
-    collector.collectCandidates();
+    collector.collectStats();
 
-    Set<SubTree> cs = collector.getSubTrees();
-    cs.stream();
+    println("[ns] Output File:          " + outputFile);
+    println("[ns] Number of Methods:    " + rootNodes.size());
+    println("[ns] Number of Nodes:      " + collector.getNumberOfNodes());
+    println("[ns] Number of Node Types: " + collector.getNumberOfNodeTypes());
 
-    final List<SubTree> sorted = cs.stream()
-                                   .sorted(new ScoredAlphabeticRootOrder())
-                                   .collect(Collectors.toList());
-
-    // Universe.println("[ns] Number of Nodes: " + collector.getNumberOfAstNodes());
-
-    StringBuilder builder = new StringBuilder();
-    builder.append("# Static Node Frequency\n\n");
-
-    for (SubTree c : sorted) {
-      c.prettyPrint(builder);
-      builder.append('\n');
-    }
-
+    String report = YamlReport.createReport(collector);
     Path reportPath = Paths.get(outputFile);
     try {
-      Files.write(reportPath, builder.toString().getBytes());
+      Files.write(reportPath, report.getBytes());
     } catch (IOException e) {
       throw new RuntimeException("Could not write AST Node Statistics: " + e);
     }

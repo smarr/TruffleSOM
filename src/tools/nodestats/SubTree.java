@@ -1,11 +1,9 @@
 package tools.nodestats;
 
-import java.util.Comparator;
-
-
 final class SubTree {
   private final AstNode rootNode;
-  private final int     score;
+
+  final int score;
 
   SubTree(final AstNode rootNode, final int score) {
     this.rootNode = rootNode;
@@ -22,14 +20,29 @@ final class SubTree {
 
   public String prettyPrint() {
     StringBuilder builder = new StringBuilder();
-    rootNode.prettyPrint(builder, 0);
+    rootNode.yamlPrint(builder, "  ", 0);
     return builder.toString();
   }
 
-  public void prettyPrint(final StringBuilder builder) {
+  public void yamlPrint(final StringBuilder builder, final String indent, final int level) {
+
+    for (int i = 0; i < level; i += 1) {
+      builder.append(indent);
+    }
+    builder.append('-');
+    builder.append(' ');
+
     builder.append("score: ");
-    builder.append(score + " ");
-    rootNode.prettyPrint(builder, 0);
+    builder.append(score);
+    builder.append('\n');
+
+    int nextLevel = level + 1;
+
+    for (int i = 0; i < nextLevel; i += 1) {
+      builder.append(indent);
+    }
+
+    rootNode.yamlPrint(builder, indent, nextLevel);
   }
 
   @Override
@@ -55,17 +68,5 @@ final class SubTree {
   public String toString() {
     return "Candidate(" + score + ": " + rootNode.getNodeClass().getSimpleName() + ", "
         + rootNode.getHeight() + ")";
-  }
-
-  public static final class ScoredAlphabeticRootOrder implements Comparator<SubTree> {
-    @Override
-    public int compare(final SubTree o1, final SubTree o2) {
-      int score = o2.score - o1.score;
-      if (score != 0) {
-        return score;
-      }
-
-      return o1.getClass().getSimpleName().compareTo(o2.getClass().getSimpleName());
-    }
   }
 }

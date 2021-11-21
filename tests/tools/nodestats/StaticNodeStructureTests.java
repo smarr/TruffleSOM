@@ -31,7 +31,7 @@ public class StaticNodeStructureTests {
     NodeStatisticsCollector s = new NodeStatisticsCollector(5);
     s.add(m);
 
-    s.collectCandidates();
+    s.collectStats();
 
     Set<SubTree> cs = s.getSubTrees();
 
@@ -65,7 +65,7 @@ public class StaticNodeStructureTests {
     NodeStatisticsCollector s = new NodeStatisticsCollector(5);
     s.add(m);
 
-    s.collectCandidates();
+    s.collectStats();
 
     Set<SubTree> cs = s.getSubTrees();
 
@@ -90,7 +90,7 @@ public class StaticNodeStructureTests {
     NodeStatisticsCollector s = new NodeStatisticsCollector(5);
     s.add(m);
 
-    s.collectCandidates();
+    s.collectStats();
 
     Set<SubTree> cs = s.getSubTrees();
 
