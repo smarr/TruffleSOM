@@ -10,6 +10,7 @@ import bd.inlining.Scope;
 import trufflesom.compiler.Variable;
 
 
+@SuppressWarnings("unchecked")
 public final class LexicalScope implements Scope<LexicalScope, Method> {
   private final FrameDescriptor frameDescriptor;
   private final LexicalScope    outerScope;

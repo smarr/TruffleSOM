@@ -21,6 +21,8 @@
  */
 package trufflesom.interpreter;
 
+import java.util.Objects;
+
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
@@ -67,6 +69,11 @@ public final class Method extends Invokable {
     }
 
     return m.sourceSection.equals(sourceSection);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, sourceSection);
   }
 
   @Override

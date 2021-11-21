@@ -22,6 +22,12 @@
 package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.InstrumentableNode;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
+import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
+import com.oracle.truffle.api.instrumentation.Tag;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import bd.primitives.nodes.PreevaluatedExpression;
@@ -30,7 +36,8 @@ import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SObject;
 
 
-public abstract class ExpressionNode extends SOMNode {
+@GenerateWrapper
+public abstract class ExpressionNode extends SOMNode implements InstrumentableNode {
 
   public abstract Object executeGeneric(VirtualFrame frame);
 
@@ -74,5 +81,26 @@ public abstract class ExpressionNode extends SOMNode {
 
   public SObject executeSObject(final VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectSObject(executeGeneric(frame));
+  }
+
+  @Override
+  public boolean isInstrumentable() {
+    return true;
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new ExpressionNodeWrapper(this, probe);
+  }
+
+  @Override
+  public boolean hasTag(final Class<? extends Tag> tag) {
+    if (tag == RootTag.class) {
+      Node parent = getParent();
+      if (parent != null && parent.getParent() == null) {
+        return true;
+      }
+    }
+    return false;
   }
 }

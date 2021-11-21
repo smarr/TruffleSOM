@@ -49,6 +49,7 @@ import com.oracle.truffle.api.utilities.CyclicAssumption;
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
 import bd.tools.structure.StructuralProbe;
+import tools.nodestats.NodeStatsTool;
 import trufflesom.compiler.Disassembler;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;
@@ -143,8 +144,16 @@ public final class Universe implements IdProvider<SSymbol> {
 
     Context context = builder.build();
 
+    setupInstruments(context);
+
     Value returnCode = context.eval(SomLanguage.START);
     return returnCode;
+  }
+
+  private static void setupInstruments(final Context context) {
+    if (VmSettings.UseNodeStatsTool) {
+      NodeStatsTool.enable(context.getEngine());
+    }
   }
 
   public Object interpret(String[] arguments) {
@@ -608,7 +617,7 @@ public final class Universe implements IdProvider<SSymbol> {
       try {
         // Load the class from a file and return the loaded class
         SClass result =
-            compiler.compileClass(cpEntry, name.getString(), systemClass, systemClassProbe);
+            compiler.compileClass(cpEntry, name.getString(), systemClass, structuralProbe);
         if (printIR > 0) {
           Disassembler.dump(result.getSOMClass(this));
           Disassembler.dump(result);
@@ -702,9 +711,9 @@ public final class Universe implements IdProvider<SSymbol> {
     return primitives;
   }
 
-  public void setSystemClassProbe(
+  public void setStructuralProbe(
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
-    systemClassProbe = probe;
+    structuralProbe = probe;
   }
 
   public final SClass objectClass;
@@ -733,10 +742,7 @@ public final class Universe implements IdProvider<SSymbol> {
   private String[]              classPath;
   @CompilationFinal private int printIR;
 
-  /**
-   * A {@link StructuralProbe} that is used when loading the system classes.
-   */
-  private StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> systemClassProbe;
+  private static StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
   private final SomLanguage language;
 

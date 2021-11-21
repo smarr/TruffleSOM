@@ -67,6 +67,7 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
+@SuppressWarnings("unchecked")
 public class MethodGenerationContext
     implements ScopeBuilder<MethodGenerationContext>, Scope<LexicalScope, Method> {
 
