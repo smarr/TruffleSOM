@@ -25,6 +25,7 @@ public class GenericMessageSendNode extends AbstractMessageSendNode {
     this.selector = selector;
     this.dispatchNode = dispatchNode;
     this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
+    assert numberOfSignatureArguments != 0;
   }
 
   /**
@@ -42,6 +43,7 @@ public class GenericMessageSendNode extends AbstractMessageSendNode {
     return dispatchNode.executeDispatch(frame, arguments);
   }
 
+  @Override
   public void replaceDispatchListHead(
       final GenericDispatchNode replacement) {
     CompilerAsserts.neverPartOfCompilation();

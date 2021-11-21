@@ -5,6 +5,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import bd.tools.nodes.Invocation;
+import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -34,4 +35,8 @@ public abstract class AbstractMessageSendNode extends ExpressionNode
   }
 
   public abstract int getNumberOfArguments();
+
+  public abstract void replaceDispatchListHead(GenericDispatchNode replacement);
+
+  public abstract void notifyDispatchInserted();
 }
