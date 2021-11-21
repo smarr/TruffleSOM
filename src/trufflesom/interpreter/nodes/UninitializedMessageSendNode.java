@@ -55,12 +55,26 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
     return makeGenericSend();
   }
 
-  private GenericMessageSendNode makeGenericSend() {
-    AbstractDispatchNode dispatch = new UninitializedDispatchNode(selector);
-    GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
-        dispatch).initialize(sourceCoord);
+  private AbstractMessageSendNode makeGenericSend() {
+    int numArgs = argumentNodes.length;
+    AbstractMessageSendNode send;
+    if (numArgs == 1) {
+      send = MessageSendNode.createGenericUnary(selector, argumentNodes[0], sourceCoord);
+    } else if (numArgs == 2) {
+      send = MessageSendNode.createGenericBinary(selector, argumentNodes[0], argumentNodes[1],
+          sourceCoord);
+    } else if (numArgs == 3) {
+      send = MessageSendNode.createGenericTernary(selector, argumentNodes[0], argumentNodes[1],
+          argumentNodes[2], sourceCoord);
+    } else if (numArgs == 4) {
+      send = MessageSendNode.createGenericQuat(selector, argumentNodes[0], argumentNodes[1],
+          argumentNodes[2], argumentNodes[3], sourceCoord);
+    } else {
+      send = new GenericMessageSendNode(selector, argumentNodes,
+          new UninitializedDispatchNode(selector)).initialize(sourceCoord);
+    }
     replace(send);
-    dispatch.notifyAsInserted();
+    send.notifyDispatchInserted();
     return send;
   }
 

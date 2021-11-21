@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -7,6 +8,10 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import bdt.primitives.Specializer;
 import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
+import trufflesom.interpreter.supernodes.BinaryArgSendNode;
+import trufflesom.interpreter.supernodes.QuatArgSendNode;
+import trufflesom.interpreter.supernodes.TernaryArgSendNode;
+import trufflesom.interpreter.supernodes.UnaryArgSendNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SClass;
@@ -34,10 +39,64 @@ public final class MessageSendNode {
     return new UninitializedMessageSendNode(selector, NO_ARGS).initialize(coord);
   }
 
-  public static GenericMessageSendNode createGeneric(final SSymbol selector,
+  public static AbstractMessageSendNode createGenericUnary(final SSymbol selector,
+      final ExpressionNode rcvrNode, final long coord) {
+    UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new UnaryArgSendNode(argIdx, selector, dispatch).initialize(coord);
+    }
+
+    return new GenericMessageSendNode(
+        selector, new ExpressionNode[] {rcvrNode}, dispatch).initialize(coord);
+  }
+
+  public static AbstractMessageSendNode createGenericBinary(final SSymbol selector,
+      final ExpressionNode rcvrNode, final ExpressionNode arg1, final long coord) {
+    UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new BinaryArgSendNode(argIdx, arg1, selector, dispatch).initialize(coord);
+    }
+
+    return new GenericMessageSendNode(
+        selector, new ExpressionNode[] {rcvrNode, arg1}, dispatch).initialize(coord);
+  }
+
+  public static AbstractMessageSendNode createGenericTernary(final SSymbol selector,
+      final ExpressionNode rcvrNode, final ExpressionNode arg1, final ExpressionNode arg2,
+      final long coord) {
+    UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new TernaryArgSendNode(argIdx, arg1, arg2, selector, dispatch).initialize(coord);
+    }
+
+    return new GenericMessageSendNode(
+        selector, new ExpressionNode[] {rcvrNode, arg1, arg2}, dispatch).initialize(coord);
+  }
+
+  public static AbstractMessageSendNode createGenericQuat(final SSymbol selector,
+      final ExpressionNode rcvrNode, final ExpressionNode arg1, final ExpressionNode arg2,
+      final ExpressionNode arg3, final long coord) {
+    UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new QuatArgSendNode(argIdx, arg1, arg2, arg3, selector, dispatch).initialize(
+          coord);
+    }
+
+    return new GenericMessageSendNode(
+        selector, new ExpressionNode[] {rcvrNode, arg1, arg2, arg3}, dispatch).initialize(
+            coord);
+  }
+
+  public static AbstractMessageSendNode createGenericNary(final SSymbol selector,
       final ExpressionNode[] argumentNodes, final long coord) {
-    return new GenericMessageSendNode(selector, argumentNodes,
-        new UninitializedDispatchNode(selector)).initialize(coord);
+    assert argumentNodes == null || argumentNodes.length > 4;
+    UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
+    return new GenericMessageSendNode(
+        selector, argumentNodes, dispatch).initialize(coord);
   }
 
   public static AbstractMessageSendNode createSuperSend(final SClass superClass,
@@ -49,7 +108,7 @@ public final class MessageSendNode {
           "Currently #dnu with super sent is not yet implemented. ");
     }
 
-    PreevaluatedExpression node = method.copyTrivialNode();
+      PreevaluatedExpression node = method.copyTrivialNode();
     if (node != null) {
       return new SuperExprNode(selector, arguments, node).initialize(coord);
     }

@@ -117,7 +117,6 @@ import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
@@ -1180,8 +1179,8 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     }
 
     if (!done) {
-      GenericMessageSendNode quick =
-          MessageSendNode.createGeneric(signature, null, sourceCoord);
+      AbstractMessageSendNode quick =
+          MessageSendNode.createGenericNary(signature, null, sourceCoord);
       quickenBytecode(bytecodeIndex, Q_SEND, quick);
 
       result = quick.doPreEvaluated(frame, callArgs);
