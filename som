@@ -61,7 +61,8 @@ explore.add_argument('-fr', '--flight-recorder', help='profile with Java Flight 
 
 tools = parser.add_argument_group('Tools', 'Tools for various purposes')
 explore.add_argument('-n', '--node-stats', help='collect details about AST nodes',
-                    dest='nodestats', action='store_true', default=False)
+                     dest='nodestats', action='store', nargs='?',
+                     const='node-stats.yml', default=False)
 
 parser.add_argument('-o', '--only', help='only compile give methods, comma separated list',
                     dest='only_compile', default=None)
@@ -298,7 +299,7 @@ if args.flight_recorder:
               '-XX:StartFlightRecording=delay=10s,duration=10d,name=fr-recording2,filename=fr-recording2.jfr,settings=profile']
 
 if args.nodestats:
-    flags += ['-Dsom.nodestats=true']
+    flags += ['-Dpolyglot.nodestats.OutputFile=' + args.nodestats, '-Dpolyglot.nodestats=true']
 
 if args.assert_:
     flags += ['-esa', '-ea']

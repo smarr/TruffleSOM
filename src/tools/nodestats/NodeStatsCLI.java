@@ -6,8 +6,18 @@ import org.graalvm.options.OptionStability;
 
 import com.oracle.truffle.api.Option;
 
+
 @Option.Group(NodeStatsTool.ID)
 class NodeStatsCLI {
-    @Option(name = "", help = "Enable the CPU sampler.", category = OptionCategory.USER, stability = OptionStability.STABLE) //
-    static final OptionKey<Boolean> ENABLED = new OptionKey<>(false);
+  @Option(name = "",
+      help = "Enable NodeStatsTool.",
+      category = OptionCategory.USER,
+      stability = OptionStability.EXPERIMENTAL) //
+  static final OptionKey<Boolean> ENABLED = new OptionKey<>(false);
+
+  @Option(name = "OutputFile",
+      help = "Save output to the given file.",
+      category = OptionCategory.USER,
+      stability = OptionStability.EXPERIMENTAL) //
+  static final OptionKey<String> OUTPUT_FILE = new OptionKey<>("node-stats.yml");
 }
