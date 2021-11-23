@@ -20,8 +20,8 @@ public abstract class WhileWithStaticBlocksNode extends AbstractWhileNode {
 
   @Override
   public final Object executeGeneric(final VirtualFrame frame) {
-    SBlock rcvr = receiver.executeSBlock(frame);
-    SBlock arg = argument.executeSBlock(frame);
+    SBlock rcvr = (SBlock) receiver.executeGeneric(frame);
+    SBlock arg = (SBlock) argument.executeGeneric(frame);
     return executeEvaluated(frame, rcvr, arg);
   }
 

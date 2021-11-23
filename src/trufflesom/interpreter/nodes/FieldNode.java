@@ -75,25 +75,19 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public long executeLong(final VirtualFrame frame) throws UnexpectedResultException {
-      SObject obj = self.executeSObject(frame);
+      SObject obj = (SObject) self.executeGeneric(frame);
       return read.readLong(obj);
     }
 
     @Override
     public double executeDouble(final VirtualFrame frame) throws UnexpectedResultException {
-      SObject obj = self.executeSObject(frame);
+      SObject obj = (SObject) self.executeGeneric(frame);
       return read.readDouble(obj);
     }
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      SObject obj;
-      try {
-        obj = self.executeSObject(frame);
-      } catch (UnexpectedResultException e) {
-        CompilerDirectives.transferToInterpreter();
-        throw new RuntimeException("This should never happen by construction");
-      }
+      SObject obj = (SObject) self.executeGeneric(frame);
       return executeEvaluated(obj);
     }
 
@@ -205,29 +199,24 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      SObject obj;
-      try {
-        obj = self.executeSObject(frame);
+      SObject obj = (SObject) self.executeGeneric(frame);
 
-        Object val = obj.getField(fieldIndex);
-        if (!(val instanceof Long)) {
-          throw new NotYetImplementedException();
-        }
-
-        long longVal = 0;
-        try {
-          longVal = Math.addExact((Long) val, 1);
-          obj.setField(fieldIndex, longVal);
-        } catch (ArithmeticException e) {
-          throw new NotYetImplementedException();
-        }
-
-        IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
-        replace(new IncFieldNode(self, node, sourceSection));
-        return longVal;
-      } catch (UnexpectedResultException e1) {
+      Object val = obj.getField(fieldIndex);
+      if (!(val instanceof Long)) {
         throw new NotYetImplementedException();
       }
+
+      long longVal = 0;
+      try {
+        longVal = Math.addExact((Long) val, 1);
+        obj.setField(fieldIndex, longVal);
+      } catch (ArithmeticException e) {
+        throw new NotYetImplementedException();
+      }
+
+      IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
+      replace(new IncFieldNode(self, node, sourceSection));
+      return longVal;
     }
   }
 
@@ -254,13 +243,8 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public long executeLong(final VirtualFrame frame) {
-      SObject obj;
-      try {
-        obj = self.executeSObject(frame);
-        return inc.increment(obj);
-      } catch (UnexpectedResultException e1) {
-        throw new NotYetImplementedException();
-      }
+      SObject obj = (SObject) self.executeGeneric(frame);
+      return inc.increment(obj);
     }
   }
 

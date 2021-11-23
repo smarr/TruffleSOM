@@ -57,7 +57,7 @@ public class BlockNode extends LiteralNode {
   }
 
   @Override
-  public SBlock executeSBlock(final VirtualFrame frame) {
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
     if (blockClass == null) {
       CompilerDirectives.transferToInterpreter();
       setBlockClass();
@@ -66,13 +66,12 @@ public class BlockNode extends LiteralNode {
   }
 
   @Override
-  public final Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
-    return executeSBlock(frame);
-  }
-
-  @Override
-  public final Object executeGeneric(final VirtualFrame frame) {
-    return executeSBlock(frame);
+  public Object executeGeneric(final VirtualFrame frame) {
+    if (blockClass == null) {
+      CompilerDirectives.transferToInterpreter();
+      setBlockClass();
+    }
+    return new SBlock(blockMethod, blockClass, null);
   }
 
   @Override
@@ -106,7 +105,16 @@ public class BlockNode extends LiteralNode {
     }
 
     @Override
-    public SBlock executeSBlock(final VirtualFrame frame) {
+    public SBlock executeGeneric(final VirtualFrame frame) {
+      if (blockClass == null) {
+        CompilerDirectives.transferToInterpreter();
+        setBlockClass();
+      }
+      return new SBlock(blockMethod, blockClass, frame.materialize());
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
       if (blockClass == null) {
         CompilerDirectives.transferToInterpreter();
         setBlockClass();
