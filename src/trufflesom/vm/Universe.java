@@ -49,7 +49,6 @@ import com.oracle.truffle.api.utilities.CyclicAssumption;
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
 import bd.tools.structure.StructuralProbe;
-import tools.nodestats.NodeStatsTool;
 import trufflesom.compiler.Disassembler;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;
@@ -144,16 +143,8 @@ public final class Universe implements IdProvider<SSymbol> {
 
     Context context = builder.build();
 
-    setupInstruments(context);
-
     Value returnCode = context.eval(SomLanguage.START);
     return returnCode;
-  }
-
-  private static void setupInstruments(final Context context) {
-    if (VmSettings.UseNodeStatsTool) {
-      NodeStatsTool.enable(context.getEngine());
-    }
   }
 
   public Object interpret(String[] arguments) {
