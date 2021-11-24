@@ -19,11 +19,11 @@ public abstract class DispatchGuard {
       return new CheckFalse();
     }
 
-    if (obj instanceof SClass) {
+    if (obj.getClass() == SClass.class) {
       return new CheckSClass(((SClass) obj).getObjectLayout());
     }
 
-    if (obj instanceof SObject) {
+    if (obj.getClass() == SObject.class) {
       return new CheckSObject(((SObject) obj).getObjectLayout());
     }
 
@@ -69,7 +69,7 @@ public abstract class DispatchGuard {
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
       expected.checkIsLatest();
-      return obj instanceof SClass &&
+      return obj.getClass() == SClass.class &&
           ((SClass) obj).getObjectLayout() == expected;
     }
   }
@@ -85,7 +85,7 @@ public abstract class DispatchGuard {
     @Override
     public boolean entryMatches(final Object obj) throws InvalidAssumptionException {
       expected.checkIsLatest();
-      return obj instanceof SObject &&
+      return obj.getClass() == SObject.class &&
           ((SObject) obj).getObjectLayout() == expected;
     }
   }
