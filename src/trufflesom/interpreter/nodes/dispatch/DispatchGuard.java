@@ -19,15 +19,17 @@ public abstract class DispatchGuard {
       return new CheckFalse();
     }
 
-    if (obj.getClass() == SClass.class) {
+    Class<?> clazz = obj.getClass();
+
+    if (clazz == SClass.class) {
       return new CheckSClass(((SClass) obj).getObjectLayout());
     }
 
-    if (obj.getClass() == SObject.class) {
+    if (clazz == SObject.class) {
       return new CheckSObject(((SObject) obj).getObjectLayout());
     }
 
-    return new CheckClass(obj.getClass());
+    return new CheckClass(clazz);
   }
 
   private static final class CheckClass extends DispatchGuard {
