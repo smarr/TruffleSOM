@@ -57,7 +57,7 @@ public final class MessageSendNode {
       final ExpressionNode[] argumentNodes, final SourceSection source,
       final Universe universe) {
     return new GenericMessageSendNode(
-        selector, argumentNodes, universe, true).initialize(source);
+        selector, argumentNodes, universe, 0).initialize(source);
   }
 
   public static AbstractMessageSendNode createSuperSend(final SClass superClass,
@@ -116,22 +116,22 @@ public final class MessageSendNode {
 
     private final int numberOfSignatureArguments;
 
-    @CompilationFinal private boolean triedEager;
+    @CompilationFinal private int numCacheNodes;
 
     @Child private GuardedDispatchNode dispatchCache;
 
     private GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
-        final Universe universe, final boolean triedEager) {
+        final Universe universe, final int numCacheNodes) {
       super(arguments);
       this.selector = selector;
       this.universe = universe;
-      this.triedEager = triedEager;
+      this.numCacheNodes = numCacheNodes;
       this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
     }
 
     private GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
         final Universe universe) {
-      this(selector, arguments, universe, false);
+      this(selector, arguments, universe, -1);
     }
 
     @Override
@@ -190,19 +190,9 @@ public final class MessageSendNode {
       return "GMsgSend(" + selector.getString() + ")";
     }
 
-    private int getCacheSize(GuardedDispatchNode cache) {
-      int cacheSize = 0;
-      while (cache != null) {
-        cache = cache.next;
-        cacheSize += 1;
-      }
-
-      return cacheSize;
-    }
-
     @Override
     public NodeCost getCost() {
-      if (!triedEager) {
+      if (numCacheNodes < 0) {
         return NodeCost.UNINITIALIZED;
       }
 
@@ -212,7 +202,7 @@ public final class MessageSendNode {
         return NodeCost.MEGAMORPHIC;
       }
 
-      int cacheSize = getCacheSize(cache);
+      int cacheSize = numCacheNodes;
 
       if (cacheSize == 0) {
         return NodeCost.UNINITIALIZED;
@@ -226,8 +216,9 @@ public final class MessageSendNode {
     }
 
     private PreevaluatedExpression specialize(final Object[] arguments) {
-      if (!triedEager) {
-        triedEager = true;
+      int cacheSize = numCacheNodes;
+      if (cacheSize < 0) {
+        cacheSize = numCacheNodes = 0;
         PreevaluatedExpression eager = attemptEagerSpecialization(arguments);
         if (eager != null) {
           return eager;
@@ -235,8 +226,6 @@ public final class MessageSendNode {
       }
 
       final GuardedDispatchNode first = dispatchCache;
-
-      int cacheSize = getCacheSize(first);
 
       Object rcvr = arguments[0];
       assert rcvr != null;
@@ -280,6 +269,7 @@ public final class MessageSendNode {
           node.next = node.insertHere(first);
         }
         dispatchCache = insert(node);
+        numCacheNodes = cacheSize + 1;
         return node;
       }
 
@@ -288,6 +278,7 @@ public final class MessageSendNode {
       GenericDispatchNode generic = new GenericDispatchNode(selector, universe);
       dispatchCache = insert(generic);
       reportPolymorphicSpecialize();
+      numCacheNodes = cacheSize + 1;
       return generic;
     }
 
