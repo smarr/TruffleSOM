@@ -267,7 +267,9 @@
         <jar destfile="${build.dir}/som.jar" basedir="${classes.dir}"></jar>
     </target>
 
-    <target name="test" depends="compile-for-jar" description="Execute tests">
+    <target name="test" depends="compile-for-jar,unit-test" description="Execute tests" />
+    
+    <target name="unit-test" description="Run unit tests">
         <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed.ast"
             outputtoformatters="true">
             <jvmarg value="-ea" />
