@@ -24,5 +24,9 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.profiles"/>
 	<classpathentry kind="src" path="/org.graalvm.polyglot"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.instrumentation"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.exception"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.polyglot"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.host"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/com.oracle.truffle.api.debug"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
