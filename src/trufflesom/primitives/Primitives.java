@@ -147,6 +147,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(probe);
+    mgen.getCurrentLexicalScope().finalizeVariables(0);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0), signature)
                                        .initialize(coord);

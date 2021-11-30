@@ -2,8 +2,6 @@ package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -16,23 +14,16 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class LocalVariableNode extends NoPreEvalExprNode
-    implements Invocation<SSymbol> {
-  protected final FrameSlot       slot;
-  protected final FrameDescriptor descriptor;
-  protected final Local           local;
+public abstract class LocalVariableNode extends NoPreEvalExprNode implements Invocation<SSymbol> {
+  protected final int   slotIndex;
+  protected final Local local;
 
   // TODO: We currently assume that there is a 1:1 mapping between lexical contexts
   // and frame descriptors, which is apparently not strictly true anymore in Truffle 1.0.0.
   // Generally, we also need to revise everything in this area and address issue SOMns#240.
   private LocalVariableNode(final Local local) {
     this.local = local;
-    this.slot = local.getSlot();
-    this.descriptor = local.getFrameDescriptor();
-  }
-
-  public final Object getSlotIdentifier() {
-    return slot.getIdentifier();
+    this.slotIndex = local.getIndex();
   }
 
   public Local getLocal() {
@@ -59,46 +50,33 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
       return Nil.nilObject;
     }
 
-    protected boolean isBoolean(final VirtualFrame frame) {
-      return frame.isBoolean(slot);
-    }
-
-    protected boolean isLong(final VirtualFrame frame) {
-      return frame.isLong(slot);
-    }
-
-    protected boolean isDouble(final VirtualFrame frame) {
-      return frame.isDouble(slot);
-    }
-
-    protected boolean isObject(final VirtualFrame frame) {
-      return frame.isObject(slot);
-    }
-
-    @Specialization(guards = {"isBoolean(frame)"}, rewriteOn = {FrameSlotTypeException.class})
+    @Specialization(guards = {"frame.isBoolean(slotIndex)"},
+        rewriteOn = {FrameSlotTypeException.class})
     public final boolean doBoolean(final VirtualFrame frame) throws FrameSlotTypeException {
-      return frame.getBoolean(slot);
+      return frame.getBoolean(slotIndex);
     }
 
-    @Specialization(guards = {"isLong(frame)"}, rewriteOn = {FrameSlotTypeException.class})
+    @Specialization(guards = {"frame.isLong(slotIndex)"},
+        rewriteOn = {FrameSlotTypeException.class})
     public final long doLong(final VirtualFrame frame) throws FrameSlotTypeException {
-      return frame.getLong(slot);
+      return frame.getLong(slotIndex);
     }
 
-    @Specialization(guards = {"isDouble(frame)"}, rewriteOn = {FrameSlotTypeException.class})
+    @Specialization(guards = {"frame.isDouble(slotIndex)"},
+        rewriteOn = {FrameSlotTypeException.class})
     public final double doDouble(final VirtualFrame frame) throws FrameSlotTypeException {
-      return frame.getDouble(slot);
+      return frame.getDouble(slotIndex);
     }
 
-    @Specialization(guards = {"isObject(frame)"},
+    @Specialization(guards = {"frame.isObject(slotIndex)"},
         replaces = {"doBoolean", "doLong", "doDouble"},
         rewriteOn = {FrameSlotTypeException.class})
     public final Object doObject(final VirtualFrame frame) throws FrameSlotTypeException {
-      return frame.getObject(slot);
+      return frame.getObject(slotIndex);
     }
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
-      return descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal;
+      return local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Illegal;
     }
 
     @Override
@@ -122,36 +100,36 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
 
     @Specialization(guards = "isBoolKind(expValue)")
     public final boolean writeBoolean(final VirtualFrame frame, final boolean expValue) {
-      frame.setBoolean(slot, expValue);
+      frame.setBoolean(slotIndex, expValue);
       return expValue;
     }
 
     @Specialization(guards = "isLongKind(expValue)")
     public final long writeLong(final VirtualFrame frame, final long expValue) {
-      frame.setLong(slot, expValue);
+      frame.setLong(slotIndex, expValue);
       return expValue;
     }
 
     @Specialization(guards = "isDoubleKind(expValue)")
     public final double writeDouble(final VirtualFrame frame, final double expValue) {
-      frame.setDouble(slot, expValue);
+      frame.setDouble(slotIndex, expValue);
       return expValue;
     }
 
     @Specialization(replaces = {"writeBoolean", "writeLong", "writeDouble"})
     public final Object writeGeneric(final VirtualFrame frame, final Object expValue) {
-      descriptor.setFrameSlotKind(slot, FrameSlotKind.Object);
-      frame.setObject(slot, expValue);
+      local.getFrameDescriptor().setSlotKind(slotIndex, FrameSlotKind.Object);
+      frame.setObject(slotIndex, expValue);
       return expValue;
     }
 
     // uses expValue to make sure guard is not converted to assertion
     protected final boolean isBoolKind(final boolean expValue) {
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Boolean) {
+      if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Boolean) {
         return true;
       }
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-        descriptor.setFrameSlotKind(slot, FrameSlotKind.Boolean);
+      if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
+        local.getFrameDescriptor().setSlotKind(slotIndex, FrameSlotKind.Boolean);
         return true;
       }
       return false;
@@ -159,11 +137,11 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
 
     // uses expValue to make sure guard is not converted to assertion
     protected final boolean isLongKind(final long expValue) {
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Long) {
+      if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Long) {
         return true;
       }
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-        descriptor.setFrameSlotKind(slot, FrameSlotKind.Long);
+      if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
+        local.getFrameDescriptor().setSlotKind(slotIndex, FrameSlotKind.Long);
         return true;
       }
       return false;
@@ -171,11 +149,11 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
 
     // uses expValue to make sure guard is not converted to assertion
     protected final boolean isDoubleKind(final double expValue) {
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Double) {
+      if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Double) {
         return true;
       }
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-        descriptor.setFrameSlotKind(slot, FrameSlotKind.Double);
+      if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
+        local.getFrameDescriptor().setSlotKind(slotIndex, FrameSlotKind.Double);
         return true;
       }
       return false;
