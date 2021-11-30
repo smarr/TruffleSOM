@@ -29,7 +29,6 @@
     <property name="src.dir"     location="src"/>
     <property name="src_gen.dir" location="src_gen"/>
     <property name="lib.dir"     location="libs" />
-    <property name="bd.dir"      location="${lib.dir}/black-diamonds/" />
     <property name="unit.dir"    location="tests"/>
     <property name="sdk.dir"     location="${lib.dir}/truffle/sdk" />
     <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
@@ -59,7 +58,6 @@
     
     <path id="common.cp">
         <pathelement location="${classes.dir}" />
-        <pathelement location="${bd.dir}/build/classes" />
 
         <pathelement location="${svm.build}/svm-core.jar" />
     </path>
@@ -112,8 +110,6 @@
           <arg value="clean"/>
           <env key="JAVA_HOME" value="${jvmci.home}" />
         </exec>
-
-        <ant dir="${bd.dir}" useNativeBasedir="true" target="clean" inheritAll="false" />
     </target>
 
     <target name="check-core-lib-available">
@@ -148,18 +144,6 @@
         </exec>
     </target>
 
-    <target name="bd-libs"> <!-- implicit dependency on truffle-libs/libgraal-jdk -->
-        <ant dir="${bd.dir}" useNativeBasedir="true" target="libs-junit" inheritAll="false">
-            <property name="force.java8"   value="${is.atLeastJava9}" />
-        </ant>
-        <ant dir="${bd.dir}" useNativeBasedir="true" target="compile-nodeps" inheritAll="false">
-            <property name="sdk.build"   value="${sdk.build}" />
-            <property name="truffle.dir" value="${truffle.dir}" />
-            <property name="truffle.build" value="${truffle.build}" />
-            <property name="force.java8"   value="${is.atLeastJava9}" />
-        </ant>
-    </target>
-
     <target name="ideinit" depends="core-lib">
         <exec executable="${mx.cmd}" dir="${compiler.dir}">
           <env key="JAVA_HOME" value="${jvmci.home}" />
@@ -191,7 +175,7 @@
         <echo>${jvmci.home}</echo>
     </target>
 
-    <target name="libs" depends="core-lib,bd-libs">
+    <target name="libs" depends="core-lib">
         <get src="https://repo1.maven.org/maven2/junit/junit/${junit.version}/junit-${junit.version}.jar"
             usetimestamp="true"
             dest="${lib.dir}/junit-${junit.version}.jar" />
