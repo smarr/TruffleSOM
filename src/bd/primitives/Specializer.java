@@ -6,7 +6,6 @@ import com.oracle.truffle.api.dsl.NodeFactory;
 
 import bd.inlining.nodes.WithSource;
 import bd.primitives.Primitive.NoChild;
-import bd.settings.VmSettings;
 
 
 /**
@@ -66,7 +65,8 @@ public class Specializer<ExprT, Id> {
   public boolean matches(final Object[] args, final ExprT[] argNodes) {
     // TODO: figure out whether we really want it like this with a VmSetting, or whether
     // there should be something on the context
-    assert !(prim.disabled() && VmSettings.DYNAMIC_METRICS);
+    // TODO: with the dynamic metrics setting gone, this assertion isn't useful anymore
+    // assert !prim.disabled();
 
     if (args == null || prim.receiverType().length == 0) {
       // no constraints, so, it matches

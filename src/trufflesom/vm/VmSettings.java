@@ -1,9 +1,6 @@
 package trufflesom.vm;
 
-import bd.settings.Settings;
-
-
-public class VmSettings implements Settings {
+public class VmSettings {
 
   public static final boolean UseAstInterp;
   public static final boolean UseBcInterp;
@@ -32,10 +29,4 @@ public class VmSettings implements Settings {
     val = System.getProperty("som.printStackTraceOnDNU", "false");
     PrintStackTraceOnDNU = "true".equals(val);
   }
-
-  @Override
-  public boolean dynamicMetricsEnabled() {
-    return false;
-  }
-
 }

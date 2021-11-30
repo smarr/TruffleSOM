@@ -11,7 +11,9 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.Inliner.FactoryInliner;
-import bd.settings.VmSettings;
+import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.vmobjects.SSymbol;
 
 
 /**
@@ -126,7 +128,9 @@ public final class InlinableNodes<Id> {
       final N[] argNodes, final S builder, final long coord)
       throws ProgramDefinitionError {
     Inliner inliner = inlinableNodes.get(selector);
-    if (inliner == null || (VmSettings.DYNAMIC_METRICS && inliner.isDisabled())) {
+    // TODO: without support for dynamic metrics, we don't check inliner.isDisabled()
+    // but perhaps at some point should do that again
+    if (inliner == null) {
       return null;
     }
 
