@@ -395,10 +395,10 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.PUSH_LOCAL_1,
         Bytecodes.POP_LOCAL_0,
         t(3, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 43)),
-        t(7, new BC(Bytecodes.POP_LOCAL, 4, 0)),
+        t(7, new BC(Bytecodes.POP_LOCAL, 5, 0)),
         t(12, Bytecodes.POP_LOCAL_2),
         t(15, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 31)),
-        t(19, new BC(Bytecodes.POP_LOCAL, 7, 0)),
+        t(19, new BC(Bytecodes.POP_LOCAL, 8, 0)),
         t(40, new BC(Bytecodes.PUSH_LOCAL, 3, 0)));
   }
 
@@ -421,37 +421,38 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + " [ a ]\n"
             + ")");
 
-    assertEquals(27, bytecodes.length);
+    assertEquals(31, bytecodes.length);
+
     check(bytecodes,
         // a := 1
         Bytecodes.PUSH_1,
         Bytecodes.POP_LOCAL_0, // a
 
         Bytecodes.PUSH_CONSTANT_0,
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 20),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 24),
 
         // e := 0
         Bytecodes.PUSH_0,
-        Bytecodes.POP_LOCAL_1, // e
+        Bytecodes.POP_LOCAL_2, // e
 
-        t(13, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 10)),
+        t(13, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 14)),
 
         Bytecodes.PUSH_1,
-        Bytecodes.POP_LOCAL_2); // h
+        new BC(Bytecodes.POP_LOCAL, 3, 0)); // h
 
     check(getBytecodesOfBlock(8), // [ a := 1. a ].
         Bytecodes.PUSH_1,
         new BC(Bytecodes.POP_LOCAL, 0, 1, "local a"),
         new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
 
-    check(getBytecodesOfBlock(18), // [ h + a + e ].
+    check(getBytecodesOfBlock(20), // [ h + a + e ].
         // this is a bit confusing, but the order in the localsAndOuters array of the block
         // is the same as in the outer method
-        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local h"),
-        new BC(Bytecodes.PUSH_LOCAL, 1, 1, "local a"),
+        new BC(Bytecodes.PUSH_LOCAL, 3, 1, "local h"),
+        new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"),
         t(8, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local e")));
 
-    check(getBytecodesOfBlock(24),
+    check(getBytecodesOfBlock(28),
         new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
   }
 
