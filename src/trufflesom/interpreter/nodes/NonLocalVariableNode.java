@@ -1,13 +1,14 @@
 package trufflesom.interpreter.nodes;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreter;
-
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
@@ -52,42 +53,36 @@ public abstract class NonLocalVariableNode extends ContextualNode
       return Nil.nilObject;
     }
 
-    protected boolean isBoolean(final VirtualFrame frame) {
-      return determineContext(frame).isBoolean(slot);
+    @Specialization(guards = {"ctx.isBoolean(slot)"},
+        rewriteOn = {FrameSlotTypeException.class})
+    public final boolean doBoolean(final VirtualFrame frame,
+        @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
+        throws FrameSlotTypeException {
+      return ctx.getBoolean(slot);
     }
 
-    protected boolean isLong(final VirtualFrame frame) {
-      return determineContext(frame).isLong(slot);
+    @Specialization(guards = {"ctx.isLong(slot)"}, rewriteOn = {FrameSlotTypeException.class})
+    public final long doLong(final VirtualFrame frame,
+        @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
+        throws FrameSlotTypeException {
+      return ctx.getLong(slot);
     }
 
-    protected boolean isDouble(final VirtualFrame frame) {
-      return determineContext(frame).isDouble(slot);
+    @Specialization(guards = {"ctx.isDouble(slot)"},
+        rewriteOn = {FrameSlotTypeException.class})
+    public final double doDouble(final VirtualFrame frame,
+        @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
+        throws FrameSlotTypeException {
+      return ctx.getDouble(slot);
     }
 
-    protected boolean isObject(final VirtualFrame frame) {
-      return determineContext(frame).isObject(slot);
-    }
-
-    @Specialization(guards = {"isBoolean(frame)"}, rewriteOn = {FrameSlotTypeException.class})
-    public final boolean doBoolean(final VirtualFrame frame) throws FrameSlotTypeException {
-      return determineContext(frame).getBoolean(slot);
-    }
-
-    @Specialization(guards = {"isLong(frame)"}, rewriteOn = {FrameSlotTypeException.class})
-    public final long doLong(final VirtualFrame frame) throws FrameSlotTypeException {
-      return determineContext(frame).getLong(slot);
-    }
-
-    @Specialization(guards = {"isDouble(frame)"}, rewriteOn = {FrameSlotTypeException.class})
-    public final double doDouble(final VirtualFrame frame) throws FrameSlotTypeException {
-      return determineContext(frame).getDouble(slot);
-    }
-
-    @Specialization(guards = {"isObject(frame)"},
+    @Specialization(guards = {"ctx.isObject(slot)"},
         replaces = {"doBoolean", "doLong", "doDouble"},
         rewriteOn = {FrameSlotTypeException.class})
-    public final Object doObject(final VirtualFrame frame) throws FrameSlotTypeException {
-      return determineContext(frame).getObject(slot);
+    public final Object doObject(final VirtualFrame frame,
+        @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
+        throws FrameSlotTypeException {
+      return ctx.getObject(slot);
     }
 
     protected final boolean isUninitialized(final VirtualFrame frame) {
@@ -129,17 +124,17 @@ public abstract class NonLocalVariableNode extends ContextualNode
 
     @Specialization(replaces = {"writeBoolean", "writeLong", "writeDouble"})
     public final Object writeGeneric(final VirtualFrame frame, final Object expValue) {
-      ensureObjectKind();
+      descriptor.setFrameSlotKind(slot, FrameSlotKind.Object);
       determineContext(frame).setObject(slot, expValue);
       return expValue;
     }
 
     protected final boolean isBoolKind(final VirtualFrame frame) {
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Boolean) {
+      FrameSlotKind kind = descriptor.getFrameSlotKind(slot);
+      if (kind == FrameSlotKind.Boolean) {
         return true;
       }
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeBoolToUninit");
+      if (kind == FrameSlotKind.Illegal) {
         descriptor.setFrameSlotKind(slot, FrameSlotKind.Boolean);
         return true;
       }
@@ -147,11 +142,11 @@ public abstract class NonLocalVariableNode extends ContextualNode
     }
 
     protected final boolean isLongKind(final VirtualFrame frame) {
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Long) {
+      FrameSlotKind kind = descriptor.getFrameSlotKind(slot);
+      if (kind == FrameSlotKind.Long) {
         return true;
       }
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeIntToUninit");
+      if (kind == FrameSlotKind.Illegal) {
         descriptor.setFrameSlotKind(slot, FrameSlotKind.Long);
         return true;
       }
@@ -159,22 +154,15 @@ public abstract class NonLocalVariableNode extends ContextualNode
     }
 
     protected final boolean isDoubleKind(final VirtualFrame frame) {
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Double) {
+      FrameSlotKind kind = descriptor.getFrameSlotKind(slot);
+      if (kind == FrameSlotKind.Double) {
         return true;
       }
-      if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeDoubleToUninit");
+      if (kind == FrameSlotKind.Illegal) {
         descriptor.setFrameSlotKind(slot, FrameSlotKind.Double);
         return true;
       }
       return false;
-    }
-
-    protected final void ensureObjectKind() {
-      if (descriptor.getFrameSlotKind(slot) != FrameSlotKind.Object) {
-        transferToInterpreter("LocalVar.writeObjectToUninit");
-        descriptor.setFrameSlotKind(slot, FrameSlotKind.Object);
-      }
     }
 
     @Override
