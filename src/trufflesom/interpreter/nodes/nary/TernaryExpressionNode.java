@@ -5,11 +5,11 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
-import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
@@ -51,8 +51,6 @@ public abstract class TernaryExpressionNode extends EagerlySpecializableNode {
     }
 
     assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
-    throw new NotYetImplementedException("TODO: we need the bytecode index here");
-    // ((BytecodeLoopNode) getParent()).requicken(bytecodeIndex, Q_SEND, send);
-    // return send;
+    throw new RespecializeException(send);
   }
 }
