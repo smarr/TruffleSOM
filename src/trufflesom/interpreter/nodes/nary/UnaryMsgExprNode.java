@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.nary;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -11,6 +12,7 @@ public abstract class UnaryMsgExprNode extends UnaryExpressionNode {
 
   @Fallback
   public final Object makeGenericSend(final VirtualFrame frame, final Object receiver) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     return makeGenericSend(getSelector()).doPreEvaluated(frame, new Object[] {receiver});
   }
 }
