@@ -149,13 +149,13 @@ public final class MessageSendNode {
 
       if (specializer != null) {
         boolean noWrapper = specializer.noWrapper();
-        EagerlySpecializableNode newNode =
-            (EagerlySpecializableNode) specializer.create(arguments, argumentNodes,
+        PreevaluatedExpression newNode =
+            (PreevaluatedExpression) specializer.create(arguments, argumentNodes,
                 sourceSection, !noWrapper, universe);
-        if (noWrapper) {
-          return replace(newNode);
+        if (noWrapper || newNode instanceof BinaryExpressionNode) {
+          return (PreevaluatedExpression) replace((ExpressionNode) newNode);
         } else {
-          return makeEagerPrim(newNode);
+          return makeEagerPrim((EagerlySpecializableNode) newNode);
         }
       }
 
