@@ -9,19 +9,26 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class IfMessageNode extends BinaryExpressionNode {
+public abstract class IfMessageNode extends BinaryMsgExprNode {
 
   @GenerateNodeFactory
   @Primitive(selector = "ifTrue:", noWrapper = true)
   public abstract static class IfTrueMessageNode extends IfMessageNode {
     public IfTrueMessageNode() {
       super(true);
+    }
+
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("ifTrue:");
     }
   }
 
@@ -31,6 +38,11 @@ public abstract class IfMessageNode extends BinaryExpressionNode {
     public IfFalseMessageNode() {
       super(false);
     }
+
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("ifFalse:");
+    }
   }
 
   protected final ConditionProfile condProf = ConditionProfile.createCountingProfile();
@@ -38,6 +50,11 @@ public abstract class IfMessageNode extends BinaryExpressionNode {
 
   protected IfMessageNode(final boolean expected) {
     this.expected = expected;
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    throw new UnsupportedOperationException();
   }
 
   protected static DirectCallNode createDirect(final SInvokable method) {

@@ -7,9 +7,10 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -18,7 +19,12 @@ public class StringPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "concatenate:")
-  public abstract static class ConcatPrim extends BinaryExpressionNode {
+  public abstract static class ConcatPrim extends BinaryMsgExprNode {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("concatenate:");
+    }
+
     @Specialization
     @TruffleBoundary
     public final String doString(final String receiver, final String argument) {

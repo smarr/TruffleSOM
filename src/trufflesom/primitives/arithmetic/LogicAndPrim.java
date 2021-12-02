@@ -7,11 +7,18 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
+import trufflesom.vm.SymbolTable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 @Primitive(className = "Integer", primitive = "&", selector = "&")
 public abstract class LogicAndPrim extends ArithmeticPrim {
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("&");
+  }
+
   @Specialization
   public final long doLong(final long left, final long right) {
     return left & right;

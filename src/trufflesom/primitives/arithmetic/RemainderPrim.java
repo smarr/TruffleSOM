@@ -7,11 +7,18 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
+import trufflesom.vm.SymbolTable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 @Primitive(className = "Integer", primitive = "rem:", selector = "rem:")
 public abstract class RemainderPrim extends ArithmeticPrim {
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("rem:");
+  }
+
   @Specialization
   public final double doDouble(final double left, final double right) {
     return left % right;

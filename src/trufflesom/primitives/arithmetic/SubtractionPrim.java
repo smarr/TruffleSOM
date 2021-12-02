@@ -7,6 +7,8 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
+import trufflesom.vm.SymbolTable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
@@ -14,6 +16,11 @@ import bd.primitives.Primitive;
 @Primitive(className = "Double", primitive = "-")
 @Primitive(selector = "-")
 public abstract class SubtractionPrim extends ArithmeticPrim {
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("-");
+  }
+
   @Specialization(rewriteOn = ArithmeticException.class)
   public final long doLong(final long left, final long right) {
     return Math.subtractExact(left, right);

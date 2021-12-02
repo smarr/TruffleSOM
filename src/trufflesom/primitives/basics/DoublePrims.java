@@ -43,6 +43,7 @@ public abstract class DoublePrims {
   @GenerateNodeFactory
   @Primitive(className = "Double", primitive = "fromString:", classSide = true)
   public abstract static class FromStringPrim extends BinarySystemOperation {
+
     @TruffleBoundary
     @Specialization(guards = "receiver == universe.doubleClass")
     public final double doSClass(final SClass receiver, final String str) {

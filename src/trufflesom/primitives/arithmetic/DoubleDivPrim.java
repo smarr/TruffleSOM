@@ -9,7 +9,9 @@ import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
 import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SAbstractObject;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
@@ -17,6 +19,11 @@ import trufflesom.vmobjects.SAbstractObject;
 @Primitive(className = "Double", primitive = "//")
 @Primitive(selector = "//")
 public abstract class DoubleDivPrim extends ArithmeticPrim {
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("//");
+  }
+
   @Specialization
   public final double doDouble(final double left, final double right) {
     return left / right;

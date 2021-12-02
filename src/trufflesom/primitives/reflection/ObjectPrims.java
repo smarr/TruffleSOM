@@ -9,11 +9,12 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -88,7 +89,12 @@ public final class ObjectPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "instVarNamed:", selector = "instVarNamed:")
-  public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
+  public abstract static class InstVarNamedPrim extends BinaryMsgExprNode {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("instVarNamed:");
+    }
+
     @Specialization
     @TruffleBoundary
     public final Object doSObject(final SObject receiver, final SSymbol fieldName) {

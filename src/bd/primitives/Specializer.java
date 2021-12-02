@@ -10,6 +10,7 @@ import bd.primitives.Primitive.NoChild;
 import bd.primitives.nodes.EagerlySpecializable;
 import bd.primitives.nodes.WithContext;
 import bd.settings.VmSettings;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 
 
 /**
@@ -104,6 +105,8 @@ public class Specializer<Context, ExprT, Id> {
   public ExprT create(final Object[] arguments, final ExprT[] argNodes,
       final SourceSection section, final boolean eagerWrapper, final Context context) {
     assert arguments == null || arguments.length >= argNodes.length;
+    boolean msgFallback = BinaryMsgExprNode.class.isAssignableFrom(fact.getNodeClass());
+    boolean withWrapper = eagerWrapper && !msgFallback;
     int numArgs = numberOfNodeConstructorArguments(argNodes);
 
     Object[] ctorArgs = new Object[numArgs];
@@ -116,7 +119,7 @@ public class Specializer<Context, ExprT, Id> {
     }
 
     for (int i = 0; i < argNodes.length; i += 1) {
-      ctorArgs[offset] = eagerWrapper ? null : argNodes[i];
+      ctorArgs[offset] = withWrapper ? null : argNodes[i];
       offset += 1;
     }
 
@@ -130,7 +133,7 @@ public class Specializer<Context, ExprT, Id> {
     }
 
     ExprT node = fact.createNode(ctorArgs);
-    ((EagerlySpecializable<ExprT, Id, Context>) node).initialize(section, eagerWrapper);
+    ((EagerlySpecializable<ExprT, Id, Context>) node).initialize(section, withWrapper);
     if (requiresContext) {
       ((WithContext<?, Context>) node).initialize(context);
     }

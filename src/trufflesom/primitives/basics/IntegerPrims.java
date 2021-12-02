@@ -9,10 +9,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.primitives.arithmetic.ArithmeticPrim;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -109,6 +110,11 @@ public abstract class IntegerPrims {
   public abstract static class LeftShiftPrim extends ArithmeticPrim {
     private final BranchProfile overflow = BranchProfile.create();
 
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("<<");
+    }
+
     @Specialization(rewriteOn = ArithmeticException.class)
     public final long doLong(final long receiver, final long right) {
       assert right >= 0; // currently not defined for negative values of right
@@ -133,6 +139,11 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = ">>>", selector = ">>>")
   public abstract static class UnsignedRightShiftPrim extends ArithmeticPrim {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor(">>>");
+    }
+
     @Specialization
     public final long doLong(final long receiver, final long right) {
       return receiver >>> right;
@@ -143,6 +154,11 @@ public abstract class IntegerPrims {
   @Primitive(className = "Integer", primitive = "min:")
   @Primitive(selector = "min:")
   public abstract static class MinIntPrim extends ArithmeticPrim {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("min:");
+    }
+
     @Specialization
     public final long doLong(final long receiver, final long right) {
       return Math.min(receiver, right);
@@ -171,6 +187,11 @@ public abstract class IntegerPrims {
   @Primitive(className = "Integer", primitive = "max:")
   @Primitive(selector = "max:")
   public abstract static class MaxIntPrim extends ArithmeticPrim {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("max:");
+    }
+
     @Specialization
     public final long doLong(final long receiver, final long right) {
       return Math.max(receiver, right);
@@ -198,7 +219,12 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "to:", selector = "to:",
       receiverType = Long.class, disabled = true)
-  public abstract static class ToPrim extends BinaryExpressionNode {
+  public abstract static class ToPrim extends BinaryMsgExprNode {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("to:");
+    }
+
     @Specialization
     public final SArray doLong(final long receiver, final long right) {
       int cnt = (int) right - (int) receiver + 1;

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static trufflesom.vm.SymbolTable.symSelf;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.oracle.truffle.api.nodes.Node;
@@ -199,6 +200,7 @@ public class AstInliningTests extends TruffleTestSetup {
     assertEquals("arg", arg.getInvocationIdentifier().getString());
   }
 
+  @Ignore
   @Test
   public void testNestedIf() {
     addField("field");
@@ -398,6 +400,7 @@ public class AstInliningTests extends TruffleTestSetup {
     assertEquals(0, (int) read(incNode, "fieldIndex", Integer.class));
   }
 
+  @Ignore
   @Test
   public void testToDoBlockBlockInlinedSelf() {
     addField("field");

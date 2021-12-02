@@ -62,5 +62,4 @@ public class BinaryPrimitiveWrapper extends BinaryExpressionNode {
 
     return node;
   }
-
 }
