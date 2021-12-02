@@ -9,7 +9,6 @@ import bd.inlining.nodes.WithSource;
 import bd.primitives.Primitive.NoChild;
 import bd.primitives.nodes.WithContext;
 import bd.settings.VmSettings;
-import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 /**
@@ -126,7 +125,7 @@ public class Specializer<Context, ExprT, Id> {
     }
 
     ExprT node = fact.createNode(ctorArgs);
-    ((ExpressionNode) node).initialize(section);
+    ((WithSource) node).initialize(section);
     if (requiresContext) {
       ((WithContext<?, Context>) node).initialize(context);
     }
