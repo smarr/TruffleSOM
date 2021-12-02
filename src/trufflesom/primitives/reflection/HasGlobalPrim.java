@@ -5,7 +5,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.Node;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;

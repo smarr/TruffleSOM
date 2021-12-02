@@ -9,7 +9,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.interpreter.nodes.nary.UnarySystemOperation;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;
