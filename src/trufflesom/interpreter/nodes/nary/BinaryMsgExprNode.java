@@ -13,10 +13,6 @@ import trufflesom.vmobjects.SSymbol;
 
 public abstract class BinaryMsgExprNode extends BinaryExpressionNode {
 
-  public abstract ExpressionNode getReceiver();
-
-  public abstract ExpressionNode getArgument();
-
   public abstract SSymbol getSelector();
 
   @Fallback

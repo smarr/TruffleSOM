@@ -16,7 +16,7 @@ import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
-import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
@@ -38,13 +38,14 @@ public final class MessageSendNode {
           selector, arguments, universe).initialize(source);
     }
 
-    EagerlySpecializableNode newNode = (EagerlySpecializableNode) specializer.create(null,
-        arguments, source, !specializer.noWrapper(), universe);
+    ExpressionNode newNode = specializer.create(
+        null, arguments, source, !specializer.noWrapper(), universe);
 
-    if (specializer.noWrapper() || newNode instanceof BinaryMsgExprNode) {
+    if (specializer.noWrapper() || newNode instanceof BinaryExpressionNode) {
       return newNode;
     } else {
-      return newNode.wrapInEagerWrapper(selector, arguments, universe);
+      return ((EagerlySpecializableNode) newNode).wrapInEagerWrapper(
+          selector, arguments, universe);
     }
   }
 

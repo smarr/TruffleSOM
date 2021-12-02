@@ -8,6 +8,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -61,5 +62,15 @@ public class BinaryPrimitiveWrapper extends BinaryExpressionNode {
     ((BytecodeLoopNode) getParent()).requicken(bytecodeIndex, Q_SEND, node);
 
     return node;
+  }
+
+  @Override
+  public ExpressionNode getReceiver() {
+    throw new UnsupportedOperationException("This node is used only for executeEvaluated()");
+  }
+
+  @Override
+  public ExpressionNode getArgument() {
+    throw new UnsupportedOperationException("This node is used only for executeEvaluated()");
   }
 }

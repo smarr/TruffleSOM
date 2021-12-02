@@ -10,6 +10,7 @@ import bd.primitives.Primitive.NoChild;
 import bd.primitives.nodes.EagerlySpecializable;
 import bd.primitives.nodes.WithContext;
 import bd.settings.VmSettings;
+import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 
 
@@ -133,7 +134,11 @@ public class Specializer<Context, ExprT, Id> {
     }
 
     ExprT node = fact.createNode(ctorArgs);
-    ((EagerlySpecializable<ExprT, Id, Context>) node).initialize(section, withWrapper);
+    if (withWrapper) {
+      ((EagerlySpecializable<ExprT, Id, Context>) node).initialize(section, withWrapper);
+    } else {
+      ((ExpressionNode) node).initialize(section);
+    }
     if (requiresContext) {
       ((WithContext<?, Context>) node).initialize(context);
     }
