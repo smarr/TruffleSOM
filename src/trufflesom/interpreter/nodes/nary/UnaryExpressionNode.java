@@ -1,17 +1,23 @@
 package trufflesom.interpreter.nodes.nary;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import bd.primitives.nodes.WithContext;
+import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.vm.Universe;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)
 public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
+
+  public abstract ExpressionNode getReceiver();
 
   public abstract Object executeEvaluated(VirtualFrame frame, Object receiver);
 
@@ -21,22 +27,25 @@ public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
     return executeEvaluated(frame, arguments[0]);
   }
 
-  @Override
-  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
-      final ExpressionNode[] arguments, final Universe universe) {
-    return new EagerUnaryPrimitiveNode(
-        selector, arguments[0], this, universe).initialize(sourceSection);
-  }
-
-  public abstract static class UnarySystemOperation extends UnaryExpressionNode
-      implements WithContext<UnarySystemOperation, Universe> {
-    @CompilationFinal protected Universe universe;
-
-    @Override
-    public UnarySystemOperation initialize(final Universe universe) {
-      assert this.universe == null && universe != null;
-      this.universe = universe;
-      return this;
+  protected GenericMessageSendNode makeGenericSend(final SSymbol selector) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+    ExpressionNode[] children;
+    if (VmSettings.UseAstInterp) {
+      children = new ExpressionNode[] {getReceiver()};
+    } else {
+      children = null;
     }
+
+    GenericMessageSendNode send = MessageSendNode.createGeneric(selector, children,
+        sourceSection, SomLanguage.getCurrentContext());
+
+    if (VmSettings.UseAstInterp) {
+      return replace(send);
+    }
+
+    assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
+    throw new NotYetImplementedException("TODO: we need the bytecode index here");
+    // ((BytecodeLoopNode) getParent()).requicken(bytecodeIndex, Q_SEND, send);
+    // return send;
   }
 }

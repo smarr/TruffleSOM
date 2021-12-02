@@ -6,8 +6,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class BinaryMsgExprNode extends BinaryExpressionNode {
-
+public abstract class BinarySystemMsgOperation extends BinarySystemOperation {
   public abstract SSymbol getSelector();
 
   @Fallback

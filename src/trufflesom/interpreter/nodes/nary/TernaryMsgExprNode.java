@@ -6,14 +6,14 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class BinaryMsgExprNode extends BinaryExpressionNode {
+public abstract class TernaryMsgExprNode extends TernaryExpressionNode {
 
   public abstract SSymbol getSelector();
 
   @Fallback
   public final Object makeGenericSend(final VirtualFrame frame,
-      final Object receiver, final Object argument) {
+      final Object receiver, final Object arg1, final Object arg2) {
     return makeGenericSend(getSelector()).doPreEvaluated(frame,
-        new Object[] {receiver, argument});
+        new Object[] {receiver, arg1, arg2});
   }
 }
