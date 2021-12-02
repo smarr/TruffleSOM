@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.nodes.Node.Child;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -20,8 +19,8 @@ import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(selector = "or:", noWrapper = true, specializer = OrSplzr.class)
-@Primitive(selector = "||", noWrapper = true, specializer = OrSplzr.class)
+@Primitive(selector = "or:", specializer = OrSplzr.class)
+@Primitive(selector = "||", specializer = OrSplzr.class)
 public abstract class OrMessageNode extends BinaryMsgExprNode {
   public static final class OrSplzr extends AndOrSplzr {
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -45,7 +44,10 @@ public abstract class OrMessageNode extends BinaryMsgExprNode {
 
   @Override
   public SSymbol getSelector() {
-    return SymbolTable.symbolFor("||");
+    if (getSourceChar(0) == '|') {
+      return SymbolTable.symbolFor("||");
+    }
+    return SymbolTable.symbolFor("or:");
   }
 
   @Specialization(guards = "isSameBlock(argument)")

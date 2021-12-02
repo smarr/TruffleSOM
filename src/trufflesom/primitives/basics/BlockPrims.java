@@ -14,11 +14,7 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import bd.primitives.Primitive;
 import bd.primitives.nodes.PreevaluatedExpression;
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.bc.RestartLoopException;
-import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.MessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
@@ -93,7 +89,7 @@ public abstract class BlockPrims {
   @ReportPolymorphism
   @GenerateNodeFactory
   @Primitive(className = "Block2", primitive = "value:", selector = "value:", inParser = false,
-      receiverType = SBlock.class, noWrapper = true)
+      receiverType = SBlock.class)
   @ImportStatic(BlockPrims.class)
   public abstract static class ValueOnePrim extends BinaryExpressionNode {
 
@@ -125,16 +121,8 @@ public abstract class BlockPrims {
 
     @Fallback
     public final Object makeGenericSend(final Object receiver, final Object argument) {
-      return makeGenericSend().doPreEvaluated(null, new Object[] {receiver, argument});
-    }
-
-    private GenericMessageSendNode makeGenericSend() {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      GenericMessageSendNode node =
-          MessageSendNode.createGeneric(SymbolTable.symbolFor("value:"),
-              new ExpressionNode[] {getReceiver(), getArgument()}, sourceSection,
-              SomLanguage.getCurrentContext());
-      return replace(node);
+      return makeGenericSend(SymbolTable.symbolFor("value:")).doPreEvaluated(null,
+          new Object[] {receiver, argument});
     }
   }
 

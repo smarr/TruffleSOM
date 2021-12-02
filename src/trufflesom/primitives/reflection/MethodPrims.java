@@ -12,12 +12,9 @@ import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.primitives.arrays.ToArgumentsArrayNode;
 import trufflesom.primitives.arrays.ToArgumentsArrayNodeFactory;
-import trufflesom.vm.NotYetImplementedException;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SInvokable;
-import trufflesom.vmobjects.SSymbol;
 
 
 public final class MethodPrims {
@@ -52,8 +49,7 @@ public final class MethodPrims {
   @NodeChild(value = "somArr", type = ExpressionNode.class)
   @NodeChild(value = "argArr", type = ToArgumentsArrayNode.class,
       executeWith = {"somArr", "target"})
-  @Primitive(selector = "invokeOn:with:", noWrapper = true,
-      extraChild = ToArgumentsArrayNodeFactory.class)
+  @Primitive(selector = "invokeOn:with:", extraChild = ToArgumentsArrayNodeFactory.class)
   public abstract static class InvokeOnPrim extends EagerlySpecializableNode {
     @Child private InvokeOnCache callNode = InvokeOnCache.create();
 
@@ -71,12 +67,6 @@ public final class MethodPrims {
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr) {
       return callNode.executeDispatch(frame, receiver, argArr);
-    }
-
-    @Override
-    public ExpressionNode wrapInEagerWrapper(final SSymbol selector,
-        final ExpressionNode[] arguments, final Universe context) {
-      throw new NotYetImplementedException();
     }
   }
 }

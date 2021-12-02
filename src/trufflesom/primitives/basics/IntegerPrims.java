@@ -9,9 +9,10 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
+import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.UnaryMsgExprNode;
 import trufflesom.primitives.arithmetic.ArithmeticPrim;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
@@ -239,7 +240,7 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "abs", selector = "abs",
       receiverType = {Long.class, BigInteger.class})
-  public abstract static class AbsPrim extends UnaryExpressionNode {
+  public abstract static class AbsPrim extends UnaryMsgExprNode {
     protected static final boolean minLong(final long receiver) {
       return receiver == Long.MIN_VALUE;
     }
@@ -262,6 +263,11 @@ public abstract class IntegerPrims {
     @TruffleBoundary
     public final BigInteger doBig(final BigInteger receiver) {
       return receiver.abs();
+    }
+
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("abs");
     }
   }
 }

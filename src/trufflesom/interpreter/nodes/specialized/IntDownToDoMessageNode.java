@@ -2,8 +2,10 @@ package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
@@ -12,11 +14,12 @@ import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.dispatch.BlockDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.BlockDispatchNodeGen;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SBlock;
 
 
 @GenerateNodeFactory
-@Primitive(selector = "downTo:do:", noWrapper = true, disabled = true, inParser = false)
+@Primitive(selector = "downTo:do:", disabled = true, inParser = false)
 public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
 
   @Child private BlockDispatchNode blockNode = BlockDispatchNodeGen.create();
@@ -75,6 +78,13 @@ public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
       }
     }
     return receiver;
+  }
+
+  @Fallback
+  public final Object makeGeneric(final VirtualFrame frame, final Object receiver,
+      final Object limit, final Object block) {
+    return makeGenericSend(SymbolTable.symbolFor("downTo:do:")).doPreEvaluated(frame,
+        new Object[] {receiver, limit, block});
   }
 
   private void reportLoopCount(final long count) {

@@ -3,23 +3,18 @@ package trufflesom.primitives.reflection;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.SomLanguage;
-import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.MessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
-import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinarySystemMsgOperation;
+import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.TernarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.interpreter.nodes.nary.UnarySystemOperation;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
@@ -34,9 +29,8 @@ import trufflesom.vmobjects.SSymbol;
 
 public final class ObjectPrims {
 
-  @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:",
-      noWrapper = true)
-  public abstract static class InstVarAtPrim extends BinarySystemOperation {
+  @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:")
+  public abstract static class InstVarAtPrim extends BinarySystemMsgOperation {
     @Child private IndexDispatch dispatch;
 
     @Override
@@ -62,20 +56,9 @@ public final class ObjectPrims {
       return doSObject(rcvr, idx);
     }
 
-    @Fallback
-    public final Object makeGenericSend(final VirtualFrame frame,
-        final Object receiver, final Object argument) {
-      return makeGenericSend().doPreEvaluated(frame,
-          new Object[] {receiver, argument});
-    }
-
-    private GenericMessageSendNode makeGenericSend() {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      GenericMessageSendNode node =
-          MessageSendNode.createGeneric(SymbolTable.symbolFor("instVarAt:"),
-              new ExpressionNode[] {getReceiver(), getArgument()}, sourceSection,
-              SomLanguage.getCurrentContext());
-      return replace(node);
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("instVarAt:");
     }
   }
 
@@ -205,7 +188,7 @@ public final class ObjectPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(selector = "isNil", noWrapper = true)
+  @Primitive(selector = "isNil")
   public abstract static class IsNilNode extends UnaryExpressionNode {
     @Specialization
     public final boolean isNil(final Object receiver) {
@@ -214,7 +197,7 @@ public final class ObjectPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(selector = "notNil", noWrapper = true)
+  @Primitive(selector = "notNil")
   public abstract static class NotNilNode extends UnaryExpressionNode {
     @Specialization
     public final boolean notNil(final Object receiver) {

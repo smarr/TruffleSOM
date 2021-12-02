@@ -20,7 +20,7 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class IfMessageNode extends BinaryMsgExprNode {
 
   @GenerateNodeFactory
-  @Primitive(selector = "ifTrue:", noWrapper = true)
+  @Primitive(selector = "ifTrue:")
   public abstract static class IfTrueMessageNode extends IfMessageNode {
     public IfTrueMessageNode() {
       super(true);
@@ -33,7 +33,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
   }
 
   @GenerateNodeFactory
-  @Primitive(selector = "ifFalse:", noWrapper = true)
+  @Primitive(selector = "ifFalse:")
   public abstract static class IfFalseMessageNode extends IfMessageNode {
     public IfFalseMessageNode() {
       super(false);

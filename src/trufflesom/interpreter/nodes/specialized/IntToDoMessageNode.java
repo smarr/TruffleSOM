@@ -11,15 +11,22 @@ import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.dispatch.BlockDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.BlockDispatchNodeGen;
-import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.TernaryMsgExprNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(selector = "to:do:", noWrapper = true, disabled = true, inParser = false)
-public abstract class IntToDoMessageNode extends TernaryExpressionNode {
+@Primitive(selector = "to:do:", disabled = true, inParser = false)
+public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
 
   @Child private BlockDispatchNode blockNode = BlockDispatchNodeGen.create();
+
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("to:do:");
+  }
 
   @Specialization
   public final long doIntToDo(final long receiver, final long limit, final SBlock block) {

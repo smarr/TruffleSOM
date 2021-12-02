@@ -12,7 +12,9 @@ import bd.primitives.Specializer;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
@@ -21,9 +23,9 @@ import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(selector = "and:", noWrapper = false, specializer = AndOrSplzr.class)
-@Primitive(selector = "&&", noWrapper = false, specializer = AndOrSplzr.class)
-public abstract class AndMessageNode extends BinaryExpressionNode {
+@Primitive(selector = "and:", specializer = AndOrSplzr.class)
+@Primitive(selector = "&&", specializer = AndOrSplzr.class)
+public abstract class AndMessageNode extends BinaryMsgExprNode {
   public static class AndOrSplzr extends Specializer<Universe, ExpressionNode, SSymbol> {
     protected final NodeFactory<BinaryExpressionNode> boolFact;
 
@@ -52,7 +54,7 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     @Override
     public final ExpressionNode create(final Object[] arguments,
         final ExpressionNode[] argNodes, final SourceSection section,
-        final boolean eagerWrapper, final Universe universe) {
+        final Universe universe) {
       ExpressionNode node;
       if (argNodes[1] instanceof BlockNode) {
         node = fact.createNode(
@@ -86,5 +88,13 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     } else {
       return (boolean) blockValueSend.call(new Object[] {argument});
     }
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    if (getSourceChar(0) == '&') {
+      return SymbolTable.symbolFor("&&");
+    }
+    return SymbolTable.symbolFor("and:");
   }
 }

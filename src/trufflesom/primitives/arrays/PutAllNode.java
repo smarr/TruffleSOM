@@ -12,10 +12,6 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.SomLanguage;
-import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.MessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.primitives.basics.BlockPrims.ValueNonePrim;
 import trufflesom.primitives.basics.BlockPrimsFactory.ValueNonePrimFactory;
@@ -30,7 +26,7 @@ import trufflesom.vmobjects.SObject;
 
 @GenerateNodeFactory
 @Primitive(className = "Array", primitive = "putAll:", selector = "putAll:", disabled = true,
-    extraChild = LengthPrimFactory.class, noWrapper = true)
+    extraChild = LengthPrimFactory.class)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
 public abstract class PutAllNode extends BinaryExpressionNode {
   @Child private ValueNonePrim block = ValueNonePrimFactory.create(null);
@@ -173,16 +169,7 @@ public abstract class PutAllNode extends BinaryExpressionNode {
   @Fallback
   public Object makeGenericSend(final VirtualFrame frame, final Object rcvr,
       final Object value, final Object length) {
-    return makeGenericSend().doPreEvaluated(frame,
+    return makeGenericSend(SymbolTable.symbolFor("putAll:")).doPreEvaluated(frame,
         new Object[] {rcvr, value});
-  }
-
-  private GenericMessageSendNode makeGenericSend() {
-    CompilerDirectives.transferToInterpreterAndInvalidate();
-    GenericMessageSendNode node =
-        MessageSendNode.createGeneric(SymbolTable.symbolFor("putAll:"),
-            new ExpressionNode[] {getReceiver(), getArgument()}, sourceSection,
-            SomLanguage.getCurrentContext());
-    return replace(node);
   }
 }
