@@ -19,9 +19,7 @@ public abstract class AndBoolMessageNode extends BinaryMsgExprNode {
 
   @Override
   public SSymbol getSelector() {
-    char startChar =
-        sourceSection.getSource().getCharacters().charAt(sourceSection.getCharIndex());
-    if (startChar == '&') {
+    if (getSourceChar(0) == '&') {
       return SymbolTable.symbolFor("&&");
     }
     return SymbolTable.symbolFor("and:");
