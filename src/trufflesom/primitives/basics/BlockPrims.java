@@ -3,6 +3,7 @@ package trufflesom.primitives.basics;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.ReportPolymorphism;
@@ -13,11 +14,16 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import bd.primitives.Primitive;
 import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.bc.RestartLoopException;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
@@ -87,7 +93,7 @@ public abstract class BlockPrims {
   @ReportPolymorphism
   @GenerateNodeFactory
   @Primitive(className = "Block2", primitive = "value:", selector = "value:", inParser = false,
-      receiverType = SBlock.class)
+      receiverType = SBlock.class, noWrapper = true)
   @ImportStatic(BlockPrims.class)
   public abstract static class ValueOnePrim extends BinaryExpressionNode {
 
@@ -115,6 +121,20 @@ public abstract class BlockPrims {
     @Megamorphic
     public final Object generic(final SBlock receiver, final Object arg) {
       return receiver.getMethod().invoke(new Object[] {receiver, arg});
+    }
+
+    @Fallback
+    public final Object makeGenericSend(final Object receiver, final Object argument) {
+      return makeGenericSend().doPreEvaluated(null, new Object[] {receiver, argument});
+    }
+
+    private GenericMessageSendNode makeGenericSend() {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      GenericMessageSendNode node =
+          MessageSendNode.createGeneric(SymbolTable.symbolFor("value:"),
+              new ExpressionNode[] {getReceiver(), getArgument()}, sourceSection,
+              SomLanguage.getCurrentContext());
+      return replace(node);
     }
   }
 

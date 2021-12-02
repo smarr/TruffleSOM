@@ -30,7 +30,7 @@ import trufflesom.vmobjects.SObject;
 
 @GenerateNodeFactory
 @Primitive(className = "Array", primitive = "putAll:", selector = "putAll:", disabled = true,
-    extraChild = LengthPrimFactory.class)
+    extraChild = LengthPrimFactory.class, noWrapper = true)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
 public abstract class PutAllNode extends BinaryExpressionNode {
   @Child private ValueNonePrim block = ValueNonePrimFactory.create(null);

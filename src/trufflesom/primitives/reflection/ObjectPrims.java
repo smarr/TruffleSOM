@@ -3,12 +3,18 @@ package trufflesom.primitives.reflection;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
@@ -28,7 +34,8 @@ import trufflesom.vmobjects.SSymbol;
 
 public final class ObjectPrims {
 
-  @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:")
+  @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:",
+      noWrapper = true)
   public abstract static class InstVarAtPrim extends BinarySystemOperation {
     @Child private IndexDispatch dispatch;
 
@@ -53,6 +60,22 @@ public final class ObjectPrims {
       SObject rcvr = (SObject) receiver;
       long idx = (long) firstArg;
       return doSObject(rcvr, idx);
+    }
+
+    @Fallback
+    public final Object makeGenericSend(final VirtualFrame frame,
+        final Object receiver, final Object argument) {
+      return makeGenericSend().doPreEvaluated(frame,
+          new Object[] {receiver, argument});
+    }
+
+    private GenericMessageSendNode makeGenericSend() {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      GenericMessageSendNode node =
+          MessageSendNode.createGeneric(SymbolTable.symbolFor("instVarAt:"),
+              new ExpressionNode[] {getReceiver(), getArgument()}, sourceSection,
+              SomLanguage.getCurrentContext());
+      return replace(node);
     }
   }
 
