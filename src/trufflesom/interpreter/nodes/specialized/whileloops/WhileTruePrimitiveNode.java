@@ -13,7 +13,7 @@ import trufflesom.vmobjects.SObject;
 
 @GenerateNodeFactory
 @Primitive(className = "Block", primitive = "whileTrue:", selector = "whileTrue:",
-    receiverType = SBlock.class, noWrapper = true)
+    receiverType = SBlock.class)
 // TODO: need to check for the second argument, check WhileSplzr
 public abstract class WhileTruePrimitiveNode extends WhilePrimitiveNode {
   public WhileTruePrimitiveNode() {

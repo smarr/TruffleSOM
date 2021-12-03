@@ -1,22 +1,32 @@
 package trufflesom.interpreter.nodes.nary;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import bd.primitives.nodes.WithContext;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.vm.Universe;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)
-@NodeChild(value = "firstArg", type = ExpressionNode.class)
-@NodeChild(value = "secondArg", type = ExpressionNode.class)
+@NodeChild(value = "arg1", type = ExpressionNode.class)
+@NodeChild(value = "arg2", type = ExpressionNode.class)
 public abstract class TernaryExpressionNode extends EagerlySpecializableNode {
 
-  public abstract Object executeEvaluated(VirtualFrame frame, Object receiver, Object firstArg,
-      Object secondArg);
+  public abstract Object executeEvaluated(
+      VirtualFrame frame, Object receiver, Object arg1, Object arg2);
+
+  public abstract ExpressionNode getReceiver();
+
+  public abstract ExpressionNode getArg1();
+
+  public abstract ExpressionNode getArg2();
 
   @Override
   public final Object doPreEvaluated(final VirtualFrame frame,
@@ -24,22 +34,23 @@ public abstract class TernaryExpressionNode extends EagerlySpecializableNode {
     return executeEvaluated(frame, arguments[0], arguments[1], arguments[2]);
   }
 
-  @Override
-  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
-      final ExpressionNode[] arguments, final Universe universe) {
-    return new EagerTernaryPrimitiveNode(selector, arguments[0], arguments[1], arguments[2],
-        this, universe).initialize(sourceSection);
-  }
-
-  public abstract static class TernarySystemOperation extends TernaryExpressionNode
-      implements WithContext<TernarySystemOperation, Universe> {
-    @CompilationFinal protected Universe universe;
-
-    @Override
-    public TernarySystemOperation initialize(final Universe universe) {
-      assert this.universe == null && universe != null;
-      this.universe = universe;
-      return this;
+  protected GenericMessageSendNode makeGenericSend(final SSymbol selector) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+    ExpressionNode[] children;
+    if (VmSettings.UseAstInterp) {
+      children = new ExpressionNode[] {getReceiver(), getArg1(), getArg2()};
+    } else {
+      children = null;
     }
+
+    GenericMessageSendNode send = MessageSendNode.createGeneric(selector, children,
+        sourceSection, SomLanguage.getCurrentContext());
+
+    if (VmSettings.UseAstInterp) {
+      return replace(send);
+    }
+
+    assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
+    throw new RespecializeException(send);
   }
 }

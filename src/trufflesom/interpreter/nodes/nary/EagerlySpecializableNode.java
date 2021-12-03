@@ -1,12 +1,7 @@
 package trufflesom.interpreter.nodes.nary;
 
-import com.oracle.truffle.api.source.SourceSection;
-
-import bd.primitives.nodes.EagerlySpecializable;
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.vm.Universe;
-import trufflesom.vmobjects.SSymbol;
 
 
 /**
@@ -19,13 +14,4 @@ import trufflesom.vmobjects.SSymbol;
  * their specialization.
  */
 public abstract class EagerlySpecializableNode extends ExpressionNode
-    implements PreevaluatedExpression,
-    EagerlySpecializable<ExpressionNode, SSymbol, Universe> {
-
-  @Override
-  public ExpressionNode initialize(final SourceSection sourceSection,
-      final boolean eagerlyWrapped) {
-    initialize(sourceSection);
-    return this;
-  }
-}
+    implements PreevaluatedExpression {}

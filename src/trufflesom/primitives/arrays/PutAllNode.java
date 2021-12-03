@@ -2,6 +2,7 @@ package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -16,6 +17,7 @@ import trufflesom.primitives.basics.BlockPrims.ValueNonePrim;
 import trufflesom.primitives.basics.BlockPrimsFactory.ValueNonePrimFactory;
 import trufflesom.primitives.basics.LengthPrim;
 import trufflesom.primitives.basics.LengthPrimFactory;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
@@ -162,5 +164,12 @@ public abstract class PutAllNode extends BinaryExpressionNode {
       final long length) {
     rcvr.transitionToObjectWithAll(length, value);
     return rcvr;
+  }
+
+  @Fallback
+  public Object makeGenericSend(final VirtualFrame frame, final Object rcvr,
+      final Object value, final Object length) {
+    return makeGenericSend(SymbolTable.symbolFor("putAll:")).doPreEvaluated(frame,
+        new Object[] {rcvr, value});
   }
 }

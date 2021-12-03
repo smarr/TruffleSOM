@@ -12,8 +12,9 @@ import bd.primitives.Specializer;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
@@ -22,9 +23,9 @@ import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(selector = "and:", noWrapper = false, specializer = AndOrSplzr.class)
-@Primitive(selector = "&&", noWrapper = false, specializer = AndOrSplzr.class)
-public abstract class AndMessageNode extends BinaryExpressionNode {
+@Primitive(selector = "and:", specializer = AndOrSplzr.class)
+@Primitive(selector = "&&", specializer = AndOrSplzr.class)
+public abstract class AndMessageNode extends BinaryMsgExprNode {
   public static class AndOrSplzr extends Specializer<Universe, ExpressionNode, SSymbol> {
     protected final NodeFactory<BinaryExpressionNode> boolFact;
 
@@ -53,20 +54,16 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     @Override
     public final ExpressionNode create(final Object[] arguments,
         final ExpressionNode[] argNodes, final SourceSection section,
-        final boolean eagerWrapper, final Universe universe) {
-      EagerlySpecializableNode node;
+        final Universe universe) {
+      ExpressionNode node;
       if (argNodes[1] instanceof BlockNode) {
-        node = (EagerlySpecializableNode) fact.createNode(
-            ((BlockNode) argNodes[1]).getMethod(),
-            eagerWrapper ? null : argNodes[0],
-            eagerWrapper ? null : argNodes[1]);
+        node = fact.createNode(
+            ((BlockNode) argNodes[1]).getMethod(), argNodes[0], argNodes[1]);
       } else {
         assert arguments == null || arguments[1] instanceof Boolean;
-        node = boolFact.createNode(
-            eagerWrapper ? null : argNodes[0],
-            eagerWrapper ? null : argNodes[1]);
+        node = boolFact.createNode(argNodes[0], argNodes[1]);
       }
-      node.initialize(section, eagerWrapper);
+      node.initialize(section);
       return node;
     }
   }
@@ -91,5 +88,13 @@ public abstract class AndMessageNode extends BinaryExpressionNode {
     } else {
       return (boolean) blockValueSend.call(new Object[] {argument});
     }
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    if (getSourceChar(0) == '&') {
+      return SymbolTable.symbolFor("&&");
+    }
+    return SymbolTable.symbolFor("and:");
   }
 }

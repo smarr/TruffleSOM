@@ -54,14 +54,6 @@ public @interface Primitive {
   boolean disabled() default false;
 
   /**
-   * Disable the eager primitive wrapper.
-   *
-   * This should only be used for nodes that are specifically designed
-   * to handle all possible cases themselves.
-   */
-  boolean noWrapper() default false;
-
-  /**
    * Whether the primitive is to be registered on the class-side of a class, instead of the
    * instance side.
    */

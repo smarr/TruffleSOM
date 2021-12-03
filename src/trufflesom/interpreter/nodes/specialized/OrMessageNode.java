@@ -8,18 +8,20 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import trufflesom.interpreter.nodes.specialized.OrMessageNode.OrSplzr;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(selector = "or:", noWrapper = true, specializer = OrSplzr.class)
-@Primitive(selector = "||", noWrapper = true, specializer = OrSplzr.class)
-public abstract class OrMessageNode extends BinaryExpressionNode {
+@Primitive(selector = "or:", specializer = OrSplzr.class)
+@Primitive(selector = "||", specializer = OrSplzr.class)
+public abstract class OrMessageNode extends BinaryMsgExprNode {
   public static final class OrSplzr extends AndOrSplzr {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public OrSplzr(final Primitive prim, final NodeFactory<ExpressionNode> fact) {
@@ -38,6 +40,14 @@ public abstract class OrMessageNode extends BinaryExpressionNode {
 
   protected final boolean isSameBlock(final SBlock argument) {
     return argument.getMethod() == blockMethod;
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    if (getSourceChar(0) == '|') {
+      return SymbolTable.symbolFor("||");
+    }
+    return SymbolTable.symbolFor("or:");
   }
 
   @Specialization(guards = "isSameBlock(argument)")

@@ -6,24 +6,32 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.Node.Child;
 import com.oracle.truffle.api.nodes.RootNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
 import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SArray.PartiallyEmptyArray;
 import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 @Primitive(className = "Array", primitive = "do:", selector = "do:",
     receiverType = SArray.class, disabled = true)
-public abstract class DoPrim extends BinaryExpressionNode {
+public abstract class DoPrim extends BinaryMsgExprNode {
   @Child private ValueOnePrim block = ValueOnePrimFactory.create(null, null);
+
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("do:");
+  }
 
   @Specialization(guards = "arr.isEmptyType()")
   public final SArray doEmptyArray(final VirtualFrame frame,

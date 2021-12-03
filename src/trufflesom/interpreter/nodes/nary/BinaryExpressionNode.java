@@ -1,19 +1,28 @@
 package trufflesom.interpreter.nodes.nary;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import bd.primitives.nodes.WithContext;
+import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.vm.Universe;
+import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
 
 @NodeChild(value = "receiver", type = ExpressionNode.class)
 @NodeChild(value = "argument", type = ExpressionNode.class)
-public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
+public abstract class BinaryExpressionNode extends ExpressionNode
+    implements PreevaluatedExpression {
+
+  public abstract ExpressionNode getReceiver();
+
+  public abstract ExpressionNode getArgument();
 
   public abstract Object executeEvaluated(VirtualFrame frame, Object receiver,
       Object argument);
@@ -24,23 +33,23 @@ public abstract class BinaryExpressionNode extends EagerlySpecializableNode {
     return executeEvaluated(frame, arguments[0], arguments[1]);
   }
 
-  @Override
-  public EagerPrimitive wrapInEagerWrapper(final SSymbol selector,
-      final ExpressionNode[] arguments, final Universe universe) {
-    return new EagerBinaryPrimitiveNode(selector, arguments[0], arguments[1], this,
-        universe).initialize(sourceSection);
-  }
-
-  @GenerateNodeFactory
-  public abstract static class BinarySystemOperation extends BinaryExpressionNode
-      implements WithContext<BinarySystemOperation, Universe> {
-    @CompilationFinal protected Universe universe;
-
-    @Override
-    public BinarySystemOperation initialize(final Universe universe) {
-      assert this.universe == null && universe != null;
-      this.universe = universe;
-      return this;
+  protected GenericMessageSendNode makeGenericSend(final SSymbol selector) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+    ExpressionNode[] children;
+    if (VmSettings.UseAstInterp) {
+      children = new ExpressionNode[] {getReceiver(), getArgument()};
+    } else {
+      children = null;
     }
+
+    GenericMessageSendNode send = MessageSendNode.createGeneric(selector, children,
+        sourceSection, SomLanguage.getCurrentContext());
+
+    if (VmSettings.UseAstInterp) {
+      return replace(send);
+    }
+
+    assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
+    throw new RespecializeException(send);
   }
 }

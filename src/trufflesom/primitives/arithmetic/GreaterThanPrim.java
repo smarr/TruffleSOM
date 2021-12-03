@@ -7,6 +7,8 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
+import trufflesom.vm.SymbolTable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
@@ -14,6 +16,11 @@ import bd.primitives.Primitive;
 @Primitive(className = "Double", primitive = ">")
 @Primitive(selector = ">")
 public abstract class GreaterThanPrim extends ArithmeticPrim {
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor(">");
+  }
+
   @Specialization
   public final boolean doLong(final long left, final long right) {
     return left > right;

@@ -34,7 +34,6 @@ import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
-import trufflesom.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
@@ -43,6 +42,8 @@ import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode
 import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
+import trufflesom.primitives.arithmetic.SubtractionPrim;
+import trufflesom.primitives.arrays.DoPrim;
 
 
 public class AstInliningTests extends TruffleTestSetup {
@@ -213,14 +214,14 @@ public class AstInliningTests extends TruffleTestSetup {
         read(ifTrueNode, "bodyNode", IfInlinedLiteralNode.class);
     ReturnLocalNode returnNode = read(ifFalseNode, "bodyNode", ReturnLocalNode.class);
 
-    EagerBinaryPrimitiveNode subMsg =
-        read(returnNode, "expression", EagerBinaryPrimitiveNode.class);
+    SubtractionPrim subMsg =
+        read(returnNode, "expression", SubtractionPrim.class);
 
-    FieldReadNode rcvr = read(subMsg, "receiver", FieldReadNode.class);
+    FieldReadNode rcvr = (FieldReadNode) subMsg.getReceiver();
     LocalArgumentReadNode selfRead = (LocalArgumentReadNode) rcvr.getSelf();
     assertTrue(selfRead.isSelfRead());
 
-    LocalArgumentReadNode argNode = read(subMsg, "argument", LocalArgumentReadNode.class);
+    LocalArgumentReadNode argNode = (LocalArgumentReadNode) subMsg.getArgument();
     assertEquals("arg", argNode.getInvocationIdentifier().getString());
     assertEquals(1, argNode.argumentIndex);
   }
@@ -411,8 +412,8 @@ public class AstInliningTests extends TruffleTestSetup {
     IntToDoInlinedLiteralsNode toDo =
         (IntToDoInlinedLiteralsNode) read(seq, "expressions", 0);
 
-    EagerBinaryPrimitiveNode doPrim = read(toDo, "body", EagerBinaryPrimitiveNode.class);
-    BlockNode blockA = read(doPrim, "argument", BlockNode.class);
+    DoPrim doPrim = read(toDo, "body", DoPrim.class);
+    BlockNode blockA = (BlockNode) doPrim.getArgument();
     IfInlinedLiteralNode blockBIfTrue =
         read(blockA.getMethod().getInvokable(), "expressionOrSequence",
             IfInlinedLiteralNode.class);

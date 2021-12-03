@@ -2,10 +2,12 @@ package trufflesom.primitives.basics;
 
 import java.math.BigInteger;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
@@ -13,8 +15,13 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
+@GenerateNodeFactory
 @Primitive(className = "Object", primitive = "==", selector = "==")
-public abstract class EqualsEqualsPrim extends BinarySystemOperation {
+public abstract class EqualsEqualsPrim extends BinaryMsgExprNode {
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("==");
+  }
 
   @Specialization
   public final boolean doBoolean(final boolean left, final boolean right) {

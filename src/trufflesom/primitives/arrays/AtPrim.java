@@ -4,15 +4,22 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 @Primitive(className = "Array", primitive = "at:", selector = "at:",
     receiverType = SArray.class, inParser = false)
-public abstract class AtPrim extends BinaryExpressionNode {
+public abstract class AtPrim extends BinaryMsgExprNode {
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("at:");
+  }
+
   @Specialization(guards = "receiver.isEmptyType()")
   public final Object doEmptySArray(final SArray receiver, final long idx) {
     assert idx > 0;

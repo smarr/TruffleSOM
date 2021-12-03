@@ -9,7 +9,8 @@ import bd.primitives.Primitive;
 import bd.primitives.Specializer;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinarySystemMsgOperation;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -18,7 +19,7 @@ import trufflesom.vmobjects.SSymbol;
 
 @Primitive(className = "Array", primitive = "new:", selector = "new:", classSide = true,
     inParser = false, specializer = NewPrim.IsArrayClass.class)
-public abstract class NewPrim extends BinarySystemOperation {
+public abstract class NewPrim extends BinarySystemMsgOperation {
 
   public static class IsArrayClass extends Specializer<Universe, ExpressionNode, SSymbol> {
     @CompilationFinal private Universe universe;
@@ -40,5 +41,10 @@ public abstract class NewPrim extends BinarySystemOperation {
   @Specialization(guards = "receiver == universe.arrayClass")
   public final SArray doSClass(final SClass receiver, final long length) {
     return new SArray(length);
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symNewMsg;
   }
 }

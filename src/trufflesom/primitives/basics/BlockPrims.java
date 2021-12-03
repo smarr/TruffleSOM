@@ -3,6 +3,7 @@ package trufflesom.primitives.basics;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.ReportPolymorphism;
@@ -18,6 +19,7 @@ import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
@@ -115,6 +117,12 @@ public abstract class BlockPrims {
     @Megamorphic
     public final Object generic(final SBlock receiver, final Object arg) {
       return receiver.getMethod().invoke(new Object[] {receiver, arg});
+    }
+
+    @Fallback
+    public final Object makeGenericSend(final Object receiver, final Object argument) {
+      return makeGenericSend(SymbolTable.symbolFor("value:")).doPreEvaluated(null,
+          new Object[] {receiver, argument});
     }
   }
 

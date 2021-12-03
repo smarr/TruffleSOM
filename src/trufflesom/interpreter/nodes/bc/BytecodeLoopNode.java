@@ -116,6 +116,7 @@ import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.bc.Bytecodes;
+import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode;
@@ -572,59 +573,8 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
                 numberOfArguments);
             stackPointer -= numberOfArguments;
 
-            Object result = null;
-            boolean done = false;
-
-            if (numberOfArguments <= 3) {
-              Primitives prims = universe.getPrimitives();
-              ExpressionNode[] dummyArgs = new ExpressionNode[numberOfArguments];
-              Arrays.fill(dummyArgs, dummyNode);
-
-              Specializer<Universe, ExpressionNode, SSymbol> specializer =
-                  prims.getEagerSpecializer(signature, callArgs, dummyArgs);
-
-              if (specializer != null) {
-                done = true;
-                ExpressionNode quick = specializer.create(callArgs, dummyArgs,
-                    sourceSection, !specializer.noWrapper(), universe);
-
-                if (numberOfArguments == 1) {
-                  UnaryExpressionNode q = (UnaryExpressionNode) quick;
-                  if (!specializer.noWrapper()) {
-                    quick = q = new UnaryPrimitiveWrapper(
-                        bytecodeIndex, signature, q, universe, sourceSection);
-                  }
-                  quickenBytecode(bytecodeIndex, Q_SEND_1, q);
-                  result = q.executeEvaluated(frame, callArgs[0]);
-                } else if (numberOfArguments == 2) {
-                  BinaryExpressionNode q = (BinaryExpressionNode) quick;
-
-                  if (!specializer.noWrapper()) {
-                    quick = q = new BinaryPrimitiveWrapper(
-                        bytecodeIndex, signature, q, universe, sourceSection);
-                  }
-                  quickenBytecode(bytecodeIndex, Q_SEND_2, q);
-                  result = q.executeEvaluated(frame, callArgs[0], callArgs[1]);
-                } else if (numberOfArguments == 3) {
-                  TernaryExpressionNode q = (TernaryExpressionNode) quick;
-
-                  if (!specializer.noWrapper()) {
-                    quick = q = new TernaryPrimitiveWrapper(
-                        bytecodeIndex, signature, q, universe, sourceSection);
-                  }
-                  quickenBytecode(bytecodeIndex, Q_SEND_3, q);
-                  result = q.executeEvaluated(frame, callArgs[0], callArgs[1], callArgs[2]);
-                }
-              }
-            }
-
-            if (!done) {
-              GenericMessageSendNode quick =
-                  MessageSendNode.createGeneric(signature, null, sourceSection, universe);
-              quickenBytecode(bytecodeIndex, Q_SEND, quick);
-
-              result = quick.doPreEvaluated(frame, callArgs);
-            }
+            Object result = specializeSendBytecode(frame, bytecodeIndex, signature,
+                numberOfArguments, callArgs);
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -1007,6 +957,10 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+          } catch (RespecializeException r) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickenBytecode(bytecodeIndex, Q_SEND, r.send);
+            stack[stackPointer] = r.send.doPreEvaluated(frame, new Object[] {rcvr});
           }
           break;
         }
@@ -1029,6 +983,10 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+          } catch (RespecializeException r) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickenBytecode(bytecodeIndex, Q_SEND, r.send);
+            stack[stackPointer] = r.send.doPreEvaluated(frame, new Object[] {rcvr, arg});
           }
           break;
         }
@@ -1052,6 +1010,11 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+          } catch (RespecializeException r) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            quickenBytecode(bytecodeIndex, Q_SEND, r.send);
+            stack[stackPointer] =
+                r.send.doPreEvaluated(frame, new Object[] {rcvr, arg1, arg2});
           }
           break;
         }
@@ -1064,6 +1027,65 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
       bytecodeIndex = nextBytecodeIndex;
     }
+  }
+
+  public Object specializeSendBytecode(final VirtualFrame frame, final int bytecodeIndex,
+      final SSymbol signature, final int numberOfArguments, final Object[] callArgs) {
+    Object result = null;
+    boolean done = false;
+
+    if (numberOfArguments <= 3) {
+      Primitives prims = universe.getPrimitives();
+      ExpressionNode[] dummyArgs = new ExpressionNode[numberOfArguments];
+      Arrays.fill(dummyArgs, dummyNode);
+
+      Specializer<Universe, ExpressionNode, SSymbol> specializer =
+          prims.getEagerSpecializer(signature, callArgs, dummyArgs);
+
+      if (specializer != null) {
+        done = true;
+        ExpressionNode quick =
+            specializer.create(callArgs, dummyArgs, sourceSection, universe);
+
+        if (numberOfArguments == 1) {
+          UnaryExpressionNode q = (UnaryExpressionNode) quick;
+          quickenBytecode(bytecodeIndex, Q_SEND_1, q);
+          try {
+            result = q.executeEvaluated(frame, callArgs[0]);
+          } catch (RespecializeException r) {
+            quickenBytecode(bytecodeIndex, Q_SEND, r.send);
+            result = r.send.doPreEvaluated(frame, callArgs);
+          }
+        } else if (numberOfArguments == 2) {
+          BinaryExpressionNode q = (BinaryExpressionNode) quick;
+          quickenBytecode(bytecodeIndex, Q_SEND_2, q);
+          try {
+            result = q.executeEvaluated(frame, callArgs[0], callArgs[1]);
+          } catch (RespecializeException r) {
+            quickenBytecode(bytecodeIndex, Q_SEND, r.send);
+            result = r.send.doPreEvaluated(frame, callArgs);
+          }
+        } else if (numberOfArguments == 3) {
+          TernaryExpressionNode q = (TernaryExpressionNode) quick;
+          quickenBytecode(bytecodeIndex, Q_SEND_3, q);
+          try {
+            result = q.executeEvaluated(frame, callArgs[0], callArgs[1], callArgs[2]);
+          } catch (RespecializeException r) {
+            quickenBytecode(bytecodeIndex, Q_SEND, r.send);
+            result = r.send.doPreEvaluated(frame, callArgs);
+          }
+        }
+      }
+    }
+
+    if (!done) {
+      GenericMessageSendNode quick =
+          MessageSendNode.createGeneric(signature, null, sourceSection, universe);
+      quickenBytecode(bytecodeIndex, Q_SEND, quick);
+
+      result = quick.doPreEvaluated(frame, callArgs);
+    }
+    return result;
   }
 
   private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,

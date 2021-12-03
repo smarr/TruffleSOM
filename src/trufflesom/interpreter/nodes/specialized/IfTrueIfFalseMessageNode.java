@@ -11,9 +11,11 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.TernaryMsgExprNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 /**
@@ -21,8 +23,8 @@ import trufflesom.vmobjects.SInvokable;
  * blocks' methods instead of inlining the code directly.
  */
 @GenerateNodeFactory
-@Primitive(selector = "ifTrue:ifFalse:", noWrapper = true, requiresArguments = true)
-public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
+@Primitive(selector = "ifTrue:ifFalse:", requiresArguments = true)
+public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
   private final SInvokable trueMethod;
@@ -58,6 +60,11 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryExpressionNode {
   protected final boolean hasSameArguments(final Object firstArg, final Object secondArg) {
     return (trueMethod == null || ((SBlock) firstArg).getMethod() == trueMethod)
         && (falseMethod == null || ((SBlock) secondArg).getMethod() == falseMethod);
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("ifTrue:ifFalse:");
   }
 
   @Specialization(guards = "hasSameArguments(trueBlock, falseBlock)")

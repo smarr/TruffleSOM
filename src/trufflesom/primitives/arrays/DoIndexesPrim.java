@@ -6,26 +6,34 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.Node.Child;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
 import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
 import trufflesom.primitives.basics.LengthPrim;
 import trufflesom.primitives.basics.LengthPrimFactory;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 @Primitive(className = "Array", primitive = "doIndexes:", selector = "doIndexes:",
     receiverType = SArray.class, disabled = true)
-public abstract class DoIndexesPrim extends BinaryExpressionNode {
+public abstract class DoIndexesPrim extends BinaryMsgExprNode {
   @Child private ValueOnePrim block;
   @Child private LengthPrim   length;
+
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("doIndexes:");
+  }
 
   @Override
   @SuppressWarnings("unchecked")

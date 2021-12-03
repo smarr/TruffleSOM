@@ -39,4 +39,9 @@ public final class EmptyPrim extends UnaryExpressionNode {
   public static EmptyPrim create(final ExpressionNode receiver, final SSymbol signature) {
     return new EmptyPrim(receiver, signature);
   }
+
+  @Override
+  public ExpressionNode getReceiver() {
+    return receiver;
+  }
 }

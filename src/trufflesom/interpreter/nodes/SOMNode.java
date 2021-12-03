@@ -51,6 +51,11 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
     return sourceSection;
   }
 
+  protected final char getSourceChar(final int offsetFromStart) {
+    return sourceSection.getSource().getCharacters()
+                        .charAt(sourceSection.getCharIndex() + offsetFromStart);
+  }
+
   @Override
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
     // do nothing!

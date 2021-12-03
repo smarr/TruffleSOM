@@ -10,14 +10,16 @@ import com.oracle.truffle.api.nodes.Node;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.QuaternaryMsgExprNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
-@Primitive(selector = "to:by:do:", disabled = true, noWrapper = true, requiresArguments = true)
-public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
+@Primitive(selector = "to:by:do:", disabled = true, requiresArguments = true)
+public abstract class IntToByDoMessageNode extends QuaternaryMsgExprNode {
 
   private final SInvokable      blockMethod;
   @Child private DirectCallNode valueSend;
@@ -34,6 +36,11 @@ public abstract class IntToByDoMessageNode extends QuaternaryExpressionNode {
 
   protected final boolean isSameBlockDouble(final SBlock block) {
     return block.getMethod() == blockMethod;
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("to:by:do:");
   }
 
   @Specialization(guards = "isSameBlockLong(block)")

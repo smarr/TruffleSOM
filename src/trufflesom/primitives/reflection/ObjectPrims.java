@@ -9,11 +9,13 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.BinaryExpressionNode.BinarySystemOperation;
-import trufflesom.interpreter.nodes.nary.TernaryExpressionNode.TernarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
+import trufflesom.interpreter.nodes.nary.BinarySystemMsgOperation;
+import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.TernarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.UnaryExpressionNode.UnarySystemOperation;
+import trufflesom.interpreter.nodes.nary.UnarySystemOperation;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -28,7 +30,7 @@ import trufflesom.vmobjects.SSymbol;
 public final class ObjectPrims {
 
   @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:")
-  public abstract static class InstVarAtPrim extends BinarySystemOperation {
+  public abstract static class InstVarAtPrim extends BinarySystemMsgOperation {
     @Child private IndexDispatch dispatch;
 
     @Override
@@ -52,6 +54,11 @@ public final class ObjectPrims {
       SObject rcvr = (SObject) receiver;
       long idx = (long) firstArg;
       return doSObject(rcvr, idx);
+    }
+
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("instVarAt:");
     }
   }
 
@@ -88,7 +95,12 @@ public final class ObjectPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "instVarNamed:", selector = "instVarNamed:")
-  public abstract static class InstVarNamedPrim extends BinaryExpressionNode {
+  public abstract static class InstVarNamedPrim extends BinaryMsgExprNode {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("instVarNamed:");
+    }
+
     @Specialization
     @TruffleBoundary
     public final Object doSObject(final SObject receiver, final SSymbol fieldName) {
@@ -176,7 +188,7 @@ public final class ObjectPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(selector = "isNil", noWrapper = true)
+  @Primitive(selector = "isNil")
   public abstract static class IsNilNode extends UnaryExpressionNode {
     @Specialization
     public final boolean isNil(final Object receiver) {
@@ -185,7 +197,7 @@ public final class ObjectPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(selector = "notNil", noWrapper = true)
+  @Primitive(selector = "notNil")
   public abstract static class NotNilNode extends UnaryExpressionNode {
     @Specialization
     public final boolean notNil(final Object receiver) {

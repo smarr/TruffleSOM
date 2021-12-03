@@ -16,7 +16,6 @@ import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
-import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
@@ -37,14 +36,8 @@ public final class MessageSendNode {
           selector, arguments, universe).initialize(source);
     }
 
-    EagerlySpecializableNode newNode = (EagerlySpecializableNode) specializer.create(null,
-        arguments, source, !specializer.noWrapper(), universe);
-
-    if (specializer.noWrapper()) {
-      return newNode;
-    } else {
-      return newNode.wrapInEagerWrapper(selector, arguments, universe);
-    }
+    ExpressionNode newNode = specializer.create(null, arguments, source, universe);
+    return newNode;
   }
 
   public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
@@ -146,27 +139,14 @@ public final class MessageSendNode {
           prims.getEagerSpecializer(selector, arguments, argumentNodes);
 
       if (specializer != null) {
-        boolean noWrapper = specializer.noWrapper();
-        EagerlySpecializableNode newNode =
-            (EagerlySpecializableNode) specializer.create(arguments, argumentNodes,
-                sourceSection, !noWrapper, universe);
-        if (noWrapper) {
-          return replace(newNode);
-        } else {
-          return makeEagerPrim(newNode);
-        }
+        PreevaluatedExpression newNode =
+            (PreevaluatedExpression) specializer.create(arguments, argumentNodes,
+                sourceSection, universe);
+
+        return (PreevaluatedExpression) replace((ExpressionNode) newNode);
       }
 
       return makeGenericSend();
-    }
-
-    private PreevaluatedExpression makeEagerPrim(final EagerlySpecializableNode prim) {
-      assert prim.getSourceSection() != null;
-
-      PreevaluatedExpression result = (PreevaluatedExpression) replace(
-          prim.wrapInEagerWrapper(selector, argumentNodes, universe));
-
-      return result;
     }
 
     private GenericMessageSendNode makeGenericSend() {
@@ -184,7 +164,6 @@ public final class MessageSendNode {
     public int getNumberOfArguments() {
       return selector.getNumberOfSignatureArguments();
     }
-
   }
 
   private static final class UninitializedMessageSendNode

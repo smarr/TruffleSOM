@@ -80,7 +80,7 @@ public class PrimitiveTests {
   @Test
   public void testExtraChild() {
     Specializer<LangContext, ExprNode, String> s = ps.getParserSpecializer("addAbs", null);
-    ExprNode n = s.create(null, new ExprNode[1], null, true, null);
+    ExprNode n = s.create(null, new ExprNode[1], null, null);
     assertTrue(n instanceof AddAbsNode);
 
     // Note: this is fragile, because it depends on the TruffleDSL node implementation strategy
