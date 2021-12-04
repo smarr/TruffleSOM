@@ -5,10 +5,8 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
@@ -16,15 +14,16 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
+import trufflesom.interpreter.nodes.nary.TernaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
 @Primitive(selector = "downTo:do:", disabled = true, inParser = false)
-public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
+public abstract class IntDownToDoMessageNode extends TernaryMsgExprNode {
 
   protected static final DirectCallNode createCallNode(final CallTarget ct) {
     return Truffle.getRuntime().createDirectCallNode(ct);
@@ -32,6 +31,11 @@ public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
 
   protected static final IndirectCallNode createIndirectCall() {
     return Truffle.getRuntime().createIndirectCallNode();
+  }
+
+  @Override
+  public SSymbol getSelector() {
+    return SymbolTable.symbolFor("downTo:do:");
   }
 
   @Specialization(guards = {"block.getMethod() == cachedMethod"})
@@ -112,13 +116,6 @@ public abstract class IntDownToDoMessageNode extends TernaryExpressionNode {
       }
     }
     return receiver;
-  }
-
-  @Fallback
-  public final Object makeGeneric(final VirtualFrame frame, final Object receiver,
-      final Object limit, final Object block) {
-    return makeGenericSend(SymbolTable.symbolFor("downTo:do:")).doPreEvaluated(frame,
-        new Object[] {receiver, limit, block});
   }
 
   private void reportLoopCount(final long count) {
