@@ -182,12 +182,6 @@ public final class MessageSendNode {
         return NodeCost.UNINITIALIZED;
       }
 
-      GuardedDispatchNode cache = dispatchCache;
-
-      if (cache instanceof GenericDispatchNode) {
-        return NodeCost.MEGAMORPHIC;
-      }
-
       int cacheSize = numCacheNodes;
 
       if (cacheSize == 0) {
@@ -198,7 +192,10 @@ public final class MessageSendNode {
         return NodeCost.MONOMORPHIC;
       }
 
-      return NodeCost.POLYMORPHIC;
+      if (cacheSize < AbstractDispatchNode.INLINE_CACHE_SIZE) {
+        return NodeCost.POLYMORPHIC;
+      }
+      return NodeCost.MEGAMORPHIC;
     }
 
     private PreevaluatedExpression specialize(final Object[] arguments) {
