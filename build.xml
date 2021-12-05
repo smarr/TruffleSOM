@@ -58,8 +58,6 @@
     
     <path id="common.cp">
         <pathelement location="${classes.dir}" />
-
-        <pathelement location="${svm.build}/svm-core.jar" />
     </path>
     
     <path id="som.cp">
