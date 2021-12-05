@@ -236,7 +236,6 @@ public class MethodGenerationContext
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Variable[] getVariables() {
     int numVars = arguments.size() + locals.size();
     if (frameOnStack != null) {
