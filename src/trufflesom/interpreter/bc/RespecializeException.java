@@ -2,7 +2,7 @@ package trufflesom.interpreter.bc;
 
 import com.oracle.truffle.api.nodes.ControlFlowException;
 
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.GenericMessageSendNode;
 
 
 public class RespecializeException extends ControlFlowException {

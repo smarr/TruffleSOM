@@ -8,7 +8,7 @@ import com.oracle.truffle.api.nodes.Node;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.nodes.MessageSendNode.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;

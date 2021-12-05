@@ -10,8 +10,8 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
+import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
-import trufflesom.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import trufflesom.primitives.arrays.ToArgumentsArrayNode;
 import trufflesom.primitives.arrays.ToArgumentsArrayNodeFactory;
 import trufflesom.vm.Universe;
