@@ -142,33 +142,33 @@ public final class MessageSendNode {
       if (cache != null) {
         Object rcvr = arguments[0];
 
-        try {
-          do {
+        do {
+          try {
             if (cache.entryMatches(rcvr)) {
               return cache.doPreEvaluated(frame, arguments);
             }
-            cache = cache.next;
-          } while (cache != null);
-        } catch (InvalidAssumptionException e) {
-          CompilerDirectives.transferToInterpreterAndInvalidate();
-          removeInvalidEntryAndReturnNext(cache);
-          return doPreEvaluated(frame, arguments);
-        }
+          } catch (InvalidAssumptionException e) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            cache = removeInvalidEntryAndReturnNext(cache);
+            continue;
+          }
+          cache = cache.next;
+        } while (cache != null);
       }
 
       CompilerDirectives.transferToInterpreterAndInvalidate();
       return specialize(arguments).doPreEvaluated(frame, arguments);
     }
 
-    private void removeInvalidEntryAndReturnNext(
+    private AbstractDispatchNode removeInvalidEntryAndReturnNext(
         final AbstractDispatchNode cache) {
       Node prev = cache.getParent();
       if (prev == this) {
-        dispatchCache = insert(cache.next);
-      } else {
-        AbstractDispatchNode parent = (AbstractDispatchNode) prev;
-        parent.next = parent.insertHere(cache.next);
+        return dispatchCache = insert(cache.next);
       }
+
+      AbstractDispatchNode parent = (AbstractDispatchNode) prev;
+      return parent.next = parent.insertHere(cache.next);
     }
 
     @Override
