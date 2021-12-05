@@ -23,7 +23,10 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class UnequalsPrim extends BinaryMsgExprNode {
   @Override
   public SSymbol getSelector() {
-    return SymbolTable.symbolFor("~=");
+    if (getSourceChar(0) == '~') {
+      return SymbolTable.symbolFor("~=");
+    }
+    return SymbolTable.symbolFor("<>");
   }
 
   @Specialization

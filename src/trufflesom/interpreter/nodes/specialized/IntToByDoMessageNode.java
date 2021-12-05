@@ -21,7 +21,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "to:by:do:", disabled = true, requiresArguments = true)
 public abstract class IntToByDoMessageNode extends QuaternaryMsgExprNode {
 
-  private final SInvokable      blockMethod;
+  protected final SInvokable    blockMethod;
   @Child private DirectCallNode valueSend;
 
   public IntToByDoMessageNode(final Object[] args) {
@@ -30,20 +30,12 @@ public abstract class IntToByDoMessageNode extends QuaternaryMsgExprNode {
         blockMethod.getCallTarget());
   }
 
-  protected final boolean isSameBlockLong(final SBlock block) {
-    return block.getMethod() == blockMethod;
-  }
-
-  protected final boolean isSameBlockDouble(final SBlock block) {
-    return block.getMethod() == blockMethod;
-  }
-
   @Override
   public SSymbol getSelector() {
     return SymbolTable.symbolFor("to:by:do:");
   }
 
-  @Specialization(guards = "isSameBlockLong(block)")
+  @Specialization(guards = "block.getMethod() == blockMethod")
   public final long doIntToByDo(final long receiver,
       final long limit, final long step, final SBlock block) {
     try {
@@ -61,7 +53,7 @@ public abstract class IntToByDoMessageNode extends QuaternaryMsgExprNode {
     return receiver;
   }
 
-  @Specialization(guards = "isSameBlockDouble(block)")
+  @Specialization(guards = "block.getMethod() == blockMethod")
   public final long doIntToByDo(final long receiver,
       final double limit, final long step, final SBlock block) {
     try {
