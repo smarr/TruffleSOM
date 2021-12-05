@@ -201,21 +201,20 @@ public final class MessageSendNode {
     private PreevaluatedExpression specialize(final Object[] arguments) {
       int cacheSize = numCacheNodes;
       if (cacheSize < 0) {
-        cacheSize = numCacheNodes = 0;
         PreevaluatedExpression eager = attemptEagerSpecialization(arguments);
         if (eager != null) {
           return eager;
         }
-      }
 
-      final GuardedDispatchNode first = dispatchCache;
+        cacheSize = numCacheNodes = 0;
+      }
 
       Object rcvr = arguments[0];
       assert rcvr != null;
 
       if (rcvr instanceof SObject) {
         SObject r = (SObject) rcvr;
-        if (r.updateLayoutToMatchClass() && first != null) {
+        if (r.updateLayoutToMatchClass() && cacheSize > 0) {
           // if the dispatchCache is null, we end up here, so continue directly below instead
           // otherwise, let's retry the cache!
           return this;
@@ -247,8 +246,9 @@ public final class MessageSendNode {
           node = new CachedDnuNode(rcvrClass, guard, selector);
         }
 
-        if (first != null) {
+        if (cacheSize > 0) {
           reportPolymorphicSpecialize();
+          final AbstractDispatchNode first = dispatchCache;
           node.next = node.insertHere(first);
         }
         dispatchCache = insert(node);
