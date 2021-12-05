@@ -1,13 +1,18 @@
 package trufflesom.primitives.reflection;
 
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.IndirectCallNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.dispatch.InvokeOnCache;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.nary.EagerlySpecializableNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.primitives.arrays.ToArgumentsArrayNode;
@@ -51,10 +56,17 @@ public final class MethodPrims {
       executeWith = {"somArr", "target"})
   @Primitive(selector = "invokeOn:with:", extraChild = ToArgumentsArrayNodeFactory.class)
   public abstract static class InvokeOnPrim extends EagerlySpecializableNode {
-    @Child private InvokeOnCache callNode = InvokeOnCache.create();
 
     public abstract Object executeEvaluated(VirtualFrame frame, SInvokable receiver,
         Object target, SArray somArr);
+
+    public static DirectCallNode create(final CallTarget ct) {
+      return Truffle.getRuntime().createDirectCallNode(ct);
+    }
+
+    public static IndirectCallNode createIndirect() {
+      return Truffle.getRuntime().createIndirectCallNode();
+    }
 
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
@@ -62,11 +74,22 @@ public final class MethodPrims {
       return executeEvaluated(frame, (SInvokable) args[0], args[1], (SArray) args[2]);
     }
 
-    @Specialization
-    public final Object doInvoke(final VirtualFrame frame,
+    @Specialization(guards = "receiver == cachedReceiver",
+        limit = "" + AbstractDispatchNode.INLINE_CACHE_SIZE)
+    public final Object doCached(
         final SInvokable receiver, final Object target, final SArray somArr,
-        final Object[] argArr) {
-      return callNode.executeDispatch(frame, receiver, argArr);
+        final Object[] argArr,
+        @Cached("receiver") final SInvokable cachedReceiver,
+        @Cached("create(receiver.getCallTarget())") final DirectCallNode callNode) {
+      return callNode.call(argArr);
+    }
+
+    @Specialization(replaces = "doCached")
+    public final Object doUncached(
+        final SInvokable receiver, final Object target, final SArray somArr,
+        final Object[] argArr,
+        @Cached("createIndirect()") final IndirectCallNode callNode) {
+      return callNode.call(receiver.getCallTarget(), argArr);
     }
   }
 }
