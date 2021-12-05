@@ -8,6 +8,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -135,52 +136,38 @@ public final class MessageSendNode {
 
     @Override
     @ExplodeLoop
-    public Object doPreEvaluated(final VirtualFrame frame,
-        final Object[] arguments) {
-
-      GuardedDispatchNode cache = dispatchCache;
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+      AbstractDispatchNode cache = dispatchCache;
 
       if (cache != null) {
         Object rcvr = arguments[0];
 
-        do {
-          try {
+        try {
+          do {
             if (cache.entryMatches(rcvr)) {
               return cache.doPreEvaluated(frame, arguments);
             }
-          } catch (InvalidAssumptionException e) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            cache = removeInvalidEntryAndReturnNext(cache);
-            continue;
-          }
-          cache = cache.next;
-        } while (cache != null);
+            cache = cache.next;
+          } while (cache != null);
+        } catch (InvalidAssumptionException e) {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+          removeInvalidEntryAndReturnNext(cache);
+          return doPreEvaluated(frame, arguments);
+        }
       }
 
       CompilerDirectives.transferToInterpreterAndInvalidate();
-
       return specialize(arguments).doPreEvaluated(frame, arguments);
     }
 
-    private GuardedDispatchNode removeInvalidEntryAndReturnNext(
-        final GuardedDispatchNode cache) {
-      if (cache.getParent() == this) {
-        if (cache.next == null) {
-          dispatchCache = null;
-          return null;
-        } else {
-          dispatchCache = insert(cache.next);
-          return cache.next;
-        }
+    private void removeInvalidEntryAndReturnNext(
+        final AbstractDispatchNode cache) {
+      Node prev = cache.getParent();
+      if (prev == this) {
+        dispatchCache = insert(cache.next);
       } else {
-        if (cache.next == null) {
-          parent.next = null;
-          return null;
-        } else {
-          parent.next = parent.insertHere(cache.next);
-          return cache.next;
-        }
         AbstractDispatchNode parent = (AbstractDispatchNode) prev;
+        parent.next = parent.insertHere(cache.next);
       }
     }
 
