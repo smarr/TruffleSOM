@@ -11,7 +11,6 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.GuardedDispatchNode;
 import trufflesom.primitives.basics.SystemPrims.PrintStackTracePrim;
 import trufflesom.vm.Universe;
 import trufflesom.vm.VmSettings;
@@ -19,7 +18,7 @@ import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class CachedDnuNode extends GuardedDispatchNode {
+public final class CachedDnuNode extends AbstractDispatchNode {
   private final SSymbol selector;
 
   @Child protected DirectCallNode cachedMethod;

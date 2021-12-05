@@ -18,7 +18,6 @@ import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.CachedDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.CachedExprNode;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.GuardedDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDnuNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchGuard;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
@@ -118,7 +117,7 @@ public final class MessageSendNode {
 
     @CompilationFinal private int numCacheNodes;
 
-    @Child private GuardedDispatchNode dispatchCache;
+    @Child private AbstractDispatchNode dispatchCache;
 
     private GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
         final Universe universe, final int numCacheNodes) {
@@ -174,7 +173,6 @@ public final class MessageSendNode {
           return cache.next;
         }
       } else {
-        GuardedDispatchNode parent = (GuardedDispatchNode) cache.getParent();
         if (cache.next == null) {
           parent.next = null;
           return null;
@@ -182,6 +180,7 @@ public final class MessageSendNode {
           parent.next = parent.insertHere(cache.next);
           return cache.next;
         }
+        AbstractDispatchNode parent = (AbstractDispatchNode) prev;
       }
     }
 
@@ -255,7 +254,7 @@ public final class MessageSendNode {
 
         DispatchGuard guard = DispatchGuard.create(rcvr);
 
-        GuardedDispatchNode node;
+        AbstractDispatchNode node;
         if (expr != null) {
           node = new CachedExprNode(guard, expr);
         } else if (method != null) {

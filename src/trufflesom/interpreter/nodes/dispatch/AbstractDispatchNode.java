@@ -13,31 +13,26 @@ import bd.primitives.nodes.PreevaluatedExpression;
 public abstract class AbstractDispatchNode extends Node implements PreevaluatedExpression {
   public static final int INLINE_CACHE_SIZE = 6;
 
+  private final DispatchGuard guard;
+
+  @Child public AbstractDispatchNode next;
+
+  protected AbstractDispatchNode(final DispatchGuard guard) {
+    this.guard = guard;
+  }
+
   @Override
   public abstract Object doPreEvaluated(VirtualFrame frame, Object[] args);
 
-  public abstract boolean entryMatches(Object rcvr) throws InvalidAssumptionException;
-
-  public abstract static class GuardedDispatchNode extends AbstractDispatchNode {
-    private final DispatchGuard guard;
-
-    @Child public GuardedDispatchNode next;
-
-    protected GuardedDispatchNode(final DispatchGuard guard) {
-      this.guard = guard;
-    }
-
-    @Override
-    public boolean entryMatches(final Object rcvr) throws InvalidAssumptionException {
-      return guard.entryMatches(rcvr);
-    }
-
-    public final <T extends Node> T insertHere(final T newChild) {
-      return super.insert(newChild);
-    }
+  public boolean entryMatches(final Object rcvr) throws InvalidAssumptionException {
+    return guard.entryMatches(rcvr);
   }
 
-  public static final class CachedDispatchNode extends GuardedDispatchNode {
+  public final <T extends Node> T insertHere(final T newChild) {
+    return super.insert(newChild);
+  }
+
+  public static final class CachedDispatchNode extends AbstractDispatchNode {
 
     @Child protected DirectCallNode cachedMethod;
 
@@ -52,7 +47,7 @@ public abstract class AbstractDispatchNode extends Node implements PreevaluatedE
     }
   }
 
-  public static final class CachedExprNode extends GuardedDispatchNode {
+  public static final class CachedExprNode extends AbstractDispatchNode {
 
     @Child protected PreevaluatedExpression expr;
 

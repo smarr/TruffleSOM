@@ -8,7 +8,6 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 import trufflesom.interpreter.SArguments;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.GuardedDispatchNode;
 import trufflesom.primitives.reflection.ObjectPrims.ClassPrim;
 import trufflesom.primitives.reflection.ObjectPrimsFactory.ClassPrimFactory;
 import trufflesom.vm.Universe;
@@ -18,7 +17,7 @@ import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class GenericDispatchNode extends GuardedDispatchNode {
+public final class GenericDispatchNode extends AbstractDispatchNode {
   @Child private IndirectCallNode call;
   @Child private ClassPrim        classNode;
 
