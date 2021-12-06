@@ -58,8 +58,6 @@
     
     <path id="common.cp">
         <pathelement location="${classes.dir}" />
-
-        <pathelement location="${svm.build}/svm-core.jar" />
     </path>
     
     <path id="som.cp">
@@ -359,9 +357,9 @@
         <sequential>
             <exec executable="@{exe}" dir="@{dir}" failonerror="true">
               <env key="JAVA_HOME" value="@{java-home}" />
-              <arg line="native-image" if:true="@{is-ce}" if:blank="${home.ext}" /> <!--  -->
+              <arg line="native-image" if:true="@{is-ce}" />
               <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
-              <!-- <arg line="- -gc=G1" unless:true="@{is-ce}" /> -->
+              <arg line="--gc=G1" unless:true="@{is-ce}" if:blank="${home.ext}" />
               <arg line="-H:-DeleteLocalSymbols" />
               <arg line="-Dsom.interp=@{type}" />
               <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
