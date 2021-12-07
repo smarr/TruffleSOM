@@ -27,7 +27,6 @@ package trufflesom.vmobjects;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 
 import trufflesom.interpreter.SArguments;
-import trufflesom.vm.Universe;
 
 
 public final class SBlock extends SAbstractObject {
@@ -53,10 +52,6 @@ public final class SBlock extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass(final Universe universe) {
-    return blockClass;
-  }
-
   public SClass getSOMClass() {
     return blockClass;
   }

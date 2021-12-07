@@ -26,6 +26,7 @@
 package trufflesom.vm;
 
 import static trufflesom.vm.Classes.arrayClass;
+import static trufflesom.vm.Classes.blockClasses;
 import static trufflesom.vm.Classes.booleanClass;
 import static trufflesom.vm.Classes.classClass;
 import static trufflesom.vm.Classes.doubleClass;
@@ -39,6 +40,8 @@ import static trufflesom.vm.Classes.primitiveClass;
 import static trufflesom.vm.Classes.stringClass;
 import static trufflesom.vm.Classes.symbolClass;
 import static trufflesom.vm.Classes.trueClass;
+import static trufflesom.vm.Globals.getGlobal;
+import static trufflesom.vm.Globals.setGlobal;
 import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
@@ -46,19 +49,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Context.Builder;
 import org.graalvm.polyglot.Value;
 
-import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.SourceSection;
-import com.oracle.truffle.api.utilities.CyclicAssumption;
 
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
@@ -91,40 +91,6 @@ public final class Universe implements IdProvider<SSymbol> {
 
   public static String getLocationQualifier(final SourceSection section) {
     return ":" + section.getStartLine() + ":" + section.getStartColumn();
-  }
-
-  /**
-   * Associations are handles for globals with a fixed
-   * SSymbol and a mutable value.
-   */
-  public static final class Association {
-    private final SSymbol          key;
-    private final CyclicAssumption assumption;
-
-    @CompilationFinal private Object value;
-
-    public Association(final SSymbol key, final Object value) {
-      this.key = key;
-      this.value = value;
-      this.assumption = new CyclicAssumption("Global: " + key.getString());
-    }
-
-    public SSymbol getKey() {
-      return key;
-    }
-
-    public Object getValue() {
-      return value;
-    }
-
-    public void setValue(final Object value) {
-      this.assumption.invalidate("updated global");
-      this.value = value;
-    }
-
-    public Assumption getAssumption() {
-      return assumption.getAssumption();
-    }
   }
 
   public static void main(final String[] arguments) {
@@ -172,11 +138,8 @@ public final class Universe implements IdProvider<SSymbol> {
   public Universe(final SomLanguage language) {
     this.language = language;
     this.compiler = new SourcecodeCompiler(language);
-    this.globals = new HashMap<SSymbol, Association>();
 
     this.alreadyInitialized = false;
-
-    this.blockClasses = new SClass[4];
 
     this.primitives = new Primitives(this);
   }
@@ -339,7 +302,7 @@ public final class Universe implements IdProvider<SSymbol> {
     SClass clazz = loadClass(symbolFor(className));
 
     // Lookup the initialize invokable on the system class
-    SInvokable initialize = clazz.getSOMClass(this).lookupInvokable(symbolFor(selector));
+    SInvokable initialize = clazz.getSOMClass().lookupInvokable(symbolFor(selector));
     return initialize.invoke(new Object[] {clazz});
   }
 
@@ -448,55 +411,21 @@ public final class Universe implements IdProvider<SSymbol> {
     // Initialize the superclass hierarchy
     if (superClass != null) {
       systemClass.setSuperClass(superClass);
-      systemClass.getSOMClass(this).setSuperClass(superClass.getSOMClass(this));
+      systemClass.getSOMClass().setSuperClass(superClass.getSOMClass());
     } else {
-      systemClass.getSOMClass(this).setSuperClass(classClass);
+      systemClass.getSOMClass().setSuperClass(classClass);
     }
 
     // Initialize the array of instance fields
     systemClass.setInstanceFields(Arrays.asList());
-    systemClass.getSOMClass(this).setInstanceFields(Arrays.asList());
+    systemClass.getSOMClass().setInstanceFields(Arrays.asList());
 
     // Initialize the name of the system class
     systemClass.setName(symbolFor(name));
-    systemClass.getSOMClass(this).setName(symbolFor(name + " class"));
+    systemClass.getSOMClass().setName(symbolFor(name + " class"));
 
     // Insert the system class into the dictionary of globals
     setGlobal(systemClass.getName(), systemClass);
-  }
-
-  @TruffleBoundary
-  public boolean hasGlobal(final SSymbol name) {
-    return globals.containsKey(name);
-  }
-
-  @TruffleBoundary
-  public Object getGlobal(final SSymbol name) {
-    Association assoc = globals.get(name);
-    if (assoc == null) {
-      return null;
-    }
-    return assoc.getValue();
-  }
-
-  @TruffleBoundary
-  public Association getGlobalsAssociation(final SSymbol name) {
-    return globals.get(name);
-  }
-
-  public void setGlobal(final String name, final Object value) {
-    setGlobal(symbolFor(name), value);
-  }
-
-  @TruffleBoundary
-  public void setGlobal(final SSymbol name, final Object value) {
-    Association assoc = globals.get(name);
-    if (assoc == null) {
-      assoc = new Association(name, value);
-      globals.put(name, assoc);
-    } else {
-      assoc.setValue(value);
-    }
   }
 
   public SClass getBlockClass(final int numberOfArguments) {
@@ -580,7 +509,7 @@ public final class Universe implements IdProvider<SSymbol> {
         SClass result =
             compiler.compileClass(cpEntry, name.getString(), systemClass, structuralProbe);
         if (printIR > 0) {
-          Disassembler.dump(result.getSOMClass(this));
+          Disassembler.dump(result.getSOMClass());
           Disassembler.dump(result);
         }
         return result;
@@ -673,8 +602,6 @@ public final class Universe implements IdProvider<SSymbol> {
 
   @CompilationFinal private SClass systemClass;
 
-  private final HashMap<SSymbol, Association> globals;
-
   private String[]              classPath;
   @CompilationFinal private int printIR;
 
@@ -685,7 +612,6 @@ public final class Universe implements IdProvider<SSymbol> {
   private final SourcecodeCompiler compiler;
 
   // Optimizations
-  @CompilationFinal(dimensions = 1) private final SClass[] blockClasses;
 
   private final Primitives primitives;
 

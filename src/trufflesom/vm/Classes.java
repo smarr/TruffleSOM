@@ -1,5 +1,8 @@
 package trufflesom.vm;
 
+import java.util.Arrays;
+
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
 import trufflesom.vmobjects.SClass;
@@ -24,6 +27,9 @@ public class Classes {
   public static final SClass trueClass;
   public static final SClass falseClass;
 
+  @CompilationFinal(dimensions = 1) // ~
+  public static final SClass[] blockClasses;
+
   static {
     // Allocate the Metaclass classes
     metaclassClass = newMetaclassClass();
@@ -44,6 +50,8 @@ public class Classes {
 
     trueClass = newSystemClass();
     falseClass = newSystemClass();
+
+    blockClasses = new SClass[4];
   }
 
   @TruffleBoundary
@@ -53,7 +61,7 @@ public class Classes {
     result.setClass(new SClass(0));
 
     // Setup the metaclass hierarchy
-    result.getSOMClass(null).setClass(result);
+    result.getSOMClass().setClass(result);
     return result;
   }
 
@@ -86,5 +94,9 @@ public class Classes {
 
     trueClass.resetSystemClass();
     falseClass.resetSystemClass();
+
+    Arrays.fill(blockClasses, null);
+
+    Globals.reset();
   }
 }

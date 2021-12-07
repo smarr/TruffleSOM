@@ -47,7 +47,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     }
 
     if (chainDepth < INLINE_CACHE_SIZE) {
-      SClass rcvrClass = Types.getClassOf(rcvr, universe);
+      SClass rcvrClass = Types.getClassOf(rcvr);
       SInvokable method = rcvrClass.lookupInvokable(selector);
 
       UninitializedDispatchNode newChainEnd =

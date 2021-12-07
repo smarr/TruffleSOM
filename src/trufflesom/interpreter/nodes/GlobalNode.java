@@ -21,6 +21,8 @@
  */
 package trufflesom.interpreter.nodes;
 
+import static trufflesom.vm.Globals.getGlobalsAssociation;
+import static trufflesom.vm.Globals.hasGlobal;
 import static trufflesom.vm.SymbolTable.symFalse;
 import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symTrue;
@@ -40,8 +42,7 @@ import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.TruffleCompiler;
-import trufflesom.vm.Universe;
-import trufflesom.vm.Universe.Association;
+import trufflesom.vm.Globals.Association;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
@@ -51,12 +52,12 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class GlobalNode extends ExpressionNode
     implements Invocation<SSymbol>, PreevaluatedExpression {
 
-  public static boolean isPotentiallyUnknown(final SSymbol global, final Universe universe) {
+  public static boolean isPotentiallyUnknown(final SSymbol global) {
     return global != symNil && global != symTrue
-        && global != symFalse && !universe.hasGlobal(global);
+        && global != symFalse && !hasGlobal(global);
   }
 
-  public static GlobalNode create(final SSymbol globalName, final Universe universe,
+  public static GlobalNode create(final SSymbol globalName,
       final MethodGenerationContext mgenc) {
     if (globalName == symNil) {
       return new NilGlobalNode(globalName);
@@ -67,7 +68,7 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     // Get the global from the universe
-    Association assoc = universe.getGlobalsAssociation(globalName);
+    Association assoc = getGlobalsAssociation(globalName);
     if (assoc != null) {
       return new CachedGlobalReadNode(globalName, assoc);
     }
@@ -75,7 +76,7 @@ public abstract class GlobalNode extends ExpressionNode
     if (mgenc != null) {
       mgenc.markAccessingOuterScopes();
     }
-    return new UninitializedGlobalReadNode(globalName, universe);
+    return new UninitializedGlobalReadNode(globalName);
   }
 
   protected final SSymbol globalName;
@@ -110,11 +111,9 @@ public abstract class GlobalNode extends ExpressionNode
   }
 
   private abstract static class AbstractUninitializedGlobalReadNode extends GlobalNode {
-    protected final Universe universe;
 
-    AbstractUninitializedGlobalReadNode(final SSymbol globalName, final Universe universe) {
+    AbstractUninitializedGlobalReadNode(final SSymbol globalName) {
       super(globalName);
-      this.universe = universe;
     }
 
     protected abstract Object executeUnknownGlobal(VirtualFrame frame);
@@ -124,7 +123,7 @@ public abstract class GlobalNode extends ExpressionNode
       TruffleCompiler.transferToInterpreterAndInvalidate("Uninitialized Global Node");
 
       // Get the global from the universe
-      Association assoc = universe.getGlobalsAssociation(globalName);
+      Association assoc = getGlobalsAssociation(globalName);
       if (assoc != null) {
         return replace(
             (GlobalNode) new CachedGlobalReadNode(globalName, assoc)).executeGeneric(frame);
@@ -136,8 +135,8 @@ public abstract class GlobalNode extends ExpressionNode
 
   public static final class UninitializedGlobalReadNode
       extends AbstractUninitializedGlobalReadNode {
-    UninitializedGlobalReadNode(final SSymbol globalName, final Universe universe) {
-      super(globalName, universe);
+    UninitializedGlobalReadNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override
@@ -153,7 +152,7 @@ public abstract class GlobalNode extends ExpressionNode
       // if it is not defined, we will send a error message to the current
       // receiver object
 
-      return SAbstractObject.sendUnknownGlobal(self, globalName, universe);
+      return SAbstractObject.sendUnknownGlobal(self, globalName);
     }
 
     @Override
@@ -183,9 +182,8 @@ public abstract class GlobalNode extends ExpressionNode
 
   public static final class UninitializedGlobalReadWithoutErrorNode
       extends AbstractUninitializedGlobalReadNode {
-    public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName,
-        final Universe universe) {
-      super(globalName, universe);
+    public UninitializedGlobalReadWithoutErrorNode(final SSymbol globalName) {
+      super(globalName);
     }
 
     @Override

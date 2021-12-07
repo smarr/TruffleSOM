@@ -104,9 +104,7 @@ public class SomTests {
       assertEquals(0, returnCode.asInt());
     } else {
       SObject obj = (SObject) readValue(returnCode);
-
-      assertEquals("System",
-          obj.getSOMClass(null).getName().getString());
+      assertEquals("System", obj.getSOMClass().getName().getString());
     }
   }
 }

@@ -9,50 +9,45 @@ import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
-import trufflesom.vm.Universe;
 
 
 @ExportLibrary(InteropLibrary.class)
 public abstract class SAbstractObject implements TruffleObject {
 
-  public abstract SClass getSOMClass(Universe universe);
+  public abstract SClass getSOMClass();
 
   @Override
   public String toString() {
     CompilerAsserts.neverPartOfCompilation();
-    SClass clazz = getSOMClass(SomLanguage.getCurrentContext());
+    SClass clazz = getSOMClass();
     if (clazz == null) {
       return "an Object(clazz==null)";
     }
     return "a " + clazz.getName().getString();
   }
 
-  private static Object send(
-      final String selectorString,
-      final Object[] arguments, final Universe universe) {
+  private static Object send(final String selectorString, final Object[] arguments) {
     CompilerAsserts.neverPartOfCompilation("SAbstractObject.send()");
     SSymbol selector = symbolFor(selectorString);
 
     // Lookup the invokable
-    SInvokable invokable = Types.getClassOf(arguments[0], universe).lookupInvokable(selector);
+    SInvokable invokable = Types.getClassOf(arguments[0]).lookupInvokable(selector);
 
     return invokable.invoke(arguments);
   }
 
   @TruffleBoundary
   public static final Object sendUnknownGlobal(final Object receiver,
-      final SSymbol globalName, final Universe universe) {
+      final SSymbol globalName) {
     Object[] arguments = {receiver, globalName};
-    return send("unknownGlobal:", arguments, universe);
+    return send("unknownGlobal:", arguments);
   }
 
   @TruffleBoundary
-  public static final Object sendEscapedBlock(final Object receiver,
-      final SBlock block, final Universe universe) {
+  public static final Object sendEscapedBlock(final Object receiver, final SBlock block) {
     Object[] arguments = {receiver, block};
-    return send("escapedBlock:", arguments, universe);
+    return send("escapedBlock:", arguments);
   }
 
   @ExportMessage

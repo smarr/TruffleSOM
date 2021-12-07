@@ -76,7 +76,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
       blockEscaped.enter();
       SBlock block = (SBlock) SArguments.rcvr(frame);
       Object self = SArguments.rcvr(ctx);
-      return SAbstractObject.sendEscapedBlock(self, block, universe);
+      return SAbstractObject.sendEscapedBlock(self, block);
     }
   }
 

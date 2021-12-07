@@ -23,6 +23,7 @@ import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.TernarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnarySystemOperation;
+import trufflesom.vm.Globals;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
@@ -57,7 +58,7 @@ public final class SystemPrims {
     @Specialization(guards = "receiver == universe.getSystemObject()")
     public final Object doSObject(final SObject receiver, final SSymbol global,
         final Object value) {
-      universe.setGlobal(global, value);
+      Globals.setGlobal(global, value);
       return value;
     }
   }

@@ -32,7 +32,6 @@ import java.math.BigInteger;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SClass;
 
@@ -44,12 +43,12 @@ import trufflesom.vmobjects.SClass;
     Object[].class}) // Object[] is only for argument passing
 public class Types {
 
-  public static SClass getClassOf(final Object obj, final Universe universe) {
+  public static SClass getClassOf(final Object obj) {
     CompilerAsserts.neverPartOfCompilation();
     assert obj != null;
 
     if (obj instanceof SAbstractObject) {
-      return ((SAbstractObject) obj).getSOMClass(universe);
+      return ((SAbstractObject) obj).getSOMClass();
     } else if (obj instanceof Boolean) {
       if ((boolean) obj) {
         return trueClass;

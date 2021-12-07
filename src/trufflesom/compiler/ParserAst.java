@@ -43,6 +43,7 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
+import trufflesom.vm.Globals;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
@@ -105,7 +106,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private ExpressionNode createSequenceNode(final SourceCoordinate coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return GlobalNode.create(symNil, universe, null).initialize(getSource(coord));
+      return GlobalNode.create(symNil, null).initialize(getSource(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
@@ -387,7 +388,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         return literalDouble(isNegativeNumber());
       case Identifier:
         expect(Identifier);
-        return universe.getGlobal(symbolFor(text));
+        return Globals.getGlobal(symbolFor(text));
       default:
         throw new ParseError("Could not parse literal array value", NONE, this);
     }

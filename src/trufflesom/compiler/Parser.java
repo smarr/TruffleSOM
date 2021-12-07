@@ -666,7 +666,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
 
     // and finally assume it is a global
-    return GlobalNode.create(variableName, universe, mgenc).initialize(source);
+    return GlobalNode.create(variableName, mgenc).initialize(source);
   }
 
   private void getSymbolFromLexer() {

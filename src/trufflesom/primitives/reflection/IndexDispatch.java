@@ -62,12 +62,12 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final SObject obj, final int index) {
-      return specialize(obj.getSOMClass(universe), index, true).executeDispatch(obj, index);
+      return specialize(obj.getSOMClass(), index, true).executeDispatch(obj, index);
     }
 
     @Override
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      return specialize(obj.getSOMClass(universe), index, false).executeDispatch(obj, index,
+      return specialize(obj.getSOMClass(), index, false).executeDispatch(obj, index,
           value);
     }
 
@@ -103,7 +103,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final SObject obj, final int index) {
-      if (this.index == index && this.clazz == obj.getSOMClass(universe)) {
+      if (this.index == index && this.clazz == obj.getSOMClass()) {
         return access.read(obj);
       } else {
         return next.executeDispatch(obj, index);
@@ -147,7 +147,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      if (this.index == index && this.clazz == obj.getSOMClass(universe)) {
+      if (this.index == index && this.clazz == obj.getSOMClass()) {
         return access.write(obj, value);
       } else {
         return next.executeDispatch(obj, index, value);

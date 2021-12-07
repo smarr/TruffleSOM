@@ -95,7 +95,7 @@ public final class ClassGenerationContext {
   /** Return the super class, considering whether we are instance or class side. */
   public SClass getSuperClass() {
     if (classSide) {
-      return superClass.getSOMClass(universe);
+      return superClass.getSOMClass();
     }
     return superClass;
   }
@@ -104,7 +104,7 @@ public final class ClassGenerationContext {
     this.superClass = superClass;
     setInstanceFieldsOfSuper(superClass.getInstanceFieldDefinitions());
     setClassFieldsOfSuper(
-        superClass.getSOMClass(universe).getInstanceFieldDefinitions());
+        superClass.getSOMClass().getInstanceFieldDefinitions());
   }
 
   private void setInstanceFieldsOfSuper(final Field[] fields) {
@@ -205,7 +205,7 @@ public final class ClassGenerationContext {
     resultClass.setInstanceInvokables(classMethods, classHasPrimitives);
     resultClass.setName(symbolFor(ccname));
 
-    SClass superMClass = superClass == null ? null : superClass.getSOMClass(universe);
+    SClass superMClass = superClass == null ? null : superClass.getSOMClass();
     resultClass.setSuperClass(superMClass);
     resultClass.setSourceSection(sourceSection);
 
@@ -239,7 +239,7 @@ public final class ClassGenerationContext {
     }
 
     // class-bound == class-instance-bound
-    SClass superMClass = systemClass.getSOMClass(universe);
+    SClass superMClass = systemClass.getSOMClass();
     superMClass.setInstanceInvokables(classMethods, classHasPrimitives);
     superMClass.setInstanceFields(classFields);
 

@@ -25,7 +25,6 @@
 package trufflesom.vmobjects;
 
 import trufflesom.vm.Classes;
-import trufflesom.vm.Universe;
 
 
 public final class SSymbol extends SAbstractObject {
@@ -39,7 +38,7 @@ public final class SSymbol extends SAbstractObject {
   }
 
   @Override
-  public SClass getSOMClass(final Universe universe) {
+  public SClass getSOMClass() {
     return Classes.symbolClass;
   }
 

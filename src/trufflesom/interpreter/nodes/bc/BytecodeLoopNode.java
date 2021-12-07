@@ -452,7 +452,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
 
           GlobalNode quick =
-              GlobalNode.create(globalName, universe, null).initialize(sourceSection);
+              GlobalNode.create(globalName, null).initialize(sourceSection);
           quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quick);
 
           stackPointer += 1;
@@ -586,7 +586,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             Object result =
-                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -623,7 +623,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
 
             Object result =
-                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
 
             stackPointer += 1;
             stack[stackPointer] = result;
@@ -937,7 +937,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
-                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
           }
           break;
         }
@@ -956,7 +956,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
-                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
           } catch (RespecializeException r) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickenBytecode(bytecodeIndex, Q_SEND, r.send);
@@ -982,7 +982,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
-                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
           } catch (RespecializeException r) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickenBytecode(bytecodeIndex, Q_SEND, r.send);
@@ -1009,7 +1009,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             VirtualFrame outer = determineOuterContext(frame);
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
-                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock(), universe);
+                SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
           } catch (RespecializeException r) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickenBytecode(bytecodeIndex, Q_SEND, r.send);
@@ -1116,7 +1116,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
   @TruffleBoundary
   private SInvokable doLookup(final SSymbol signature, final Object[] callArgs) {
-    SClass rcvrClass = Types.getClassOf(callArgs[0], universe);
+    SClass rcvrClass = Types.getClassOf(callArgs[0]);
     SInvokable invokable = rcvrClass.lookupInvokable(signature);
     return invokable;
   }

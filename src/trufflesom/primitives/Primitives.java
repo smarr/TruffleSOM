@@ -176,7 +176,7 @@ public final class Primitives extends PrimitiveLoader<Universe, ExpressionNode, 
     for (Entry<SSymbol, Specializer<Universe, ExpressionNode, SSymbol>> e : prims.entrySet()) {
       SClass target;
       if (e.getValue().classSide()) {
-        target = clazz.getSOMClass(universe);
+        target = clazz.getSOMClass();
       } else {
         target = clazz;
       }

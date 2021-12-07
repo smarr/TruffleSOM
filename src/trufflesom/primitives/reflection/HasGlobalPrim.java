@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.Node;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
+import trufflesom.vm.Globals;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
@@ -46,7 +47,7 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
     @Override
     @TruffleBoundary
     public boolean hasGlobal(final SSymbol argument) {
-      boolean hasGlobal = universe.hasGlobal(argument);
+      boolean hasGlobal = Globals.hasGlobal(argument);
 
       if (hasGlobal) {
         return specialize(argument).hasGlobal(argument);
@@ -62,7 +63,7 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
         while (head.getParent() instanceof HasGlobalNode) {
           head = (HasGlobalNode) head.getParent();
         }
-        return head.replace(new HasGlobalFallback(universe));
+        return head.replace(new HasGlobalFallback());
       }
     }
   }
@@ -89,15 +90,9 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
   }
 
   private static final class HasGlobalFallback extends HasGlobalNode {
-    private final Universe universe;
-
-    HasGlobalFallback(final Universe universe) {
-      this.universe = universe;
-    }
-
     @Override
     public boolean hasGlobal(final SSymbol argument) {
-      return universe.hasGlobal(argument);
+      return Globals.hasGlobal(argument);
     }
   }
 }
