@@ -49,28 +49,25 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     if (chainDepth < INLINE_CACHE_SIZE) {
       SClass rcvrClass = Types.getClassOf(rcvr, universe);
       SInvokable method = rcvrClass.lookupInvokable(selector);
-      CallTarget callTarget = null;
-      PreevaluatedExpression expr = null;
-      if (method != null) {
-        if (method.isTrivial()) {
-          expr = method.copyTrivialNode();
-          assert expr != null;
-        } else {
-          callTarget = method.getCallTarget();
-        }
-      }
 
       UninitializedDispatchNode newChainEnd =
           new UninitializedDispatchNode(selector, universe);
       DispatchGuard guard = DispatchGuard.create(rcvr);
+
       AbstractDispatchNode node;
-      if (expr != null) {
-        node = new CachedExprNode(guard, expr, newChainEnd);
-      } else if (method != null) {
-        node = new CachedDispatchNode(guard, callTarget, newChainEnd);
-      } else {
+      if (method == null) {
         node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd, universe);
+      } else {
+        if (method.isTrivial()) {
+          PreevaluatedExpression expr = method.copyTrivialNode();
+          assert expr != null;
+          node = new CachedExprNode(guard, expr, newChainEnd);
+        } else {
+          CallTarget callTarget = method.getCallTarget();
+          node = new CachedDispatchNode(guard, callTarget, newChainEnd);
+        }
       }
+
       return replace(node);
     }
 
