@@ -88,7 +88,6 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SSymbol;
 
 
-@SuppressWarnings("unchecked")
 public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   private final List<Object>                  literals;
