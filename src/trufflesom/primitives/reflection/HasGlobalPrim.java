@@ -1,29 +1,24 @@
 package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.Node;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
-import trufflesom.vm.Universe;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.vm.Globals;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
 @Primitive(className = "System", primitive = "hasGlobal:")
-public abstract class HasGlobalPrim extends BinarySystemOperation {
+@GenerateNodeFactory
+public abstract class HasGlobalPrim extends BinaryExpressionNode {
 
-  @Child private HasGlobalNode hasGlobal;
+  @Child private HasGlobalNode hasGlobal = new UninitializedHasGlobal(0);
 
-  @Override
-  public BinarySystemOperation initialize(final Universe universe) {
-    super.initialize(universe);
-    hasGlobal = new UninitializedHasGlobal(0, universe);
-    return this;
-  }
-
-  @Specialization(guards = "receiver == universe.getSystemObject()")
+  @Specialization
   public final boolean doSObject(final SObject receiver, final SSymbol argument) {
     return hasGlobal.hasGlobal(argument);
   }
@@ -35,18 +30,16 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
   }
 
   private static final class UninitializedHasGlobal extends HasGlobalNode {
-    private final int      depth;
-    private final Universe universe;
+    private final int depth;
 
-    UninitializedHasGlobal(final int depth, final Universe universe) {
+    UninitializedHasGlobal(final int depth) {
       this.depth = depth;
-      this.universe = universe;
     }
 
     @Override
     @TruffleBoundary
     public boolean hasGlobal(final SSymbol argument) {
-      boolean hasGlobal = universe.hasGlobal(argument);
+      boolean hasGlobal = Globals.hasGlobal(argument);
 
       if (hasGlobal) {
         return specialize(argument).hasGlobal(argument);
@@ -56,13 +49,13 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
 
     private HasGlobalNode specialize(final SSymbol argument) {
       if (depth < INLINE_CACHE_SIZE) {
-        return replace(new CachedHasGlobal(argument, depth, universe));
+        return replace(new CachedHasGlobal(argument, depth));
       } else {
         HasGlobalNode head = this;
         while (head.getParent() instanceof HasGlobalNode) {
           head = (HasGlobalNode) head.getParent();
         }
-        return head.replace(new HasGlobalFallback(universe));
+        return head.replace(new HasGlobalFallback());
       }
     }
   }
@@ -72,10 +65,10 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
     private final SSymbol        name;
     @Child private HasGlobalNode next;
 
-    CachedHasGlobal(final SSymbol name, final int depth, final Universe universe) {
+    CachedHasGlobal(final SSymbol name, final int depth) {
       this.depth = depth;
       this.name = name;
-      next = new UninitializedHasGlobal(this.depth + 1, universe);
+      next = new UninitializedHasGlobal(this.depth + 1);
     }
 
     @Override
@@ -89,15 +82,9 @@ public abstract class HasGlobalPrim extends BinarySystemOperation {
   }
 
   private static final class HasGlobalFallback extends HasGlobalNode {
-    private final Universe universe;
-
-    HasGlobalFallback(final Universe universe) {
-      this.universe = universe;
-    }
-
     @Override
     public boolean hasGlobal(final SSymbol argument) {
-      return universe.hasGlobal(argument);
+      return Globals.hasGlobal(argument);
     }
   }
 }

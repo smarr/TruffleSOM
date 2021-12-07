@@ -15,7 +15,6 @@ import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.specialized.AndMessageNode.AndOrSplzr;
 import trufflesom.vm.SymbolTable;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -26,7 +25,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "and:", specializer = AndOrSplzr.class)
 @Primitive(selector = "&&", specializer = AndOrSplzr.class)
 public abstract class AndMessageNode extends BinaryMsgExprNode {
-  public static class AndOrSplzr extends Specializer<Universe, ExpressionNode, SSymbol> {
+  public static class AndOrSplzr extends Specializer<ExpressionNode, SSymbol> {
     protected final NodeFactory<BinaryExpressionNode> boolFact;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -53,8 +52,7 @@ public abstract class AndMessageNode extends BinaryMsgExprNode {
 
     @Override
     public final ExpressionNode create(final Object[] arguments,
-        final ExpressionNode[] argNodes, final SourceSection section,
-        final Universe universe) {
+        final ExpressionNode[] argNodes, final SourceSection section) {
       ExpressionNode node;
       if (argNodes[1] instanceof BlockNode) {
         node = fact.createNode(

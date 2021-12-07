@@ -37,6 +37,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
+import trufflesom.vm.Classes;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
@@ -194,6 +195,7 @@ public class BasicInterpreterTests {
   @Test
   public void testBasicInterpreterBehavior() {
     StorageAnalyzer.initAccessors();
+    Classes.reset();
 
     Builder builder = Universe.createContextBuilder();
     builder.option("som.CLASS_PATH", "Smalltalk:TestSuite/BasicInterpreterTests");

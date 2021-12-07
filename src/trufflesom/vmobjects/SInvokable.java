@@ -39,7 +39,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Invokable;
-import trufflesom.vm.Universe;
+import trufflesom.vm.Classes;
 
 
 public abstract class SInvokable extends SAbstractObject {
@@ -74,8 +74,8 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SClass getSOMClass(final Universe universe) {
-      return universe.methodClass;
+    public SClass getSOMClass() {
+      return Classes.methodClass;
     }
 
     @Override
@@ -100,8 +100,8 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     @Override
-    public SClass getSOMClass(final Universe universe) {
-      return universe.primitiveClass;
+    public SClass getSOMClass() {
+      return Classes.primitiveClass;
     }
 
     @Override

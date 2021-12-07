@@ -38,16 +38,12 @@ import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SObject;
 
 
-public class Shell {
+public final class Shell {
 
-  private final Universe universe;
-
-  public Shell(final Universe universe) {
-    this.universe = universe;
-  }
+  private Shell() {}
 
   @TruffleBoundary
-  public Object start() {
+  public static Object start() {
     BufferedReader in;
     String stmt;
     int counter;
@@ -76,7 +72,7 @@ public class Shell {
             + stmt + " ). 'it = ' print. ^tmp println ) )";
 
         // Compile and load the newly generated class
-        myClass = universe.loadShellClass(stmt);
+        myClass = Universe.loadShellClass(stmt);
 
         // If success
         if (myClass != null) {

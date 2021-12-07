@@ -63,8 +63,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
   public abstract Variable split(FrameDescriptor descriptor);
 
-  public abstract Local splitToMergeIntoOuterScope(Universe universe,
-      FrameDescriptor descriptor);
+  public abstract Local splitToMergeIntoOuterScope(FrameDescriptor descriptor);
 
   @Override
   public boolean equals(final Object o) {
@@ -98,7 +97,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       this.index = index;
     }
 
-    public boolean isSelf(final Universe universe) {
+    public boolean isSelf() {
       return symSelf == name || symBlockSelf == name;
     }
 
@@ -108,9 +107,8 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final Universe universe,
-        final FrameDescriptor descriptor) {
-      if (isSelf(universe)) {
+    public Local splitToMergeIntoOuterScope(final FrameDescriptor descriptor) {
+      if (isSelf()) {
         return null;
       }
 
@@ -184,8 +182,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final Universe universe,
-        final FrameDescriptor descriptor) {
+    public Local splitToMergeIntoOuterScope(final FrameDescriptor descriptor) {
       return split(descriptor);
     }
 
@@ -255,8 +252,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final Universe universe,
-        final FrameDescriptor descriptor) {
+    public Local splitToMergeIntoOuterScope(final FrameDescriptor descriptor) {
       throw new UnsupportedOperationException();
     }
 

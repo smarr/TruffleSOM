@@ -14,17 +14,16 @@ import bd.settings.VmSettings;
  * A PrimitiveLoader provides the basic functionality to load the information about primitives
  * from the annotation, based on a list of {@link NodeFactory} objects.
  *
- * @param <Context> the type of the context object
  * @param <ExprT> the root type of expressions used by the language
  * @param <Id> the type of the identifiers used for mapping to primitives, typically some form
  *          of interned string construct
  */
-public abstract class PrimitiveLoader<Context, ExprT, Id> {
+public abstract class PrimitiveLoader<ExprT, Id> {
 
   protected final IdProvider<Id> ids;
 
   /** Primitives for selector. */
-  private final HashMap<Id, Specializer<Context, ExprT, Id>> eagerPrimitives;
+  private final HashMap<Id, Specializer<ExprT, Id>> eagerPrimitives;
 
   /**
    * Initializes the PrimitiveLoader.
@@ -36,12 +35,12 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
     this.eagerPrimitives = new HashMap<>();
   }
 
-  public static <Context, ExprT, Id> void add(final List<Specializer<Context, ExprT, Id>> list,
+  public static <Context, ExprT, Id> void add(final List<Specializer<ExprT, Id>> list,
       final NodeFactory<? extends ExprT> factory) {
     Primitive[] primitives = getPrimitiveAnnotation(factory);
     if (primitives != null && primitives.length != 0) {
       for (bd.primitives.Primitive prim : primitives) {
-        Specializer<Context, ExprT, Id> specializer = createSpecializer(prim, factory);
+        Specializer<ExprT, Id> specializer = createSpecializer(prim, factory);
         list.add(specializer);
       }
     }
@@ -49,7 +48,7 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   public static <Context, Id, ExprT> void addAll(
-      final List<Specializer<Context, ExprT, Id>> list,
+      final List<Specializer<ExprT, Id>> list,
       final List toAdd) {
     for (Object factory : toAdd) {
       add(list, (NodeFactory<? extends ExprT>) factory);
@@ -57,7 +56,7 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
   }
 
   /** Returns all node specializers. */
-  protected abstract List<Specializer<Context, ExprT, Id>> getSpecializers();
+  protected abstract List<Specializer<ExprT, Id>> getSpecializers();
 
   /**
    * Setup the lookup data structures for VM primitive registration as well as
@@ -67,8 +66,8 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
    * This methods should be called when the constructor completes.
    */
   protected void initialize() {
-    List<Specializer<Context, ExprT, Id>> specializers = getSpecializers();
-    for (Specializer<Context, ExprT, Id> s : specializers) {
+    List<Specializer<ExprT, Id>> specializers = getSpecializers();
+    for (Specializer<ExprT, Id> s : specializers) {
       // TODO: figure out whether we really want it like this with a VmSetting, or whether
       // there should be something on the context
       if (s.getPrimitive().disabled() && VmSettings.DYNAMIC_METRICS) {
@@ -96,7 +95,7 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
    * @param prim the primitive annotation
    * @param specializer the specializer object for this primitive
    */
-  protected abstract void registerPrimitive(Specializer<Context, ExprT, Id> specializer);
+  protected abstract void registerPrimitive(Specializer<ExprT, Id> specializer);
 
   /**
    * Lookup a specializer for use during parsing.
@@ -106,9 +105,9 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
    * the primitive allows in-parser specialization, and the argument nodes match the
    * expectations, than a specializer is returned. otherwise, null is returned.
    */
-  public final Specializer<Context, ExprT, Id> getParserSpecializer(final Id selector,
+  public final Specializer<ExprT, Id> getParserSpecializer(final Id selector,
       final ExprT[] argNodes) {
-    Specializer<Context, ExprT, Id> specializer = eagerPrimitives.get(selector);
+    Specializer<ExprT, Id> specializer = eagerPrimitives.get(selector);
     if (specializer != null && specializer.inParser() && specializer.matches(null, argNodes)) {
       return specializer;
     }
@@ -123,9 +122,9 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
    * well as the argument nodes match for the specialization. If they match, the specializer is
    * returned, null is returned otherwise.
    */
-  public final Specializer<Context, ExprT, Id> getEagerSpecializer(final Id selector,
+  public final Specializer<ExprT, Id> getEagerSpecializer(final Id selector,
       final Object[] arguments, final ExprT[] argumentNodes) {
-    Specializer<Context, ExprT, Id> specializer = eagerPrimitives.get(selector);
+    Specializer<ExprT, Id> specializer = eagerPrimitives.get(selector);
     if (specializer != null && specializer.matches(arguments, argumentNodes)) {
       return specializer;
     }
@@ -136,7 +135,7 @@ public abstract class PrimitiveLoader<Context, ExprT, Id> {
    * Create a {@link Specializer} for the given {@link Primitive}.
    */
   @SuppressWarnings("unchecked")
-  private static <Context, ExprT, Id, T> Specializer<Context, ExprT, Id> createSpecializer(
+  private static <Context, ExprT, Id, T> Specializer<ExprT, Id> createSpecializer(
       final Primitive prim, final NodeFactory<? extends ExprT> factory) {
     try {
       return prim.specializer()

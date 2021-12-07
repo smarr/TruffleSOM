@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
@@ -48,8 +47,8 @@ public abstract class QuaternaryExpressionNode extends EagerlySpecializableNode 
       children = null;
     }
 
-    GenericMessageSendNode send = MessageSendNode.createGeneric(selector, children,
-        sourceSection, SomLanguage.getCurrentContext());
+    GenericMessageSendNode send =
+        MessageSendNode.createGeneric(selector, children, sourceSection);
 
     if (VmSettings.UseAstInterp) {
       return replace(send);

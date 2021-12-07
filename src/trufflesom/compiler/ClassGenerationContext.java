@@ -35,8 +35,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Parser.ParseError;
-import trufflesom.interpreter.SomLanguage;
-import trufflesom.vm.Universe;
+import trufflesom.vm.Classes;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SPrimitive;
@@ -44,13 +43,10 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public final class ClassGenerationContext {
-  private final Universe universe;
-
   private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
-  public ClassGenerationContext(final Universe universe,
+  public ClassGenerationContext(
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
-    this.universe = universe;
     this.structuralProbe = structuralProbe;
   }
 
@@ -66,14 +62,6 @@ public final class ClassGenerationContext {
 
   private boolean instanceHasPrimitives = false;
   private boolean classHasPrimitives    = false;
-
-  public SomLanguage getLanguage() {
-    return universe.getLanguage();
-  }
-
-  public Universe getUniverse() {
-    return universe;
-  }
 
   public void setName(final SSymbol name) {
     this.name = name;
@@ -94,7 +82,7 @@ public final class ClassGenerationContext {
   /** Return the super class, considering whether we are instance or class side. */
   public SClass getSuperClass() {
     if (classSide) {
-      return superClass.getSOMClass(universe);
+      return superClass.getSOMClass();
     }
     return superClass;
   }
@@ -103,7 +91,7 @@ public final class ClassGenerationContext {
     this.superClass = superClass;
     setInstanceFieldsOfSuper(superClass.getInstanceFieldDefinitions());
     setClassFieldsOfSuper(
-        superClass.getSOMClass(universe).getInstanceFieldDefinitions());
+        superClass.getSOMClass().getInstanceFieldDefinitions());
   }
 
   private void setInstanceFieldsOfSuper(final Field[] fields) {
@@ -197,14 +185,14 @@ public final class ClassGenerationContext {
     String ccname = name.getString() + " class";
 
     // Allocate the class of the resulting class
-    SClass resultClass = universe.newClass(universe.metaclassClass);
+    SClass resultClass = new SClass(Classes.metaclassClass);
 
     // Initialize the class of the resulting class
     resultClass.setInstanceFields(classFields);
     resultClass.setInstanceInvokables(classMethods, classHasPrimitives);
     resultClass.setName(symbolFor(ccname));
 
-    SClass superMClass = superClass == null ? null : superClass.getSOMClass(universe);
+    SClass superMClass = superClass == null ? null : superClass.getSOMClass();
     resultClass.setSuperClass(superMClass);
     resultClass.setSourceSection(sourceSection);
 
@@ -213,7 +201,7 @@ public final class ClassGenerationContext {
     }
 
     // Allocate the resulting class
-    SClass result = universe.newClass(resultClass);
+    SClass result = new SClass(resultClass);
 
     // Initialize the resulting class
     result.setName(name);
@@ -238,7 +226,7 @@ public final class ClassGenerationContext {
     }
 
     // class-bound == class-instance-bound
-    SClass superMClass = systemClass.getSOMClass(universe);
+    SClass superMClass = systemClass.getSOMClass();
     superMClass.setInstanceInvokables(classMethods, classHasPrimitives);
     superMClass.setInstanceFields(classFields);
 

@@ -22,7 +22,6 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
-import trufflesom.vm.Universe;
 
 
 public final class SNodeFactory {
@@ -77,8 +76,7 @@ public final class SNodeFactory {
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,
-      final Internal markerSlot, final int contextLevel,
-      final SourceSection source, final Universe universe) {
-    return new ReturnNonLocalNode(exp, markerSlot, contextLevel, universe).initialize(source);
+      final Internal markerSlot, final int contextLevel, final SourceSection source) {
+    return new ReturnNonLocalNode(exp, markerSlot, contextLevel).initialize(source);
   }
 }

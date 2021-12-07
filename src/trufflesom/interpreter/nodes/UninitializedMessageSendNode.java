@@ -7,20 +7,17 @@ import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 
 
 public final class UninitializedMessageSendNode extends AbstractMessageSendNode {
 
-  protected final SSymbol  selector;
-  protected final Universe universe;
+  protected final SSymbol selector;
 
   protected UninitializedMessageSendNode(final SSymbol selector,
-      final ExpressionNode[] arguments, final Universe universe) {
+      final ExpressionNode[] arguments) {
     super(arguments);
     this.selector = selector;
-    this.universe = universe;
   }
 
   @Override
@@ -41,16 +38,12 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
     // receiver class also allows us to do more specific things, but for the
     // moment we will leave it at this.
     // TODO: revisit, and also do more specific optimizations for super sends.
-
-    Primitives prims = universe.getPrimitives();
-
-    Specializer<Universe, ExpressionNode, SSymbol> specializer =
-        prims.getEagerSpecializer(selector, arguments, argumentNodes);
+    Specializer<ExpressionNode, SSymbol> specializer =
+        Primitives.Current.getEagerSpecializer(selector, arguments, argumentNodes);
 
     if (specializer != null) {
       PreevaluatedExpression newNode =
-          (PreevaluatedExpression) specializer.create(arguments, argumentNodes,
-              sourceSection, universe);
+          (PreevaluatedExpression) specializer.create(arguments, argumentNodes, sourceSection);
 
       return (PreevaluatedExpression) replace((ExpressionNode) newNode);
     }
@@ -60,7 +53,7 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
 
   private GenericMessageSendNode makeGenericSend() {
     GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
-        new UninitializedDispatchNode(selector, universe)).initialize(sourceSection);
+        new UninitializedDispatchNode(selector)).initialize(sourceSection);
     return replace(send);
   }
 

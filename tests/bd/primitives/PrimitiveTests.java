@@ -16,7 +16,6 @@ import bd.testsetup.AbsNode;
 import bd.testsetup.AddAbsNode;
 import bd.testsetup.AddNodeFactory;
 import bd.testsetup.ExprNode;
-import bd.testsetup.LangContext;
 
 
 public class PrimitiveTests {
@@ -35,7 +34,7 @@ public class PrimitiveTests {
 
   @Test
   public void testEagerSpecializer() {
-    Specializer<LangContext, ExprNode, String> s = ps.getEagerSpecializer("+", null, null);
+    Specializer<ExprNode, String> s = ps.getEagerSpecializer("+", null, null);
     assertNotNull(s);
 
     assertEquals("AddNodeFactory", s.getName());
@@ -46,7 +45,7 @@ public class PrimitiveTests {
 
   @Test
   public void testParserSpecializer() {
-    Specializer<LangContext, ExprNode, String> s = ps.getParserSpecializer("+", null);
+    Specializer<ExprNode, String> s = ps.getParserSpecializer("+", null);
     assertNotNull(s);
 
     assertEquals("AddNodeFactory", s.getName());
@@ -57,7 +56,7 @@ public class PrimitiveTests {
 
   @Test
   public void testEagerSpecializerWithCustomSpecializer() {
-    Specializer<LangContext, ExprNode, String> s = ps.getEagerSpecializer("++", null, null);
+    Specializer<ExprNode, String> s = ps.getEagerSpecializer("++", null, null);
     assertNotNull(s);
 
     assertEquals("AddWithSpecializerNodeFactory", s.getName());
@@ -68,7 +67,7 @@ public class PrimitiveTests {
 
   @Test
   public void testParserSpecializerWithCustomSpecializer() {
-    Specializer<LangContext, ExprNode, String> s = ps.getParserSpecializer("++", null);
+    Specializer<ExprNode, String> s = ps.getParserSpecializer("++", null);
     assertNotNull(s);
 
     assertEquals("AddWithSpecializerNodeFactory", s.getName());
@@ -79,8 +78,8 @@ public class PrimitiveTests {
 
   @Test
   public void testExtraChild() {
-    Specializer<LangContext, ExprNode, String> s = ps.getParserSpecializer("addAbs", null);
-    ExprNode n = s.create(null, new ExprNode[1], null, null);
+    Specializer<ExprNode, String> s = ps.getParserSpecializer("addAbs", null);
+    ExprNode n = s.create(null, new ExprNode[1], null);
     assertTrue(n instanceof AddAbsNode);
 
     // Note: this is fragile, because it depends on the TruffleDSL node implementation strategy
@@ -90,7 +89,7 @@ public class PrimitiveTests {
 
   @Test
   public void testMatchForAddNode() {
-    Specializer<LangContext, ExprNode, String> s = ps.getEagerSpecializer("+", null, null);
+    Specializer<ExprNode, String> s = ps.getEagerSpecializer("+", null, null);
     assertTrue("Match unconditionally, because `null` for args",
         s.matches(null, new ExprNode[2]));
     assertFalse("Don't match, because double as arg",

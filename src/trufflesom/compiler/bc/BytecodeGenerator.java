@@ -232,7 +232,7 @@ public final class BytecodeGenerator {
       return;
     }
 
-    if (GlobalNode.isPotentiallyUnknown(global, mgenc.getUniverse())) {
+    if (GlobalNode.isPotentiallyUnknown(global)) {
       mgenc.markAccessingOuterScopes();
     }
     byte idx = mgenc.addLiteralIfAbsent(global, parser);

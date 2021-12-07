@@ -8,7 +8,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 import trufflesom.interpreter.SArguments;
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 import trufflesom.primitives.basics.SystemPrims.PrintStackTracePrim;
@@ -23,9 +22,8 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
   private final DispatchGuard guard;
 
   public CachedDnuNode(final SClass rcvrClass, final DispatchGuard guard,
-      final SSymbol selector, final AbstractDispatchNode nextInCache,
-      final Universe universe) {
-    super(getDnuCallTarget(rcvrClass, universe), nextInCache);
+      final SSymbol selector, final AbstractDispatchNode nextInCache) {
+    super(getDnuCallTarget(rcvrClass), nextInCache);
     this.selector = selector;
     this.guard = guard;
   }
@@ -45,7 +43,7 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
     }
   }
 
-  public static CallTarget getDnuCallTarget(final SClass rcvrClass, final Universe universe) {
+  public static CallTarget getDnuCallTarget(final SClass rcvrClass) {
     return rcvrClass.lookupInvokable(
         symbolFor("doesNotUnderstand:arguments:")).getCallTarget();
   }
@@ -55,7 +53,7 @@ public final class CachedDnuNode extends AbstractCachedDispatchNode {
       CompilerDirectives.transferToInterpreter();
       PrintStackTracePrim.printStackTrace(0, getSourceSection());
       Universe.errorPrintln("Lookup of " + selector + " failed in "
-          + Types.getClassOf(rcvr, SomLanguage.getCurrentContext()).getName().getString());
+          + Types.getClassOf(rcvr).getName().getString());
     }
 
     Object[] argsArr = new Object[] {

@@ -7,7 +7,6 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.nodes.WithSource;
 import bd.primitives.Primitive.NoChild;
-import bd.primitives.nodes.WithContext;
 import bd.settings.VmSettings;
 
 
@@ -15,26 +14,22 @@ import bd.settings.VmSettings;
  * A Specializer defines when a node can be used as a eager primitive, how
  * it is to be instantiated, and acts as factory for them.
  *
- * @param <Context> the type of the context object
  * @param <ExprT> the root type of expressions used by the language
  * @param <Id> the type of the identifiers used for mapping to primitives, typically some form
  *          of interned string construct
  */
-public class Specializer<Context, ExprT, Id> {
+public class Specializer<ExprT, Id> {
   protected final Primitive          prim;
   protected final NodeFactory<ExprT> fact;
 
   private final NodeFactory<? extends ExprT> extraChildFactory;
 
-  private final int     extraArity;
-  private final boolean requiresContext;
+  private final int extraArity;
 
   @SuppressWarnings("unchecked")
   public Specializer(final Primitive prim, final NodeFactory<ExprT> fact) {
     this.prim = prim;
     this.fact = fact;
-
-    this.requiresContext = WithContext.class.isAssignableFrom(fact.getNodeClass());
 
     if (prim.extraChild() == NoChild.class) {
       extraChildFactory = null;
@@ -97,7 +92,7 @@ public class Specializer<Context, ExprT, Id> {
 
   @SuppressWarnings("unchecked")
   public ExprT create(final Object[] arguments, final ExprT[] argNodes,
-      final SourceSection section, final Context context) {
+      final SourceSection section) {
     assert arguments == null || arguments.length >= argNodes.length;
     int numArgs = numberOfNodeConstructorArguments(argNodes);
 
@@ -126,9 +121,6 @@ public class Specializer<Context, ExprT, Id> {
 
     ExprT node = fact.createNode(ctorArgs);
     ((WithSource) node).initialize(section);
-    if (requiresContext) {
-      ((WithContext<?, Context>) node).initialize(context);
-    }
     return node;
   }
 }

@@ -83,9 +83,8 @@ import trufflesom.vmobjects.SSymbol;
 
 public abstract class Parser<MGenC extends MethodGenerationContext> {
 
-  protected final Universe universe;
-  protected final Lexer    lexer;
-  private final Source     source;
+  protected final Lexer lexer;
+  private final Source  source;
 
   protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
@@ -206,9 +205,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   protected Parser(final String content, final Source source,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe,
-      final Universe universe) {
-    this.universe = universe;
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
     this.source = source;
     this.structuralProbe = structuralProbe;
 
@@ -231,7 +228,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     cgenc.setName(symbolFor(text));
     SourceCoordinate coord = getCoordinate();
     if ("Object".equals(text)) {
-      universe.selfSource = getSource(coord);
+      Universe.selfSource = getSource(coord);
     }
 
     expect(Identifier);
@@ -282,7 +279,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
     // Load the super class, if it is not nil (break the dependency cycle)
     if (superName != symNil) {
-      SClass superClass = universe.loadClass(superName);
+      SClass superClass = Universe.loadClass(superName);
       if (superClass == null) {
         throw new ParseError("Super class " + superName.getString() +
             " could not be loaded", NONE, this);
@@ -416,8 +413,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   private void pattern(final MGenC mgenc) throws ProgramDefinitionError {
-    assert universe.selfSource != null;
-    mgenc.addArgumentIfAbsent(symSelf, universe.selfSource);
+    assert Universe.selfSource != null;
+    mgenc.addArgumentIfAbsent(symSelf, Universe.selfSource);
     switch (sym) {
       case Identifier:
       case Primitive:
@@ -666,7 +663,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
 
     // and finally assume it is a global
-    return GlobalNode.create(variableName, universe, mgenc).initialize(source);
+    return GlobalNode.create(variableName, mgenc).initialize(source);
   }
 
   private void getSymbolFromLexer() {

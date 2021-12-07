@@ -43,7 +43,7 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
-import trufflesom.vm.Universe;
+import trufflesom.vm.Globals;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -56,9 +56,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private final InlinableNodes<SSymbol> inlinableNodes;
 
   public ParserAst(final String content, final Source source,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe,
-      final Universe universe) {
-    super(content, source, structuralProbe, universe);
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
+    super(content, source, structuralProbe);
     this.inlinableNodes = Primitives.inlinableNodes;
   }
 
@@ -105,7 +104,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   private ExpressionNode createSequenceNode(final SourceCoordinate coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return GlobalNode.create(symNil, universe, null).initialize(getSource(coord));
+      return GlobalNode.create(symNil, null).initialize(getSource(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
@@ -163,7 +162,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return mgenc.getLocalWriteNode(variable, exp, source);
     }
 
-    FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, universe, source);
+    FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, source);
 
     if (fieldWrite != null) {
       return fieldWrite;
@@ -235,9 +234,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), selector, args, source);
     }
-    ExpressionNode msg =
-        MessageSendNode.create(selector, args, source, universe);
-    return msg;
+    return MessageSendNode.create(selector, args, source);
   }
 
   protected ExpressionNode binaryMessage(final MethodGenerationContext mgenc,
@@ -268,7 +265,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         return IntIncrementNodeGen.create(receiver);
       }
     }
-    return MessageSendNode.create(msg, args, source, universe);
+    return MessageSendNode.create(msg, args, source);
   }
 
   protected ExpressionNode keywordMessage(final MethodGenerationContext mgenc,
@@ -301,7 +298,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, source);
     }
-    return MessageSendNode.create(msg, args, source, universe);
+    return MessageSendNode.create(msg, args, source);
   }
 
   private ExpressionNode formula(final MethodGenerationContext mgenc)
@@ -387,7 +384,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         return literalDouble(isNegativeNumber());
       case Identifier:
         expect(Identifier);
-        return universe.getGlobal(symbolFor(text));
+        return Globals.getGlobal(symbolFor(text));
       default:
         throw new ParseError("Could not parse literal array value", NONE, this);
     }
@@ -424,9 +421,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod, universe).initialize(getSource(coord));
+          return new BlockNodeWithContext(blockMethod).initialize(getSource(coord));
         } else {
-          return new BlockNode(blockMethod, universe).initialize(getSource(coord));
+          return new BlockNode(blockMethod).initialize(getSource(coord));
         }
       }
       default: {

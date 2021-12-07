@@ -28,7 +28,7 @@ import trufflesom.vm.Universe.SomExit;
     defaultMimeType = SomLanguage.MIME_TYPE,
     characterMimeTypes = SomLanguage.MIME_TYPE)
 @ProvidedTags({RootTag.class})
-public class SomLanguage extends TruffleLanguage<Universe> {
+public class SomLanguage extends TruffleLanguage<SomLanguage> {
 
   public static final String MIME_TYPE = "application/x-som-smalltalk";
   public static final String LANG_ID   = "som";
@@ -42,37 +42,30 @@ public class SomLanguage extends TruffleLanguage<Universe> {
   @Option(help = "Test Selector", category = OptionCategory.USER) //
   protected static final OptionKey<String> TEST_SELECTOR = new OptionKey<>("");
 
-  @CompilationFinal private Universe universe;
-
   @CompilationFinal(dimensions = 1) private String[] args;
 
   private String classPath;
   private String testClass;
   private String testSelector;
 
-  public Universe getUniverse() {
-    return universe;
-  }
-
   @Override
-  protected Universe createContext(final Env env) {
+  protected SomLanguage createContext(final Env env) {
     OptionValues config = env.getOptions();
     args = env.getApplicationArguments();
     classPath = config.get(CLASS_PATH);
     testClass = config.get(TEST_CLASS);
     testSelector = config.get(TEST_SELECTOR);
 
-    universe = new Universe(this);
-    return universe;
+    return this;
   }
 
   @Override
-  protected void initializeContext(final Universe universe) throws Exception {
+  protected void initializeContext(final SomLanguage lang) throws Exception {
     current = this;
   }
 
   @Override
-  protected void disposeContext(final Universe universe) {
+  protected void disposeContext(final SomLanguage lang) {
     current = null;
   }
 
@@ -119,11 +112,11 @@ public class SomLanguage extends TruffleLanguage<Universe> {
       if (testSelector != null && !testSelector.equals("")) {
         assert classPath != null;
         assert testClass != null;
-        universe.setupClassPath(classPath);
-        return universe.interpret(testClass, testSelector);
+        Universe.setupClassPath(classPath);
+        return Universe.interpret(testClass, testSelector);
       } else {
         try {
-          return universe.interpret(args);
+          return Universe.interpret(args);
         } catch (IllegalStateException e) {
           Universe.errorPrintln("Runtime Error: " + e.getMessage());
           return 1;
@@ -194,10 +187,6 @@ public class SomLanguage extends TruffleLanguage<Universe> {
       // START source to trigger execution.
       throw new NotYetImplementedException();
     }
-  }
-
-  public static Universe getCurrentContext() {
-    return current.getUniverse();
   }
 
   @Override

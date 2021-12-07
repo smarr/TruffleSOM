@@ -19,15 +19,15 @@ public final class Primitive extends Invokable {
 
   public Primitive(final String name, final SourceSection sourceSection,
       final ExpressionNode primitive, final FrameDescriptor frameDescriptor,
-      final ExpressionNode uninitialized, final SomLanguage lang) {
-    super(name, sourceSection, frameDescriptor, primitive, uninitialized, lang);
+      final ExpressionNode uninitialized) {
+    super(name, sourceSection, frameDescriptor, primitive, uninitialized);
   }
 
   @Override
   public Node deepCopy() {
     assert getFrameDescriptor().getSize() == 0 : "Make sure there are no slots to be taken care off";
     return new Primitive(name, sourceSection, NodeUtil.cloneNode(uninitializedBody),
-        getFrameDescriptor(), uninitializedBody, getLanguage(SomLanguage.class));
+        getFrameDescriptor(), uninitializedBody);
   }
 
   @Override

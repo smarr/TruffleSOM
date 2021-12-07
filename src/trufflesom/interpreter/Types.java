@@ -21,12 +21,17 @@
  */
 package trufflesom.interpreter;
 
+import static trufflesom.vm.Classes.doubleClass;
+import static trufflesom.vm.Classes.falseClass;
+import static trufflesom.vm.Classes.integerClass;
+import static trufflesom.vm.Classes.stringClass;
+import static trufflesom.vm.Classes.trueClass;
+
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SClass;
 
@@ -38,24 +43,24 @@ import trufflesom.vmobjects.SClass;
     Object[].class}) // Object[] is only for argument passing
 public class Types {
 
-  public static SClass getClassOf(final Object obj, final Universe universe) {
+  public static SClass getClassOf(final Object obj) {
     CompilerAsserts.neverPartOfCompilation();
     assert obj != null;
 
     if (obj instanceof SAbstractObject) {
-      return ((SAbstractObject) obj).getSOMClass(universe);
+      return ((SAbstractObject) obj).getSOMClass();
     } else if (obj instanceof Boolean) {
       if ((boolean) obj) {
-        return universe.getTrueClass();
+        return trueClass;
       } else {
-        return universe.getFalseClass();
+        return falseClass;
       }
     } else if (obj instanceof Long || obj instanceof BigInteger) {
-      return universe.integerClass;
+      return integerClass;
     } else if (obj instanceof String) {
-      return universe.stringClass;
+      return stringClass;
     } else if (obj instanceof Double) {
-      return universe.doubleClass;
+      return doubleClass;
     }
 
     TruffleCompiler.transferToInterpreter("Should not be reachable");

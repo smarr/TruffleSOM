@@ -20,7 +20,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   private byte[] methodToBytecodes(final String source) {
     Source s = SomLanguage.getSyntheticSource(source, "test");
 
-    ParserBc parser = new ParserBc(source, s, probe, universe);
+    ParserBc parser = new ParserBc(source, s, probe);
     try {
       parser.method(mgenc);
     } catch (ProgramDefinitionError e) {

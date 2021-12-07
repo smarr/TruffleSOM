@@ -42,9 +42,9 @@ public final class Method extends Invokable {
 
   public Method(final String name, final SourceSection sourceSection,
       final ExpressionNode expressions, final LexicalScope currentLexicalScope,
-      final ExpressionNode uninitialized, final SomLanguage lang) {
+      final ExpressionNode uninitialized) {
     super(name, sourceSection, currentLexicalScope.getFrameDescriptor(), expressions,
-        uninitialized, lang);
+        uninitialized);
     this.currentLexicalScope = currentLexicalScope;
     currentLexicalScope.setMethod(this);
   }
@@ -96,8 +96,7 @@ public final class Method extends Invokable {
       uninit = uninitializedBody;
     }
 
-    Method clone = new Method(name, sourceSection, adaptedBody, adaptedScope, uninit,
-        getLanguage(SomLanguage.class));
+    Method clone = new Method(name, sourceSection, adaptedBody, adaptedScope, uninit);
     adaptedScope.setMethod(clone);
     return clone;
   }

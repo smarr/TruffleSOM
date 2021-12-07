@@ -40,6 +40,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.compiler.Field;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
+import trufflesom.vm.Classes;
 import trufflesom.vm.constants.Nil;
 
 
@@ -62,6 +63,22 @@ public final class SClass extends SObject {
     super(clazz);
     invokablesTable = null;
     this.superclass = Nil.nilObject;
+  }
+
+  public void resetSystemClass() {
+    invokablesTable = null;
+    superclass = Nil.nilObject;
+    layoutForInstances = new ObjectLayout(0, this);
+    setClass(new SClass(0));
+    getSOMClass().setClass(Classes.metaclassClass);
+  }
+
+  public void resetMetaclassClass() {
+    invokablesTable = null;
+    superclass = Nil.nilObject;
+    layoutForInstances = new ObjectLayout(0, this);
+    setClass(new SClass(0));
+    getSOMClass().setClass(this);
   }
 
   public SObject getSuperClass() {
@@ -187,7 +204,7 @@ public final class SClass extends SObject {
 
     // Traverse the super class chain by calling lookup on the super class
     if (hasSuperClass()) {
-      invokable = ((SClass) getSuperClass()).lookupInvokable(selector);
+      invokable = ((SClass) superclass).lookupInvokable(selector);
       if (invokable != null) {
         if (invokablesTable == null) {
           invokablesTable = new LinkedHashMap<>();

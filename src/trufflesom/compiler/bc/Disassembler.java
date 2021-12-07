@@ -68,7 +68,6 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.SOMNode;
@@ -233,9 +232,8 @@ public class Disassembler {
           Universe.errorPrint("(index: " + idx + ")");
 
           if (m != null) {
-            Universe u = SomLanguage.getCurrent().getUniverse();
             Object constant = m.getConstant(idx);
-            SClass constantClass = Types.getClassOf(constant, u);
+            SClass constantClass = Types.getClassOf(constant);
             Universe.errorPrint(" value: "
                 + "(" + constantClass.getName().toString() + ") "
                 + constant.toString());

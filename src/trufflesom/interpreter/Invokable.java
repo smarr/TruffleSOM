@@ -25,8 +25,8 @@ public abstract class Invokable extends RootNode {
   protected Invokable(final String name, final SourceSection sourceSection,
       final FrameDescriptor frameDescriptor,
       final ExpressionNode expressionOrSequence,
-      final ExpressionNode uninitialized, final SomLanguage lang) {
-    super(lang, frameDescriptor);
+      final ExpressionNode uninitialized) {
+    super(SomLanguage.getCurrent(), frameDescriptor);
     this.name = name;
     this.sourceSection = sourceSection;
     this.uninitializedBody = uninitialized;

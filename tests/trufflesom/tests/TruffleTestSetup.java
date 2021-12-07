@@ -27,23 +27,16 @@ import trufflesom.vmobjects.SSymbol;
 public class TruffleTestSetup {
   protected final ClassGenerationContext cgenc;
 
-  protected final Universe universe;
-
   protected final Source sourceForTests;
 
   protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe;
 
   protected int fieldCount;
 
-  private static Universe getUniverse() {
-    return SomLanguage.getCurrent().getUniverse();
-  }
-
   protected TruffleTestSetup() {
-    universe = getUniverse();
     probe = null;
 
-    cgenc = new ClassGenerationContext(universe, null);
+    cgenc = new ClassGenerationContext(null);
     cgenc.setName(symbolFor("Test"));
 
     sourceForTests = SomLanguage.getSyntheticSource("dummy-source", "test");
@@ -58,9 +51,8 @@ public class TruffleTestSetup {
     Context context = builder.build();
     context.eval(SomLanguage.INIT);
 
-    Universe u = getUniverse();
     Source s = SomLanguage.getSyntheticSource("self", "self");
-    u.selfSource = s.createSection(1);
+    Universe.selfSource = s.createSection(1);
   }
 
   protected void addField(final String name) {

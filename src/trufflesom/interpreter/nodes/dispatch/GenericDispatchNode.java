@@ -10,7 +10,6 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import trufflesom.interpreter.SArguments;
 import trufflesom.primitives.reflection.ObjectPrims.ClassPrim;
 import trufflesom.primitives.reflection.ObjectPrimsFactory.ClassPrimFactory;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -22,14 +21,11 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
   @Child private ClassPrim        classNode;
 
   protected final SSymbol selector;
-  private final Universe  universe;
 
-  public GenericDispatchNode(final SSymbol selector, final Universe universe) {
+  public GenericDispatchNode(final SSymbol selector) {
     this.selector = selector;
-    this.universe = universe;
     call = Truffle.getRuntime().createIndirectCallNode();
     classNode = ClassPrimFactory.create(null);
-    classNode.initialize(universe);
   }
 
   @TruffleBoundary
@@ -50,7 +46,7 @@ public final class GenericDispatchNode extends AbstractDispatchNode {
       // Won't use DNU caching here, because it is already a megamorphic node
       SArray argumentsArray = SArguments.getArgumentsWithoutReceiver(arguments);
       args = new Object[] {arguments[0], selector, argumentsArray};
-      target = CachedDnuNode.getDnuCallTarget(rcvrClass, universe);
+      target = CachedDnuNode.getDnuCallTarget(rcvrClass);
     }
     return call.call(target, args);
   }
