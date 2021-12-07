@@ -36,6 +36,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.vm.Classes;
 import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -197,7 +198,7 @@ public final class ClassGenerationContext {
     String ccname = name.getString() + " class";
 
     // Allocate the class of the resulting class
-    SClass resultClass = universe.newClass(universe.metaclassClass);
+    SClass resultClass = universe.newClass(Classes.metaclassClass);
 
     // Initialize the class of the resulting class
     resultClass.setInstanceFields(classFields);

@@ -1,5 +1,13 @@
 package trufflesom.primitives.reflection;
 
+import static trufflesom.vm.Classes.arrayClass;
+import static trufflesom.vm.Classes.doubleClass;
+import static trufflesom.vm.Classes.integerClass;
+import static trufflesom.vm.Classes.methodClass;
+import static trufflesom.vm.Classes.primitiveClass;
+import static trufflesom.vm.Classes.stringClass;
+import static trufflesom.vm.Classes.symbolClass;
+
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -127,7 +135,7 @@ public final class ObjectPrims {
 
     @Specialization
     public final SClass getSomClass(final SArray receiver) {
-      return universe.arrayClass;
+      return arrayClass;
     }
 
     @Specialization
@@ -142,17 +150,17 @@ public final class ObjectPrims {
 
     @Specialization
     public final SClass getSomClass(final SMethod receiver) {
-      return universe.methodClass;
+      return methodClass;
     }
 
     @Specialization
     public final SClass getSomClass(final SPrimitive receiver) {
-      return universe.primitiveClass;
+      return primitiveClass;
     }
 
     @Specialization
     public final SClass getSomClass(final SSymbol receiver) {
-      return universe.symbolClass;
+      return symbolClass;
     }
 
     @Specialization(guards = "receiver")
@@ -167,23 +175,23 @@ public final class ObjectPrims {
 
     @Specialization
     public final SClass getSomClass(final long receiver) {
-      return universe.integerClass;
+      return integerClass;
     }
 
     @Specialization
     public final SClass getSomClass(final BigInteger receiver) {
-      return universe.integerClass;
+      return integerClass;
     }
 
     @Specialization
     public final SClass getSomClass(final String receiver) {
-      return universe.stringClass;
+      return stringClass;
     }
 
     @TruffleBoundary
     @Specialization
     public final SClass getSomClass(final double receiver) {
-      return universe.doubleClass;
+      return doubleClass;
     }
   }
 

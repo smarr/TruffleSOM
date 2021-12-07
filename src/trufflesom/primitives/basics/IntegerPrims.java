@@ -2,20 +2,20 @@ package trufflesom.primitives.basics;
 
 import java.math.BigInteger;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 import bd.primitives.Primitive;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
-import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryMsgExprNode;
 import trufflesom.primitives.arithmetic.ArithmeticPrim;
+import trufflesom.vm.Classes;
 import trufflesom.vm.SymbolTable;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
@@ -80,15 +80,10 @@ public abstract class IntegerPrims {
     }
   }
 
+  @ImportStatic(Classes.class)
+  @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "fromString:", classSide = true)
-  public abstract static class FromStringPrim extends BinarySystemOperation {
-    @CompilationFinal protected SClass integerClass;
-
-    @Override
-    public BinarySystemOperation initialize(final Universe universe) {
-      this.integerClass = universe.integerClass;
-      return this;
-    }
+  public abstract static class FromStringPrim extends BinaryExpressionNode {
 
     @TruffleBoundary
     @Specialization(guards = "receiver == integerClass")

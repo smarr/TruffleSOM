@@ -25,6 +25,19 @@
 
 package trufflesom.vm;
 
+import static trufflesom.vm.Classes.arrayClass;
+import static trufflesom.vm.Classes.booleanClass;
+import static trufflesom.vm.Classes.classClass;
+import static trufflesom.vm.Classes.doubleClass;
+import static trufflesom.vm.Classes.integerClass;
+import static trufflesom.vm.Classes.metaclassClass;
+import static trufflesom.vm.Classes.methodClass;
+import static trufflesom.vm.Classes.newSystemClass;
+import static trufflesom.vm.Classes.nilClass;
+import static trufflesom.vm.Classes.objectClass;
+import static trufflesom.vm.Classes.primitiveClass;
+import static trufflesom.vm.Classes.stringClass;
+import static trufflesom.vm.Classes.symbolClass;
 import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
@@ -163,23 +176,6 @@ public final class Universe implements IdProvider<SSymbol> {
     this.alreadyInitialized = false;
 
     this.blockClasses = new SClass[4];
-
-    // Allocate the Metaclass classes
-    metaclassClass = newMetaclassClass();
-
-    // Allocate the rest of the system classes
-
-    objectClass = newSystemClass();
-    nilClass = newSystemClass();
-    classClass = newSystemClass();
-    arrayClass = newSystemClass();
-    symbolClass = newSystemClass();
-    methodClass = newSystemClass();
-    integerClass = newSystemClass();
-    primitiveClass = newSystemClass();
-    stringClass = newSystemClass();
-    doubleClass = newSystemClass();
-    booleanClass = newSystemClass();
 
     this.primitives = new Primitives(this);
   }
@@ -449,30 +445,6 @@ public final class Universe implements IdProvider<SSymbol> {
     return new SClass(classClass);
   }
 
-  @TruffleBoundary
-  private static SClass newMetaclassClass() {
-    // Allocate the metaclass classes
-    SClass result = new SClass(0);
-    result.setClass(new SClass(0));
-
-    // Setup the metaclass hierarchy
-    result.getSOMClass(null).setClass(result);
-    return result;
-  }
-
-  @TruffleBoundary
-  private SClass newSystemClass() {
-    // Allocate the new system class
-    SClass systemClass = new SClass(0);
-
-    // Setup the metaclass hierarchy
-    systemClass.setClass(new SClass(0));
-    systemClass.getSOMClass(this).setClass(metaclassClass);
-
-    // Return the freshly allocated system class
-    return systemClass;
-  }
-
   private void initializeSystemClass(final SClass systemClass, final SClass superClass,
       final String name) {
     // Initialize the superclass hierarchy
@@ -706,21 +678,6 @@ public final class Universe implements IdProvider<SSymbol> {
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     structuralProbe = probe;
   }
-
-  public final SClass objectClass;
-  public final SClass classClass;
-  public final SClass metaclassClass;
-
-  public final SClass nilClass;
-  public final SClass integerClass;
-  public final SClass arrayClass;
-  public final SClass methodClass;
-  public final SClass symbolClass;
-  public final SClass primitiveClass;
-  public final SClass stringClass;
-  public final SClass doubleClass;
-
-  public final SClass booleanClass;
 
   @CompilationFinal private SObject systemObject;
 

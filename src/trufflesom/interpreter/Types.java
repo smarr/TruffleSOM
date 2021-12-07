@@ -21,6 +21,10 @@
  */
 package trufflesom.interpreter;
 
+import static trufflesom.vm.Classes.doubleClass;
+import static trufflesom.vm.Classes.integerClass;
+import static trufflesom.vm.Classes.stringClass;
+
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerAsserts;
@@ -51,11 +55,11 @@ public class Types {
         return universe.getFalseClass();
       }
     } else if (obj instanceof Long || obj instanceof BigInteger) {
-      return universe.integerClass;
+      return integerClass;
     } else if (obj instanceof String) {
-      return universe.stringClass;
+      return stringClass;
     } else if (obj instanceof Double) {
-      return universe.doubleClass;
+      return doubleClass;
     }
 
     TruffleCompiler.transferToInterpreter("Should not be reachable");

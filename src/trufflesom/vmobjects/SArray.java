@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import com.oracle.truffle.api.CompilerDirectives;
 
+import trufflesom.vm.Classes;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 
@@ -300,7 +301,7 @@ public final class SArray extends SAbstractObject {
 
   @Override
   public SClass getSOMClass(final Universe universe) {
-    return universe.arrayClass;
+    return Classes.arrayClass;
   }
 
   public Object debugGetObject(final int i) {
