@@ -78,6 +78,12 @@ public class Classes {
     return systemClass;
   }
 
+  public static SClass getBlockClass(final int numberOfArguments) {
+    SClass result = blockClasses[numberOfArguments];
+    assert result != null || numberOfArguments == 0;
+    return result;
+  }
+
   public static void reset() {
     metaclassClass.resetMetaclassClass();
     objectClass.resetSystemClass();
@@ -98,5 +104,6 @@ public class Classes {
     Arrays.fill(blockClasses, null);
 
     Globals.reset();
+    Universe.reset();
   }
 }

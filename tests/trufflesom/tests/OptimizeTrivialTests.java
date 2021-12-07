@@ -74,11 +74,11 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
 
     try {
       if (VmSettings.UseAstInterp) {
-        ParserAst parser = new ParserAst(source, s, null, universe);
+        ParserAst parser = new ParserAst(source, s, null);
         ExpressionNode body = parser.method(mgenc);
         ivkbl = mgenc.assemble(body, section, section);
       } else {
-        ParserBc parser = new ParserBc(source, s, probe, universe);
+        ParserBc parser = new ParserBc(source, s, probe);
         parser.method((BytecodeMethodGenContext) mgenc);
         ivkbl = mgenc.assemble(null, section, section);
       }
@@ -96,11 +96,11 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
 
     try {
       if (VmSettings.UseAstInterp) {
-        ParserAst parser = new ParserAst(source, s, null, universe);
+        ParserAst parser = new ParserAst(source, s, null);
         ExpressionNode body = parser.nestedBlock(bgenc);
         ivkbl = bgenc.assemble(body, section, section);
       } else {
-        ParserBc parser = new ParserBc(source, s, probe, universe);
+        ParserBc parser = new ParserBc(source, s, probe);
         parser.nestedBlock((BytecodeMethodGenContext) bgenc);
         ivkbl = bgenc.assemble(null, section, section);
       }

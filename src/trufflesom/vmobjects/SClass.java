@@ -204,7 +204,7 @@ public final class SClass extends SObject {
 
     // Traverse the super class chain by calling lookup on the super class
     if (hasSuperClass()) {
-      invokable = ((SClass) getSuperClass()).lookupInvokable(selector);
+      invokable = ((SClass) superclass).lookupInvokable(selector);
       if (invokable != null) {
         if (invokablesTable == null) {
           invokablesTable = new LinkedHashMap<>();

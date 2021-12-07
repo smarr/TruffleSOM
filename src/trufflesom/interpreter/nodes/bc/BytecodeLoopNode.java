@@ -133,8 +133,8 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldN
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.vm.Classes;
 import trufflesom.vm.NotYetImplementedException;
-import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
@@ -157,23 +157,20 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
   @Children private final Node[] quickenedField;
 
-  private final int      numLocals;
-  private final int      maxStackDepth;
-  private final Universe universe;
+  private final int numLocals;
+  private final int maxStackDepth;
 
   private final FrameSlot frameOnStackMarker;
 
   public BytecodeLoopNode(final byte[] bytecodes, final int numLocals,
       final FrameSlot[] localsAndOuters, final Object[] literals, final int maxStackDepth,
-      final FrameSlot frameOnStackMarker, final BackJump[] inlinedLoops,
-      final Universe universe) {
+      final FrameSlot frameOnStackMarker, final BackJump[] inlinedLoops) {
     this.bytecodesField = bytecodes;
     this.numLocals = numLocals;
     this.localsAndOutersField = localsAndOuters;
     this.literalsAndConstantsField = literals;
     this.maxStackDepth = maxStackDepth;
     this.inlinedLoopsField = inlinedLoops;
-    this.universe = universe;
 
     this.frameOnStackMarker = frameOnStackMarker;
 
@@ -184,7 +181,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
   public Node deepCopy() {
     return new BytecodeLoopNode(
         bytecodesField.clone(), numLocals, localsAndOutersField, literalsAndConstantsField,
-        maxStackDepth, frameOnStackMarker, inlinedLoopsField, universe).initialize(
+        maxStackDepth, frameOnStackMarker, inlinedLoopsField).initialize(
             sourceSection);
   }
 
@@ -390,7 +387,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           stackPointer += 1;
           stack[stackPointer] = new SBlock(blockMethod,
-              universe.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
+              Classes.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
           break;
         }
 
@@ -399,7 +396,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
           stackPointer += 1;
           stack[stackPointer] = new SBlock(blockMethod,
-              universe.getBlockClass(blockMethod.getNumberOfArguments()), null);
+              Classes.getBlockClass(blockMethod.getNumberOfArguments()), null);
           break;
         }
 
@@ -1035,17 +1032,16 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     boolean done = false;
 
     if (numberOfArguments <= 3) {
-      Primitives prims = universe.getPrimitives();
       ExpressionNode[] dummyArgs = new ExpressionNode[numberOfArguments];
       Arrays.fill(dummyArgs, dummyNode);
 
-      Specializer<Universe, ExpressionNode, SSymbol> specializer =
-          prims.getEagerSpecializer(signature, callArgs, dummyArgs);
+      Specializer<ExpressionNode, SSymbol> specializer =
+          Primitives.Current.getEagerSpecializer(signature, callArgs, dummyArgs);
 
       if (specializer != null) {
         done = true;
         ExpressionNode quick =
-            specializer.create(callArgs, dummyArgs, sourceSection, universe);
+            specializer.create(callArgs, dummyArgs, sourceSection);
 
         if (numberOfArguments == 1) {
           UnaryExpressionNode q = (UnaryExpressionNode) quick;
@@ -1080,7 +1076,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
     if (!done) {
       GenericMessageSendNode quick =
-          MessageSendNode.createGeneric(signature, null, sourceSection, universe);
+          MessageSendNode.createGeneric(signature, null, sourceSection);
       quickenBytecode(bytecodeIndex, Q_SEND, quick);
 
       result = quick.doPreEvaluated(frame, callArgs);

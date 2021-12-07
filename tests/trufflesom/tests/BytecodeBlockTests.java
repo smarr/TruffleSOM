@@ -39,7 +39,7 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   private byte[] blockToBytecodes(final String source) {
     Source s = SomLanguage.getSyntheticSource(source, "test");
 
-    ParserBc parser = new ParserBc(source, s, probe, universe);
+    ParserBc parser = new ParserBc(source, s, probe);
     try {
       parser.nestedBlock(bgenc);
     } catch (ProgramDefinitionError e) {

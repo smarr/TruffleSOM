@@ -8,19 +8,18 @@ import bd.testsetup.AddAbsNodeFactory;
 import bd.testsetup.AddNodeFactory;
 import bd.testsetup.AddWithSpecializerNodeFactory;
 import bd.testsetup.ExprNode;
-import bd.testsetup.LangContext;
 import bd.testsetup.StringId;
 
 
-public class Primitives extends PrimitiveLoader<LangContext, ExprNode, String> {
+public class Primitives extends PrimitiveLoader<ExprNode, String> {
   protected Primitives() {
     super(new StringId());
     initialize();
   }
 
   @Override
-  protected List<Specializer<LangContext, ExprNode, String>> getSpecializers() {
-    List<Specializer<LangContext, ExprNode, String>> allSpecializers = new ArrayList<>();
+  protected List<Specializer<ExprNode, String>> getSpecializers() {
+    List<Specializer<ExprNode, String>> allSpecializers = new ArrayList<>();
 
     add(allSpecializers, AddNodeFactory.getInstance());
     add(allSpecializers, AddWithSpecializerNodeFactory.getInstance());
@@ -31,8 +30,7 @@ public class Primitives extends PrimitiveLoader<LangContext, ExprNode, String> {
   }
 
   @Override
-  protected void registerPrimitive(
-      final Specializer<LangContext, ExprNode, String> specializer) {
+  protected void registerPrimitive(final Specializer<ExprNode, String> specializer) {
     /* not needed for testing */
   }
 }

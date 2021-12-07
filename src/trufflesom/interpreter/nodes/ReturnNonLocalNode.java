@@ -33,7 +33,6 @@ import trufflesom.compiler.Variable.Internal;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SArguments;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
 
@@ -44,22 +43,20 @@ public final class ReturnNonLocalNode extends ContextualNode {
   private final BranchProfile   blockEscaped;
   private final Internal        onStackMarkerVar;
   private final FrameSlot       frameOnStackMarker;
-  private final Universe        universe;
 
   public ReturnNonLocalNode(final ExpressionNode expression, final Internal onStackMarkerVar,
-      final int outerSelfContextLevel, final Universe universe) {
+      final int outerSelfContextLevel) {
     super(outerSelfContextLevel);
     assert outerSelfContextLevel > 0;
     this.expression = expression;
     this.blockEscaped = BranchProfile.create();
     this.onStackMarkerVar = onStackMarkerVar;
     this.frameOnStackMarker = onStackMarkerVar.getSlot();
-    this.universe = universe;
   }
 
   public ReturnNonLocalNode(final ReturnNonLocalNode node,
       final FrameSlot inlinedFrameOnStack) {
-    this(node.expression, node.onStackMarkerVar, node.contextLevel, node.universe);
+    this(node.expression, node.onStackMarkerVar, node.contextLevel);
   }
 
   @Override
@@ -89,8 +86,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
       if (se.contextLevel == 0) {
         node = new ReturnLocalNode(expression, (Internal) se.var);
       } else {
-        node = new ReturnNonLocalNode(
-            expression, (Internal) se.var, se.contextLevel, universe);
+        node = new ReturnNonLocalNode(expression, (Internal) se.var, se.contextLevel);
       }
       node.initialize(sourceSection);
       replace(node);

@@ -63,7 +63,7 @@ public class AstInliningTests extends TruffleTestSetup {
   protected ExpressionNode parseMethod(final String source) {
     Source s = SomLanguage.getSyntheticSource(source, "test");
 
-    ParserAst parser = new ParserAst(source, s, null, universe);
+    ParserAst parser = new ParserAst(source, s, null);
     try {
       return parser.method(mgenc);
     } catch (ProgramDefinitionError e) {

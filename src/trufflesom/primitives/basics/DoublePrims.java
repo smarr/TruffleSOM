@@ -6,9 +6,8 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.UnarySystemOperation;
 import trufflesom.vm.Classes;
 import trufflesom.vmobjects.SClass;
 
@@ -36,7 +35,7 @@ public abstract class DoublePrims {
   @ImportStatic(Classes.class)
   @GenerateNodeFactory
   @Primitive(className = "Double", primitive = "PositiveInfinity", classSide = true)
-  public abstract static class PositiveInfinityPrim extends UnarySystemOperation {
+  public abstract static class PositiveInfinityPrim extends UnaryExpressionNode {
     @Specialization(guards = "receiver == doubleClass")
     public final double doSClass(final SClass receiver) {
       return Double.POSITIVE_INFINITY;
@@ -46,7 +45,7 @@ public abstract class DoublePrims {
   @ImportStatic(Classes.class)
   @GenerateNodeFactory
   @Primitive(className = "Double", primitive = "fromString:", classSide = true)
-  public abstract static class FromStringPrim extends BinarySystemOperation {
+  public abstract static class FromStringPrim extends BinaryExpressionNode {
 
     @TruffleBoundary
     @Specialization(guards = "receiver == doubleClass")

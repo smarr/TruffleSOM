@@ -13,7 +13,7 @@ import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.vm.Universe;
+import trufflesom.vm.Classes;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -24,11 +24,8 @@ public class BlockNode extends LiteralNode {
   protected final SMethod            blockMethod;
   @CompilationFinal protected SClass blockClass;
 
-  protected final Universe universe;
-
-  public BlockNode(final SMethod blockMethod, final Universe universe) {
+  public BlockNode(final SMethod blockMethod) {
     this.blockMethod = blockMethod;
-    this.universe = universe;
   }
 
   @Override
@@ -53,7 +50,7 @@ public class BlockNode extends LiteralNode {
   }
 
   protected void setBlockClass() {
-    blockClass = universe.getBlockClass(blockMethod.getNumberOfArguments());
+    blockClass = Classes.getBlockClass(blockMethod.getNumberOfArguments());
   }
 
   @Override
@@ -90,7 +87,7 @@ public class BlockNode extends LiteralNode {
   }
 
   protected BlockNode createNode(final SMethod adapted) {
-    return new BlockNode(adapted, universe).initialize(sourceSection);
+    return new BlockNode(adapted).initialize(sourceSection);
   }
 
   @Override
@@ -100,8 +97,8 @@ public class BlockNode extends LiteralNode {
 
   public static final class BlockNodeWithContext extends BlockNode {
 
-    public BlockNodeWithContext(final SMethod blockMethod, final Universe universe) {
-      super(blockMethod, universe);
+    public BlockNodeWithContext(final SMethod blockMethod) {
+      super(blockMethod);
     }
 
     @Override
@@ -124,7 +121,7 @@ public class BlockNode extends LiteralNode {
 
     @Override
     protected BlockNode createNode(final SMethod adapted) {
-      return new BlockNodeWithContext(adapted, universe).initialize(sourceSection);
+      return new BlockNodeWithContext(adapted).initialize(sourceSection);
     }
 
     @Override

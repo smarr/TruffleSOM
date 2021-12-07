@@ -9,7 +9,6 @@ import com.oracle.truffle.api.nodes.Node;
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SObject;
@@ -17,12 +16,10 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public final class UninitializedDispatchNode extends AbstractDispatchNode {
-  private final SSymbol  selector;
-  private final Universe universe;
+  private final SSymbol selector;
 
-  public UninitializedDispatchNode(final SSymbol selector, final Universe universe) {
+  public UninitializedDispatchNode(final SSymbol selector) {
     this.selector = selector;
-    this.universe = universe;
   }
 
   private AbstractDispatchNode specialize(final Object[] arguments) {
@@ -50,13 +47,12 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
       SClass rcvrClass = Types.getClassOf(rcvr);
       SInvokable method = rcvrClass.lookupInvokable(selector);
 
-      UninitializedDispatchNode newChainEnd =
-          new UninitializedDispatchNode(selector, universe);
+      UninitializedDispatchNode newChainEnd = new UninitializedDispatchNode(selector);
       DispatchGuard guard = DispatchGuard.create(rcvr);
 
       AbstractDispatchNode node;
       if (method == null) {
-        node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd, universe);
+        node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd);
       } else {
         if (method.isTrivial()) {
           PreevaluatedExpression expr = method.copyTrivialNode();
@@ -74,7 +70,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     // the chain is longer than the maximum defined by INLINE_CACHE_SIZE and
     // thus, this callsite is considered to be megaprophic, and we generalize
     // it.
-    GenericDispatchNode genericReplacement = new GenericDispatchNode(selector, universe);
+    GenericDispatchNode genericReplacement = new GenericDispatchNode(selector);
     GenericMessageSendNode sendNode = (GenericMessageSendNode) first.getParent();
     sendNode.replaceDispatchListHead(genericReplacement);
     return genericReplacement;

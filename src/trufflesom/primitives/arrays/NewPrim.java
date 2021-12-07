@@ -1,31 +1,28 @@
 package trufflesom.primitives.arrays;
 
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.nary.BinarySystemMsgOperation;
+import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.Classes;
 import trufflesom.vm.SymbolTable;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
 @ImportStatic(Classes.class)
+@GenerateNodeFactory
 @Primitive(className = "Array", primitive = "new:", selector = "new:", classSide = true,
     inParser = false, specializer = NewPrim.IsArrayClass.class)
-public abstract class NewPrim extends BinarySystemMsgOperation {
+public abstract class NewPrim extends BinaryMsgExprNode {
 
-  public static class IsArrayClass extends Specializer<Universe, ExpressionNode, SSymbol> {
-    @CompilationFinal private Universe universe;
+  public static class IsArrayClass extends Specializer<ExpressionNode, SSymbol> {
 
     public IsArrayClass(final Primitive prim, final NodeFactory<ExpressionNode> fact) {
       super(prim, fact);
@@ -33,10 +30,6 @@ public abstract class NewPrim extends BinarySystemMsgOperation {
 
     @Override
     public boolean matches(final Object[] args, final ExpressionNode[] argNodes) {
-      if (universe == null) {
-        CompilerDirectives.transferToInterpreterAndInvalidate();
-        universe = SomLanguage.getCurrentContext();
-      }
       return args[0] == Classes.arrayClass;
     }
   }

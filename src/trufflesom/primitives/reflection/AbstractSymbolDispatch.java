@@ -14,7 +14,6 @@ import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.primitives.arrays.ToArgumentsArrayNode;
 import trufflesom.primitives.arrays.ToArgumentsArrayNodeFactory;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
@@ -24,10 +23,8 @@ public abstract class AbstractSymbolDispatch extends Node {
   public static final int INLINE_CACHE_SIZE = 6;
 
   private final SourceSection sourceSection;
-  protected final Universe    universe;
 
-  public AbstractSymbolDispatch(final SourceSection source, final Universe universe) {
-    this.universe = universe;
+  public AbstractSymbolDispatch(final SourceSection source) {
     assert source != null;
     this.sourceSection = source;
   }
@@ -40,9 +37,8 @@ public abstract class AbstractSymbolDispatch extends Node {
   public abstract Object executeDispatch(VirtualFrame frame, Object receiver,
       SSymbol selector, Object argsArr);
 
-  protected final AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
-      final Universe universe) {
-    return MessageSendNode.createForPerformNodes(selector, sourceSection, universe);
+  protected final AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
+    return MessageSendNode.createForPerformNodes(selector, sourceSection);
   }
 
   public static final ToArgumentsArrayNode createArgArrayNode() {
@@ -54,7 +50,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doCachedWithoutArgArr(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("selector") final SSymbol cachedSelector,
-      @Cached("createForPerformNodes(selector, universe)") final AbstractMessageSendNode cachedSend) {
+      @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend) {
     Object[] arguments = {receiver};
 
     PreevaluatedExpression realCachedSend = cachedSend;
@@ -65,7 +61,7 @@ public abstract class AbstractSymbolDispatch extends Node {
   public Object doCached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("selector") final SSymbol cachedSelector,
-      @Cached("createForPerformNodes(selector, universe)") final AbstractMessageSendNode cachedSend,
+      @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend,
       @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
     Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
 

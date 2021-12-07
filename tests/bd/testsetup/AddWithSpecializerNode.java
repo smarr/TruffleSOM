@@ -17,7 +17,7 @@ import bd.testsetup.AddWithSpecializerNode.AlwaysSpecialize;
 @GenerateNodeFactory
 public abstract class AddWithSpecializerNode extends ExprNode {
 
-  public static class AlwaysSpecialize extends Specializer<LangContext, ExprNode, String> {
+  public static class AlwaysSpecialize extends Specializer<ExprNode, String> {
     public AlwaysSpecialize(final Primitive prim, final NodeFactory<ExprNode> fact) {
       super(prim, fact);
     }

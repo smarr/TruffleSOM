@@ -94,26 +94,23 @@ public class MethodGenerationContext
 
   public final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
-  protected final Universe universe;
-
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
-    this(holderGenc, null, holderGenc.getUniverse(), false, structuralProbe);
+    this(holderGenc, null, false, structuralProbe);
   }
 
-  public MethodGenerationContext(final Universe universe,
+  public MethodGenerationContext(
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
-    this(null, null, universe, false, structuralProbe);
+    this(null, null, false, structuralProbe);
   }
 
   public MethodGenerationContext(final ClassGenerationContext holderGenc,
       final MethodGenerationContext outerGenc) {
-    this(holderGenc, outerGenc, holderGenc.getUniverse(), true, outerGenc.structuralProbe);
+    this(holderGenc, outerGenc, true, outerGenc.structuralProbe);
   }
 
   protected MethodGenerationContext(final ClassGenerationContext holderGenc,
-      final MethodGenerationContext outerGenc, final Universe universe,
-      final boolean isBlockMethod,
+      final MethodGenerationContext outerGenc, final boolean isBlockMethod,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
     this.holderGenc = holderGenc;
     this.outerGenc = outerGenc;
@@ -130,8 +127,6 @@ public class MethodGenerationContext
 
     arguments = new LinkedHashMap<SSymbol, Argument>();
     locals = new LinkedHashMap<SSymbol, Local>();
-
-    this.universe = universe;
   }
 
   public void markAccessingOuterScopes() {
@@ -206,8 +201,7 @@ public class MethodGenerationContext
   public final SInvokable assemble(final ExpressionNode body,
       final SourceSection sourceSection, final SourceSection fullSourceSection) {
     if (primitive) {
-      return Primitives.constructEmptyPrimitive(signature, holderGenc.getLanguage(),
-          sourceSection, structuralProbe);
+      return Primitives.constructEmptyPrimitive(signature, sourceSection, structuralProbe);
     }
 
     return assembleMethod(body, sourceSection, fullSourceSection);
@@ -221,7 +215,7 @@ public class MethodGenerationContext
 
     Method truffleMethod =
         new Method(getMethodIdentifier(), getSourceSectionForMethod(sourceSection),
-            body, currentScope, (ExpressionNode) body.deepCopy(), holderGenc.getLanguage());
+            body, currentScope, (ExpressionNode) body.deepCopy());
 
     SMethod meth = new SMethod(signature, truffleMethod,
         embeddedBlockMethods.toArray(new SMethod[0]), fullSourceSection);
@@ -422,7 +416,7 @@ public class MethodGenerationContext
       final SourceSection source) {
     makeOuterCatchNonLocalReturn();
     return createNonLocalReturn(expr, getFrameOnStackMarker(source),
-        getOuterSelfContextLevel(), source, holderGenc.getUniverse());
+        getOuterSelfContextLevel(), source);
   }
 
   private ExpressionNode getSelfRead(final SourceSection source) {
@@ -439,8 +433,7 @@ public class MethodGenerationContext
         holderGenc.getFieldIndex(fieldName), source);
   }
 
-  public FieldNode getObjectFieldWrite(final SSymbol fieldName,
-      final ExpressionNode exp, final Universe universe,
+  public FieldNode getObjectFieldWrite(final SSymbol fieldName, final ExpressionNode exp,
       final SourceSection source) {
     if (!holderGenc.hasField(fieldName)) {
       return null;
@@ -458,7 +451,7 @@ public class MethodGenerationContext
 
   public void mergeIntoScope(final LexicalScope scope, final SMethod toBeInlined) {
     for (Variable v : scope.getVariables()) {
-      Local l = v.splitToMergeIntoOuterScope(universe, currentScope.getFrameDescriptor());
+      Local l = v.splitToMergeIntoOuterScope(currentScope.getFrameDescriptor());
       if (l != null) { // can happen for instance for the block self, which we omit
         SSymbol name = l.getQualifiedName();
         addLocal(l, name);

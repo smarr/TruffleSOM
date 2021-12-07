@@ -33,23 +33,19 @@ import com.oracle.truffle.api.source.Source;
 import bd.basic.ProgramDefinitionError;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
-import trufflesom.vm.Universe;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class SourcecodeCompiler {
+public final class SourcecodeCompiler {
 
-  private final SomLanguage language;
-
-  public SourcecodeCompiler(final SomLanguage language) {
-    this.language = language;
-  }
+  private SourcecodeCompiler() {}
 
   @TruffleBoundary
-  public SClass compileClass(final String path, final String file, final SClass systemClass,
+  public static SClass compileClass(final String path, final String file,
+      final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws IOException, ProgramDefinitionError {
     String fname = path + File.separator + file + ".som";
@@ -58,14 +54,12 @@ public class SourcecodeCompiler {
 
     Parser<?> parser;
     if (VmSettings.UseAstInterp) {
-      parser = new ParserAst(source.getCharacters().toString(), source, probe,
-          language.getUniverse());
+      parser = new ParserAst(source.getCharacters().toString(), source, probe);
     } else {
-      parser = new ParserBc(source.getCharacters().toString(), source, probe,
-          language.getUniverse());
+      parser = new ParserBc(source.getCharacters().toString(), source, probe);
     }
 
-    SClass result = compile(parser, systemClass, language.getUniverse());
+    SClass result = compile(parser, systemClass);
 
     SSymbol cname = result.getName();
     String cnameC = cname.getString();
@@ -79,23 +73,23 @@ public class SourcecodeCompiler {
   }
 
   @TruffleBoundary
-  public SClass compileClass(final String stmt, final SClass systemClass,
+  public static SClass compileClass(final String stmt, final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws ProgramDefinitionError {
     Parser<?> parser;
     if (VmSettings.UseAstInterp) {
-      parser = new ParserAst(stmt, null, probe, language.getUniverse());
+      parser = new ParserAst(stmt, null, probe);
     } else {
-      parser = new ParserBc(stmt, null, probe, language.getUniverse());
+      parser = new ParserBc(stmt, null, probe);
     }
 
-    SClass result = compile(parser, systemClass, language.getUniverse());
+    SClass result = compile(parser, systemClass);
     return result;
   }
 
-  public SClass compile(final Parser<?> parser, final SClass systemClass,
-      final Universe universe) throws ProgramDefinitionError {
-    ClassGenerationContext cgc = new ClassGenerationContext(universe, parser.structuralProbe);
+  public static SClass compile(final Parser<?> parser, final SClass systemClass)
+      throws ProgramDefinitionError {
+    ClassGenerationContext cgc = new ClassGenerationContext(parser.structuralProbe);
 
     SClass result = systemClass;
     parser.classdef(cgc);

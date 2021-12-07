@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
-import trufflesom.primitives.Primitives;
+import bd.basic.IdProvider;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -28,6 +28,15 @@ public class SymbolTable {
   public static final SSymbol symPlus;
   public static final SSymbol symMinus;
 
+  public static IdProvider<SSymbol> SymbolProvider = new Provider();
+
+  private static final class Provider implements IdProvider<SSymbol> {
+    @Override
+    public SSymbol getId(final String id) {
+      return symbolFor(id);
+    }
+  }
+
   @TruffleBoundary
   public static SSymbol symbolFor(final String string) {
     String interned = string.intern();
@@ -44,7 +53,6 @@ public class SymbolTable {
 
   static {
     symbolTable = new HashMap<>();
-    Primitives.initializeStaticSymbols(symbolTable);
 
     symNil = symbolFor("nil");
     symTrue = symbolFor("true");

@@ -9,7 +9,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.UnarySystemOperation;
+import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;
@@ -52,7 +52,7 @@ public class StringPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "asSymbol")
-  public abstract static class AsSymbolPrim extends UnarySystemOperation {
+  public abstract static class AsSymbolPrim extends UnaryExpressionNode {
     @Specialization
     public final SAbstractObject doString(final String receiver) {
       return symbolFor(receiver);
@@ -86,7 +86,7 @@ public class StringPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "isWhiteSpace")
-  public abstract static class IsWhiteSpacePrim extends UnarySystemOperation {
+  public abstract static class IsWhiteSpacePrim extends UnaryExpressionNode {
     @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
     public final boolean doChar(final String receiver) {
@@ -122,7 +122,7 @@ public class StringPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "isLetters")
-  public abstract static class IsLettersPrim extends UnarySystemOperation {
+  public abstract static class IsLettersPrim extends UnaryExpressionNode {
     @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
     public final boolean doChar(final String receiver) {
@@ -158,7 +158,7 @@ public class StringPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "isDigits")
-  public abstract static class IsDigitsPrim extends UnarySystemOperation {
+  public abstract static class IsDigitsPrim extends UnaryExpressionNode {
     @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
     public final boolean doChar(final String receiver) {

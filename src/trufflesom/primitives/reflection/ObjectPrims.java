@@ -20,11 +20,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
-import trufflesom.interpreter.nodes.nary.BinarySystemMsgOperation;
-import trufflesom.interpreter.nodes.nary.BinarySystemOperation;
-import trufflesom.interpreter.nodes.nary.TernarySystemOperation;
+import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
-import trufflesom.interpreter.nodes.nary.UnarySystemOperation;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
@@ -39,16 +36,10 @@ import trufflesom.vmobjects.SSymbol;
 
 public final class ObjectPrims {
 
+  @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "instVarAt:", selector = "instVarAt:")
-  public abstract static class InstVarAtPrim extends BinarySystemMsgOperation {
-    @Child private IndexDispatch dispatch;
-
-    @Override
-    public BinarySystemOperation initialize(final Universe universe) {
-      super.initialize(universe);
-      dispatch = IndexDispatch.create(universe);
-      return this;
-    }
+  public abstract static class InstVarAtPrim extends BinaryMsgExprNode {
+    @Child private IndexDispatch dispatch = IndexDispatch.create();
 
     @Specialization
     public final Object doSObject(final SObject receiver, final long idx) {
@@ -74,15 +65,8 @@ public final class ObjectPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "instVarAt:put:", selector = "instVarAt:put:")
-  public abstract static class InstVarAtPutPrim extends TernarySystemOperation {
-    @Child private IndexDispatch dispatch;
-
-    @Override
-    public TernarySystemOperation initialize(final Universe universe) {
-      super.initialize(universe);
-      dispatch = IndexDispatch.create(universe);
-      return this;
-    }
+  public abstract static class InstVarAtPutPrim extends TernaryExpressionNode {
+    @Child private IndexDispatch dispatch = IndexDispatch.create();
 
     @Specialization
     public final Object doSObject(final SObject receiver, final long idx, final Object val) {
@@ -131,7 +115,7 @@ public final class ObjectPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "class")
-  public abstract static class ClassPrim extends UnarySystemOperation {
+  public abstract static class ClassPrim extends UnaryExpressionNode {
 
     public abstract SClass executeEvaluated(Object rcvr);
 

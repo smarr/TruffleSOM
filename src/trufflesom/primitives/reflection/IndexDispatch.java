@@ -10,7 +10,6 @@ import trufflesom.interpreter.nodes.dispatch.DispatchChain;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 
@@ -18,16 +17,14 @@ import trufflesom.vmobjects.SObject;
 public abstract class IndexDispatch extends Node implements DispatchChain {
   public static final int INLINE_CACHE_SIZE = 6;
 
-  public static IndexDispatch create(final Universe universe) {
-    return new UninitializedDispatchNode(0, universe);
+  public static IndexDispatch create() {
+    return new UninitializedDispatchNode(0);
   }
 
-  protected final int      depth;
-  protected final Universe universe;
+  protected final int depth;
 
-  public IndexDispatch(final int depth, final Universe universe) {
+  public IndexDispatch(final int depth) {
     this.depth = depth;
-    this.universe = universe;
   }
 
   public abstract Object executeDispatch(SObject obj, int index);
@@ -36,8 +33,8 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   private static final class UninitializedDispatchNode extends IndexDispatch {
 
-    UninitializedDispatchNode(final int depth, final Universe universe) {
-      super(depth, universe);
+    UninitializedDispatchNode(final int depth) {
+      super(depth);
     }
 
     @TruffleBoundary
@@ -48,10 +45,10 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
         IndexDispatch specialized;
         if (read) {
           specialized = new CachedReadDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1, universe), depth);
+              new UninitializedDispatchNode(depth + 1), depth);
         } else {
           specialized = new CachedWriteDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1, universe), depth);
+              new UninitializedDispatchNode(depth + 1), depth);
         }
         return replace(specialized);
       }
@@ -94,7 +91,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     CachedReadDispatchNode(final SClass clazz, final int index,
         final IndexDispatch next, final int depth) {
-      super(depth, next.universe);
+      super(depth);
       this.index = index;
       this.clazz = clazz;
       this.next = next;
@@ -131,7 +128,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     CachedWriteDispatchNode(final SClass clazz, final int index, final IndexDispatch next,
         final int depth) {
-      super(depth, next.universe);
+      super(depth);
       this.index = index;
       this.clazz = clazz;
       this.next = next;
@@ -163,7 +160,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   private static final class GenericDispatchNode extends IndexDispatch {
 
     GenericDispatchNode() {
-      super(0, null);
+      super(0);
     }
 
     @Override

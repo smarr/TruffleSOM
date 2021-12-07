@@ -10,7 +10,6 @@ import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
@@ -19,31 +18,27 @@ import trufflesom.vmobjects.SSymbol;
 public final class MessageSendNode {
 
   public static ExpressionNode create(final SSymbol selector,
-      final ExpressionNode[] arguments, final SourceSection source, final Universe universe) {
-    Primitives prims = universe.getPrimitives();
-    Specializer<Universe, ExpressionNode, SSymbol> specializer =
-        prims.getParserSpecializer(selector, arguments);
+      final ExpressionNode[] arguments, final SourceSection source) {
+    Specializer<ExpressionNode, SSymbol> specializer =
+        Primitives.Current.getParserSpecializer(selector, arguments);
     if (specializer == null) {
-      return new UninitializedMessageSendNode(
-          selector, arguments, universe).initialize(source);
+      return new UninitializedMessageSendNode(selector, arguments).initialize(source);
     }
 
-    ExpressionNode newNode = specializer.create(null, arguments, source, universe);
-    return newNode;
+    return specializer.create(null, arguments, source);
   }
 
   private static final ExpressionNode[] NO_ARGS = new ExpressionNode[0];
 
   public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
-      final SourceSection source, final Universe universe) {
-    return new UninitializedMessageSendNode(selector, NO_ARGS, universe).initialize(source);
+      final SourceSection source) {
+    return new UninitializedMessageSendNode(selector, NO_ARGS).initialize(source);
   }
 
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
-      final ExpressionNode[] argumentNodes, final SourceSection source,
-      final Universe universe) {
+      final ExpressionNode[] argumentNodes, final SourceSection source) {
     return new GenericMessageSendNode(selector, argumentNodes,
-        new UninitializedDispatchNode(selector, universe)).initialize(source);
+        new UninitializedDispatchNode(selector)).initialize(source);
   }
 
   public static AbstractMessageSendNode createSuperSend(final SClass superClass,

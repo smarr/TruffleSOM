@@ -35,9 +35,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Parser.ParseError;
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.Classes;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SPrimitive;
@@ -45,13 +43,10 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public final class ClassGenerationContext {
-  private final Universe universe;
-
   private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
-  public ClassGenerationContext(final Universe universe,
+  public ClassGenerationContext(
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
-    this.universe = universe;
     this.structuralProbe = structuralProbe;
   }
 
@@ -67,14 +62,6 @@ public final class ClassGenerationContext {
 
   private boolean instanceHasPrimitives = false;
   private boolean classHasPrimitives    = false;
-
-  public SomLanguage getLanguage() {
-    return universe.getLanguage();
-  }
-
-  public Universe getUniverse() {
-    return universe;
-  }
 
   public void setName(final SSymbol name) {
     this.name = name;
@@ -198,7 +185,7 @@ public final class ClassGenerationContext {
     String ccname = name.getString() + " class";
 
     // Allocate the class of the resulting class
-    SClass resultClass = universe.newClass(Classes.metaclassClass);
+    SClass resultClass = new SClass(Classes.metaclassClass);
 
     // Initialize the class of the resulting class
     resultClass.setInstanceFields(classFields);
@@ -214,7 +201,7 @@ public final class ClassGenerationContext {
     }
 
     // Allocate the resulting class
-    SClass result = universe.newClass(resultClass);
+    SClass result = new SClass(resultClass);
 
     // Initialize the resulting class
     result.setName(name);
