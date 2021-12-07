@@ -29,15 +29,16 @@ import static trufflesom.vm.Classes.arrayClass;
 import static trufflesom.vm.Classes.booleanClass;
 import static trufflesom.vm.Classes.classClass;
 import static trufflesom.vm.Classes.doubleClass;
+import static trufflesom.vm.Classes.falseClass;
 import static trufflesom.vm.Classes.integerClass;
 import static trufflesom.vm.Classes.metaclassClass;
 import static trufflesom.vm.Classes.methodClass;
-import static trufflesom.vm.Classes.newSystemClass;
 import static trufflesom.vm.Classes.nilClass;
 import static trufflesom.vm.Classes.objectClass;
 import static trufflesom.vm.Classes.primitiveClass;
 import static trufflesom.vm.Classes.stringClass;
 import static trufflesom.vm.Classes.symbolClass;
+import static trufflesom.vm.Classes.trueClass;
 import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
@@ -389,9 +390,6 @@ public final class Universe implements IdProvider<SSymbol> {
     initializeSystemClass(doubleClass, objectClass, "Double");
     initializeSystemClass(booleanClass, objectClass, "Boolean");
 
-    trueClass = newSystemClass();
-    falseClass = newSystemClass();
-
     initializeSystemClass(trueClass, booleanClass, "True");
     initializeSystemClass(falseClass, booleanClass, "False");
 
@@ -658,14 +656,6 @@ public final class Universe implements IdProvider<SSymbol> {
     return systemObject;
   }
 
-  public SClass getTrueClass() {
-    return trueClass;
-  }
-
-  public SClass getFalseClass() {
-    return falseClass;
-  }
-
   public SClass getSystemClass() {
     return systemClass;
   }
@@ -681,8 +671,6 @@ public final class Universe implements IdProvider<SSymbol> {
 
   @CompilationFinal private SObject systemObject;
 
-  @CompilationFinal private SClass trueClass;
-  @CompilationFinal private SClass falseClass;
   @CompilationFinal private SClass systemClass;
 
   private final HashMap<SSymbol, Association> globals;

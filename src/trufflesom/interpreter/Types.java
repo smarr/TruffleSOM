@@ -22,8 +22,10 @@
 package trufflesom.interpreter;
 
 import static trufflesom.vm.Classes.doubleClass;
+import static trufflesom.vm.Classes.falseClass;
 import static trufflesom.vm.Classes.integerClass;
 import static trufflesom.vm.Classes.stringClass;
+import static trufflesom.vm.Classes.trueClass;
 
 import java.math.BigInteger;
 
@@ -50,9 +52,9 @@ public class Types {
       return ((SAbstractObject) obj).getSOMClass(universe);
     } else if (obj instanceof Boolean) {
       if ((boolean) obj) {
-        return universe.getTrueClass();
+        return trueClass;
       } else {
-        return universe.getFalseClass();
+        return falseClass;
       }
     } else if (obj instanceof Long || obj instanceof BigInteger) {
       return integerClass;

@@ -2,11 +2,13 @@ package trufflesom.primitives.reflection;
 
 import static trufflesom.vm.Classes.arrayClass;
 import static trufflesom.vm.Classes.doubleClass;
+import static trufflesom.vm.Classes.falseClass;
 import static trufflesom.vm.Classes.integerClass;
 import static trufflesom.vm.Classes.methodClass;
 import static trufflesom.vm.Classes.primitiveClass;
 import static trufflesom.vm.Classes.stringClass;
 import static trufflesom.vm.Classes.symbolClass;
+import static trufflesom.vm.Classes.trueClass;
 
 import java.math.BigInteger;
 
@@ -165,12 +167,12 @@ public final class ObjectPrims {
 
     @Specialization(guards = "receiver")
     public final SClass getTrueClass(final boolean receiver) {
-      return universe.getTrueClass();
+      return trueClass;
     }
 
     @Specialization(guards = "!receiver")
     public final SClass getFalseClass(final boolean receiver) {
-      return universe.getFalseClass();
+      return falseClass;
     }
 
     @Specialization

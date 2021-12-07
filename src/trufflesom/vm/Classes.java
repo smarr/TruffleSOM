@@ -21,6 +21,9 @@ public class Classes {
 
   public static final SClass booleanClass;
 
+  public static final SClass trueClass;
+  public static final SClass falseClass;
+
   static {
     // Allocate the Metaclass classes
     metaclassClass = newMetaclassClass();
@@ -38,6 +41,9 @@ public class Classes {
     stringClass = newSystemClass();
     doubleClass = newSystemClass();
     booleanClass = newSystemClass();
+
+    trueClass = newSystemClass();
+    falseClass = newSystemClass();
   }
 
   @TruffleBoundary
@@ -77,5 +83,8 @@ public class Classes {
     stringClass.resetSystemClass();
     doubleClass.resetSystemClass();
     booleanClass.resetSystemClass();
+
+    trueClass.resetSystemClass();
+    falseClass.resetSystemClass();
   }
 }
