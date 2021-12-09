@@ -578,7 +578,7 @@ public final class Universe {
     // Checkstyle: resume
   }
 
-  public void setStructuralProbe(
+  public static void setStructuralProbe(
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     structuralProbe = probe;
   }
