@@ -1,10 +1,5 @@
 package bd.source;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Set;
-
-import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -57,50 +52,6 @@ public class SourceCoordinate {
   public static SourceCoordinate create(final SourceSection section) {
     return new SourceCoordinate(section.getStartLine(), section.getStartColumn(),
         section.getCharIndex(), section.getCharLength());
-  }
-
-  public static FullSourceCoordinate createFull(final SourceSection section) {
-    return new FullSourceCoordinate(section.getSource().getURI(),
-        section.getStartLine(), section.getStartColumn(),
-        section.getCharIndex(), section.getCharLength());
-  }
-
-  public static FullSourceCoordinate create(final URI sourceUri, final int startLine,
-      final int startColumn, final int charLength) {
-    return new FullSourceCoordinate(sourceUri, startLine, startColumn, -1, charLength);
-  }
-
-  public static FullSourceCoordinate create(final String sourceUri, final int startLine,
-      final int startColumn, final int charLength) {
-    try {
-      return create(new URI(sourceUri), startLine, startColumn, charLength);
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static FullSourceCoordinate create(final String sourceUri, final int startLine,
-      final int startColumn, final int charIndex, final int charLength) {
-    try {
-      return new FullSourceCoordinate(
-          new URI(sourceUri), startLine, startColumn, charIndex, charLength);
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static TaggedSourceCoordinate create(final SourceSection section,
-      final Set<Class<? extends Tag>> tags) {
-    String[] strTags = new String[tags.size()];
-
-    int i = 0;
-    for (Class<? extends Tag> tagClass : tags) {
-      strTags[i] = tagClass.getSimpleName();
-      i += 1;
-    }
-
-    return new TaggedSourceCoordinate(section.getStartLine(), section.getStartColumn(),
-        section.getCharIndex(), section.getCharLength(), strTags);
   }
 
   public static String getLocationQualifier(final SourceSection section) {
