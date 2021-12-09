@@ -13,8 +13,8 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 
 
 public abstract class Invokable extends RootNode {
-  protected final String        name;
-  protected final SourceSection sourceSection;
+  protected final String name;
+  // protected final SourceSection sourceSection;
 
   @Child protected ExpressionNode expressionOrSequence;
 
@@ -28,7 +28,7 @@ public abstract class Invokable extends RootNode {
       final ExpressionNode uninitialized) {
     super(SomLanguage.getCurrent(), frameDescriptor);
     this.name = name;
-    this.sourceSection = sourceSection;
+    // this.sourceSection = sourceSection;
     this.uninitializedBody = uninitialized;
     this.expressionOrSequence = expressionOrSequence;
   }
@@ -40,7 +40,8 @@ public abstract class Invokable extends RootNode {
 
   @Override
   public SourceSection getSourceSection() {
-    return sourceSection;
+    // return sourceSection;
+    return null;
   }
 
   @Override

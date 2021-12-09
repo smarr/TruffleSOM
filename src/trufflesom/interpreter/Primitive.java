@@ -26,7 +26,7 @@ public final class Primitive extends Invokable {
   @Override
   public Node deepCopy() {
     assert getFrameDescriptor().getSize() == 0 : "Make sure there are no slots to be taken care off";
-    return new Primitive(name, sourceSection, NodeUtil.cloneNode(uninitializedBody),
+    return new Primitive(name, null, NodeUtil.cloneNode(uninitializedBody),
         getFrameDescriptor(), uninitializedBody);
   }
 

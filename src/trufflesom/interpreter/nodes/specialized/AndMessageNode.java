@@ -90,9 +90,9 @@ public abstract class AndMessageNode extends BinaryMsgExprNode {
 
   @Override
   public SSymbol getSelector() {
-    if (getSourceChar(0) == '&') {
-      return SymbolTable.symbolFor("&&");
-    }
+    // if (getSourceChar(0) == '&') {
+    // return SymbolTable.symbolFor("&&");
+    // }
     return SymbolTable.symbolFor("and:");
   }
 }

@@ -188,7 +188,7 @@ public abstract class FieldNode extends ExpressionNode {
         final SourceSection source) {
       this.self = self;
       this.fieldIndex = fieldIndex;
-      this.sourceSection = source;
+      // this.sourceSection = source;
     }
 
     @Override
@@ -215,7 +215,7 @@ public abstract class FieldNode extends ExpressionNode {
       }
 
       IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
-      replace(new IncFieldNode(self, node, sourceSection));
+      replace(new IncFieldNode(self, node, null));
       return longVal;
     }
   }
@@ -228,7 +228,7 @@ public abstract class FieldNode extends ExpressionNode {
         final SourceSection source) {
       this.self = self;
       this.inc = inc;
-      this.sourceSection = source;
+      // this.sourceSection = source;
     }
 
     @Override

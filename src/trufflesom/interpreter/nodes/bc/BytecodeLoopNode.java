@@ -182,7 +182,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
     return new BytecodeLoopNode(
         bytecodesField.clone(), numLocals, localsAndOutersField, literalsAndConstantsField,
         maxStackDepth, frameOnStackMarker, inlinedLoopsField).initialize(
-            sourceSection);
+            null);
   }
 
   public String getNameOfLocal(final int idx) {
@@ -449,7 +449,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
           SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
 
           GlobalNode quick =
-              GlobalNode.create(globalName, null).initialize(sourceSection);
+              GlobalNode.create(globalName, null).initialize(null);
           quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quick);
 
           stackPointer += 1;
@@ -604,7 +604,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
             stackPointer -= numberOfArguments;
 
             PreevaluatedExpression quick = MessageSendNode.createSuperSend(
-                (SClass) getHolder().getSuperClass(), signature, null, sourceSection);
+                (SClass) getHolder().getSuperClass(), signature, null, null);
             quickenBytecode(bytecodeIndex, Q_SEND, (Node) quick);
 
             Object result = quick.doPreEvaluated(frame, callArgs);
@@ -1041,7 +1041,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
       if (specializer != null) {
         done = true;
         ExpressionNode quick =
-            specializer.create(callArgs, dummyArgs, sourceSection);
+            specializer.create(callArgs, dummyArgs, null);
 
         if (numberOfArguments == 1) {
           UnaryExpressionNode q = (UnaryExpressionNode) quick;
@@ -1076,7 +1076,7 @@ public class BytecodeLoopNode extends ExpressionNode implements ScopeReference {
 
     if (!done) {
       GenericMessageSendNode quick =
-          MessageSendNode.createGeneric(signature, null, sourceSection);
+          MessageSendNode.createGeneric(signature, null, null);
       quickenBytecode(bytecodeIndex, Q_SEND, quick);
 
       result = quick.doPreEvaluated(frame, callArgs);

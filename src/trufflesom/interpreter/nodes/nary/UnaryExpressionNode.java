@@ -36,7 +36,7 @@ public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
     }
 
     GenericMessageSendNode send =
-        MessageSendNode.createGeneric(selector, children, sourceSection);
+        MessageSendNode.createGeneric(selector, children, null);
 
     if (VmSettings.UseAstInterp) {
       return replace(send);

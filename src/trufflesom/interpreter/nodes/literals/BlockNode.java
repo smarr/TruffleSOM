@@ -87,7 +87,7 @@ public class BlockNode extends LiteralNode {
   }
 
   protected BlockNode createNode(final SMethod adapted) {
-    return new BlockNode(adapted).initialize(sourceSection);
+    return new BlockNode(adapted).initialize(null);
   }
 
   @Override
@@ -121,7 +121,7 @@ public class BlockNode extends LiteralNode {
 
     @Override
     protected BlockNode createNode(final SMethod adapted) {
-      return new BlockNodeWithContext(adapted).initialize(sourceSection);
+      return new BlockNodeWithContext(adapted).initialize(null);
     }
 
     @Override

@@ -68,12 +68,13 @@ public final class Method extends Invokable {
       return false;
     }
 
-    return m.sourceSection.equals(sourceSection);
+    // return m.sourceSection.equals(sourceSection);
+    return true;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, sourceSection);
+    return Objects.hash(name);
   }
 
   @Override
@@ -96,7 +97,7 @@ public final class Method extends Invokable {
       uninit = uninitializedBody;
     }
 
-    Method clone = new Method(name, sourceSection, adaptedBody, adaptedScope, uninit);
+    Method clone = new Method(name, null, adaptedBody, adaptedScope, uninit);
     adaptedScope.setMethod(clone);
     return clone;
   }

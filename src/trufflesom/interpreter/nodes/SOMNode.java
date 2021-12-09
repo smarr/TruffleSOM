@@ -21,7 +21,6 @@
  */
 package trufflesom.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
@@ -35,25 +34,27 @@ import trufflesom.interpreter.Types;
 @TypeSystemReference(Types.class)
 public abstract class SOMNode extends Node implements ScopeReference, WithSource {
 
-  @CompilationFinal protected SourceSection sourceSection;
+  // @CompilationFinal protected SourceSection sourceSection;
 
   @Override
   @SuppressWarnings("unchecked")
   public <T extends Node> T initialize(final SourceSection sourceSection) {
-    assert sourceSection != null;
-    assert this.sourceSection == null : "sourceSection should only be set once";
-    this.sourceSection = sourceSection;
+    // assert sourceSection != null;
+    // assert this.sourceSection == null : "sourceSection should only be set once";
+    // this.sourceSection = sourceSection;
     return (T) this;
   }
 
   @Override
   public SourceSection getSourceSection() {
-    return sourceSection;
+    // return sourceSection;
+    return null;
   }
 
   protected final char getSourceChar(final int offsetFromStart) {
-    return sourceSection.getSource().getCharacters()
-                        .charAt(sourceSection.getCharIndex() + offsetFromStart);
+    throw new UnsupportedOperationException();
+    // return sourceSection.getSource().getCharacters()
+    // .charAt(sourceSection.getCharIndex() + offsetFromStart);
   }
 
   @Override
