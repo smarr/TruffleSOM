@@ -1,5 +1,6 @@
 package bd.source;
 
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
@@ -7,58 +8,76 @@ import com.oracle.truffle.api.source.SourceSection;
 /**
  * Represents a potentially empty range of source characters, for a potentially
  * not yet loaded source.
- *
- * <p>
- * The {@code charIndex} may not be set. It can be derived from startLine and startColumn,
- * if the source file is present.
  */
 public class SourceCoordinate {
-  public final int           startLine;
-  public final int           startColumn;
-  public final transient int charIndex;
-  public final int           charLength;
 
-  protected SourceCoordinate(final int startLine, final int startColumn,
-      final int charIndex, final int length) {
-    this.startLine = startLine;
-    this.startColumn = startColumn;
-    this.charIndex = charIndex;
-    this.charLength = length;
-    assert startLine >= 0;
-    assert startColumn >= 0;
-    assert charIndex >= 0 || charIndex == -1;
+  public static String toString(final long coord) {
+    long startIndex = getStartIndex(coord);
+    long length = getLength(coord);
+
+    return "SrcCoord(start:" + startIndex + " length: " + length + ")";
   }
 
-  @Override
-  public String toString() {
-    return "SrcCoord(line: " + startLine + ", col: " + startColumn + ", charlength:"
-        + charLength + ")";
+  public static int getStartIndex(final long coord) {
+    return (int) (coord & 0xFFFFFFFFL);
   }
 
-  public static SourceCoordinate createEmpty() {
-    return new SourceCoordinate(1, 1, 0, 0);
+  public static int getLength(final long coord) {
+    return (int) ((coord >>> 32) & 0xFFFFFFFFL);
   }
 
-  public static SourceCoordinate create(final int startLine, final int startColumn,
-      final int charIndex) {
-    return new SourceCoordinate(startLine, startColumn, charIndex, 0);
+  public static long createEmpty() {
+    return 0;
   }
 
-  public static SourceCoordinate create(final int startLine, final int startColumn,
-      final int charIndex, final int length) {
-    return new SourceCoordinate(startLine, startColumn, charIndex, length);
+  public static long create(final SourceSection section) {
+    return create(section.getCharIndex(), section.getCharLength());
   }
 
-  public static SourceCoordinate create(final SourceSection section) {
-    return new SourceCoordinate(section.getStartLine(), section.getStartColumn(),
-        section.getCharIndex(), section.getCharLength());
+  public static long create(final int startIndex, final int length) {
+    long index = startIndex;
+    long l = length;
+    l = l << 32;
+    return l | (index & 0xFFFFFFFFL);
+  }
+
+  public static long withZeroLength(final long coord) {
+    return coord & 0xFFFFFFFFL;
   }
 
   public static String getLocationQualifier(final SourceSection section) {
     return ":" + section.getStartLine() + ":" + section.getStartColumn();
   }
 
-  public static String getURI(final Source source) {
-    return source.getURI().toString();
+  public static String getLocationQualifier(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int lineNumber = source.getLineNumber(startIndex);
+    int column = source.getColumnNumber(startIndex);
+    return ":" + lineNumber + ":" + column;
+  }
+
+  public static int getLine(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int lineNumber = source.getLineNumber(startIndex);
+    return lineNumber;
+  }
+
+  public static int getColumn(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int column = source.getColumnNumber(startIndex);
+    return column;
+  }
+
+  public static SourceSection createSourceSection(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int length = getLength(coord);
+    return source.createSection(startIndex, length);
+  }
+
+  public static SourceSection createSourceSection(final Node node, final long coord) {
+    Source source = node.getRootNode().getSourceSection().getSource();
+    int startIndex = getStartIndex(coord);
+    int column = source.getColumnNumber(startIndex);
+    return source.createSection(startIndex, column);
   }
 }

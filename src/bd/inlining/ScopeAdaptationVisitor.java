@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 
 import bd.inlining.nodes.ScopeReference;
+import bd.inlining.nodes.WithSource;
 
 
 /**
@@ -166,11 +167,11 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
    * @param node the read node
    * @param ctxLevel the context level of the node
    */
-  public <N extends Node> void updateRead(final Variable<?> var, final N node,
+  public void updateRead(final Variable<?> var, final WithSource node,
       final int ctxLevel) {
     ScopeElement<? extends Node> se = getAdaptedVar(var);
     if (se.var != var || se.contextLevel < ctxLevel) {
-      node.replace(se.var.getReadNode(se.contextLevel, node.getSourceSection()));
+      ((Node) node).replace(se.var.getReadNode(se.contextLevel, node.getSourceCoordinate()));
     } else {
       assert ctxLevel == se.contextLevel;
     }
@@ -187,11 +188,12 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
    *          the variable
    * @param ctxLevel the context level of the node
    */
-  public <N extends Node> void updateWrite(final Variable<N> var, final N node,
+  public <N extends Node> void updateWrite(final Variable<N> var, final WithSource node,
       final N valExpr, final int ctxLevel) {
     ScopeElement<N> se = getAdaptedVar(var);
     if (se.var != var || se.contextLevel < ctxLevel) {
-      node.replace(se.var.getWriteNode(se.contextLevel, valExpr, node.getSourceSection()));
+      ((Node) node).replace(
+          se.var.getWriteNode(se.contextLevel, valExpr, node.getSourceCoordinate()));
     } else {
       assert ctxLevel == se.contextLevel;
     }
