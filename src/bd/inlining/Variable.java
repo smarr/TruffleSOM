@@ -51,42 +51,4 @@ public interface Variable<N extends Node> {
         "Variable.getWriteNode not supported on this type of variable: "
             + getClass().getSimpleName());
   }
-
-  /**
-   * Create a node to read the special <code>this</code> variable.
-   *
-   * <p>This operation should only be used on variables that are <code>this</code>-like
-   * variables.
-   *
-   * @param contextLevel references the scope in which the variable is defined,
-   *          relative to the scope in which the read is done
-   * @param state to be used to initialize this node
-   * @param source of the read operation
-   * @return a node to read <code>this</code>
-   */
-  default N getThisReadNode(final int contextLevel, final NodeState state,
-      final SourceSection source) {
-    throw new UnsupportedOperationException(
-        "Variable.getThisReadNode not supported on this type of variable: "
-            + getClass().getSimpleName());
-  }
-
-  /**
-   * Create a node to read the special <code>super</code> variable.
-   *
-   * <p>This operation should only be used on variables that are <code>this</code>-like
-   * variables supporting <code>super</code> reads.
-   *
-   * @param contextLevel references the scope in which the variable is defined,
-   *          relative to the scope in which the read is done
-   * @param state to be used to initialize this node
-   * @param source of the read operation
-   * @return a node to read <code>super</code>
-   */
-  default N getSuperReadNode(final int contextLevel, final NodeState state,
-      final SourceSection source) {
-    throw new UnsupportedOperationException(
-        "Variable.getSuperReadNode not supported on this type of variable: "
-            + getClass().getSimpleName());
-  }
 }
