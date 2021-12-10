@@ -21,40 +21,48 @@
  */
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.nodes.ScopeReference;
 import bd.inlining.nodes.WithSource;
+import bd.source.SourceCoordinate;
 import trufflesom.interpreter.Types;
 
 
 @TypeSystemReference(Types.class)
 public abstract class SOMNode extends Node implements ScopeReference, WithSource {
 
-  // @CompilationFinal protected SourceSection sourceSection;
+  @CompilationFinal protected long sourceCoord;
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Node> T initialize(final SourceSection sourceSection) {
-    // assert sourceSection != null;
-    // assert this.sourceSection == null : "sourceSection should only be set once";
-    // this.sourceSection = sourceSection;
+  public <T extends Node> T initialize(final long coord) {
+    assert coord != 0;
+    assert this.sourceCoord == 0 : "sourceSection should only be set once";
+    this.sourceCoord = coord;
     return (T) this;
   }
 
   @Override
   public SourceSection getSourceSection() {
-    // return sourceSection;
-    return null;
+    Source source = getRootNode().getSourceSection().getSource();
+    return SourceCoordinate.createSourceSection(source, sourceCoord);
+  }
+
+  @Override
+  public long getSourceCoordinate() {
+    return sourceCoord;
   }
 
   protected final char getSourceChar(final int offsetFromStart) {
-    throw new UnsupportedOperationException();
-    // return sourceSection.getSource().getCharacters()
-    // .charAt(sourceSection.getCharIndex() + offsetFromStart);
+    Source source = getRootNode().getSourceSection().getSource();
+    int index = SourceCoordinate.getStartIndex(sourceCoord);
+    return source.getCharacters().charAt(index + offsetFromStart);
   }
 
   @Override

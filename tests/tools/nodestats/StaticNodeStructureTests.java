@@ -99,6 +99,6 @@ public class StaticNodeStructureTests {
 
   private Method constructMethod(final ExpressionNode body) {
     LexicalScope scope = new LexicalScope(null, null);
-    return new Method("test", null, body, scope, body);
+    return new Method("test", null, 0, body, scope, body);
   }
 }

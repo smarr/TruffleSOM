@@ -73,7 +73,7 @@ public final class Lexer {
     private char          symc;
     private StringBuilder text;
 
-    private SourceCoordinate startCoord;
+    private long startCoord;
 
     int incPtr() {
       return incPtr(1);
@@ -104,14 +104,13 @@ public final class Lexer {
     state.lastNonWhiteCharIdx = 0;
   }
 
-  public static SourceCoordinate createSourceCoordinate(final LexerState state) {
+  public static long createSourceCoordinate(final LexerState state) {
     // We use the coord.length to indicate the lastNonWhiteCharIdx
     // TODO: fix this terrible hack, and make this explicit
-    return SourceCoordinate.create(state.lineNumber, state.ptr - state.lastLineEnd,
-        state.ptr, state.lastNonWhiteCharIdx);
+    return SourceCoordinate.create(state.ptr, state.lastNonWhiteCharIdx);
   }
 
-  public SourceCoordinate getStartCoordinate() {
+  public long getStartCoordinate() {
     return state.startCoord;
   }
 
@@ -393,12 +392,12 @@ public final class Lexer {
   }
 
   protected int getNumberOfNonWhiteCharsRead() {
-    return state.startCoord.charLength;
+    return SourceCoordinate.getLength(state.startCoord);
   }
 
   // All characters read and processed, including current line
   protected int getNumberOfCharactersRead() {
-    return state.startCoord.charIndex;
+    return SourceCoordinate.getStartIndex(state.startCoord);
   }
 
   private void skipWhiteSpace() {

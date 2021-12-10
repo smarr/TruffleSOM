@@ -1,16 +1,14 @@
 package trufflesom.compiler;
 
-import com.oracle.truffle.api.source.SourceSection;
-
 import trufflesom.vmobjects.SSymbol;
 
 
 public class Field {
-  private final int           index;
-  private final SSymbol       name;
-  private final SourceSection sourceSection;
+  private final int     index;
+  private final SSymbol name;
+  private final long    sourceSection;
 
-  public Field(final int idx, final SSymbol name, final SourceSection sourceSection) {
+  public Field(final int idx, final SSymbol name, final long sourceSection) {
     this.index = idx;
     this.name = name;
     this.sourceSection = sourceSection;
@@ -24,7 +22,7 @@ public class Field {
     return name;
   }
 
-  public SourceSection getSourceSection() {
+  public long getSourceSection() {
     return sourceSection;
   }
 }

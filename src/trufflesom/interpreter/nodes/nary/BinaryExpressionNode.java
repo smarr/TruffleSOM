@@ -42,7 +42,7 @@ public abstract class BinaryExpressionNode extends ExpressionNode
     }
 
     GenericMessageSendNode send =
-        MessageSendNode.createGeneric(selector, children, null);
+        MessageSendNode.createGeneric(selector, children, sourceCoord);
 
     if (VmSettings.UseAstInterp) {
       return replace(send);

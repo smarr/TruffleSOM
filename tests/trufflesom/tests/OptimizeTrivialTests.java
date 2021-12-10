@@ -11,10 +11,11 @@ import static trufflesom.vm.SymbolTable.symbolFor;
 import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
 import bd.primitives.nodes.PreevaluatedExpression;
+import bd.source.SourceCoordinate;
+import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.ParserAst;
 import trufflesom.compiler.ParserBc;
@@ -40,35 +41,21 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   protected MethodGenerationContext mgenc;
   protected MethodGenerationContext bgenc;
 
-  public OptimizeTrivialTests() {
-    super();
-    initMgenc();
-  }
+  private Method parseMethod(final String source) {
+    Source s = SomLanguage.getSyntheticSource(source, "test");
 
-  protected void initMgenc() {
+    cgenc = new ClassGenerationContext(s, null);
+    cgenc.setName(symbolFor("Test"));
+    addAllFields();
+
     if (VmSettings.UseAstInterp) {
       mgenc = new MethodGenerationContext(cgenc, probe);
     } else {
       mgenc = new BytecodeMethodGenContext(cgenc, probe);
     }
-    mgenc.addArgumentIfAbsent(symSelf, sourceForTests.createSection(1, 1));
-    fieldCount = 0;
-  }
+    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
 
-  private void initBgenc() {
-    initMgenc();
-    mgenc.setSignature(symbolFor("outer"));
-    mgenc.setVarsOnMethodScope();
-    if (VmSettings.UseAstInterp) {
-      bgenc = new MethodGenerationContext(cgenc, mgenc);
-    } else {
-      bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
-    }
-  }
-
-  private Method parseMethod(final String source) {
-    Source s = SomLanguage.getSyntheticSource(source, "test");
-    SourceSection section = s.createSection(1);
+    long coord = SourceCoordinate.create(0, 10);
 
     SInvokable ivkbl;
 
@@ -76,11 +63,11 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
       if (VmSettings.UseAstInterp) {
         ParserAst parser = new ParserAst(source, s, null);
         ExpressionNode body = parser.method(mgenc);
-        ivkbl = mgenc.assemble(body, section, section);
+        ivkbl = mgenc.assemble(body, coord);
       } else {
         ParserBc parser = new ParserBc(source, s, probe);
         parser.method((BytecodeMethodGenContext) mgenc);
-        ivkbl = mgenc.assemble(null, section, section);
+        ivkbl = mgenc.assemble(null, coord);
       }
       return (Method) ivkbl.getInvokable();
     } catch (ProgramDefinitionError e) {
@@ -90,7 +77,26 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
 
   private Method parseBlock(final String source) {
     Source s = SomLanguage.getSyntheticSource(source, "test");
-    SourceSection section = s.createSection(1);
+    cgenc = new ClassGenerationContext(s, null);
+    cgenc.setName(symbolFor("Test"));
+    addAllFields();
+
+    if (VmSettings.UseAstInterp) {
+      mgenc = new MethodGenerationContext(cgenc, probe);
+    } else {
+      mgenc = new BytecodeMethodGenContext(cgenc, probe);
+    }
+    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+
+    long coord = SourceCoordinate.create(0, 10);
+
+    mgenc.setSignature(symbolFor("outer"));
+    mgenc.setVarsOnMethodScope();
+    if (VmSettings.UseAstInterp) {
+      bgenc = new MethodGenerationContext(cgenc, mgenc);
+    } else {
+      bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
+    }
 
     SInvokable ivkbl;
 
@@ -98,11 +104,11 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
       if (VmSettings.UseAstInterp) {
         ParserAst parser = new ParserAst(source, s, null);
         ExpressionNode body = parser.nestedBlock(bgenc);
-        ivkbl = bgenc.assemble(body, section, section);
+        ivkbl = bgenc.assemble(body, coord);
       } else {
         ParserBc parser = new ParserBc(source, s, probe);
         parser.nestedBlock((BytecodeMethodGenContext) bgenc);
-        ivkbl = bgenc.assemble(null, section, section);
+        ivkbl = bgenc.assemble(null, coord);
       }
       return (Method) ivkbl.getInvokable();
     } catch (ProgramDefinitionError e) {
@@ -111,7 +117,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   private void literalReturn(final String source, final String result, final Class<?> cls) {
-    initMgenc();
     Method m = parseMethod("test = ( ^ " + source + " )");
 
     assertTrue(m.isTrivial());
@@ -138,7 +143,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   private void globalReturn(final String source) {
-    initMgenc();
     Method m = parseMethod("test = ( ^ " + source + " )");
 
     assertTrue(m.isTrivial());
@@ -207,7 +211,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   private void fieldSetter(final String source, final int numExtraFields) {
-    initMgenc();
     for (int i = 0; i < numExtraFields; i += 1) {
       addField("f" + i);
     }
@@ -234,7 +237,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   private void nonTrivialFieldSetter(final String source, final int numExtraFields) {
-    initMgenc();
     for (int i = 0; i < numExtraFields; i += 1) {
       addField("f" + i);
     }
@@ -259,7 +261,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   private void literalNoReturn(final String source) {
-    initMgenc();
     Method m = parseMethod("test = ( " + source + " )");
 
     assertFalse(m.isTrivial());
@@ -280,7 +281,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   private void nonTrivialLiteralReturn(final String source) {
-    initMgenc();
     Method m = parseMethod("test = ( 1. ^ " + source + " )");
 
     assertFalse(m.isTrivial());
@@ -308,7 +308,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   }
 
   private void literalBlock(final String source, final String result, final Class<?> cls) {
-    initBgenc();
     Method m = parseBlock("[ " + source + " ]");
 
     assertTrue(m.isTrivial());
@@ -336,7 +335,6 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
 
   @Test
   public void testUnknownGlobalInBlock() {
-    initBgenc();
     Method m = parseBlock("[ UnknownGlobalSSSS ]");
     assertFalse(m.isTrivial());
   }

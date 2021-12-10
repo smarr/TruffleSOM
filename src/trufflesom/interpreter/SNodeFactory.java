@@ -2,8 +2,6 @@ package trufflesom.interpreter;
 
 import java.util.List;
 
-import com.oracle.truffle.api.source.SourceSection;
-
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
@@ -29,54 +27,55 @@ public final class SNodeFactory {
   public static CatchNonLocalReturnNode createCatchNonLocalReturn(
       final ExpressionNode methodBody, final Internal onStackMarker) {
     return new CatchNonLocalReturnNode(
-        methodBody, onStackMarker).initialize(methodBody.getSourceSection());
+        methodBody, onStackMarker).initialize(methodBody.getSourceCoordinate());
   }
 
   public static FieldReadNode createFieldRead(final ExpressionNode self,
-      final int fieldIndex, final SourceSection source) {
-    return new FieldReadNode(self, fieldIndex).initialize(source);
+      final int fieldIndex, final long coord) {
+    return new FieldReadNode(self, fieldIndex).initialize(coord);
   }
 
   public static FieldNode createFieldWrite(final ExpressionNode self,
-      final ExpressionNode exp, final int fieldIndex, final SourceSection source) {
+      final ExpressionNode exp, final int fieldIndex, final long coord) {
+    assert coord != 0;
     if (exp instanceof IntIncrementNode
         && ((IntIncrementNode) exp).doesAccessField(fieldIndex)) {
-      return new UninitFieldIncNode(self, fieldIndex, source);
+      return new UninitFieldIncNode(self, fieldIndex, coord);
     }
 
-    return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(source);
+    return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);
   }
 
   public static ExpressionNode createArgumentRead(final Argument variable,
-      final int contextLevel, final SourceSection source) {
+      final int contextLevel, final long coord) {
     if (contextLevel == 0) {
-      return new LocalArgumentReadNode(variable).initialize(source);
+      return new LocalArgumentReadNode(variable).initialize(coord);
     } else {
-      return new NonLocalArgumentReadNode(variable, contextLevel).initialize(source);
+      return new NonLocalArgumentReadNode(variable, contextLevel).initialize(coord);
     }
   }
 
   public static LocalVariableWriteNode createLocalVariableWrite(
-      final Local var, final ExpressionNode exp, final SourceSection source) {
-    return LocalVariableWriteNodeGen.create(var, exp).initialize(source);
+      final Local var, final ExpressionNode exp, final long coord) {
+    return LocalVariableWriteNodeGen.create(var, exp).initialize(coord);
   }
 
   public static ExpressionNode createArgumentWrite(final Argument variable,
-      final int contextLevel, final ExpressionNode exp, final SourceSection source) {
+      final int contextLevel, final ExpressionNode exp, final long coord) {
     if (contextLevel == 0) {
-      return new LocalArgumentWriteNode(variable, exp).initialize(source);
+      return new LocalArgumentWriteNode(variable, exp).initialize(coord);
     } else {
-      return new NonLocalArgumentWriteNode(variable, contextLevel, exp).initialize(source);
+      return new NonLocalArgumentWriteNode(variable, contextLevel, exp).initialize(coord);
     }
   }
 
   public static SequenceNode createSequence(final List<ExpressionNode> exps,
-      final SourceSection source) {
-    return new SequenceNode(exps.toArray(new ExpressionNode[0])).initialize(source);
+      final long coord) {
+    return new SequenceNode(exps.toArray(new ExpressionNode[0])).initialize(coord);
   }
 
   public static ReturnNonLocalNode createNonLocalReturn(final ExpressionNode exp,
-      final Internal markerSlot, final int contextLevel, final SourceSection source) {
-    return new ReturnNonLocalNode(exp, markerSlot, contextLevel).initialize(source);
+      final Internal markerSlot, final int contextLevel, final long coord) {
+    return new ReturnNonLocalNode(exp, markerSlot, contextLevel).initialize(coord);
   }
 }

@@ -9,6 +9,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import bd.source.SourceCoordinate;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
@@ -22,23 +23,23 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class AbstractSymbolDispatch extends Node {
   public static final int INLINE_CACHE_SIZE = 6;
 
-  private final SourceSection sourceSection;
+  private final long sourceCoord;
 
-  public AbstractSymbolDispatch(final SourceSection source) {
-    assert source != null;
-    this.sourceSection = source;
+  public AbstractSymbolDispatch(final long coord) {
+    assert coord != 0;
+    this.sourceCoord = coord;
   }
 
   @Override
   public final SourceSection getSourceSection() {
-    return sourceSection;
+    return SourceCoordinate.createSourceSection(this, sourceCoord);
   }
 
   public abstract Object executeDispatch(VirtualFrame frame, Object receiver,
       SSymbol selector, Object argsArr);
 
   protected final AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
-    return MessageSendNode.createForPerformNodes(selector, sourceSection);
+    return MessageSendNode.createForPerformNodes(selector, sourceCoord);
   }
 
   public static final ToArgumentsArrayNode createArgArrayNode() {

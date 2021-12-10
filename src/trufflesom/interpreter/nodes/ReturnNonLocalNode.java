@@ -88,7 +88,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
       } else {
         node = new ReturnNonLocalNode(expression, (Internal) se.var, se.contextLevel);
       }
-      node.initialize(null);
+      node.initialize(sourceCoord);
       replace(node);
     }
   }
@@ -142,7 +142,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
       ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
       if (se.var != onStackMarkerVar) {
         ReturnLocalNode node = new ReturnLocalNode(expression, (Internal) se.var);
-        node.initialize(null);
+        node.initialize(sourceCoord);
         replace(node);
       }
     }
@@ -199,7 +199,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
       ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
       if (se.var != onStackMarkerVar) {
         replace(new CatchNonLocalReturnNode(
-            methodBody, (Internal) se.var).initialize(null));
+            methodBody, (Internal) se.var).initialize(sourceCoord));
       }
     }
   }

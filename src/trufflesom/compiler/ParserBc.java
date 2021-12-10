@@ -412,8 +412,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
             new BytecodeMethodGenContext(mgenc.getHolder(), mgenc);
         nestedBlock(bgenc);
 
-        SMethod blockMethod = (SMethod) bgenc.assemble(
-            null, lastMethodsSourceSection, lastMethodsSourceSection);
+        SMethod blockMethod = (SMethod) bgenc.assemble(null, lastMethodsCoord);
         mgenc.addEmbeddedBlockMethod(blockMethod);
         mgenc.addLiteral(blockMethod, this);
         emitPUSHBLOCK(mgenc, blockMethod, bgenc.requiresContext());

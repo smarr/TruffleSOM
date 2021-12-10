@@ -48,7 +48,7 @@ public abstract class QuaternaryExpressionNode extends EagerlySpecializableNode 
     }
 
     GenericMessageSendNode send =
-        MessageSendNode.createGeneric(selector, children, null);
+        MessageSendNode.createGeneric(selector, children, sourceCoord);
 
     if (VmSettings.UseAstInterp) {
       return replace(send);

@@ -26,7 +26,6 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
@@ -185,10 +184,10 @@ public abstract class FieldNode extends ExpressionNode {
     private final int             fieldIndex;
 
     public UninitFieldIncNode(final ExpressionNode self, final int fieldIndex,
-        final SourceSection source) {
+        final long coord) {
       this.self = self;
       this.fieldIndex = fieldIndex;
-      // this.sourceSection = source;
+      this.sourceCoord = coord;
     }
 
     @Override
@@ -215,7 +214,7 @@ public abstract class FieldNode extends ExpressionNode {
       }
 
       IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
-      replace(new IncFieldNode(self, node, null));
+      replace(new IncFieldNode(self, node, sourceCoord));
       return longVal;
     }
   }
@@ -225,10 +224,10 @@ public abstract class FieldNode extends ExpressionNode {
     @Child private IncrementLongFieldNode inc;
 
     IncFieldNode(final ExpressionNode self, final IncrementLongFieldNode inc,
-        final SourceSection source) {
+        final long coord) {
+      initialize(coord);
       this.self = self;
       this.inc = inc;
-      // this.sourceSection = source;
     }
 
     @Override

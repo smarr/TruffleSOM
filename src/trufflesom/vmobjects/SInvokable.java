@@ -35,6 +35,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
@@ -44,11 +45,8 @@ import trufflesom.vm.Classes;
 
 public abstract class SInvokable extends SAbstractObject {
 
-  public SInvokable(final SSymbol signature, final Invokable invokable,
-      final SourceSection source) {
+  public SInvokable(final SSymbol signature, final Invokable invokable) {
     this.signature = signature;
-    this.sourceSection = source;
-
     this.invokable = invokable;
   }
 
@@ -56,8 +54,8 @@ public abstract class SInvokable extends SAbstractObject {
     private final SMethod[] embeddedBlocks;
 
     public SMethod(final SSymbol signature, final Invokable invokable,
-        final SMethod[] embeddedBlocks, final SourceSection source) {
-      super(signature, invokable, source);
+        final SMethod[] embeddedBlocks) {
+      super(signature, invokable);
       this.embeddedBlocks = embeddedBlocks;
     }
 
@@ -94,9 +92,8 @@ public abstract class SInvokable extends SAbstractObject {
   }
 
   public static final class SPrimitive extends SInvokable {
-    public SPrimitive(final SSymbol signature, final Invokable invokable,
-        final SourceSection source) {
-      super(signature, invokable, source);
+    public SPrimitive(final SSymbol signature, final Invokable invokable) {
+      super(signature, invokable);
     }
 
     @Override
@@ -119,8 +116,16 @@ public abstract class SInvokable extends SAbstractObject {
     }
   }
 
+  public final Source getSource() {
+    return invokable.getSource();
+  }
+
+  public final long getSourceCoordinate() {
+    return invokable.getSourceCoordinate();
+  }
+
   public final SourceSection getSourceSection() {
-    return sourceSection;
+    return invokable.getSourceSection();
   }
 
   @TruffleBoundary
@@ -175,9 +180,8 @@ public abstract class SInvokable extends SAbstractObject {
 
   public abstract String getIdentifier();
 
-  private final SourceSection sourceSection;
-  protected final Invokable   invokable;
-  protected final SSymbol     signature;
+  protected final Invokable invokable;
+  protected final SSymbol   signature;
 
   @CompilationFinal protected SClass holder;
 

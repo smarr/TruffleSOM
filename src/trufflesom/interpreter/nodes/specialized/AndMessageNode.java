@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import bd.primitives.Specializer;
@@ -52,7 +51,7 @@ public abstract class AndMessageNode extends BinaryMsgExprNode {
 
     @Override
     public final ExpressionNode create(final Object[] arguments,
-        final ExpressionNode[] argNodes, final SourceSection section) {
+        final ExpressionNode[] argNodes, final long coord) {
       ExpressionNode node;
       if (argNodes[1] instanceof BlockNode) {
         node = fact.createNode(
@@ -61,7 +60,7 @@ public abstract class AndMessageNode extends BinaryMsgExprNode {
         assert arguments == null || arguments[1] instanceof Boolean;
         node = boolFact.createNode(argNodes[0], argNodes[1]);
       }
-      node.initialize(section);
+      node.initialize(coord);
       return node;
     }
   }

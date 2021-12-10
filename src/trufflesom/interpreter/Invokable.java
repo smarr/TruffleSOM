@@ -3,9 +3,11 @@ package trufflesom.interpreter;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import bd.source.SourceCoordinate;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SClass;
@@ -14,7 +16,8 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 
 public abstract class Invokable extends RootNode {
   protected final String name;
-  // protected final SourceSection sourceSection;
+  protected final Source source;
+  protected final long   sourceCoord;
 
   @Child protected ExpressionNode expressionOrSequence;
 
@@ -22,13 +25,14 @@ public abstract class Invokable extends RootNode {
 
   protected SClass holder;
 
-  protected Invokable(final String name, final SourceSection sourceSection,
+  protected Invokable(final String name, final Source source, final long sourceCoord,
       final FrameDescriptor frameDescriptor,
       final ExpressionNode expressionOrSequence,
       final ExpressionNode uninitialized) {
     super(SomLanguage.getCurrent(), frameDescriptor);
     this.name = name;
-    // this.sourceSection = sourceSection;
+    this.source = source;
+    this.sourceCoord = sourceCoord;
     this.uninitializedBody = uninitialized;
     this.expressionOrSequence = expressionOrSequence;
   }
@@ -38,10 +42,17 @@ public abstract class Invokable extends RootNode {
     return name;
   }
 
+  public Source getSource() {
+    return source;
+  }
+
+  public long getSourceCoordinate() {
+    return sourceCoord;
+  }
+
   @Override
   public SourceSection getSourceSection() {
-    // return sourceSection;
-    return null;
+    return SourceCoordinate.createSourceSection(source, sourceCoord);
   }
 
   @Override

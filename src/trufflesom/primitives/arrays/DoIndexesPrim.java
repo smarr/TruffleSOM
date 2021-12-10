@@ -7,7 +7,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
@@ -36,8 +35,8 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
 
   @Override
   @SuppressWarnings("unchecked")
-  public DoIndexesPrim initialize(final SourceSection source) {
-    super.initialize(source);
+  public DoIndexesPrim initialize(final long coord) {
+    super.initialize(coord);
     block = ValueOnePrimFactory.create(null, null);
     length = LengthPrimFactory.create(null);
     return this;

@@ -58,7 +58,7 @@ import org.graalvm.polyglot.Value;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
 import bd.tools.structure.StructuralProbe;
@@ -86,7 +86,8 @@ public final class Universe {
    * "self" considered to be defined by the Object class
    * we capture the source section here when parsing Object.
    */
-  public static SourceSection selfSource;
+  public static long   selfCoord;
+  public static Source selfSource;
 
   private static String[] classPath;
 
@@ -112,10 +113,6 @@ public final class Universe {
     if (FailOnMissingOptimizations) {
       CompilerAsserts.neverPartOfCompilation(msg);
     }
-  }
-
-  public static String getLocationQualifier(final SourceSection section) {
-    return ":" + section.getStartLine() + ":" + section.getStartColumn();
   }
 
   public static void main(final String[] arguments) {
