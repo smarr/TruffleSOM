@@ -35,10 +35,7 @@ public class SourceCoordinate {
   }
 
   public static long create(final int startIndex, final int length) {
-    long index = startIndex;
-    long l = length;
-    l = l << 32;
-    return l | (index & 0xFFFFFFFFL);
+    return (((long) length) << 32) | (startIndex & 0xFFFFFFFFL);
   }
 
   public static long withZeroLength(final long coord) {
