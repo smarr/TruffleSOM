@@ -1,11 +1,9 @@
 package bd.source;
 
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.basic.nodes.DummyParent;
+import bd.inlining.nodes.WithSource;
 
 
 /**
@@ -80,20 +78,14 @@ public class SourceCoordinate {
     return source.createSection(startIndex, length);
   }
 
-  public static SourceSection createSourceSection(final Node node, final long coord) {
-    RootNode root = node.getRootNode();
-    assert root != null : "We expect that this is called after a node was adapted into a tree";
-
-    SourceSection section = root.getSourceSection();
-    if (section == null) {
-      assert root instanceof DummyParent : "We should have a source section, "
-          + "except if the root is a DummyParent during inlining";
+  public static SourceSection createSourceSection(final WithSource node, final long coord) {
+    Source source = node.getSource();
+    if (source == null) {
       return null;
     }
 
-    Source source = section.getSource();
     int startIndex = getStartIndex(coord);
-    int column = source.getColumnNumber(startIndex);
-    return source.createSection(startIndex, column);
+    int length = getLength(coord);
+    return source.createSection(startIndex, length);
   }
 }

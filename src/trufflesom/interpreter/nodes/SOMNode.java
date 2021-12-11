@@ -21,6 +21,7 @@
  */
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.nodes.Node;
@@ -75,4 +76,24 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
    * @return body of a node that just wraps the actual method body.
    */
   public abstract ExpressionNode getFirstMethodBodyNode();
+
+  @Override
+  public Source getSource() {
+    CompilerAsserts.neverPartOfCompilation();
+
+    WithSource node = this;
+    while (node != null && !node.hasSource()) {
+      node = (WithSource) ((Node) node).getParent();
+    }
+
+    if (node == null) {
+      return null;
+    }
+    return node.getSource();
+  }
+
+  @Override
+  public boolean hasSource() {
+    return false;
+  }
 }

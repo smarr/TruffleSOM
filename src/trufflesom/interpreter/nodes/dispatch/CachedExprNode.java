@@ -3,22 +3,27 @@ package trufflesom.interpreter.nodes.dispatch;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
+import com.oracle.truffle.api.source.Source;
 
+import bd.inlining.nodes.WithSource;
 import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.primitives.reflection.AbstractSymbolDispatch;
 
 
-public class CachedExprNode extends AbstractDispatchNode {
+public class CachedExprNode extends AbstractDispatchNode implements WithSource {
 
   private final DispatchGuard guard;
+  private final Source        source;
 
   @Child protected AbstractDispatchNode nextInCache;
 
   @Child protected PreevaluatedExpression expr;
 
   public CachedExprNode(final DispatchGuard guard, final PreevaluatedExpression expr,
-      final AbstractDispatchNode nextInCache) {
+      final Source source, final AbstractDispatchNode nextInCache) {
     this.guard = guard;
     this.expr = expr;
+    this.source = source;
     this.nextInCache = nextInCache;
   }
 
@@ -41,5 +46,26 @@ public class CachedExprNode extends AbstractDispatchNode {
   @Override
   public final int lengthOfDispatchChain() {
     return 1 + nextInCache.lengthOfDispatchChain();
+  }
+
+  @Override
+  public Source getSource() {
+    return source;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public AbstractSymbolDispatch initialize(final long sourceCoord) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public long getSourceCoordinate() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasSource() {
+    return true;
   }
 }

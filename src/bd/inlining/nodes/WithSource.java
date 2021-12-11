@@ -2,6 +2,7 @@ package bd.inlining.nodes;
 
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInterface;
+import com.oracle.truffle.api.source.Source;
 
 
 /**
@@ -21,4 +22,8 @@ public interface WithSource extends NodeInterface {
   <T extends Node> T initialize(long sourceCoord);
 
   long getSourceCoordinate();
+
+  Source getSource();
+
+  boolean hasSource();
 }

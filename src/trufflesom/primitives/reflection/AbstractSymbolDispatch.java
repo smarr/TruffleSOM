@@ -6,8 +6,10 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.inlining.nodes.WithSource;
 import bd.primitives.nodes.PreevaluatedExpression;
 import bd.source.SourceCoordinate;
 import trufflesom.interpreter.Types;
@@ -20,7 +22,7 @@ import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class AbstractSymbolDispatch extends Node {
+public abstract class AbstractSymbolDispatch extends Node implements WithSource {
   public static final int INLINE_CACHE_SIZE = 6;
 
   private final long sourceCoord;
@@ -28,6 +30,27 @@ public abstract class AbstractSymbolDispatch extends Node {
   public AbstractSymbolDispatch(final long coord) {
     assert coord != 0;
     this.sourceCoord = coord;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public AbstractSymbolDispatch initialize(final long sourceCoord) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public long getSourceCoordinate() {
+    return sourceCoord;
+  }
+
+  @Override
+  public Source getSource() {
+    return ((WithSource) getParent()).getSource();
+  }
+
+  @Override
+  public boolean hasSource() {
+    return false;
   }
 
   @Override
