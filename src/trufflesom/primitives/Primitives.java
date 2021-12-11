@@ -35,7 +35,7 @@ import java.util.Map.Entry;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.source.Source;
 
 import bd.inlining.InlinableNodes;
 import bd.primitives.PrimitiveLoader;
@@ -140,18 +140,18 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
   private final HashMap<SSymbol, HashMap<SSymbol, Specializer<ExpressionNode, SSymbol>>> primitives;
 
   public static SPrimitive constructEmptyPrimitive(final SSymbol signature,
-      final SourceSection sourceSection,
+      final Source source, final long coord,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation();
     MethodGenerationContext mgen = new MethodGenerationContext(probe);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0), signature)
-                                       .initialize(sourceSection);
+                                       .initialize(coord);
     Primitive primMethodNode =
-        new Primitive(signature.getString(), sourceSection, primNode,
+        new Primitive(signature.getString(), source, coord, primNode,
             mgen.getCurrentLexicalScope().getFrameDescriptor(),
             (ExpressionNode) primNode.deepCopy());
-    SPrimitive prim = new SPrimitive(signature, primMethodNode, sourceSection);
+    SPrimitive prim = new SPrimitive(signature, primMethodNode);
 
     if (probe != null) {
       String id = prim.getIdentifier();
@@ -188,8 +188,8 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
       SInvokable ivk = target.lookupInvokable(e.getKey());
       assert ivk != null : "Lookup of " + e.getKey().toString() + " failed in "
           + target.getName().getString() + ". Can't install a primitive for it.";
-      SInvokable prim =
-          constructPrimitive(e.getKey(), ivk.getSourceSection(), e.getValue(), probe);
+      SInvokable prim = constructPrimitive(
+          e.getKey(), ivk.getSource(), ivk.getSourceCoordinate(), e.getValue(), probe);
       target.addPrimitive(prim);
     }
   }
@@ -215,7 +215,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
   }
 
   private static SInvokable constructPrimitive(final SSymbol signature,
-      final SourceSection source,
+      final Source source, final long coord,
       final Specializer<ExpressionNode, SSymbol> specializer,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
@@ -224,15 +224,15 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
     MethodGenerationContext mgen = new MethodGenerationContext(probe);
     ExpressionNode[] args = new ExpressionNode[numArgs];
     for (int i = 0; i < numArgs; i++) {
-      args[i] = new LocalArgumentReadNode(true, i).initialize(source);
+      args[i] = new LocalArgumentReadNode(true, i).initialize(coord);
     }
 
-    ExpressionNode primNode = specializer.create(null, args, source);
+    ExpressionNode primNode = specializer.create(null, args, coord);
 
-    Primitive primMethodNode = new Primitive(signature.getString(), source, primNode,
+    Primitive primMethodNode = new Primitive(signature.getString(), source, coord, primNode,
         mgen.getCurrentLexicalScope().getFrameDescriptor(),
         (ExpressionNode) primNode.deepCopy());
-    return new SPrimitive(signature, primMethodNode, source);
+    return new SPrimitive(signature, primMethodNode);
   }
 
   @Override

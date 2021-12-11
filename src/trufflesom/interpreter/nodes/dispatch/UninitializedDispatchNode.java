@@ -57,7 +57,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
         if (method.isTrivial()) {
           PreevaluatedExpression expr = method.copyTrivialNode();
           assert expr != null;
-          node = new CachedExprNode(guard, expr, newChainEnd);
+          node = new CachedExprNode(guard, expr, method.getSource(), newChainEnd);
         } else {
           CallTarget callTarget = method.getCallTarget();
           node = new CachedDispatchNode(guard, callTarget, newChainEnd);

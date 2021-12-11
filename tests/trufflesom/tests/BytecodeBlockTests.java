@@ -2,6 +2,7 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
+import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Test;
@@ -9,6 +10,8 @@ import org.junit.Test;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
+import bd.source.SourceCoordinate;
+import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.ParserBc;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.SomLanguage;
@@ -19,18 +22,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
 
   protected BytecodeMethodGenContext bgenc;
 
-  public BytecodeBlockTests() {
-    mgenc.setSignature(symbolFor("outer"));
-    mgenc.setVarsOnMethodScope();
-
-    initBgenc();
-  }
-
-  private void initBgenc() {
-    fieldCount = 0;
-    bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
-  }
-
   @Override
   public void dump() {
     dumpMethod(bgenc);
@@ -38,6 +29,44 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
 
   private byte[] blockToBytecodes(final String source) {
     Source s = SomLanguage.getSyntheticSource(source, "test");
+
+    cgenc = new ClassGenerationContext(s, null);
+    cgenc.setName(symbolFor("Test"));
+    addAllFields();
+
+    mgenc = new BytecodeMethodGenContext(cgenc, probe);
+    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+
+    mgenc.setSignature(symbolFor("outer"));
+    mgenc.setVarsOnMethodScope();
+
+    bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
+
+    ParserBc parser = new ParserBc(source, s, probe);
+    try {
+      parser.nestedBlock(bgenc);
+    } catch (ProgramDefinitionError e) {
+      throw new RuntimeException(e);
+    }
+    return bgenc.getBytecodeArray();
+  }
+
+  private byte[] blockToBytecodes(final String source, final String outerMethodArgName) {
+    Source s = SomLanguage.getSyntheticSource(source, "test");
+
+    cgenc = new ClassGenerationContext(s, null);
+    cgenc.setName(symbolFor("Test"));
+    addAllFields();
+
+    mgenc = new BytecodeMethodGenContext(cgenc, probe);
+    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+    mgenc.addArgumentIfAbsent(
+        symbolFor(outerMethodArgName), SourceCoordinate.create(2, 1));
+
+    mgenc.setSignature(symbolFor("outer"));
+    mgenc.setVarsOnMethodScope();
+
+    bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
 
     ParserBc parser = new ParserBc(source, s, probe);
     try {
@@ -141,14 +170,12 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
 
   @Test
   public void testBlockIfTrueMethodArg() {
-    Source s = SomLanguage.getSyntheticSource("test arg", "arg");
-    mgenc.addArgumentIfAbsent(symbolFor("arg"), s.createSection(1));
-
     byte[] bytecodes = blockToBytecodes(
         "[ #start.\n"
             + " self method ifTrue: [ arg ].\n"
             + " #end\n"
-            + "]");
+            + "]",
+        "arg");
 
     assertEquals(17, bytecodes.length);
     check(bytecodes,
@@ -159,7 +186,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   }
 
   private void blockIfReturnNonLocal(final String sel, final byte jumpBytecode) {
-    initBgenc();
     byte[] bytecodes = blockToBytecodes("[:arg |\n"
         + " #start.\n"
         + " self method " + sel + " [ ^ arg ].\n"
@@ -182,7 +208,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   }
 
   private void returnIncFieldFromBlock(final int field) {
-    initBgenc();
     addField("field0");
     addField("field1");
     addField("field2");

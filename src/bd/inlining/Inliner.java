@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.Inline.False;
@@ -42,7 +41,7 @@ class Inliner {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public <N extends Node> N create(final List<N> argNodes, final ScopeBuilder scopeBuilder,
-      final SourceSection source) throws ProgramDefinitionError {
+      final long coord) throws ProgramDefinitionError {
     Object[] args = new Object[argNodes.size() + inline.inlineableArgIdx().length
         + inline.additionalArgs().length];
 
@@ -70,7 +69,7 @@ class Inliner {
     }
     try {
       N node = (N) ctor.newInstance(args);
-      ((WithSource) node).initialize(source);
+      ((WithSource) node).initialize(coord);
       return node;
     } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
         | InvocationTargetException e) {
@@ -83,7 +82,8 @@ class Inliner {
    * going to be evaluated by the DSL, which means, they are going to be appended at the end
    * of the args array.
    *
-   * <p>The rest is treated as normal, first the args, then the inlined args,
+   * <p>
+   * The rest is treated as normal, first the args, then the inlined args,
    * then possibly to be introduced temps, and finally possible additional args.
    *
    * @param <ExprT>
@@ -104,7 +104,7 @@ class Inliner {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <N extends Node> N create(final List<N> argNodes, final ScopeBuilder scopeBuilder,
-        final SourceSection source) throws ProgramDefinitionError {
+        final long coord) throws ProgramDefinitionError {
       Object[] args = new Object[argNodes.size() + inline.inlineableArgIdx().length
           + inline.introduceTemps().length + inline.additionalArgs().length];
 
@@ -130,7 +130,7 @@ class Inliner {
 
       for (int a : inline.introduceTemps()) {
         args[i] = scopeBuilder.introduceTempForInlinedVersion(
-            (Inlinable) argNodes.get(a), source);
+            (Inlinable) argNodes.get(a), coord);
       }
 
       for (Class<?> c : inline.additionalArgs()) {
@@ -144,7 +144,7 @@ class Inliner {
       }
 
       N node = (N) factory.createNode(args);
-      ((WithSource) node).initialize(source);
+      ((WithSource) node).initialize(coord);
       return node;
     }
   }

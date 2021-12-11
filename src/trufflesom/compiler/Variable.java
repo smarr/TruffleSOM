@@ -17,9 +17,9 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.source.Source;
 
-import bd.inlining.NodeState;
+import bd.source.SourceCoordinate;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
@@ -27,17 +27,16 @@ import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteN
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
 import trufflesom.vm.NotYetImplementedException;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
-  public final SSymbol       name;
-  public final SourceSection source;
+  public final SSymbol name;
+  public final long    coord;
 
-  Variable(final SSymbol name, final SourceSection source) {
+  Variable(final SSymbol name, final long coord) {
     this.name = name;
-    this.source = source;
+    this.coord = coord;
   }
 
   public final SSymbol getName() {
@@ -45,8 +44,8 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
   }
 
   /** Gets the name including lexical location. */
-  public final SSymbol getQualifiedName() {
-    return symbolFor(name.getString() + Universe.getLocationQualifier(source));
+  public final SSymbol getQualifiedName(final Source source) {
+    return symbolFor(name.getString() + SourceCoordinate.getLocationQualifier(source, coord));
   }
 
   @Override
@@ -55,7 +54,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
   }
 
   @Override
-  public abstract ExpressionNode getReadNode(int contextLevel, SourceSection source);
+  public abstract ExpressionNode getReadNode(int contextLevel, long coord);
 
   protected abstract void emitPop(BytecodeMethodGenContext mgenc);
 
@@ -75,25 +74,25 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       return false;
     }
     Variable var = (Variable) o;
-    if (var.source == source) {
+    if (var.coord == coord) {
       assert name == var.name : "Defined in the same place, but names not equal?";
       return true;
     }
-    assert source == null || !source.equals(
-        var.source) : "Why are there multiple objects for this source section? might need to fix comparison above";
+    assert coord == 0
+        || coord != var.coord : "Why are there multiple objects for this source section? might need to fix comparison above";
     return false;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, source);
+    return Objects.hash(name, coord);
   }
 
   public static final class Argument extends Variable {
     public final int index;
 
-    Argument(final SSymbol name, final int index, final SourceSection source) {
-      super(name, source);
+    Argument(final SSymbol name, final int index, final long coord) {
+      super(name, coord);
       this.index = index;
     }
 
@@ -112,29 +111,22 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
         return null;
       }
 
-      Local l = new Local(name, source);
+      Local l = new Local(name, coord);
       l.init(descriptor.addFrameSlot(l), descriptor);
       return l;
     }
 
     @Override
-    public ExpressionNode getReadNode(final int contextLevel,
-        final SourceSection source) {
+    public ExpressionNode getReadNode(final int contextLevel, final long coord) {
       transferToInterpreterAndInvalidate("Variable.getReadNode");
-      return createArgumentRead(this, contextLevel, source);
-    }
-
-    @Override
-    public ExpressionNode getSuperReadNode(final int contextLevel, final NodeState state,
-        final SourceSection source) {
-      throw new UnsupportedOperationException("Not needed in this implementation");
+      return createArgumentRead(this, contextLevel, coord);
     }
 
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
-        final ExpressionNode valueExpr, final SourceSection source) {
+        final ExpressionNode valueExpr, final long coord) {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
-      return createArgumentWrite(this, contextLevel, valueExpr, source);
+      return createArgumentWrite(this, contextLevel, valueExpr, coord);
     }
 
     @Override
@@ -152,8 +144,8 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @CompilationFinal private transient FrameSlot slot;
     @CompilationFinal private FrameDescriptor     descriptor;
 
-    Local(final SSymbol name, final SourceSection source) {
-      super(name, source);
+    Local(final SSymbol name, final long coord) {
+      super(name, coord);
     }
 
     public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
@@ -162,12 +154,12 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
-    public ExpressionNode getReadNode(final int contextLevel, final SourceSection source) {
+    public ExpressionNode getReadNode(final int contextLevel, final long coord) {
       transferToInterpreterAndInvalidate("Variable.getReadNode");
       if (contextLevel > 0) {
-        return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(source);
+        return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(coord);
       }
-      return LocalVariableReadNodeGen.create(this).initialize(source);
+      return LocalVariableReadNodeGen.create(this).initialize(coord);
     }
 
     public FrameSlot getSlot() {
@@ -176,7 +168,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public Local split(final FrameDescriptor descriptor) {
-      Local newLocal = new Local(name, source);
+      Local newLocal = new Local(name, coord);
       newLocal.init(descriptor.addFrameSlot(newLocal), descriptor);
       return newLocal;
     }
@@ -188,13 +180,13 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
-        final ExpressionNode valueExpr, final SourceSection source) {
+        final ExpressionNode valueExpr, final long coord) {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
       if (contextLevel > 0) {
         return NonLocalVariableWriteNodeGen.create(contextLevel, this, valueExpr)
-                                           .initialize(source);
+                                           .initialize(coord);
       }
-      return LocalVariableWriteNodeGen.create(this, valueExpr).initialize(source);
+      return LocalVariableWriteNodeGen.create(this, valueExpr).initialize(coord);
     }
 
     public FrameDescriptor getFrameDescriptor() {
@@ -218,8 +210,8 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @CompilationFinal private FrameSlot       slot;
     @CompilationFinal private FrameDescriptor descriptor;
 
-    public Internal(final SSymbol name, final SourceSection source) {
-      super(name, source);
+    public Internal(final SSymbol name, final long coord) {
+      super(name, coord);
     }
 
     public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
@@ -235,7 +227,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
-    public ExpressionNode getReadNode(final int contextLevel, final SourceSection source) {
+    public ExpressionNode getReadNode(final int contextLevel, final long coord) {
       throw new UnsupportedOperationException(
           "There shouldn't be any language-level read nodes for internal slots. "
               + "They are used directly by other nodes.");
@@ -243,7 +235,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public Variable split(final FrameDescriptor descriptor) {
-      Internal newInternal = new Internal(name, source);
+      Internal newInternal = new Internal(name, coord);
 
       assert this.descriptor.getFrameSlotKind(
           slot) == FrameSlotKind.Object : "We only have the on stack marker currently, so, we expect those not to specialize";
@@ -276,12 +268,12 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
         return false;
       }
       Variable var = (Variable) o;
-      return var.source == source && name == var.name;
+      return var.coord == coord && name == var.name;
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(name, source);
+      return Objects.hash(name, coord);
     }
   }
 }

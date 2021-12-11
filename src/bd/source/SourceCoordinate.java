@@ -1,113 +1,91 @@
 package bd.source;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Set;
-
-import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
+
+import bd.inlining.nodes.WithSource;
 
 
 /**
  * Represents a potentially empty range of source characters, for a potentially
  * not yet loaded source.
- *
- * <p>
- * The {@code charIndex} may not be set. It can be derived from startLine and startColumn,
- * if the source file is present.
  */
 public class SourceCoordinate {
-  public final int           startLine;
-  public final int           startColumn;
-  public final transient int charIndex;
-  public final int           charLength;
 
-  protected SourceCoordinate(final int startLine, final int startColumn,
-      final int charIndex, final int length) {
-    this.startLine = startLine;
-    this.startColumn = startColumn;
-    this.charIndex = charIndex;
-    this.charLength = length;
-    assert startLine >= 0;
-    assert startColumn >= 0;
-    assert charIndex >= 0 || charIndex == -1;
+  public static String toString(final long coord) {
+    long startIndex = getStartIndex(coord);
+    long length = getLength(coord);
+
+    return "SrcCoord(start:" + startIndex + " length: " + length + ")";
   }
 
-  @Override
-  public String toString() {
-    return "SrcCoord(line: " + startLine + ", col: " + startColumn + ", charlength:"
-        + charLength + ")";
+  public static int getStartIndex(final long coord) {
+    return (int) (coord & 0xFFFFFFFFL);
   }
 
-  public static SourceCoordinate createEmpty() {
-    return new SourceCoordinate(1, 1, 0, 0);
+  public static int getLength(final long coord) {
+    return (int) ((coord >>> 32) & 0xFFFFFFFFL);
   }
 
-  public static SourceCoordinate create(final int startLine, final int startColumn,
-      final int charIndex) {
-    return new SourceCoordinate(startLine, startColumn, charIndex, 0);
+  public static long createEmpty() {
+    return 0;
   }
 
-  public static SourceCoordinate create(final int startLine, final int startColumn,
-      final int charIndex, final int length) {
-    return new SourceCoordinate(startLine, startColumn, charIndex, length);
+  public static long create(final SourceSection section) {
+    return create(section.getCharIndex(), section.getCharLength());
   }
 
-  public static SourceCoordinate create(final SourceSection section) {
-    return new SourceCoordinate(section.getStartLine(), section.getStartColumn(),
-        section.getCharIndex(), section.getCharLength());
+  public static long create(final int startIndex, final int length) {
+    return (((long) length) << 32) | (startIndex & 0xFFFFFFFFL);
   }
 
-  public static FullSourceCoordinate createFull(final SourceSection section) {
-    return new FullSourceCoordinate(section.getSource().getURI(),
-        section.getStartLine(), section.getStartColumn(),
-        section.getCharIndex(), section.getCharLength());
-  }
-
-  public static FullSourceCoordinate create(final URI sourceUri, final int startLine,
-      final int startColumn, final int charLength) {
-    return new FullSourceCoordinate(sourceUri, startLine, startColumn, -1, charLength);
-  }
-
-  public static FullSourceCoordinate create(final String sourceUri, final int startLine,
-      final int startColumn, final int charLength) {
-    try {
-      return create(new URI(sourceUri), startLine, startColumn, charLength);
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static FullSourceCoordinate create(final String sourceUri, final int startLine,
-      final int startColumn, final int charIndex, final int charLength) {
-    try {
-      return new FullSourceCoordinate(
-          new URI(sourceUri), startLine, startColumn, charIndex, charLength);
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static TaggedSourceCoordinate create(final SourceSection section,
-      final Set<Class<? extends Tag>> tags) {
-    String[] strTags = new String[tags.size()];
-
-    int i = 0;
-    for (Class<? extends Tag> tagClass : tags) {
-      strTags[i] = tagClass.getSimpleName();
-      i += 1;
-    }
-
-    return new TaggedSourceCoordinate(section.getStartLine(), section.getStartColumn(),
-        section.getCharIndex(), section.getCharLength(), strTags);
+  public static long withZeroLength(final long coord) {
+    return coord & 0xFFFFFFFFL;
   }
 
   public static String getLocationQualifier(final SourceSection section) {
     return ":" + section.getStartLine() + ":" + section.getStartColumn();
   }
 
-  public static String getURI(final Source source) {
-    return source.getURI().toString();
+  public static String getLocationQualifier(final int startIndex, final Source source) {
+    int lineNumber = source.getLineNumber(startIndex);
+    int column = source.getColumnNumber(startIndex);
+    return ":" + lineNumber + ":" + column;
+  }
+
+  public static String getLocationQualifier(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int lineNumber = source.getLineNumber(startIndex);
+    int column = source.getColumnNumber(startIndex);
+    return ":" + lineNumber + ":" + column;
+  }
+
+  public static int getLine(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int lineNumber = source.getLineNumber(startIndex);
+    return lineNumber;
+  }
+
+  public static int getColumn(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int column = source.getColumnNumber(startIndex);
+    return column;
+  }
+
+  public static SourceSection createSourceSection(final Source source, final long coord) {
+    int startIndex = getStartIndex(coord);
+    int length = getLength(coord);
+    return source.createSection(startIndex, length);
+  }
+
+  public static SourceSection createSourceSection(final WithSource node, final long coord) {
+    Source source = node.getSource();
+    if (source == null) {
+      return null;
+    }
+
+    int startIndex = getStartIndex(coord);
+    int length = getLength(coord);
+    return source.createSection(startIndex, length);
   }
 }

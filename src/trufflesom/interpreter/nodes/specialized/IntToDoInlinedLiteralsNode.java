@@ -141,7 +141,7 @@ public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
     ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(loopIdxVar);
     IntToDoInlinedLiteralsNode node = IntToDoInlinedLiteralsNodeFactory.create(bodyActualNode,
         body, (Local) se.var, getFrom(), getTo());
-    node.initialize(sourceSection);
+    node.initialize(sourceCoord);
     replace(node);
   }
 }

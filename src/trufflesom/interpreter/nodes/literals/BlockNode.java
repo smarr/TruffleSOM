@@ -80,14 +80,14 @@ public class BlockNode extends LiteralNode {
     Method blockIvk = (Method) blockMethod.getInvokable();
     Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(null, inliner.getScope(blockIvk),
         inliner.contextLevel + 1, true, inliner.outerScopeChanged());
-    SMethod method = new SMethod(blockMethod.getSignature(), adapted,
-        blockMethod.getEmbeddedBlocks(), blockIvk.getSourceSection());
+    SMethod method = new SMethod(
+        blockMethod.getSignature(), adapted, blockMethod.getEmbeddedBlocks());
     method.setHolder(blockMethod.getHolder());
     replace(createNode(method));
   }
 
   protected BlockNode createNode(final SMethod adapted) {
-    return new BlockNode(adapted).initialize(sourceSection);
+    return new BlockNode(adapted).initialize(sourceCoord);
   }
 
   @Override
@@ -121,7 +121,7 @@ public class BlockNode extends LiteralNode {
 
     @Override
     protected BlockNode createNode(final SMethod adapted) {
-      return new BlockNodeWithContext(adapted).initialize(sourceSection);
+      return new BlockNodeWithContext(adapted).initialize(sourceCoord);
     }
 
     @Override

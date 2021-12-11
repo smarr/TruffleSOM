@@ -8,7 +8,7 @@ import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
-import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.source.Source;
 
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -17,16 +17,16 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 
 public final class Primitive extends Invokable {
 
-  public Primitive(final String name, final SourceSection sourceSection,
+  public Primitive(final String name, final Source source, final long sourceCoord,
       final ExpressionNode primitive, final FrameDescriptor frameDescriptor,
       final ExpressionNode uninitialized) {
-    super(name, sourceSection, frameDescriptor, primitive, uninitialized);
+    super(name, source, sourceCoord, frameDescriptor, primitive, uninitialized);
   }
 
   @Override
   public Node deepCopy() {
     assert getFrameDescriptor().getSize() == 0 : "Make sure there are no slots to be taken care off";
-    return new Primitive(name, sourceSection, NodeUtil.cloneNode(uninitializedBody),
+    return new Primitive(name, source, sourceCoord, NodeUtil.cloneNode(uninitializedBody),
         getFrameDescriptor(), uninitializedBody);
   }
 

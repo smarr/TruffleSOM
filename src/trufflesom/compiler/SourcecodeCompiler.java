@@ -89,7 +89,8 @@ public final class SourcecodeCompiler {
 
   public static SClass compile(final Parser<?> parser, final SClass systemClass)
       throws ProgramDefinitionError {
-    ClassGenerationContext cgc = new ClassGenerationContext(parser.structuralProbe);
+    ClassGenerationContext cgc =
+        new ClassGenerationContext(parser.getSource(), parser.structuralProbe);
 
     SClass result = systemClass;
     parser.classdef(cgc);

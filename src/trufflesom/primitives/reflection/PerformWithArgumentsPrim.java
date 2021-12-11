@@ -4,7 +4,6 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
@@ -19,9 +18,9 @@ public abstract class PerformWithArgumentsPrim extends TernaryExpressionNode {
   @Child protected AbstractSymbolDispatch dispatch;
 
   @Override
-  public PerformWithArgumentsPrim initialize(final SourceSection sourceSection) {
-    super.initialize(sourceSection);
-    dispatch = AbstractSymbolDispatchNodeGen.create(sourceSection);
+  public PerformWithArgumentsPrim initialize(final long coord) {
+    super.initialize(coord);
+    dispatch = AbstractSymbolDispatchNodeGen.create(coord);
     return this;
   }
 

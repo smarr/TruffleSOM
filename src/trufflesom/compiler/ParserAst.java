@@ -25,11 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.InlinableNodes;
-import bd.source.SourceCoordinate;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
@@ -70,7 +68,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   @Override
   protected ExpressionNode blockBody(final MethodGenerationContext mgenc,
       final boolean seenPeriod) throws ProgramDefinitionError {
-    SourceCoordinate coord = getCoordinate();
+    int coord = getStartIndex();
     List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
     boolean sawPeriod = true;
@@ -87,7 +85,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       } else if (sym == EndTerm) {
         // the end of the method has been found (EndTerm) - make it implicitly return "self"
         ExpressionNode self =
-            variableRead(mgenc, symSelf, getSource(getCoordinate()));
+            variableRead(mgenc, symSelf, getCoordWithLength(getStartIndex()));
         expressions.add(self);
         return createSequenceNode(coord, expressions);
       }
@@ -101,26 +99,26 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     }
   }
 
-  private ExpressionNode createSequenceNode(final SourceCoordinate coord,
+  private ExpressionNode createSequenceNode(final int coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
-      return GlobalNode.create(symNil, null).initialize(getSource(coord));
+      return GlobalNode.create(symNil, null).initialize(getCoordWithLength(coord));
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
-    return createSequence(expressions, getSource(coord));
+    return createSequence(expressions, getCoordWithLength(coord));
   }
 
   @Override
   protected ExpressionNode result(final MethodGenerationContext mgenc)
       throws ProgramDefinitionError {
-    SourceCoordinate coord = getCoordinate();
+    int coord = getStartIndex();
 
     ExpressionNode exp = expression(mgenc);
     accept(Period);
 
     if (mgenc.isBlockMethod()) {
-      return mgenc.getNonLocalReturn(exp, getSource(coord));
+      return mgenc.getNonLocalReturn(exp, getCoordWithLength(coord));
     } else {
       return exp;
     }
@@ -134,7 +132,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
   private ExpressionNode assignments(final MethodGenerationContext mgenc)
       throws ProgramDefinitionError {
-    SourceCoordinate coord = getCoordinate();
+    int coord = getStartIndex();
 
     if (!isIdentifier(sym)) {
       throw new ParseError("Assignments should always target variables or" +
@@ -152,17 +150,17 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       value = evaluation(mgenc);
     }
 
-    return variableWrite(mgenc, variable, value, getSource(coord));
+    return variableWrite(mgenc, variable, value, getCoordWithLength(coord));
   }
 
   private ExpressionNode variableWrite(final MethodGenerationContext mgenc,
-      final SSymbol variableName, final ExpressionNode exp, final SourceSection source) {
+      final SSymbol variableName, final ExpressionNode exp, final long coord) {
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
-      return mgenc.getLocalWriteNode(variable, exp, source);
+      return mgenc.getLocalWriteNode(variable, exp, coord);
     }
 
-    FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, source);
+    FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, coord);
 
     if (fieldWrite != null) {
       return fieldWrite;
@@ -224,31 +222,31 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     boolean isSuperSend = superSend;
     superSend = false;
 
-    SourceCoordinate coord = getCoordinate();
+    int coord = getStartIndex();
     SSymbol selector = unarySelector();
 
     ExpressionNode[] args = new ExpressionNode[] {receiver};
-    SourceSection source = getSource(coord);
+    long coordWithL = getCoordWithLength(coord);
 
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
-          mgenc.getHolder().getSuperClass(), selector, args, source);
+          mgenc.getHolder().getSuperClass(), selector, args, coordWithL);
     }
-    return MessageSendNode.create(selector, args, source);
+    return MessageSendNode.create(selector, args, coordWithL);
   }
 
   protected ExpressionNode binaryMessage(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ProgramDefinitionError {
     boolean isSuperSend = superSend;
     superSend = false;
-    SourceCoordinate coord = getCoordinate();
+    int coord = getStartIndex();
     SSymbol msg = binarySelector();
     ExpressionNode operand = binaryOperand(mgenc);
 
-    SourceSection source = getSource(coord);
+    long coordWithL = getCoordWithLength(coord);
 
     ExpressionNode inlined =
-        inlinableNodes.inline(msg, Arrays.asList(receiver, operand), mgenc, source);
+        inlinableNodes.inline(msg, Arrays.asList(receiver, operand), mgenc, coordWithL);
     if (inlined != null) {
       assert !isSuperSend;
       return inlined;
@@ -258,21 +256,21 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
-          mgenc.getHolder().getSuperClass(), msg, args, source);
+          mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
     } else if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
       IntegerLiteralNode lit = (IntegerLiteralNode) operand;
       if (lit.executeLong(null) == 1) {
         return IntIncrementNodeGen.create(receiver);
       }
     }
-    return MessageSendNode.create(msg, args, source);
+    return MessageSendNode.create(msg, args, coordWithL);
   }
 
   protected ExpressionNode keywordMessage(final MethodGenerationContext mgenc,
       final ExpressionNode receiver) throws ProgramDefinitionError {
     boolean isSuperSend = superSend;
     superSend = false;
-    SourceCoordinate coord = getCoordinate();
+    int coord = getStartIndex();
     List<ExpressionNode> arguments = new ArrayList<ExpressionNode>();
     StringBuilder kw = new StringBuilder();
 
@@ -285,9 +283,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     SSymbol msg = symbolFor(kw.toString());
 
-    SourceSection source = getSource(coord);
+    long coodWithL = getCoordWithLength(coord);
 
-    ExpressionNode inlined = inlinableNodes.inline(msg, arguments, mgenc, source);
+    ExpressionNode inlined = inlinableNodes.inline(msg, arguments, mgenc, coodWithL);
     if (inlined != null) {
       assert !isSuperSend;
       return inlined;
@@ -296,9 +294,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     ExpressionNode[] args = arguments.toArray(new ExpressionNode[0]);
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
-          mgenc.getHolder().getSuperClass(), msg, args, source);
+          mgenc.getHolder().getSuperClass(), msg, args, coodWithL);
     }
-    return MessageSendNode.create(msg, args, source);
+    return MessageSendNode.create(msg, args, coodWithL);
   }
 
   private ExpressionNode formula(final MethodGenerationContext mgenc)
@@ -314,7 +312,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   }
 
   private LiteralNode literal() throws ParseError {
-    SourceCoordinate coord = getCoordinate();
+    int coord = getStartIndex();
     switch (sym) {
       case Pound: {
         peekForNextSymbolFromLexerIfNecessary();
@@ -324,25 +322,26 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         } else {
           value = literalSymbol();
         }
-        return new GenericLiteralNode(value).initialize(getSource(coord));
+        return new GenericLiteralNode(value).initialize(getCoordWithLength(coord));
       }
       case STString:
-        return new GenericLiteralNode(literalString()).initialize(getSource(coord));
+        return new GenericLiteralNode(literalString()).initialize(getCoordWithLength(coord));
       default:
         boolean isNegative = isNegativeNumber();
         if (sym == Integer) {
           Object value = literalInteger(isNegative);
           if (value instanceof BigInteger) {
-            return new GenericLiteralNode(value).initialize(getSource(coord));
+            return new GenericLiteralNode(value).initialize(getCoordWithLength(coord));
           } else {
-            return new IntegerLiteralNode((long) value).initialize(getSource(coord));
+            return new IntegerLiteralNode((long) value).initialize(getCoordWithLength(coord));
           }
         } else {
           if (sym != Double) {
             throw new ParseError("Unexpected symbol. Expected %(expected)s, but found "
                 + "%(found)s", sym, this);
           }
-          return new DoubleLiteralNode(literalDouble(isNegative)).initialize(getSource(coord));
+          return new DoubleLiteralNode(literalDouble(isNegative)).initialize(
+              getCoordWithLength(coord));
         }
     }
   }
@@ -395,7 +394,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     switch (sym) {
       case Identifier:
       case Primitive: {
-        SourceCoordinate coord = getCoordinate();
+        int coord = getStartIndex();
         SSymbol v = variable();
 
         if (v == symSuper) {
@@ -405,25 +404,24 @@ public class ParserAst extends Parser<MethodGenerationContext> {
           v = symSelf;
         }
 
-        return variableRead(mgenc, v, getSource(coord));
+        return variableRead(mgenc, v, getCoordWithLength(coord));
       }
       case NewTerm: {
         return nestedTerm(mgenc);
       }
       case NewBlock: {
-        SourceCoordinate coord = getCoordinate();
+        int coord = getStartIndex();
         MethodGenerationContext bgenc = new MethodGenerationContext(mgenc.getHolder(), mgenc);
 
         ExpressionNode blockBody = nestedBlock(bgenc);
 
-        SMethod blockMethod = (SMethod) bgenc.assemble(
-            blockBody, lastMethodsSourceSection, lastMethodsSourceSection);
+        SMethod blockMethod = (SMethod) bgenc.assemble(blockBody, lastMethodsCoord);
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod).initialize(getSource(coord));
+          return new BlockNodeWithContext(blockMethod).initialize(getCoordWithLength(coord));
         } else {
-          return new BlockNode(blockMethod).initialize(getSource(coord));
+          return new BlockNode(blockMethod).initialize(getCoordWithLength(coord));
         }
       }
       default: {

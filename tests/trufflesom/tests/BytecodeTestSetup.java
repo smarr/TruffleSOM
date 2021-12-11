@@ -3,7 +3,6 @@ package trufflesom.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
-import static trufflesom.vm.SymbolTable.symSelf;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -23,17 +22,6 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 public class BytecodeTestSetup extends TruffleTestSetup {
 
   protected BytecodeMethodGenContext mgenc;
-
-  public BytecodeTestSetup() {
-    super();
-    initMgenc();
-  }
-
-  public void initMgenc() {
-    fieldCount = 0;
-    mgenc = new BytecodeMethodGenContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, sourceForTests.createSection(1, 1));
-  }
 
   protected byte[] getBytecodesOfBlock(final int bytecodeIdx) {
     SMethod blockMethod = (SMethod) mgenc.getConstant(bytecodeIdx);

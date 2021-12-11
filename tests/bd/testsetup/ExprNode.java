@@ -3,25 +3,43 @@ package bd.testsetup;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.nodes.WithSource;
+import bd.source.SourceCoordinate;
 
 
 public abstract class ExprNode extends Node implements WithSource {
 
-  private SourceSection sourceSection;
+  private long sourceCoord;
 
   @Override
   @SuppressWarnings("unchecked")
-  public ExprNode initialize(final SourceSection sourceSection) {
-    this.sourceSection = sourceSection;
+  public ExprNode initialize(final long coord) {
+    this.sourceCoord = coord;
     return this;
   }
 
   @Override
+  public Source getSource() {
+    return ((WithSource) getParent()).getSource();
+  }
+
+  @Override
+  public boolean hasSource() {
+    return false;
+  }
+
+  @Override
   public SourceSection getSourceSection() {
-    return sourceSection;
+    return SourceCoordinate.createSourceSection(
+        getRootNode().getSourceSection().getSource(), sourceCoord);
+  }
+
+  @Override
+  public long getSourceCoordinate() {
+    return sourceCoord;
   }
 
   public abstract Object executeGeneric(VirtualFrame frame);

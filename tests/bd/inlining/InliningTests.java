@@ -12,10 +12,8 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.source.SourceSection;
-
 import bd.basic.ProgramDefinitionError;
+import bd.source.SourceCoordinate;
 import bd.testsetup.AddNodeFactory;
 import bd.testsetup.ExprNode;
 import bd.testsetup.LambdaNode;
@@ -25,9 +23,7 @@ import bd.testsetup.ValueSpecializedNode;
 
 
 public class InliningTests {
-
-  private final SourceSection source =
-      Source.newBuilder("x", "test", "test").mimeType("x/test").build().createSection(1);
+  private final long coord = SourceCoordinate.create(0, 10);
 
   private final InlinableNodes<String> nodes =
       new InlinableNodes<String>(new StringId(), Nodes.getInlinableNodes(),
@@ -37,7 +33,7 @@ public class InliningTests {
   public void testNonInlinableNode() throws ProgramDefinitionError {
     List<ExprNode> argNodes = new ArrayList<>();
     argNodes.add(AddNodeFactory.create(null, null));
-    assertNull(nodes.inline("value", argNodes, null, null));
+    assertNull(nodes.inline("value", argNodes, null, coord));
   }
 
   @Test
@@ -45,7 +41,7 @@ public class InliningTests {
     List<ExprNode> argNodes = new ArrayList<>();
     LambdaNode arg = new LambdaNode();
     argNodes.add(arg);
-    ExprNode valueNode = nodes.inline("value", argNodes, null, source);
+    ExprNode valueNode = nodes.inline("value", argNodes, null, coord);
     assertNotNull(valueNode);
     assertTrue(valueNode instanceof ValueNode);
 
@@ -57,7 +53,7 @@ public class InliningTests {
     assertTrue(value.trueVal);
     assertFalse(value.falseVal);
 
-    assertTrue(valueNode.getSourceSection() == source);
+    assertTrue(valueNode.getSourceCoordinate() == coord);
   }
 
   @Test
@@ -65,7 +61,7 @@ public class InliningTests {
     List<ExprNode> argNodes = new ArrayList<>();
     LambdaNode arg = new LambdaNode();
     argNodes.add(arg);
-    ExprNode valueNode = nodes.inline("valueSpec", argNodes, null, source);
+    ExprNode valueNode = nodes.inline("valueSpec", argNodes, null, coord);
     assertNotNull(valueNode);
     assertTrue(valueNode instanceof ValueSpecializedNode);
 
@@ -73,7 +69,7 @@ public class InliningTests {
 
     assertNotEquals(arg, value.inlined);
     assertEquals(arg, value.getLambda());
-    assertTrue(valueNode.getSourceSection() == source);
+    assertTrue(valueNode.getSourceCoordinate() == coord);
   }
 
   @Test
@@ -81,6 +77,6 @@ public class InliningTests {
     InlinableNodes<String> n =
         new InlinableNodes<>(new StringId(), null, null);
 
-    assertNull(n.inline("nonExisting", null, null, null));
+    assertNull(n.inline("nonExisting", null, null, coord));
   }
 }

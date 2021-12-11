@@ -4,87 +4,97 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import bd.source.SourceCoordinate;
+import com.oracle.truffle.api.source.Source;
+
+import trufflesom.interpreter.SomLanguage;
 
 
 public class LexerTests {
 
+  private Source s;
+
+  private Lexer init(final String code) {
+    s = SomLanguage.getSyntheticSource(code, "test");
+    return new Lexer(code);
+  }
+
   @Test
   public void testStartCoordinate() {
-    Lexer l = new Lexer("Foo = ()");
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(0, coord.charIndex);
-    assertEquals(1, coord.startLine);
-    assertEquals(1, coord.startColumn);
+    Lexer l = init("Foo = ()");
+
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(0, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
   }
 
   @Test
   public void testFirstToken() {
-    Lexer l = new Lexer("Foo = ()");
+    Lexer l = init("Foo = ()");
     l.getSym();
 
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(0, coord.charIndex);
-    assertEquals(1, coord.startLine);
-    assertEquals(1, coord.startColumn);
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(0, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
   }
 
   @Test
   public void testSecondToken() {
-    Lexer l = new Lexer("Foo = ()");
+    Lexer l = init("Foo = ()");
     l.getSym();
     l.getSym();
 
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(4, coord.charIndex);
-    assertEquals(1, coord.startLine);
-    assertEquals(5, coord.startColumn);
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(4, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(5, s.getColumnNumber(startIndex));
   }
 
   @Test
   public void testFirstTokenAfterSpace() {
-    Lexer l = new Lexer(" Foo = ()");
+    Lexer l = init(" Foo = ()");
     l.getSym();
 
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(1, coord.charIndex);
-    assertEquals(1, coord.startLine);
-    assertEquals(2, coord.startColumn);
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(1, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(2, s.getColumnNumber(startIndex));
   }
 
   @Test
   public void testSecondLineFirstToken() {
-    Lexer l = new Lexer("\nFoo = ()");
+    Lexer l = init("\nFoo = ()");
     Symbol sym = l.getSym();
 
     assertEquals(Symbol.Identifier, sym);
     assertEquals("Foo", l.getText());
 
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(1, coord.charIndex);
-    assertEquals(2, coord.startLine);
-    assertEquals(1, coord.startColumn);
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(1, startIndex);
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
   }
 
   @Test
   public void testSecondLineSecondToken() {
-    Lexer l = new Lexer("\nFoo = ()");
+    Lexer l = init("\nFoo = ()");
     l.getSym();
     Symbol sym = l.getSym();
 
     assertEquals(Symbol.Equal, sym);
     assertEquals("=", l.getText());
 
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(5, coord.charIndex);
-    assertEquals(2, coord.startLine);
-    assertEquals(5, coord.startColumn);
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(5, startIndex);
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(5, s.getColumnNumber(startIndex));
   }
 
   @Test
   public void testSecondLineMethodToken() {
     String prefix = "Foo = (\n" + "  ";
-    Lexer l = new Lexer("Foo = (\n"
+    Lexer l = init("Foo = (\n"
         + "  method = ( ) )");
     l.getSym();
     l.getSym();
@@ -94,17 +104,17 @@ public class LexerTests {
     assertEquals(Symbol.Identifier, sym);
     assertEquals("method", l.getText());
 
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(2, coord.startLine);
-    assertEquals(3, coord.startColumn);
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(3, s.getColumnNumber(startIndex));
 
-    assertEquals(prefix.length(), coord.charIndex);
+    assertEquals(prefix.length(), startIndex);
   }
 
   @Test
   public void testSecondLineMethodNoSpacesToken() {
     String prefix = "Foo = (\n" + "";
-    Lexer l = new Lexer("Foo = (\n"
+    Lexer l = init("Foo = (\n"
         + "method = ( ) )");
     l.getSym();
     l.getSym();
@@ -114,10 +124,10 @@ public class LexerTests {
     assertEquals(Symbol.Identifier, sym);
     assertEquals("method", l.getText());
 
-    SourceCoordinate coord = l.getStartCoordinate();
-    assertEquals(2, coord.startLine);
-    assertEquals(1, coord.startColumn);
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
 
-    assertEquals(prefix.length(), coord.charIndex);
+    assertEquals(prefix.length(), startIndex);
   }
 }

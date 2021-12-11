@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Test;
 
@@ -12,6 +13,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
+import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.ParserAst;
 import trufflesom.interpreter.SomLanguage;
@@ -50,18 +52,15 @@ public class AstInliningTests extends TruffleTestSetup {
 
   protected MethodGenerationContext mgenc;
 
-  public AstInliningTests() {
-    super();
-    initMgenc();
-  }
-
-  private void initMgenc() {
-    mgenc = new MethodGenerationContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, null);
-  }
-
   protected ExpressionNode parseMethod(final String source) {
     Source s = SomLanguage.getSyntheticSource(source, "test");
+
+    cgenc = new ClassGenerationContext(s, null);
+    cgenc.setName(symbolFor("Test"));
+    addAllFields();
+
+    mgenc = new MethodGenerationContext(cgenc, probe);
+    mgenc.addArgumentIfAbsent(symSelf, 0);
 
     ParserAst parser = new ParserAst(source, s, null);
     try {
@@ -72,7 +71,6 @@ public class AstInliningTests extends TruffleTestSetup {
   }
 
   private void accessArgFromInlinedBlock(final String argName, final int argIdx) {
-    initMgenc();
     SequenceNode seq =
         (SequenceNode) parseMethod(
             "test: arg1 and: arg2 = ( true ifTrue: [ " + argName + " ] )");
@@ -121,7 +119,6 @@ public class AstInliningTests extends TruffleTestSetup {
   }
 
   private void literalTest(final String literalStr, final Class<?> cls) {
-    initMgenc();
     SequenceNode seq = (SequenceNode) parseMethod(
         "test = ( self method ifTrue: [ " + literalStr + " ]. )");
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 0);
@@ -151,7 +148,6 @@ public class AstInliningTests extends TruffleTestSetup {
   }
 
   private void ifArg(final String ifSelector, final boolean expected) {
-    initMgenc();
     SequenceNode seq = (SequenceNode) parseMethod(
         "test: arg = (\n"
             + "#start.\n"
@@ -334,7 +330,6 @@ public class AstInliningTests extends TruffleTestSetup {
 
   private void ifTrueIfFalseReturn(final String sel1, final String sel2,
       final Class<?> cls) {
-    initMgenc();
     SequenceNode seq = (SequenceNode) parseMethod(
         "test: arg1 with: arg2 = (\n"
             + "   #start.\n"
@@ -352,7 +347,6 @@ public class AstInliningTests extends TruffleTestSetup {
   }
 
   private void whileInlining(final String whileSel, final boolean expectedBool) {
-    initMgenc();
     SequenceNode seq = (SequenceNode) parseMethod(
         "test: arg1 with: arg2 = (\n"
             + "  [ arg1 ] " + whileSel + " [ arg2 ]\n"
@@ -444,7 +438,6 @@ public class AstInliningTests extends TruffleTestSetup {
   }
 
   private Object inliningOf(final String selector) {
-    initMgenc();
     SequenceNode seq = (SequenceNode) parseMethod("test = ( true " + selector + " [ #val ] )");
     return read(seq, "expressions", 0);
   }

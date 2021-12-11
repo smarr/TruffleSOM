@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 
 import bd.inlining.nodes.ScopeReference;
+import bd.inlining.nodes.WithSource;
 
 
 /**
@@ -166,11 +167,11 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
    * @param node the read node
    * @param ctxLevel the context level of the node
    */
-  public <N extends Node> void updateRead(final Variable<?> var, final N node,
+  public void updateRead(final Variable<?> var, final WithSource node,
       final int ctxLevel) {
     ScopeElement<? extends Node> se = getAdaptedVar(var);
     if (se.var != var || se.contextLevel < ctxLevel) {
-      node.replace(se.var.getReadNode(se.contextLevel, node.getSourceSection()));
+      ((Node) node).replace(se.var.getReadNode(se.contextLevel, node.getSourceCoordinate()));
     } else {
       assert ctxLevel == se.contextLevel;
     }
@@ -187,53 +188,12 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
    *          the variable
    * @param ctxLevel the context level of the node
    */
-  public <N extends Node> void updateWrite(final Variable<N> var, final N node,
+  public <N extends Node> void updateWrite(final Variable<N> var, final WithSource node,
       final N valExpr, final int ctxLevel) {
     ScopeElement<N> se = getAdaptedVar(var);
     if (se.var != var || se.contextLevel < ctxLevel) {
-      node.replace(se.var.getWriteNode(se.contextLevel, valExpr, node.getSourceSection()));
-    } else {
-      assert ctxLevel == se.contextLevel;
-    }
-  }
-
-  /**
-   * Factory method to update a <code>this</code>-read node with an appropriate version for the
-   * adapted scope.
-   *
-   * @param <N> the type of the node to be returned
-   *
-   * @param var the variable accessed by {@code node}
-   * @param node the {@code this} node
-   * @param state additional state needed to initialize the adapted node
-   * @param ctxLevel the context level of the node
-   */
-  public <N extends Node> void updateThisRead(final Variable<?> var, final N node,
-      final NodeState state, final int ctxLevel) {
-    ScopeElement<? extends Node> se = getAdaptedVar(var);
-    if (se.var != var || se.contextLevel < ctxLevel) {
-      node.replace(se.var.getThisReadNode(se.contextLevel, state, node.getSourceSection()));
-    } else {
-      assert ctxLevel == se.contextLevel;
-    }
-  }
-
-  /**
-   * Factory method to update a <code>super</code>-read node with an appropriate version for
-   * the adapted scope.
-   *
-   * @param <N> the type of the node to be returned
-   *
-   * @param var the variable accessed by {@code node}
-   * @param node the {@code super} node
-   * @param state additional state needed to initialize the adapted node
-   * @param ctxLevel the context level of the node
-   */
-  public <N extends Node> void updateSuperRead(final Variable<?> var, final N node,
-      final NodeState state, final int ctxLevel) {
-    ScopeElement<? extends Node> se = getAdaptedVar(var);
-    if (se.var != var || se.contextLevel < ctxLevel) {
-      node.replace(se.var.getSuperReadNode(se.contextLevel, state, node.getSourceSection()));
+      ((Node) node).replace(
+          se.var.getWriteNode(se.contextLevel, valExpr, node.getSourceCoordinate()));
     } else {
       assert ctxLevel == se.contextLevel;
     }

@@ -57,7 +57,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.ClassGenerationContext;
@@ -354,8 +353,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   @Override
-  public Local addLocal(final SSymbol local, final SourceSection source) {
-    Local l = super.addLocal(local, source);
+  public Local addLocal(final SSymbol local, final long coord) {
+    Local l = super.addLocal(local, coord);
     localAndOuterVars.put(local, l);
     return l;
   }
@@ -367,7 +366,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     localAndOuterVars.put(name, l);
   }
 
-  private BytecodeLoopNode constructBytecodeBody(final SourceSection sourceSection) {
+  private BytecodeLoopNode constructBytecodeBody(final long coord) {
     byte[] bytecodes = getBytecodeArray();
 
     Object[] literalsArr = literals.toArray();
@@ -380,7 +379,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     FrameSlot frameOnStackMarker =
-        throwsNonLocalReturn ? getFrameOnStackMarker(sourceSection).getSlot() : null;
+        throwsNonLocalReturn ? getFrameOnStackMarker(coord).getSlot() : null;
 
     BackJump[] loops = inlinedLoops.toArray(new BackJump[0]);
 
@@ -431,15 +430,14 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   @Override
-  protected SMethod assembleMethod(final ExpressionNode unused,
-      final SourceSection sourceSection, final SourceSection fullSourceSection) {
+  protected SMethod assembleMethod(final ExpressionNode unused, final long coord) {
     ExpressionNode body = constructTrivialBody();
     if (body == null) {
-      body = constructBytecodeBody(sourceSection);
+      body = constructBytecodeBody(coord);
     }
 
-    body.initialize(sourceSection);
-    return super.assembleMethod(body, sourceSection, fullSourceSection);
+    body.initialize(coord);
+    return super.assembleMethod(body, coord);
   }
 
   /**

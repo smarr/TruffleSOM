@@ -3,7 +3,6 @@ package bd.primitives;
 import java.lang.reflect.InvocationTargetException;
 
 import com.oracle.truffle.api.dsl.NodeFactory;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.inlining.nodes.WithSource;
 import bd.primitives.Primitive.NoChild;
@@ -92,7 +91,7 @@ public class Specializer<ExprT, Id> {
 
   @SuppressWarnings("unchecked")
   public ExprT create(final Object[] arguments, final ExprT[] argNodes,
-      final SourceSection section) {
+      final long coord) {
     assert arguments == null || arguments.length >= argNodes.length;
     int numArgs = numberOfNodeConstructorArguments(argNodes);
 
@@ -113,14 +112,14 @@ public class Specializer<ExprT, Id> {
     if (extraChildFactory != null) {
       Object extraNode = extraChildFactory.createNode(new Object[extraArity]);
       if (extraNode instanceof WithSource) {
-        ((WithSource) extraNode).initialize(section);
+        ((WithSource) extraNode).initialize(coord);
       }
       ctorArgs[offset] = extraNode;
       offset += 1;
     }
 
     ExprT node = fact.createNode(ctorArgs);
-    ((WithSource) node).initialize(section);
+    ((WithSource) node).initialize(coord);
     return node;
   }
 }

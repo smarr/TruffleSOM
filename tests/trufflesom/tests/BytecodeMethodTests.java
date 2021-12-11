@@ -1,6 +1,8 @@
 package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
+import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,7 +10,10 @@ import org.junit.Test;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
+import bd.source.SourceCoordinate;
+import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.ParserBc;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
@@ -20,6 +25,13 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   private byte[] methodToBytecodes(final String source) {
     Source s = SomLanguage.getSyntheticSource(source, "test");
 
+    cgenc = new ClassGenerationContext(s, null);
+    cgenc.setName(symbolFor("Test"));
+    addAllFields();
+
+    mgenc = new BytecodeMethodGenContext(cgenc, probe);
+    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+
     ParserBc parser = new ParserBc(source, s, probe);
     try {
       parser.method(mgenc);
@@ -30,7 +42,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void incDecBytecodes(final String op, final byte bytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes("test = ( 1 " + op + "  1 )");
 
     assertEquals(3, bytecodes.length);
@@ -158,7 +169,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void ifTrueWithLiteralReturn(final String literal, final byte bytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes("test = (\n"
         + "  self method ifTrue: [ " + literal + " ].\n"
         + ")");
@@ -195,7 +205,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void ifTrueWithSomethingAndLiteralReturn(final String literal, final byte bytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes("test = (\n"
         + "  self method ifTrue: [ #fooBarNonTrivialBlock. " + literal + " ].\n"
         + ")");
@@ -234,7 +243,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void ifArg(final String selector, final byte jumpBytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test: arg = (\n"
             + "  #start.\n"
@@ -320,7 +328,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void ifReturnNonLocal(final String ifSelector, final byte jumpBytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test: arg = (\n"
             + "  #start.\n"
@@ -636,7 +643,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
   private void ifTrueIfFalseReturn(final String sel1, final String sel2,
       final byte jumpBytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test: arg1 with: arg2 = (\n"
             + "  #start.\n"
@@ -713,7 +719,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void whileInlining(final String sel, final byte jumpBytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test: arg = (\n"
             + "  #start.\n"
@@ -817,7 +822,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void inliningOfAnd(final String sel) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test = ( true " + sel + " [ #val ] )");
 
@@ -841,7 +845,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void inliningOfOr(final String sel) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes(
         "test = ( true " + sel + " [ #val ] )");
 
@@ -953,7 +956,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void returnFieldTrivial(final String fieldName, final byte bytecode) {
-    initMgenc();
     addField("fieldA");
     addField("fieldB");
     addField("fieldC");
@@ -973,7 +975,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void returnFieldLessTrivial(final String fieldName, final byte bytecode) {
-    initMgenc();
     addField("fieldA");
     addField("fieldB");
     addField("fieldC");
@@ -995,7 +996,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void trivialMethodInlining(final String source, final byte bytecode) {
-    initMgenc();
     byte[] bytecodes = methodToBytecodes("test = ( true ifTrue: [ " + source + " ] )");
 
     check(bytecodes,
@@ -1023,7 +1023,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void incField(final int field) {
-    initMgenc();
     addField("field0");
     addField("field1");
     addField("field2");
@@ -1051,7 +1050,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void incFieldNonTrivial(final int field) {
-    initMgenc();
     addField("field0");
     addField("field1");
     addField("field2");
@@ -1081,7 +1079,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void returnIncField(final int field) {
-    initMgenc();
     addField("field0");
     addField("field1");
     addField("field2");
@@ -1111,7 +1108,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   private void returnField(final int fieldNum, final Object bytecode) {
-    initMgenc();
     addField("field0");
     addField("field1");
     addField("field2");

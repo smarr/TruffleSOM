@@ -31,8 +31,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.source.SourceCoordinate;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.vm.Classes;
@@ -45,14 +47,18 @@ import trufflesom.vmobjects.SSymbol;
 public final class ClassGenerationContext {
   private final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 
-  public ClassGenerationContext(
+  public ClassGenerationContext(final Source source,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
+    this.source = source;
     this.structuralProbe = structuralProbe;
   }
 
-  private SSymbol           name;
-  private SClass            superClass;
-  private SourceSection     sourceSection;
+  private final Source source;
+
+  private SSymbol name;
+  private SClass  superClass;
+  private long    sourceCoord;
+
   private boolean           classSide;
   private final List<Field> instanceFields = new ArrayList<>();
   private final List<Field> classFields    = new ArrayList<>();
@@ -71,12 +77,12 @@ public final class ClassGenerationContext {
     return name;
   }
 
-  public void setSourceSection(final SourceSection source) {
-    sourceSection = source;
+  public Source getSource() {
+    return source;
   }
 
-  public SourceSection getSourceSection() {
-    return sourceSection;
+  public void setSourceCoord(final long sourceCoord) {
+    this.sourceCoord = sourceCoord;
   }
 
   /** Return the super class, considering whether we are instance or class side. */
@@ -137,16 +143,16 @@ public final class ClassGenerationContext {
     }
   }
 
-  public void addInstanceField(final SSymbol name, final SourceSection source) {
-    Field f = new Field(instanceFields.size(), name, source);
+  public void addInstanceField(final SSymbol name, final long coord) {
+    Field f = new Field(instanceFields.size(), name, coord);
     instanceFields.add(f);
     if (structuralProbe != null) {
       structuralProbe.recordNewSlot(f);
     }
   }
 
-  public void addClassField(final SSymbol name, final SourceSection source) {
-    Field f = new Field(classFields.size(), name, source);
+  public void addClassField(final SSymbol name, final long coord) {
+    Field f = new Field(classFields.size(), name, coord);
     classFields.add(f);
     if (structuralProbe != null) {
       structuralProbe.recordNewSlot(f);
@@ -181,6 +187,8 @@ public final class ClassGenerationContext {
 
   @TruffleBoundary
   public SClass assemble() {
+    SourceSection sourceSection = SourceCoordinate.createSourceSection(source, sourceCoord);
+
     // build class class name
     String ccname = name.getString() + " class";
 

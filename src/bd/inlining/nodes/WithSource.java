@@ -2,7 +2,7 @@ package bd.inlining.nodes;
 
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInterface;
-import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.source.Source;
 
 
 /**
@@ -16,8 +16,14 @@ public interface WithSource extends NodeInterface {
    *
    * @param <T> the type of node
    *
-   * @param source the source section of the node
+   * @param sourceCoord the SourceCoordinate encoded char index and length
    * @return the node itself
    */
-  <T extends Node> T initialize(SourceSection source);
+  <T extends Node> T initialize(long sourceCoord);
+
+  long getSourceCoordinate();
+
+  Source getSource();
+
+  boolean hasSource();
 }

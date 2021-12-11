@@ -3,7 +3,6 @@ package trufflesom.interpreter.nodes;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.Specializer;
 import bd.primitives.nodes.PreevaluatedExpression;
@@ -18,31 +17,31 @@ import trufflesom.vmobjects.SSymbol;
 public final class MessageSendNode {
 
   public static ExpressionNode create(final SSymbol selector,
-      final ExpressionNode[] arguments, final SourceSection source) {
+      final ExpressionNode[] arguments, final long coord) {
     Specializer<ExpressionNode, SSymbol> specializer =
         Primitives.Current.getParserSpecializer(selector, arguments);
     if (specializer == null) {
-      return new UninitializedMessageSendNode(selector, arguments).initialize(source);
+      return new UninitializedMessageSendNode(selector, arguments).initialize(coord);
     }
 
-    return specializer.create(null, arguments, source);
+    return specializer.create(null, arguments, coord);
   }
 
   private static final ExpressionNode[] NO_ARGS = new ExpressionNode[0];
 
   public static AbstractMessageSendNode createForPerformNodes(final SSymbol selector,
-      final SourceSection source) {
-    return new UninitializedMessageSendNode(selector, NO_ARGS).initialize(source);
+      final long coord) {
+    return new UninitializedMessageSendNode(selector, NO_ARGS).initialize(coord);
   }
 
   public static GenericMessageSendNode createGeneric(final SSymbol selector,
-      final ExpressionNode[] argumentNodes, final SourceSection source) {
+      final ExpressionNode[] argumentNodes, final long coord) {
     return new GenericMessageSendNode(selector, argumentNodes,
-        new UninitializedDispatchNode(selector)).initialize(source);
+        new UninitializedDispatchNode(selector)).initialize(coord);
   }
 
   public static AbstractMessageSendNode createSuperSend(final SClass superClass,
-      final SSymbol selector, final ExpressionNode[] arguments, final SourceSection source) {
+      final SSymbol selector, final ExpressionNode[] arguments, final long coord) {
     SInvokable method = superClass.lookupInvokable(selector);
 
     if (method == null) {
@@ -52,13 +51,13 @@ public final class MessageSendNode {
 
     if (method.isTrivial()) {
       PreevaluatedExpression node = method.copyTrivialNode();
-      return new SuperExprNode(selector, arguments, node).initialize(source);
+      return new SuperExprNode(selector, arguments, node).initialize(coord);
     }
 
     DirectCallNode superMethodNode = Truffle.getRuntime().createDirectCallNode(
         method.getCallTarget());
 
-    return new SuperSendNode(selector, arguments, superMethodNode).initialize(source);
+    return new SuperSendNode(selector, arguments, superMethodNode).initialize(coord);
   }
 
   public static final class SuperSendNode extends AbstractMessageSendNode {

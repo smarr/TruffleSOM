@@ -26,7 +26,7 @@ import java.util.Objects;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
-import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.source.Source;
 
 import bd.inlining.Scope;
 import bd.inlining.ScopeAdaptationVisitor;
@@ -40,10 +40,10 @@ public final class Method extends Invokable {
 
   private final LexicalScope currentLexicalScope;
 
-  public Method(final String name, final SourceSection sourceSection,
+  public Method(final String name, final Source source, final long sourceCoord,
       final ExpressionNode expressions, final LexicalScope currentLexicalScope,
       final ExpressionNode uninitialized) {
-    super(name, sourceSection, currentLexicalScope.getFrameDescriptor(), expressions,
+    super(name, source, sourceCoord, currentLexicalScope.getFrameDescriptor(), expressions,
         uninitialized);
     this.currentLexicalScope = currentLexicalScope;
     currentLexicalScope.setMethod(this);
@@ -68,12 +68,12 @@ public final class Method extends Invokable {
       return false;
     }
 
-    return m.sourceSection.equals(sourceSection);
+    return sourceCoord == m.sourceCoord && source.equals(m.source);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, sourceSection);
+    return Objects.hash(name, sourceCoord, source);
   }
 
   @Override
@@ -96,7 +96,7 @@ public final class Method extends Invokable {
       uninit = uninitializedBody;
     }
 
-    Method clone = new Method(name, sourceSection, adaptedBody, adaptedScope, uninit);
+    Method clone = new Method(name, source, sourceCoord, adaptedBody, adaptedScope, uninit);
     adaptedScope.setMethod(clone);
     return clone;
   }
