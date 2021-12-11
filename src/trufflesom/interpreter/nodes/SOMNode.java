@@ -24,11 +24,9 @@ package trufflesom.interpreter.nodes;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.basic.nodes.DummyParent;
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.nodes.ScopeReference;
 import bd.inlining.nodes.WithSource;
@@ -52,15 +50,7 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
 
   @Override
   public SourceSection getSourceSection() {
-    RootNode root = getRootNode();
-    assert root != null;
-    SourceSection section = root.getSourceSection();
-    if (section == null) {
-      assert root instanceof DummyParent : "We should have a source section, "
-          + "except if the root is a DummyParent during inlining";
-      return null;
-    }
-    return SourceCoordinate.createSourceSection(section.getSource(), sourceCoord);
+    return SourceCoordinate.createSourceSection(this, sourceCoord);
   }
 
   @Override
