@@ -68,13 +68,12 @@ public final class Method extends Invokable {
       return false;
     }
 
-    // return m.sourceSection.equals(sourceSection);
-    return true;
+    return sourceCoord == m.sourceCoord && source.equals(m.source);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name);
+    return Objects.hash(name, sourceCoord, source);
   }
 
   @Override
