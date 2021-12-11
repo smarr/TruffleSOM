@@ -6,12 +6,12 @@ import trufflesom.vmobjects.SSymbol;
 public class Field {
   private final int     index;
   private final SSymbol name;
-  private final long    sourceSection;
+  private final long    sourceCoord;
 
-  public Field(final int idx, final SSymbol name, final long sourceSection) {
+  public Field(final int idx, final SSymbol name, final long sourceCoord) {
     this.index = idx;
     this.name = name;
-    this.sourceSection = sourceSection;
+    this.sourceCoord = sourceCoord;
   }
 
   public int getIndex() {
@@ -22,7 +22,7 @@ public class Field {
     return name;
   }
 
-  public long getSourceSection() {
-    return sourceSection;
+  public long getSourceCoordinate() {
+    return sourceCoord;
   }
 }
