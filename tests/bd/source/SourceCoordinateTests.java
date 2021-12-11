@@ -30,6 +30,13 @@ public class SourceCoordinateTests {
   }
 
   @Test
+  public void testRegression() {
+    long coord = SourceCoordinate.create(905, 4);
+    assertEquals(905, SourceCoordinate.getStartIndex(coord));
+    assertEquals(4, SourceCoordinate.getLength(coord));
+  }
+
+  @Test
   public void testBigOnes() {
     long coord = SourceCoordinate.create(0xFFFFFF, 0xEEEEEE);
     assertEquals(0xFFFFFF, SourceCoordinate.getStartIndex(coord));
