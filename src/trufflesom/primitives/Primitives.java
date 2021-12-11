@@ -101,6 +101,7 @@ import trufflesom.primitives.basics.LengthPrimFactory;
 import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.primitives.basics.StringPrimsFactory;
 import trufflesom.primitives.basics.SystemPrimsFactory;
+import trufflesom.primitives.basics.UnequalUnequalPrimFactory;
 import trufflesom.primitives.basics.UnequalsPrimFactory;
 import trufflesom.primitives.reflection.ClassPrimsFactory;
 import trufflesom.primitives.reflection.GlobalPrimFactory;
@@ -278,6 +279,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
 
     add(allFactories, AsStringPrimFactory.getInstance());
     add(allFactories, EqualsEqualsPrimFactory.getInstance());
+    add(allFactories, UnequalUnequalPrimFactory.getInstance());
     add(allFactories, EqualsPrimFactory.getInstance());
     add(allFactories, HashPrimFactory.getInstance());
     add(allFactories, LengthPrimFactory.getInstance());
