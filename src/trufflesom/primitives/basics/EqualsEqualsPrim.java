@@ -12,11 +12,6 @@ import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 @Primitive(className = "Object", primitive = "==", selector = "==")
 public abstract class EqualsEqualsPrim extends BinaryExpressionNode {
   @Specialization
-  public final boolean doBoolean(final boolean left, final boolean right) {
-    return left == right;
-  }
-
-  @Specialization
   public final boolean doLong(final long left, final long right) {
     return left == right;
   }
