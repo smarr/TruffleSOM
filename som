@@ -336,7 +336,10 @@ if 'Havlak' in args.args:
   # double the standard stack size
   # we don't do it always, because...
   JAVA_ARGS += ['-Xss3072k']
-  
+
+if not args.interpreter:
+    flags += ['-DCompilationFailureAction=ExitVM']
+
 all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + [BOOT_CLASSPATH] + flags + SOM_ARGS + unknown_args + args.args
 
 if args.verbose:
