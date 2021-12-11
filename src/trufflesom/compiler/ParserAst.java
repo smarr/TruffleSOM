@@ -68,7 +68,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   @Override
   protected ExpressionNode blockBody(final MethodGenerationContext mgenc,
       final boolean seenPeriod) throws ProgramDefinitionError {
-    long coord = getCoordinate();
+    int coord = getStartIndex();
     List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
     boolean sawPeriod = true;
@@ -85,7 +85,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       } else if (sym == EndTerm) {
         // the end of the method has been found (EndTerm) - make it implicitly return "self"
         ExpressionNode self =
-            variableRead(mgenc, symSelf, getCoordWithLength(getCoordinate()));
+            variableRead(mgenc, symSelf, getCoordWithLength(getStartIndex()));
         expressions.add(self);
         return createSequenceNode(coord, expressions);
       }
@@ -99,7 +99,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     }
   }
 
-  private ExpressionNode createSequenceNode(final long coord,
+  private ExpressionNode createSequenceNode(final int coord,
       final List<ExpressionNode> expressions) {
     if (expressions.size() == 0) {
       return GlobalNode.create(symNil, null).initialize(getCoordWithLength(coord));
@@ -112,7 +112,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   @Override
   protected ExpressionNode result(final MethodGenerationContext mgenc)
       throws ProgramDefinitionError {
-    long coord = getCoordinate();
+    int coord = getStartIndex();
 
     ExpressionNode exp = expression(mgenc);
     accept(Period);
@@ -132,7 +132,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
   private ExpressionNode assignments(final MethodGenerationContext mgenc)
       throws ProgramDefinitionError {
-    long coord = getCoordinate();
+    int coord = getStartIndex();
 
     if (!isIdentifier(sym)) {
       throw new ParseError("Assignments should always target variables or" +
@@ -222,7 +222,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     boolean isSuperSend = superSend;
     superSend = false;
 
-    long coord = getCoordinate();
+    int coord = getStartIndex();
     SSymbol selector = unarySelector();
 
     ExpressionNode[] args = new ExpressionNode[] {receiver};
@@ -239,7 +239,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       final ExpressionNode receiver) throws ProgramDefinitionError {
     boolean isSuperSend = superSend;
     superSend = false;
-    long coord = getCoordinate();
+    int coord = getStartIndex();
     SSymbol msg = binarySelector();
     ExpressionNode operand = binaryOperand(mgenc);
 
@@ -270,7 +270,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       final ExpressionNode receiver) throws ProgramDefinitionError {
     boolean isSuperSend = superSend;
     superSend = false;
-    long coord = getCoordinate();
+    int coord = getStartIndex();
     List<ExpressionNode> arguments = new ArrayList<ExpressionNode>();
     StringBuilder kw = new StringBuilder();
 
@@ -312,7 +312,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   }
 
   private LiteralNode literal() throws ParseError {
-    long coord = getCoordinate();
+    int coord = getStartIndex();
     switch (sym) {
       case Pound: {
         peekForNextSymbolFromLexerIfNecessary();
@@ -394,7 +394,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     switch (sym) {
       case Identifier:
       case Primitive: {
-        long coord = getCoordinate();
+        int coord = getStartIndex();
         SSymbol v = variable();
 
         if (v == symSuper) {
@@ -410,7 +410,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         return nestedTerm(mgenc);
       }
       case NewBlock: {
-        long coord = getCoordinate();
+        int coord = getStartIndex();
         MethodGenerationContext bgenc = new MethodGenerationContext(mgenc.getHolder(), mgenc);
 
         ExpressionNode blockBody = nestedBlock(bgenc);

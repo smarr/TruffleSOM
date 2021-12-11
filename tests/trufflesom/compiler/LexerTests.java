@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
 
-import bd.source.SourceCoordinate;
 import trufflesom.interpreter.SomLanguage;
 
 
@@ -23,10 +22,10 @@ public class LexerTests {
   public void testStartCoordinate() {
     Lexer l = init("Foo = ()");
 
-    long coord = l.getStartCoordinate();
-    assertEquals(0, SourceCoordinate.getStartIndex(coord));
-    assertEquals(1, SourceCoordinate.getLine(s, coord));
-    assertEquals(1, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(0, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
   }
 
   @Test
@@ -34,10 +33,10 @@ public class LexerTests {
     Lexer l = init("Foo = ()");
     l.getSym();
 
-    long coord = l.getStartCoordinate();
-    assertEquals(0, SourceCoordinate.getStartIndex(coord));
-    assertEquals(1, SourceCoordinate.getLine(s, coord));
-    assertEquals(1, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(0, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
   }
 
   @Test
@@ -46,10 +45,10 @@ public class LexerTests {
     l.getSym();
     l.getSym();
 
-    long coord = l.getStartCoordinate();
-    assertEquals(4, SourceCoordinate.getStartIndex(coord));
-    assertEquals(1, SourceCoordinate.getLine(s, coord));
-    assertEquals(5, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(4, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(5, s.getColumnNumber(startIndex));
   }
 
   @Test
@@ -57,10 +56,10 @@ public class LexerTests {
     Lexer l = init(" Foo = ()");
     l.getSym();
 
-    long coord = l.getStartCoordinate();
-    assertEquals(1, SourceCoordinate.getStartIndex(coord));
-    assertEquals(1, SourceCoordinate.getLine(s, coord));
-    assertEquals(2, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(1, startIndex);
+    assertEquals(1, s.getLineNumber(startIndex));
+    assertEquals(2, s.getColumnNumber(startIndex));
   }
 
   @Test
@@ -71,10 +70,10 @@ public class LexerTests {
     assertEquals(Symbol.Identifier, sym);
     assertEquals("Foo", l.getText());
 
-    long coord = l.getStartCoordinate();
-    assertEquals(1, SourceCoordinate.getStartIndex(coord));
-    assertEquals(2, SourceCoordinate.getLine(s, coord));
-    assertEquals(1, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(1, startIndex);
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
   }
 
   @Test
@@ -86,10 +85,10 @@ public class LexerTests {
     assertEquals(Symbol.Equal, sym);
     assertEquals("=", l.getText());
 
-    long coord = l.getStartCoordinate();
-    assertEquals(5, SourceCoordinate.getStartIndex(coord));
-    assertEquals(2, SourceCoordinate.getLine(s, coord));
-    assertEquals(5, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(5, startIndex);
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(5, s.getColumnNumber(startIndex));
   }
 
   @Test
@@ -105,11 +104,11 @@ public class LexerTests {
     assertEquals(Symbol.Identifier, sym);
     assertEquals("method", l.getText());
 
-    long coord = l.getStartCoordinate();
-    assertEquals(2, SourceCoordinate.getLine(s, coord));
-    assertEquals(3, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(3, s.getColumnNumber(startIndex));
 
-    assertEquals(prefix.length(), SourceCoordinate.getStartIndex(coord));
+    assertEquals(prefix.length(), startIndex);
   }
 
   @Test
@@ -125,10 +124,10 @@ public class LexerTests {
     assertEquals(Symbol.Identifier, sym);
     assertEquals("method", l.getText());
 
-    long coord = l.getStartCoordinate();
-    assertEquals(2, SourceCoordinate.getLine(s, coord));
-    assertEquals(1, SourceCoordinate.getColumn(s, coord));
+    int startIndex = l.getNumberOfCharactersRead();
+    assertEquals(2, s.getLineNumber(startIndex));
+    assertEquals(1, s.getColumnNumber(startIndex));
 
-    assertEquals(prefix.length(), SourceCoordinate.getStartIndex(coord));
+    assertEquals(prefix.length(), startIndex);
   }
 }

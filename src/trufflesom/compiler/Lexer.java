@@ -24,18 +24,13 @@
 
 package trufflesom.compiler;
 
-import bd.source.SourceCoordinate;
-
-
 public final class Lexer {
 
   private static final String SEPARATOR = "----";
   private static final String PRIMITIVE = "primitive";
 
   private static class LexerState {
-    LexerState() {
-      startCoord = SourceCoordinate.createEmpty();
-    }
+    LexerState() {}
 
     LexerState(final LexerState old) {
       lineNumber = old.lineNumber;
@@ -45,7 +40,9 @@ public final class Lexer {
       sym = old.sym;
       symc = old.symc;
       text = new StringBuilder(old.text);
-      startCoord = old.startCoord;
+
+      startPtr = old.startPtr;
+      startLastNonWhiteCharIdx = old.startLastNonWhiteCharIdx;
     }
 
     public void set(final Symbol sym, final char symChar, final String text) {
@@ -73,7 +70,8 @@ public final class Lexer {
     private char          symc;
     private StringBuilder text;
 
-    private long startCoord;
+    private int startPtr;
+    private int startLastNonWhiteCharIdx;
 
     int incPtr() {
       return incPtr(1);
@@ -102,16 +100,6 @@ public final class Lexer {
     state.lineNumber = 1;
     state.lastLineEnd = -1;
     state.lastNonWhiteCharIdx = 0;
-  }
-
-  public static long createSourceCoordinate(final LexerState state) {
-    // We use the coord.length to indicate the lastNonWhiteCharIdx
-    // TODO: fix this terrible hack, and make this explicit
-    return SourceCoordinate.create(state.ptr, state.lastNonWhiteCharIdx);
-  }
-
-  public long getStartCoordinate() {
-    return state.startCoord;
   }
 
   protected Symbol getSym() {
@@ -150,7 +138,8 @@ public final class Lexer {
     } while (endOfContent() || Character.isWhitespace(currentChar())
         || currentChar() == '"');
 
-    state.startCoord = createSourceCoordinate(state);
+    state.startPtr = state.ptr;
+    state.startLastNonWhiteCharIdx = state.lastNonWhiteCharIdx;
 
     if (currentChar() == '\'') {
       lexString();
@@ -392,12 +381,12 @@ public final class Lexer {
   }
 
   protected int getNumberOfNonWhiteCharsRead() {
-    return SourceCoordinate.getLength(state.startCoord);
+    return state.startLastNonWhiteCharIdx;
   }
 
-  // All characters read and processed, including current line
+  /** All characters read and processed, including current line. */
   protected int getNumberOfCharactersRead() {
-    return SourceCoordinate.getStartIndex(state.startCoord);
+    return state.startPtr;
   }
 
   private void skipWhiteSpace() {
