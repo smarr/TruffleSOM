@@ -38,10 +38,10 @@ public abstract class DoPrim extends BinaryMsgExprNode {
     int length = arr.getEmptyStorage();
     try {
       if (SArray.FIRST_IDX < length) {
-        this.block.executeEvaluated(block, Nil.nilObject);
+        this.block.executeEvaluated(frame, block, Nil.nilObject);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        this.block.executeEvaluated(block, Nil.nilObject);
+        this.block.executeEvaluated(frame, block, Nil.nilObject);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -58,10 +58,10 @@ public abstract class DoPrim extends BinaryMsgExprNode {
     int length = storage.getLength();
     try {
       if (SArray.FIRST_IDX < length) {
-        this.block.executeEvaluated(block, storage.get(SArray.FIRST_IDX));
+        this.block.executeEvaluated(frame, block, storage.get(SArray.FIRST_IDX));
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        this.block.executeEvaluated(block, storage.get(i));
+        this.block.executeEvaluated(frame, block, storage.get(i));
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -78,10 +78,10 @@ public abstract class DoPrim extends BinaryMsgExprNode {
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(frame, block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        this.block.executeEvaluated(block, storage[(int) i]);
+        this.block.executeEvaluated(frame, block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -98,10 +98,10 @@ public abstract class DoPrim extends BinaryMsgExprNode {
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(frame, block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        this.block.executeEvaluated(block, storage[(int) i]);
+        this.block.executeEvaluated(frame, block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -118,10 +118,10 @@ public abstract class DoPrim extends BinaryMsgExprNode {
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(frame, block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        this.block.executeEvaluated(block, storage[(int) i]);
+        this.block.executeEvaluated(frame, block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
@@ -138,10 +138,10 @@ public abstract class DoPrim extends BinaryMsgExprNode {
     int length = storage.length;
     try {
       if (SArray.FIRST_IDX < length) {
-        this.block.executeEvaluated(block, storage[SArray.FIRST_IDX]);
+        this.block.executeEvaluated(frame, block, storage[SArray.FIRST_IDX]);
       }
       for (long i = SArray.FIRST_IDX + 1; i < length; i++) {
-        this.block.executeEvaluated(block, storage[(int) i]);
+        this.block.executeEvaluated(frame, block, storage[(int) i]);
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {

@@ -45,7 +45,7 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
   @Specialization
   public final SArray doArray(final VirtualFrame frame,
       final SArray receiver, final SBlock block) {
-    int length = (int) this.length.executeEvaluated(receiver);
+    int length = (int) this.length.executeEvaluated(frame, receiver);
     loop(frame, block, length);
     return receiver;
   }
@@ -56,11 +56,11 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
       if (SArray.FIRST_IDX < length) {
         this.block.executeEvaluated(
             // +1 because it is going to the Smalltalk level
-            block, (long) SArray.FIRST_IDX + 1);
+            frame, block, (long) SArray.FIRST_IDX + 1);
       }
       for (long i = 1; i < length; i++) {
         this.block.executeEvaluated(
-            block, i + 1); // +1 because it is going to the Smalltalk level
+            frame, block, i + 1); // +1 because it is going to the Smalltalk level
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
