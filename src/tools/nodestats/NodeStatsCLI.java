@@ -20,4 +20,10 @@ class NodeStatsCLI {
       category = OptionCategory.USER,
       stability = OptionStability.EXPERIMENTAL) //
   static final OptionKey<String> OUTPUT_FILE = new OptionKey<>("node-stats.yml");
+
+  @Option(name = "Height",
+      help = "The max. number of levels/height of the tree of a candidate.",
+      category = OptionCategory.USER,
+      stability = OptionStability.EXPERIMENTAL) //
+  static final OptionKey<Integer> HEIGHT = new OptionKey<>(5);
 }

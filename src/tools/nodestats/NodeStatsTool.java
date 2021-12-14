@@ -79,7 +79,8 @@ public class NodeStatsTool extends TruffleInstrument {
   protected void onDispose(final Env env) {
     if (env.getOptions().get(NodeStatsCLI.ENABLED)) {
       String outputFile = env.getOptions().get(NodeStatsCLI.OUTPUT_FILE);
-      collectStatistics(outputFile);
+      int height = env.getOptions().get(NodeStatsCLI.HEIGHT);
+      collectStatistics(outputFile, height);
     }
   }
 
@@ -88,15 +89,16 @@ public class NodeStatsTool extends TruffleInstrument {
     return new NodeStatsCLIOptionDescriptors();
   }
 
-  private void collectStatistics(final String outputFile) {
+  private void collectStatistics(final String outputFile, final int height) {
     println("[ns] AST Node Statistics");
     println("[ns] -------------------\n");
 
-    NodeStatisticsCollector collector = new NodeStatisticsCollector(3);
+    NodeStatisticsCollector collector = new NodeStatisticsCollector(height, nodeActivations);
     collector.addAll(rootNodes);
     collector.collectStats();
 
     println("[ns] Output File:          " + outputFile);
+    println("[ns] Candidate Height:     " + height);
     println("[ns] Number of Methods:    " + rootNodes.size());
     println("[ns] Number of Nodes:      " + collector.getNumberOfNodes());
     println("[ns] Number of Node Types: " + collector.getNumberOfNodeTypes());
