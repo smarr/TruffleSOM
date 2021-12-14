@@ -100,13 +100,13 @@ public final class MessageSendNode {
     private final SSymbol selector;
     private final int     numberOfSignatureArguments;
 
-    @Child private PreevaluatedExpression expr;
+    @Child private ExpressionNode expr;
 
     private SuperExprNode(final SSymbol selector, final ExpressionNode[] arguments,
         final PreevaluatedExpression expr) {
       super(arguments);
       this.selector = selector;
-      this.expr = expr;
+      this.expr = (ExpressionNode) expr;
       this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
     }
 
