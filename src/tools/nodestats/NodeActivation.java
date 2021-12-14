@@ -13,6 +13,10 @@ public class NodeActivation extends ExecutionEventNode {
     this.nodeTargetClass = nodeTargetClass;
   }
 
+  public long getActivations() {
+    return activations;
+  }
+
   @Override
   protected void onEnter(final VirtualFrame frame) {
     activations += 1;

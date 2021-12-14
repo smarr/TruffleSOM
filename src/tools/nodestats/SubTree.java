@@ -3,9 +3,9 @@ package tools.nodestats;
 final class SubTree {
   private final AstNode rootNode;
 
-  final int score;
+  final long score;
 
-  SubTree(final AstNode rootNode, final int score) {
+  SubTree(final AstNode rootNode, final long score) {
     this.rootNode = rootNode;
     this.score = score;
   }
@@ -14,7 +14,7 @@ final class SubTree {
     return rootNode;
   }
 
-  public int getScore() {
+  public long getScore() {
     return score;
   }
 

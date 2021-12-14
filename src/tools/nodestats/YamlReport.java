@@ -24,9 +24,9 @@ public class YamlReport {
   public static final class ScoredAlphabeticRootOrder implements Comparator<SubTree> {
     @Override
     public int compare(final SubTree o1, final SubTree o2) {
-      int score = o2.score - o1.score;
+      long score = o2.score - o1.score;
       if (score != 0) {
-        return score;
+        return (int) score;
       }
 
       return o1.getClass().getSimpleName().compareTo(o2.getClass().getSimpleName());
@@ -72,12 +72,12 @@ public class YamlReport {
     }
   }
 
-  private static void reportSubTrees(final NodeStatisticsCollector collector,
+  private static void reportStaticSubTrees(final NodeStatisticsCollector collector,
       final StringBuilder builder, final String indent) {
     builder.append(indent);
-    builder.append("subtree-frequency:\n");
+    builder.append("subtree-occurrences:\n");
 
-    Set<SubTree> cs = collector.getSubTrees();
+    Set<SubTree> cs = collector.getSubTreesWithOccurrenceScore();
     final List<SubTree> sorted = cs.stream()
                                    .sorted(new ScoredAlphabeticRootOrder())
                                    .collect(Collectors.toList());
@@ -86,7 +86,22 @@ public class YamlReport {
       c.yamlPrint(builder, indent, 2);
       builder.append('\n');
     }
+  }
 
+  private static void reportDynamicSubTrees(final NodeStatisticsCollector collector,
+      final StringBuilder builder, final String indent) {
+    builder.append(indent);
+    builder.append("subtree-activations:\n");
+
+    Set<SubTree> cs = collector.getSubTreesWithActivationScores();
+    final List<SubTree> sorted = cs.stream()
+                                   .sorted(new ScoredAlphabeticRootOrder())
+                                   .collect(Collectors.toList());
+
+    for (SubTree c : sorted) {
+      c.yamlPrint(builder, indent, 2);
+      builder.append('\n');
+    }
   }
 
   public static String createReport(final NodeStatisticsCollector collector) {
@@ -100,7 +115,12 @@ public class YamlReport {
     builder.append('\n');
     builder.append('\n');
 
-    reportSubTrees(collector, builder, "  ");
+    reportStaticSubTrees(collector, builder, "  ");
+
+    builder.append('\n');
+    builder.append('\n');
+
+    reportDynamicSubTrees(collector, builder, "  ");
 
     return builder.toString();
   }

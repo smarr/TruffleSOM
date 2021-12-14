@@ -3,6 +3,7 @@ package tools.nodestats;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -28,12 +29,12 @@ public class StaticNodeStructureTests {
         AdditionPrimFactory.create(LiteralNode.create(1L), LiteralNode.create(2L));
     Method m = constructMethod(body);
 
-    NodeStatisticsCollector s = new NodeStatisticsCollector(5);
+    NodeStatisticsCollector s = new NodeStatisticsCollector(5, new HashMap<>());
     s.add(m);
 
     s.collectStats();
 
-    Set<SubTree> cs = s.getSubTrees();
+    Set<SubTree> cs = s.getSubTreesWithOccurrenceScore();
 
     assertEquals(3, cs.size());
     Iterator<SubTree> i = cs.iterator();
@@ -62,12 +63,12 @@ public class StaticNodeStructureTests {
                 LiteralNode.create(4445.55d))));
     Method m = constructMethod(body);
 
-    NodeStatisticsCollector s = new NodeStatisticsCollector(5);
+    NodeStatisticsCollector s = new NodeStatisticsCollector(5, new HashMap<>());
     s.add(m);
 
     s.collectStats();
 
-    Set<SubTree> cs = s.getSubTrees();
+    Set<SubTree> cs = s.getSubTreesWithOccurrenceScore();
 
     assertEquals(12, cs.size());
   }
@@ -87,12 +88,12 @@ public class StaticNodeStructureTests {
                     LiteralNode.create(4445.55d)))));
     Method m = constructMethod(body);
 
-    NodeStatisticsCollector s = new NodeStatisticsCollector(5);
+    NodeStatisticsCollector s = new NodeStatisticsCollector(5, new HashMap<>());
     s.add(m);
 
     s.collectStats();
 
-    Set<SubTree> cs = s.getSubTrees();
+    Set<SubTree> cs = s.getSubTreesWithOccurrenceScore();
 
     assertEquals(15, cs.size());
   }

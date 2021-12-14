@@ -9,21 +9,30 @@ public class AstNode {
   private final Class<?> nodeClass;
   private List<AstNode>  children;
 
+  private long activations;
+
   private int height;
 
   private int hashcode;
 
-  public AstNode(final Class<?> nodeClass) {
+  public AstNode(final Class<?> nodeClass, final long activations) {
     this.nodeClass = nodeClass;
     height = -1;
     hashcode = -1;
+    this.activations = activations;
   }
 
-  private AstNode(final Class<?> nodeClass, final List<AstNode> children, final int height) {
+  private AstNode(final Class<?> nodeClass, final long activations,
+      final List<AstNode> children, final int height) {
     this.nodeClass = nodeClass;
     this.children = children;
     this.height = height;
     hashcode = -1;
+    this.activations = activations;
+  }
+
+  public long getActivations() {
+    return activations;
   }
 
   public void addChild(final AstNode child) {
@@ -135,7 +144,7 @@ public class AstNode {
       }
     }
 
-    AstNode clone = new AstNode(nodeClass, clonedChildren, maxTreeHeight);
+    AstNode clone = new AstNode(nodeClass, activations, clonedChildren, maxTreeHeight);
     return clone;
   }
 
@@ -154,21 +163,26 @@ public class AstNode {
   public void yamlPrint(final StringBuilder builder, final String indent, final int level) {
     builder.append(nodeClass.getSimpleName());
 
-    if (children == null) {
-      builder.append('\n');
-      return;
+    builder.append(":\n");
+
+    for (int i = 0; i < level; i += 1) {
+      builder.append(indent);
     }
 
-    builder.append(':');
+    builder.append("- activations: ");
+    builder.append(activations);
     builder.append('\n');
+
+    if (children == null) {
+      return;
+    }
 
     for (AstNode c : children) {
       for (int i = 0; i < level; i += 1) {
         builder.append(indent);
       }
 
-      builder.append('-');
-      builder.append(' ');
+      builder.append("- ");
 
       c.yamlPrint(builder, indent, level + 1);
     }
@@ -177,5 +191,14 @@ public class AstNode {
   @Override
   public String toString() {
     return "Node(" + nodeClass.getSimpleName() + ", " + height + ")";
+  }
+
+  public void addActivations(final AstNode candidate) {
+    activations += candidate.activations;
+
+    assert children.size() == candidate.children.size();
+    for (int i = 0; i < children.size(); i += 1) {
+      children.get(i).addActivations(candidate.children.get(i));
+    }
   }
 }
