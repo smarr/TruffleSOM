@@ -4,6 +4,10 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.InstrumentableNode;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
@@ -12,6 +16,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.inlining.nodes.WithSource;
 import bd.primitives.nodes.PreevaluatedExpression;
 import bd.source.SourceCoordinate;
+import tools.nodestats.Tags.AnyNode;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
@@ -22,7 +27,9 @@ import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class AbstractSymbolDispatch extends Node implements WithSource {
+@GenerateWrapper
+public abstract class AbstractSymbolDispatch extends Node
+    implements WithSource, InstrumentableNode {
   public static final int INLINE_CACHE_SIZE = 6;
 
   private final long sourceCoord;
@@ -30,6 +37,10 @@ public abstract class AbstractSymbolDispatch extends Node implements WithSource 
   public AbstractSymbolDispatch(final long coord) {
     assert coord != 0;
     this.sourceCoord = coord;
+  }
+
+  protected AbstractSymbolDispatch(final AbstractSymbolDispatch wrapped) {
+    this.sourceCoord = wrapped.sourceCoord;
   }
 
   @SuppressWarnings("unchecked")
@@ -67,6 +78,24 @@ public abstract class AbstractSymbolDispatch extends Node implements WithSource 
 
   public static final ToArgumentsArrayNode createArgArrayNode() {
     return ToArgumentsArrayNodeFactory.create(null, null);
+  }
+
+  @Override
+  public boolean isInstrumentable() {
+    return true;
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new AbstractSymbolDispatchWrapper(this, this, probe);
+  }
+
+  @Override
+  public boolean hasTag(final Class<? extends Tag> tag) {
+    if (tag == AnyNode.class) {
+      return true;
+    }
+    return false;
   }
 
   @Specialization(limit = "INLINE_CACHE_SIZE",

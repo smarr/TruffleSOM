@@ -31,6 +31,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import tools.nodestats.Tags.AnyNode;
 
 
 @GenerateWrapper
@@ -96,6 +97,10 @@ public abstract class ExpressionNode extends SOMNode implements InstrumentableNo
 
   @Override
   public boolean hasTag(final Class<? extends Tag> tag) {
+    if (tag == AnyNode.class) {
+      return true;
+    }
+
     if (tag == RootTag.class) {
       Node parent = getParent();
       if (parent != null && parent.getParent() == null) {
