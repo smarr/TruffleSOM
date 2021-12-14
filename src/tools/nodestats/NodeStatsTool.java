@@ -41,6 +41,7 @@ public class NodeStatsTool extends TruffleInstrument {
       SourceSectionFilter rootFilter =
           SourceSectionFilter.newBuilder().tagIs(RootTag.class).build();
 
+      // collect root nodes on load, for later analysis
       instrumenter.attachLoadSourceSectionListener(
           rootFilter, e -> rootNodes.add(e.getNode().getRootNode()),
           true);
@@ -77,6 +78,7 @@ public class NodeStatsTool extends TruffleInstrument {
 
     String report = YamlReport.createReport(collector);
     Path reportPath = Paths.get(outputFile);
+
     try {
       Files.write(reportPath, report.getBytes());
     } catch (IOException e) {
