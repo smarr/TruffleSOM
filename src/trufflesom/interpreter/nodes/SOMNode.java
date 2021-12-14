@@ -28,6 +28,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.basic.nodes.DummyParent;
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.nodes.ScopeReference;
 import bd.inlining.nodes.WithSource;
@@ -83,7 +84,12 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
 
     WithSource node = this;
     while (node != null && !node.hasSource()) {
-      node = (WithSource) ((Node) node).getParent();
+      Node parent = ((Node) node).getParent();
+      if (parent.getClass() == DummyParent.class) {
+        return null;
+      }
+
+      node = (WithSource) parent;
     }
 
     if (node == null) {
