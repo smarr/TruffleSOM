@@ -22,6 +22,9 @@
 package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.StandardTags.ExpressionTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
+import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
@@ -67,5 +70,13 @@ public final class SequenceNode extends NoPreEvalExprNode {
   @Override
   public PreevaluatedExpression copyTrivialNode() {
     return expressions[0].copyTrivialNode();
+  }
+
+  @Override
+  public boolean hasTag(final Class<? extends Tag> tag) {
+    if (tag == StatementTag.class || tag == ExpressionTag.class) {
+      return false;
+    }
+    return super.hasTag(tag);
   }
 }

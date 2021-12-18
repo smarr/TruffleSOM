@@ -9,13 +9,15 @@ import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.Source;
 
+import bd.inlining.nodes.WithSource;
 import tools.nodestats.Tags.AnyNode;
 
 
 @GenerateWrapper
 public abstract class AbstractDispatchNode extends Node
-    implements DispatchChain, InstrumentableNode {
+    implements DispatchChain, InstrumentableNode, WithSource {
   public static final int INLINE_CACHE_SIZE = 6;
 
   public abstract Object executeDispatch(VirtualFrame frame, Object[] arguments);
@@ -44,6 +46,27 @@ public abstract class AbstractDispatchNode extends Node
   @Override
   public boolean isInstrumentable() {
     return true;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public AbstractDispatchNode initialize(final long sourceCoord) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public long getSourceCoordinate() {
+    return ((WithSource) getParent()).getSourceCoordinate();
+  }
+
+  @Override
+  public Source getSource() {
+    return ((WithSource) getParent()).getSource();
+  }
+
+  @Override
+  public boolean hasSource() {
+    return false;
   }
 
   @Override

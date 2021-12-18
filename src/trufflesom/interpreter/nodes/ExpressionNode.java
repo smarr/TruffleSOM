@@ -25,13 +25,16 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
+import com.oracle.truffle.api.instrumentation.StandardTags.ExpressionTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import tools.nodestats.Tags.AnyNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 
 
 @GenerateWrapper
@@ -107,9 +110,27 @@ public abstract class ExpressionNode extends SOMNode
 
     if (tag == RootTag.class) {
       Node parent = getParent();
-      if (parent != null && parent.getParent() == null) {
+      if (parent instanceof WrapperNode) {
+        parent = parent.getParent();
+      }
+
+      if (parent.getClass() == CatchNonLocalReturnNode.class) {
         return true;
       }
+      if (parent != null) {
+        Node grandParent = parent.getParent();
+        if (grandParent == null) {
+          return true;
+        }
+        if (grandParent instanceof WrapperNode && grandParent.getParent() == null) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    if (tag == StatementTag.class || tag == ExpressionTag.class) {
+      return true;
     }
     return false;
   }

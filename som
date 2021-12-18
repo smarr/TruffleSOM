@@ -60,9 +60,14 @@ explore.add_argument('-fr', '--flight-recorder', help='profile with Java Flight 
                     dest='flight_recorder', action='store_true', default=False)
 
 tools = parser.add_argument_group('Tools', 'Tools for various purposes')
-explore.add_argument('-n', '--node-stats', help='collect details about AST nodes',
+explore.add_argument('-n', '--node-stats', help='collect details about AST nodes. Optionally define output file name. Default: node-stats.yml',
                      dest='nodestats', action='store', nargs='?',
                      const='node-stats.yml', default=False)
+explore.add_argument('-cov', '--coverage', help='collect coverage statistics. Optionally define output file. Default is standard out.',
+                     dest='coverage', action='store', nargs='?',
+                     const='', default=False)
+explore.add_argument('-ct', '--coverage-type', help="human readable 'histogram' (per file coverage summary) or 'detailed' (per line coverage summary), machine readable 'json', tool compliant 'lcov'. (default: histogram)",
+                     dest='coverage_type', action='store', default='histogram')
 
 parser.add_argument('-o', '--only', help='only compile give methods, comma separated list',
                     dest='only_compile', default=None)
@@ -188,7 +193,7 @@ if args.use_libgraal:
 ## Defining Necessary Parameter Bits
 ##
 
-CLASSPATH = (BASE_DIR + '/build/classes:'
+classpath = (BASE_DIR + '/build/classes:'
            + BASE_DIR + '/libs/black-diamonds/build/classes')
 
 BOOT_CLASSPATH = ('-Xbootclasspath/a:'
@@ -301,6 +306,15 @@ if args.flight_recorder:
 if args.nodestats:
     flags += ['-Dpolyglot.nodestats.OutputFile=' + args.nodestats, '-Dpolyglot.nodestats=true']
 
+if args.coverage != False:
+    classpath += ':' + BASE_DIR + '/libs/truffle/tools/mxbuild/dists/truffle-coverage.jar'
+    flags += ['-Dpolyglot.coverage=true',
+              '-Dpolyglot.coverage.Count=true',
+              '-Dpolyglot.coverage.StrictLines=false',
+              '-Dpolyglot.coverage.Output=' + args.coverage_type]
+    if args.coverage:
+      flags += ['-Dpolyglot.coverage.OutputFile=' + args.coverage]
+
 if args.assert_:
     flags += ['-esa', '-ea']
 else:
@@ -340,7 +354,7 @@ if 'Havlak' in args.args:
 if not args.interpreter:
     flags += ['-DCompilationFailureAction=ExitVM']
 
-all_args = JAVA_ARGS + ['-classpath', CLASSPATH] + [BOOT_CLASSPATH] + flags + SOM_ARGS + unknown_args + args.args
+all_args = JAVA_ARGS + ['-classpath', classpath] + [BOOT_CLASSPATH] + flags + SOM_ARGS + unknown_args + args.args
 
 if args.verbose:
     print "CMD: " + java_bin + ' ' + ' '.join(all_args)

@@ -15,7 +15,9 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
+import com.oracle.truffle.api.instrumentation.StandardTags.ExpressionTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
@@ -28,7 +30,7 @@ import trufflesom.vm.Universe.SomExit;
 @TruffleLanguage.Registration(id = "som", name = "som", version = "0.1.0",
     defaultMimeType = SomLanguage.MIME_TYPE,
     characterMimeTypes = SomLanguage.MIME_TYPE)
-@ProvidedTags({RootTag.class, AnyNode.class})
+@ProvidedTags({RootTag.class, AnyNode.class, ExpressionTag.class, StatementTag.class})
 public class SomLanguage extends TruffleLanguage<SomLanguage> {
 
   public static final String MIME_TYPE = "application/x-som-smalltalk";
