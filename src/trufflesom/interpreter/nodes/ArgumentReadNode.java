@@ -11,7 +11,7 @@ import trufflesom.vmobjects.SSymbol;
 
 public abstract class ArgumentReadNode {
 
-  public static class LocalArgumentReadNode extends ExpressionNode
+  public static class LocalArgumentReadNode extends NoPreEvalExprNode
       implements Invocation<SSymbol> {
     public final int argumentIndex;
 
@@ -56,7 +56,7 @@ public abstract class ArgumentReadNode {
     }
   }
 
-  public static class LocalArgumentWriteNode extends ExpressionNode {
+  public static class LocalArgumentWriteNode extends NoPreEvalExprNode {
     protected final int      argumentIndex;
     protected final Argument arg;
 

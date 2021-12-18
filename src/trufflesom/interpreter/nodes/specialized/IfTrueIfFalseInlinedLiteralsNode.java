@@ -8,6 +8,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import bd.inlining.Inline;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 
 
 /**
@@ -19,7 +20,7 @@ import trufflesom.interpreter.nodes.ExpressionNode;
  *
  * @author Stefan Marr
  */
-public abstract class IfTrueIfFalseInlinedLiteralsNode extends ExpressionNode {
+public abstract class IfTrueIfFalseInlinedLiteralsNode extends NoPreEvalExprNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
   @Child private ExpressionNode conditionNode;

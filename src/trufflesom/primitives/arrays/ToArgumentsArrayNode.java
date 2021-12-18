@@ -8,7 +8,7 @@ import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import trufflesom.interpreter.SArguments;
-import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
 
@@ -17,7 +17,7 @@ import trufflesom.vmobjects.SArray;
 @NodeChildren({
     @NodeChild("somArray"),
     @NodeChild("receiver")})
-public abstract class ToArgumentsArrayNode extends ExpressionNode {
+public abstract class ToArgumentsArrayNode extends NoPreEvalExprNode {
 
   public abstract Object[] executedEvaluated(SArray somArray, Object rcvr);
 

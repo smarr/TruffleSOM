@@ -10,12 +10,13 @@ import bd.inlining.Inline;
 import bd.inlining.Inline.False;
 import bd.inlining.Inline.True;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
 
 
 @Inline(selector = "ifTrue:", inlineableArgIdx = 1, additionalArgs = True.class)
 @Inline(selector = "ifFalse:", inlineableArgIdx = 1, additionalArgs = False.class)
-public final class IfInlinedLiteralNode extends ExpressionNode {
+public final class IfInlinedLiteralNode extends NoPreEvalExprNode {
   private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
   @Child private ExpressionNode conditionNode;

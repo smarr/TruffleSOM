@@ -13,12 +13,13 @@ import bd.inlining.Inline.False;
 import bd.inlining.Inline.True;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
 
 
 @Inline(selector = "whileTrue:", inlineableArgIdx = {0, 1}, additionalArgs = True.class)
 @Inline(selector = "whileFalse:", inlineableArgIdx = {0, 1}, additionalArgs = False.class)
-public final class WhileInlinedLiteralsNode extends ExpressionNode {
+public final class WhileInlinedLiteralsNode extends NoPreEvalExprNode {
 
   @Child private ExpressionNode conditionNode;
   @Child private ExpressionNode bodyNode;

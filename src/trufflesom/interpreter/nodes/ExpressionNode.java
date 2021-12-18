@@ -21,7 +21,6 @@
  */
 package trufflesom.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode;
@@ -42,11 +41,7 @@ public abstract class ExpressionNode extends SOMNode
   public abstract Object executeGeneric(VirtualFrame frame);
 
   @Override
-  public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
-    CompilerDirectives.transferToInterpreter();
-    // needs to be overridden in subclasses if desired
-    throw new UnsupportedOperationException();
-  }
+  public abstract Object doPreEvaluated(VirtualFrame frame, Object[] args);
 
   public boolean isTrivial() {
     return false;

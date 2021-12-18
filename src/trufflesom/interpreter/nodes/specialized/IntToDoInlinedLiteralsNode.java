@@ -18,13 +18,14 @@ import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 
 
 @NodeChild(value = "from", type = ExpressionNode.class)
 @NodeChild(value = "to", type = ExpressionNode.class)
 @Inline(selector = "to:do:", inlineableArgIdx = 2, introduceTemps = 2, disabled = true)
 @GenerateNodeFactory
-public abstract class IntToDoInlinedLiteralsNode extends ExpressionNode {
+public abstract class IntToDoInlinedLiteralsNode extends NoPreEvalExprNode {
 
   @Child protected ExpressionNode body;
 

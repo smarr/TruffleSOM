@@ -196,6 +196,12 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Object executeGeneric(final VirtualFrame frame) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
       SObject obj = (SObject) self.executeGeneric(frame);
@@ -233,6 +239,12 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public ExpressionNode getSelf() {
       return self;
+    }
+
+    @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
     }
 
     @Override
