@@ -7,7 +7,6 @@ import com.oracle.truffle.api.source.Source;
 
 import bd.inlining.nodes.WithSource;
 import bd.primitives.nodes.PreevaluatedExpression;
-import trufflesom.primitives.reflection.AbstractSymbolDispatch;
 
 
 public class CachedExprNode extends AbstractDispatchNode implements WithSource {
@@ -55,7 +54,7 @@ public class CachedExprNode extends AbstractDispatchNode implements WithSource {
 
   @SuppressWarnings("unchecked")
   @Override
-  public AbstractSymbolDispatch initialize(final long sourceCoord) {
+  public AbstractDispatchNode initialize(final long sourceCoord) {
     throw new UnsupportedOperationException();
   }
 
