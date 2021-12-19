@@ -124,6 +124,8 @@
 
     <target name="truffle-libs" depends="jvmci-libs,core-lib">
         <exec executable="${mx.cmd}" dir="${compiler.dir}" failonerror="true">
+            <env key="DYNAMIC_IMPORTS" value="/tools" />
+            <env key="EXCLUDE_COMPONENTS" value="ins,dap,lsp,insight,insightheap,vvm" />
             <arg value="build"/>
             <arg value="--no-native"/>
             <env key="JAVA_HOME" value="${jvmci.home}" />
