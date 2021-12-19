@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
@@ -16,10 +15,21 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 public class NodeStatisticsCollector {
 
+  private static final class PartialPair {
+    final AstNode tree;
+
+    int occurrences;
+
+    PartialPair(final AstNode tree) {
+      this.tree = tree;
+      this.occurrences = 1;
+    }
+  }
+
   private final Map<Node, NodeActivation> nodeActivations;
 
-  private final List<AstNode>           fullTrees;
-  private final Map<AstNode, Integer>[] partialTrees;
+  private final List<AstNode>               fullTrees;
+  private final Map<AstNode, PartialPair>[] partialTrees;
 
   private final Map<Class<?>, Integer> nodeNumbers;
 
@@ -102,28 +112,30 @@ public class NodeStatisticsCollector {
       partialTrees[h - 1] = new HashMap<>();
     }
 
-    partialTrees[h - 1].compute(candidate, (existing, i) -> {
-      if (existing != candidate) {
-        existing.addActivations(candidate);
+    partialTrees[h - 1].compute(candidate, (key, pair) -> {
+      if (pair == null) {
+        assert candidate == key;
+        return new PartialPair(key);
       }
-      if (i == null) {
-        return 1;
-      }
-      return 1 + i;
+
+      pair.tree.addActivations(candidate);
+      pair.occurrences += 1;
+
+      return pair;
     });
   }
 
   public Set<SubTree> getSubTreesWithOccurrenceScore() {
     Set<SubTree> result = new HashSet<>();
 
-    for (Map<AstNode, Integer> candidatesForHeight : partialTrees) {
+    for (Map<AstNode, PartialPair> candidatesForHeight : partialTrees) {
       if (candidatesForHeight == null) {
         continue;
       }
 
-      for (Entry<AstNode, Integer> c : candidatesForHeight.entrySet()) {
-        assert c.getKey().getHeight() >= 1;
-        SubTree candidate = new SubTree(c.getKey(), c.getValue());
+      for (PartialPair c : candidatesForHeight.values()) {
+        assert c.tree.getHeight() >= 1;
+        SubTree candidate = new SubTree(c.tree, c.occurrences);
         result.add(candidate);
       }
     }
@@ -134,13 +146,13 @@ public class NodeStatisticsCollector {
   public Set<SubTree> getSubTreesWithActivationScores() {
     Set<SubTree> result = new HashSet<>();
 
-    for (Map<AstNode, Integer> candidatesForHeight : partialTrees) {
+    for (Map<AstNode, PartialPair> candidatesForHeight : partialTrees) {
       if (candidatesForHeight == null) {
         continue;
       }
 
-      for (Entry<AstNode, Integer> c : candidatesForHeight.entrySet()) {
-        AstNode tree = c.getKey();
+      for (PartialPair c : candidatesForHeight.values()) {
+        AstNode tree = c.tree;
         assert tree.getHeight() >= 1;
         SubTree candidate = new SubTree(tree, tree.getActivations());
         result.add(candidate);

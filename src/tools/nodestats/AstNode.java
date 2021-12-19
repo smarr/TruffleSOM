@@ -36,7 +36,7 @@ public class AstNode implements Comparable<AstNode> {
   }
 
   public void addChild(final AstNode child) {
-    hashcode = -1;
+    assert hashcode == -1;
     if (children == null) {
       children = new ArrayList<>(3);
     }
@@ -87,8 +87,7 @@ public class AstNode implements Comparable<AstNode> {
     }
 
     if (children == null) {
-      hashcode = nodeClass.hashCode();
-      return hashcode;
+      return hashcode = nodeClass.hashCode();
     }
 
     Object[] hashingObjects = new Object[1 + children.size()];
@@ -98,8 +97,7 @@ public class AstNode implements Comparable<AstNode> {
       hashingObjects[i + 1] = children.get(i);
     }
 
-    hashcode = Arrays.hashCode(hashingObjects);
-    return hashcode;
+    return hashcode = Arrays.hashCode(hashingObjects);
   }
 
   public int collectTreesAndDetermineHeight(final int maxCandidateTreeHeight,
@@ -194,7 +192,15 @@ public class AstNode implements Comparable<AstNode> {
   }
 
   public void addActivations(final AstNode candidate) {
+    if (candidate == this) {
+      return;
+    }
+
     activations += candidate.activations;
+
+    if (children == null) {
+      return;
+    }
 
     assert children.size() == candidate.children.size();
     for (int i = 0; i < children.size(); i += 1) {
