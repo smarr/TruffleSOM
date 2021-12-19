@@ -33,16 +33,42 @@ function doDiff {
 }
 
 function runTest {
-  TEST=test.yml
-  HARNESS="$SOM_DIR/som -A -n $SCRIPT_PATH/results/$TEST -Dpolyglot.nodestats.Height=3 \
-    -G -cp $SOM_DIR/Smalltalk $SOM_DIR/TestSuite/TestHarness.som"
-  echo $HARNESS
-  $HARNESS
+  TEST=$1
+  TEST_OUT=test-$TEST.yml
+  CMD="$SOM_DIR/som -A -n $SCRIPT_PATH/results/$TEST_OUT -Dpolyglot.nodestats.Height=3 \
+    -G -cp $SOM_DIR/Smalltalk $SOM_DIR/TestSuite/TestHarness.som $TEST"
+  echo $CMD
+  $CMD
 
-  doDiff $SCRIPT_PATH/expected-results/$TEST $SCRIPT_PATH/results/$TEST
+  doDiff $SCRIPT_PATH/expected-results/$TEST_OUT $SCRIPT_PATH/results/$TEST_OUT
 }
 
-runTest
+runTest EmptyTest
+runTest SpecialSelectorsTest
+runTest ArrayTest
+runTest BlockTest
+runTest BooleanTest
+runTest ClassLoadingTest
+runTest ClassStructureTest
+runTest ClosureTest
+runTest CoercionTest
+runTest CompilerReturnTest
+runTest DictionaryTest
+runTest DoesNotUnderstandTest
+runTest DoubleTest
+runTest GlobalTest
+runTest HashTest
+runTest IntegerTest
+runTest PreliminaryTest
+runTest ReflectionTest
+runTest SelfBlockTest
+runTest SetTest
+runTest StringTest
+runTest SuperTest
+runTest SymbolTest
+runTest SystemTest
+runTest VectorTest
+
 
 if [ "$1" = "update" ] && [ "$NEEDS_UPDATE" = true ]
 then
