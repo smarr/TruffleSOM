@@ -34,7 +34,7 @@ function doDiff {
 
 function runTest {
   TEST=test.yml
-  HARNESS="$SOM_DIR/som -n $SCRIPT_PATH/results/$TEST -Dpolyglot.nodestats.Height=3 \
+  HARNESS="$SOM_DIR/som -A -n $SCRIPT_PATH/results/$TEST -Dpolyglot.nodestats.Height=3 \
     -G -cp $SOM_DIR/Smalltalk $SOM_DIR/TestSuite/TestHarness.som"
   echo $HARNESS
   $HARNESS
