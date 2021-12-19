@@ -341,6 +341,11 @@
         </exec>
     </target>
     
+    <target name="coverage-test">
+        <exec executable="tests/tools/coverage/test.sh" failonerror="true">
+        </exec>
+    </target>
+    
     <target name="tools-test" depends="compile-for-jar,nodestats-test" description="Test Tools">
     </target>
     
@@ -348,6 +353,9 @@
     
     <target name="update-test-data" depends="compile-for-jar" description="Update expected test data">
         <exec executable="tests/tools/nodestats/test.sh" failonerror="true">
+          <arg value="update" />
+        </exec>
+        <exec executable="tests/tools/coverage/test.sh" failonerror="true">
           <arg value="update" />
         </exec>
     </target>

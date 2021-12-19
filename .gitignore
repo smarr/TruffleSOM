@@ -12,3 +12,8 @@ user-dict.txt
 /*.launch
 /rebench.data
 /payload.json
+/tests/tools/coverage/expected-results
+/tests/tools/coverage/results
+/tests/tools/nodestats/expected-results
+/tests/tools/nodestats/old-results
+/tests/tools/nodestats/results
