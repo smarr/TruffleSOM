@@ -17,7 +17,7 @@ public class YamlReport {
         return score;
       }
 
-      return e1.getClass().getName().compareTo(e2.getClass().getName());
+      return e1.getKey().getName().compareTo(e2.getKey().getName());
     }
   }
 
@@ -29,7 +29,7 @@ public class YamlReport {
         return (int) score;
       }
 
-      return o1.getClass().getSimpleName().compareTo(o2.getClass().getSimpleName());
+      return o1.compareTo(o2);
     }
   }
 

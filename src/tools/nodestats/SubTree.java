@@ -1,6 +1,6 @@
 package tools.nodestats;
 
-final class SubTree {
+final class SubTree implements Comparable<SubTree> {
   private final AstNode rootNode;
 
   final long score;
@@ -12,6 +12,10 @@ final class SubTree {
 
   public AstNode getRoot() {
     return rootNode;
+  }
+
+  public Class<?> getRootClass() {
+    return rootNode.getNodeClass();
   }
 
   public long getScore() {
@@ -68,5 +72,14 @@ final class SubTree {
   public String toString() {
     return "Candidate(" + score + ": " + rootNode.getNodeClass().getSimpleName() + ", "
         + rootNode.getHeight() + ")";
+  }
+
+  @Override
+  public int compareTo(final SubTree o) {
+    int diff = (int) (o.score - score);
+    if (diff != 0) {
+      return diff;
+    }
+    return rootNode.compareTo(o.rootNode);
   }
 }

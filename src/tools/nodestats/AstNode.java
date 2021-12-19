@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class AstNode {
+public class AstNode implements Comparable<AstNode> {
   private final Class<?> nodeClass;
   private List<AstNode>  children;
 
@@ -200,5 +200,45 @@ public class AstNode {
     for (int i = 0; i < children.size(); i += 1) {
       children.get(i).addActivations(candidate.children.get(i));
     }
+  }
+
+  @Override
+  public int compareTo(final AstNode o) {
+    int diff = o.height - height;
+    if (diff != 0) {
+      return diff;
+    }
+
+    diff = (int) (o.activations - activations);
+    if (diff != 0) {
+      return diff;
+    }
+
+    diff = nodeClass.getName().compareTo(o.nodeClass.getName());
+    if (diff != 0) {
+      return diff;
+    }
+
+    if (children == null && o.children != null) {
+      return -1;
+    } else if (o.children == null && children != null) {
+      return 1;
+    } else if (children == null && o.children == null) {
+      return 0;
+    }
+
+    diff = children.size() - o.children.size();
+    if (diff != 0) {
+      return diff;
+    }
+
+    for (int i = 0; i < children.size(); i += 1) {
+      diff = children.get(i).compareTo(o.children.get(i));
+      if (diff != 0) {
+        return diff;
+      }
+    }
+
+    return 0;
   }
 }
