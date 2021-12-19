@@ -26,4 +26,10 @@ class NodeStatsCLI {
       category = OptionCategory.USER,
       stability = OptionStability.EXPERIMENTAL) //
   static final OptionKey<Integer> HEIGHT = new OptionKey<>(5);
+
+  @Option(name = "Tracing",
+      help = "Trace execution in addition to taking statistics",
+      category = OptionCategory.USER,
+      stability = OptionStability.EXPERIMENTAL) //
+  static final OptionKey<Boolean> TRACING = new OptionKey<>(false);
 }

@@ -5,13 +5,7 @@ import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
 
 
 public class NodeActivation extends ExecutionEventNode {
-  private final Class<?> nodeTargetClass;
-
   private long activations;
-
-  public NodeActivation(final Class<?> nodeTargetClass) {
-    this.nodeTargetClass = nodeTargetClass;
-  }
 
   public long getActivations() {
     return activations;

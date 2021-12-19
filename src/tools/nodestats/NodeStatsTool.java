@@ -48,7 +48,8 @@ public class NodeStatsTool extends TruffleInstrument {
       Instrumenter instrumenter = env.getInstrumenter();
 
       collectRootNodesOnSourceLoad(instrumenter);
-      instrumentNodesToCountActivations(instrumenter);
+      instrumentNodesToCountActivations(instrumenter,
+          env.getOptions().get(NodeStatsCLI.TRACING));
     }
 
     env.registerService(this);
@@ -63,15 +64,26 @@ public class NodeStatsTool extends TruffleInstrument {
         true);
   }
 
-  private void instrumentNodesToCountActivations(final Instrumenter instrumenter) {
+  private void instrumentNodesToCountActivations(final Instrumenter instrumenter,
+      final boolean tracing) {
     SourceSectionFilter forAnyNode =
         SourceSectionFilter.newBuilder().tagIs(AnyNode.class).build();
 
-    ExecutionEventNodeFactory factory = (final EventContext ctx) -> {
-      NodeActivation node = nodeActivations.computeIfAbsent(ctx.getInstrumentedNode(),
-          key -> new NodeActivation(key.getClass()));
-      return node;
-    };
+    ExecutionEventNodeFactory factory;
+
+    if (tracing) {
+      factory = (final EventContext ctx) -> {
+        NodeActivation node = nodeActivations.computeIfAbsent(ctx.getInstrumentedNode(),
+            key -> new TracingNodeActivation(key));
+        return node;
+      };
+    } else {
+      factory = (final EventContext ctx) -> {
+        NodeActivation node = nodeActivations.computeIfAbsent(ctx.getInstrumentedNode(),
+            key -> new NodeActivation());
+        return node;
+      };
+    }
     instrumenter.attachExecutionEventFactory(forAnyNode, factory);
   }
 
