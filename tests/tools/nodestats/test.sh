@@ -33,15 +33,34 @@ function doDiff {
 }
 
 function runTest {
-  TEST=$1
-  TEST_OUT=test-$TEST.yml
-  CMD="$SOM_DIR/som -A -n $SCRIPT_PATH/results/$TEST_OUT -Dpolyglot.nodestats.Height=3 \
-    -G -cp $SOM_DIR/Smalltalk $SOM_DIR/TestSuite/TestHarness.som $TEST"
+  TEST=$1 
+  runAndDiff "test-$TEST.yml" "$SOM_DIR/Smalltalk" "$SOM_DIR/TestSuite/TestHarness.som $TEST"
+}
+
+function runBenchmark {
+  BENCH=$1
+  ARG=$2
+  runAndDiff "bench-$BENCH.yml" \
+    "$SOM_DIR/Smalltalk:$SOM_DIR/Examples/Benchmarks/LanguageFeatures:$SOM_DIR/Examples/Benchmarks/TestSuite" \
+    "$SOM_DIR/Examples/Benchmarks/BenchmarkHarness.som --gc $BENCH $ARG"
+}
+
+function runAndDiff {
+  OUT_FILE=$1
+  CLASSPATH=$2
+  ARGS=$3
+  CMD="$SOM_DIR/som -A -n $SCRIPT_PATH/results/$OUT_FILE -Dpolyglot.nodestats.Height=3 \
+    -G -cp $CLASSPATH $ARGS"
   echo $CMD
   $CMD
 
-  doDiff $SCRIPT_PATH/expected-results/$TEST_OUT $SCRIPT_PATH/results/$TEST_OUT
+  doDiff $SCRIPT_PATH/expected-results/$OUT_FILE $SCRIPT_PATH/results/$OUT_FILE
 }
+
+runAndDiff "hello.yml" "$SOM_DIR/Smalltalk" "$SOM_DIR/Examples/Hello.som"
+
+runBenchmark Sieve   "1 20"
+runBenchmark Recurse "1 12"
 
 runTest EmptyTest
 runTest SpecialSelectorsTest
