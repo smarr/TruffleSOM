@@ -246,11 +246,6 @@ public class AstNode implements Comparable<AstNode> {
       return diff;
     }
 
-    diff = (int) (o.getNumActivations() - getNumActivations());
-    if (diff != 0) {
-      return diff;
-    }
-
     diff = nodeClass.getName().compareTo(o.nodeClass.getName());
     if (diff != 0) {
       return diff;
@@ -265,6 +260,11 @@ public class AstNode implements Comparable<AstNode> {
     }
 
     diff = children.size() - o.children.size();
+    if (diff != 0) {
+      return diff;
+    }
+
+    diff = (int) (o.getNumActivations() - getNumActivations());
     if (diff != 0) {
       return diff;
     }
