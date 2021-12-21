@@ -118,7 +118,12 @@ public class NodeStatisticsCollector {
     assert node.getParent() instanceof WrapperNode || node instanceof RootNode
         || node instanceof DirectCallNode;
 
-    NodeActivation a = nodeActivations.get(node.getParent());
+    Node lookupNode = node.getParent();
+    if (!(lookupNode instanceof WrapperNode)) {
+      lookupNode = node;
+    }
+
+    NodeActivation a = nodeActivations.get(lookupNode);
 
     // assert a != null || node instanceof RootNode || node instanceof DirectCallNode;
     AstNode ast = new AstNode(node.getClass(), a);
