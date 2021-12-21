@@ -61,6 +61,14 @@ public class AstNode implements Comparable<AstNode> {
     children.add(child);
   }
 
+  public void sortChildren() {
+    if (children == null) {
+      return;
+    }
+
+    Collections.sort(children);
+  }
+
   @Override
   public boolean equals(final Object o) {
     if (this == o) {

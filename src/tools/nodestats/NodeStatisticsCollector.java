@@ -96,6 +96,8 @@ public class NodeStatisticsCollector {
       ast.addChild(child);
     }
 
+    ast.sortChildren();
+
     return ast;
   }
 
