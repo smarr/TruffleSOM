@@ -19,4 +19,9 @@ public class TracingNodeActivation extends NodeActivation {
     super.onEnter(frame);
     System.out.println("[NS] " + instrumentedNode.getClass().getName());
   }
+
+  @Override
+  public String toString() {
+    return "TracingNodeActivation(" + getActivations() + ")";
+  }
 }
