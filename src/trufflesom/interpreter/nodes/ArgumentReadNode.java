@@ -52,7 +52,13 @@ public abstract class ArgumentReadNode {
 
     @Override
     public String toString() {
-      return "ArgRead(" + arg.name + ")";
+      String argId;
+      if (arg == null) {
+        argId = "" + argumentIndex;
+      } else {
+        argId = arg.name.getString();
+      }
+      return "ArgRead(" + argId + ")";
     }
   }
 
@@ -121,7 +127,13 @@ public abstract class ArgumentReadNode {
 
     @Override
     public String toString() {
-      return "ArgRead(" + arg.name + ", ctx: " + contextLevel + ")";
+      String argId;
+      if (arg == null) {
+        argId = "" + argumentIndex;
+      } else {
+        argId = arg.name.getString();
+      }
+      return "ArgRead(" + argId + ", ctx: " + contextLevel + ")";
     }
   }
 
