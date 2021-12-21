@@ -64,7 +64,9 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
         }
       }
 
-      return replace(node);
+      replace(node);
+      notifyInserted(node);
+      return node;
     }
 
     // the chain is longer than the maximum defined by INLINE_CACHE_SIZE and

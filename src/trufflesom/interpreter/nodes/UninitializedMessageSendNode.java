@@ -43,9 +43,11 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
 
     if (specializer != null) {
       PreevaluatedExpression newNode =
-          (PreevaluatedExpression) specializer.create(arguments, argumentNodes, sourceCoord);
+          specializer.create(arguments, argumentNodes, sourceCoord);
 
-      return (PreevaluatedExpression) replace((ExpressionNode) newNode);
+      replace((ExpressionNode) newNode);
+      notifyInserted((ExpressionNode) newNode);
+      return newNode;
     }
 
     return makeGenericSend();
@@ -54,7 +56,9 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
   private GenericMessageSendNode makeGenericSend() {
     GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
         new UninitializedDispatchNode(selector)).initialize(sourceCoord);
-    return replace(send);
+    replace(send);
+    notifyInserted(send);
+    return send;
   }
 
   @Override

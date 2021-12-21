@@ -220,7 +220,10 @@ public abstract class FieldNode extends ExpressionNode {
       }
 
       IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
-      replace(new IncFieldNode(self, node, sourceCoord));
+      IncFieldNode incNode = new IncFieldNode(self, node, sourceCoord);
+      replace(incNode);
+      notifyInserted(incNode);
+
       return longVal;
     }
   }

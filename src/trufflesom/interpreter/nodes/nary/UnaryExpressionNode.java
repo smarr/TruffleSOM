@@ -39,7 +39,9 @@ public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
         MessageSendNode.createGeneric(selector, children, sourceCoord);
 
     if (VmSettings.UseAstInterp) {
-      return replace(send);
+      replace(send);
+      notifyInserted(send);
+      return send;
     }
 
     assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";

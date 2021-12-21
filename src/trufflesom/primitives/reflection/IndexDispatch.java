@@ -50,7 +50,9 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
           specialized = new CachedWriteDispatchNode(clazz, index,
               new UninitializedDispatchNode(depth + 1), depth);
         }
-        return replace(specialized);
+        replace(specialized);
+        notifyInserted(specialized);
+        return specialized;
       }
 
       IndexDispatch headNode = determineChainHead();
