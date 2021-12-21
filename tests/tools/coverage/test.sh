@@ -39,8 +39,10 @@ function runTest {
   rm -Rf $SCRIPT_PATH/results/$TEST
   echo $HARNESS
   $HARNESS
+  
+  cat $SCRIPT_PATH/results/$TEST | sort > $SCRIPT_PATH/results/$TEST.sorted
 
-  doDiff $SCRIPT_PATH/expected-results/$TEST $SCRIPT_PATH/results/$TEST
+  doDiff $SCRIPT_PATH/expected-results/$TEST.sorted $SCRIPT_PATH/results/$TEST.sorted
 }
 
 runTest
