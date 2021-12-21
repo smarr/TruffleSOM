@@ -5,6 +5,8 @@ import com.oracle.truffle.api.nodes.Node;
 
 
 public class TracingNodeActivation extends NodeActivation {
+  public static long allActivations;
+
   private final Node instrumentedNode;
 
   public TracingNodeActivation(final Node instrumentedNode) {
@@ -13,6 +15,7 @@ public class TracingNodeActivation extends NodeActivation {
 
   @Override
   protected void onEnter(final VirtualFrame frame) {
+    allActivations += 1;
     super.onEnter(frame);
     System.out.println("[NS] " + instrumentedNode.getClass().getName());
   }

@@ -118,6 +118,7 @@ public class NodeStatsTool extends TruffleInstrument {
     println("[ns] Number of Methods:    " + rootNodes.size());
     println("[ns] Number of Nodes:      " + collector.getNumberOfNodes());
     println("[ns] Number of Node Types: " + collector.getNumberOfNodeTypes());
+    println("[ns] All Activations: " + TracingNodeActivation.allActivations);
 
     String report = YamlReport.createReport(collector);
     Path reportPath = Paths.get(outputFile);
