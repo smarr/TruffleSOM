@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
-import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
@@ -115,8 +114,8 @@ public class NodeStatisticsCollector {
     }
 
     nodeNumbers.merge(node.getClass(), 1, Integer::sum);
-    assert node.getParent() instanceof WrapperNode || node instanceof RootNode
-        || node instanceof DirectCallNode;
+    // assert node.getParent() instanceof WrapperNode || node instanceof RootNode
+    // || node instanceof DirectCallNode;
 
     Node lookupNode = node.getParent();
     if (!(lookupNode instanceof WrapperNode)) {
