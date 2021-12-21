@@ -7,8 +7,16 @@ import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
 public class NodeActivation extends ExecutionEventNode {
   private long activations;
 
+  public NodeActivation old;
+
   public long getActivations() {
-    return activations;
+    long result = activations;
+    NodeActivation o = old;
+    while (o != null) {
+      result += o.activations;
+      o = o.old;
+    }
+    return result;
   }
 
   @Override
