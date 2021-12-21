@@ -25,6 +25,7 @@ public class AstNode implements Comparable<AstNode> {
     if (nodeActivation != null) {
       this.activations = new HashSet<>();
       this.activations.add(nodeActivation);
+      nodeActivation.addOld(activations);
     }
   }
 
@@ -37,6 +38,9 @@ public class AstNode implements Comparable<AstNode> {
     if (activations != null) {
       this.activations = new HashSet<>();
       this.activations.addAll(activations);
+      for (NodeActivation a : activations) {
+        a.addOld(this.activations);
+      }
     }
   }
 
