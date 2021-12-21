@@ -46,7 +46,7 @@ public abstract class BinaryExpressionNode extends ExpressionNode
 
     if (VmSettings.UseAstInterp) {
       replace(send);
-      notifyInserted(send);
+      send.notifyDispatchInserted();
       return send;
     }
 

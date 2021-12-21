@@ -42,16 +42,17 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       transferToInterpreterAndInvalidate("Initialize a dispatch node.");
 
       if (depth < INLINE_CACHE_SIZE) {
+        IndexDispatch uninit = new UninitializedDispatchNode(depth + 1);
         IndexDispatch specialized;
         if (read) {
           specialized = new CachedReadDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1), depth);
+              uninit, depth);
         } else {
           specialized = new CachedWriteDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1), depth);
+              uninit, depth);
         }
         replace(specialized);
-        notifyInserted(specialized);
+        notifyInserted(uninit);
         return specialized;
       }
 

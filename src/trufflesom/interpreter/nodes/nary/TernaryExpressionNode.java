@@ -47,7 +47,7 @@ public abstract class TernaryExpressionNode extends EagerlySpecializableNode {
 
     if (VmSettings.UseAstInterp) {
       replace(send);
-      notifyInserted(send);
+      send.notifyDispatchInserted();
       return send;
     }
 

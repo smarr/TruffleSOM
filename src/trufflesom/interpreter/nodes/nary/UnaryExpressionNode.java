@@ -40,7 +40,7 @@ public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
 
     if (VmSettings.UseAstInterp) {
       replace(send);
-      notifyInserted(send);
+      send.notifyDispatchInserted();
       return send;
     }
 

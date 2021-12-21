@@ -56,4 +56,8 @@ public final class GenericMessageSendNode extends AbstractMessageSendNode {
   public int getNumberOfArguments() {
     return numberOfSignatureArguments;
   }
+
+  public void notifyDispatchInserted() {
+    notifyInserted(dispatchNode);
+  }
 }
