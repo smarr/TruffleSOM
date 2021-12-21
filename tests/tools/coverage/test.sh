@@ -33,16 +33,17 @@ function doDiff {
 }
 
 function runTest {
-  TEST=lcov.info
-  HARNESS="$SOM_DIR/som -A -cov $SCRIPT_PATH/results/$TEST -ct lcov \
+  TEST=cov.hist
+  HARNESS="$SOM_DIR/som -A -cov $SCRIPT_PATH/results/$TEST -ct histogram \
     -G -cp $SOM_DIR/Smalltalk $SOM_DIR/TestSuite/TestHarness.som"
   rm -Rf $SCRIPT_PATH/results/$TEST
   echo $HARNESS
   $HARNESS
-  
-  cat $SCRIPT_PATH/results/$TEST | sort > $SCRIPT_PATH/results/$TEST.sorted
 
-  doDiff $SCRIPT_PATH/expected-results/$TEST.sorted $SCRIPT_PATH/results/$TEST.sorted
+  # processing things a little, filter out Hash, which is using the hashcode
+  cat $SCRIPT_PATH/results/$TEST | cut -c ${#SOM_DIR}- | grep -v Hash | sort > $SCRIPT_PATH/results/$TEST.processed
+
+  doDiff $SCRIPT_PATH/expected-results/$TEST.processed $SCRIPT_PATH/results/$TEST.processed
 }
 
 runTest
