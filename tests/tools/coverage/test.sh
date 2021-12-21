@@ -36,6 +36,7 @@ function runTest {
   TEST=lcov.info
   HARNESS="$SOM_DIR/som -A -cov $SCRIPT_PATH/results/$TEST -ct lcov \
     -G -cp $SOM_DIR/Smalltalk $SOM_DIR/TestSuite/TestHarness.som"
+  rm -Rf $SCRIPT_PATH/results/$TEST
   echo $HARNESS
   $HARNESS
 
