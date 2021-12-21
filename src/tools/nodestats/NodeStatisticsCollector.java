@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
+import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
@@ -26,7 +28,7 @@ public class NodeStatisticsCollector {
     }
   }
 
-  private final Map<Node, NodeActivation> nodeActivations;
+  private final Map<WrapperNode, NodeActivation> nodeActivations;
 
   private final List<AstNode>               fullTrees;
   private final Map<AstNode, PartialPair>[] partialTrees;
@@ -41,12 +43,38 @@ public class NodeStatisticsCollector {
   @SuppressWarnings({"unchecked", "rawtypes"})
   public NodeStatisticsCollector(final int maxCandidateTreeHeight,
       final Map<Node, NodeActivation> nodeActivations) {
-    this.nodeActivations = nodeActivations;
+    this.nodeActivations = toWrapperMap(nodeActivations);
     fullTrees = new ArrayList<>();
     nodeNumbers = new HashMap<>();
 
     partialTrees = new Map[maxCandidateTreeHeight];
     this.maxCandidateTreeHeight = maxCandidateTreeHeight;
+  }
+
+  @SuppressWarnings("unlikely-arg-type")
+  private Map<WrapperNode, NodeActivation> toWrapperMap(
+      final Map<Node, NodeActivation> nodeActivations) {
+    Map<WrapperNode, NodeActivation> result = new HashMap<>();
+
+    for (Entry<Node, NodeActivation> e : nodeActivations.entrySet()) {
+      Node wrapper = e.getKey().getParent();
+      assert wrapper instanceof WrapperNode;
+
+      NodeActivation old = result.get(wrapper);
+      if (old != null) {
+        if (e.getValue().old == null) {
+          e.getValue().old = old;
+        } else {
+          assert old.old == null; // TODO: just need to append it in either case to the last
+                                  // node...
+          old.old = e.getValue();
+          continue;
+        }
+      }
+      result.put((WrapperNode) wrapper, e.getValue());
+    }
+
+    return result;
   }
 
   public void addAll(final Collection<RootNode> roots) {
@@ -80,16 +108,20 @@ public class NodeStatisticsCollector {
     }
   }
 
+  @SuppressWarnings("unlikely-arg-type")
   private AstNode collect(final Node node) {
     if (node instanceof WrapperNode) {
       return collect(((WrapperNode) node).getDelegateNode());
     }
 
     nodeNumbers.merge(node.getClass(), 1, Integer::sum);
+    assert node.getParent() instanceof WrapperNode || node instanceof RootNode
+        || node instanceof DirectCallNode;
 
-    NodeActivation a = nodeActivations.get(node);
-    long activations = a != null ? a.getActivations() : 0;
-    AstNode ast = new AstNode(node.getClass(), activations);
+    NodeActivation a = nodeActivations.get(node.getParent());
+
+    // assert a != null || node instanceof RootNode || node instanceof DirectCallNode;
+    AstNode ast = new AstNode(node.getClass(), a);
 
     for (Node c : node.getChildren()) {
       AstNode child = collect(c);
