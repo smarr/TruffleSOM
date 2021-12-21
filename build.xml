@@ -348,10 +348,10 @@
         </exec>
     </target>
     
-    <target name="tools-test" depends="compile-for-jar,nodestats-test" description="Test Tools">
+    <target name="tools-test" depends="compile-for-jar,nodestats-test,coverage-test" description="Test Tools">
     </target>
     
-    <target name="tests" depends="test,som-test,tools-test" />
+    <target name="tests" depends="test,som-test" />
     
     <target name="update-test-data" depends="compile-for-jar" description="Update expected test data">
         <exec executable="tests/tools/nodestats/test.sh" failonerror="true">
