@@ -2,37 +2,54 @@ package tools.nodestats;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class AstNode implements Comparable<AstNode> {
   private final Class<?> nodeClass;
   private List<AstNode>  children;
 
-  private long activations;
+  private Set<NodeActivation> activations;
 
   private int height;
 
   private int hashcode;
 
-  public AstNode(final Class<?> nodeClass, final long activations) {
+  public AstNode(final Class<?> nodeClass, final NodeActivation nodeActivation) {
     this.nodeClass = nodeClass;
     height = -1;
     hashcode = -1;
-    this.activations = activations;
+    if (nodeActivation != null) {
+      this.activations = new HashSet<>();
+      this.activations.add(nodeActivation);
+    }
   }
 
-  private AstNode(final Class<?> nodeClass, final long activations,
+  private AstNode(final Class<?> nodeClass, final Set<NodeActivation> activations,
       final List<AstNode> children, final int height) {
     this.nodeClass = nodeClass;
     this.children = children;
     this.height = height;
     hashcode = -1;
-    this.activations = activations;
+    if (activations != null) {
+      this.activations = new HashSet<>();
+      this.activations.addAll(activations);
+    }
   }
 
-  public long getActivations() {
-    return activations;
+  public long getNumActivations() {
+    if (activations == null) {
+      return 0;
+    }
+
+    long num = 0;
+    for (NodeActivation a : activations) {
+      num += a.getActivations();
+    }
+    return num;
   }
 
   public void addChild(final AstNode child) {
@@ -168,7 +185,7 @@ public class AstNode implements Comparable<AstNode> {
     }
 
     builder.append("- activations: ");
-    builder.append(activations);
+    builder.append(getNumActivations());
     builder.append('\n');
 
     if (children == null) {
@@ -192,11 +209,17 @@ public class AstNode implements Comparable<AstNode> {
   }
 
   public void addActivations(final AstNode candidate) {
+    assert nodeClass == candidate.nodeClass;
     if (candidate == this) {
       return;
     }
 
-    activations += candidate.activations;
+    if (candidate.activations != null) {
+      if (activations == null) {
+        activations = new HashSet<>();
+      }
+      activations.addAll(candidate.activations);
+    }
 
     if (children == null) {
       return;
@@ -215,7 +238,7 @@ public class AstNode implements Comparable<AstNode> {
       return diff;
     }
 
-    diff = (int) (o.activations - activations);
+    diff = (int) (o.getNumActivations() - getNumActivations());
     if (diff != 0) {
       return diff;
     }

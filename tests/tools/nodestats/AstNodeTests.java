@@ -16,13 +16,13 @@ public class AstNodeTests {
 
   @Test
   public void testCloneHeight0() {
-    AstNode tree = new AstNode(getClass(), 0);
+    AstNode tree = new AstNode(getClass(), null);
     tree.collectTreesAndDetermineHeight(100, null);
 
     AstNode clone = tree.cloneWithMaxHeight(0);
     assertSame(tree, clone);
 
-    tree.addChild(new AstNode(getClass(), 0));
+    tree.addChild(new AstNode(getClass(), null));
 
     tree.collectTreesAndDetermineHeight(100, null);
 
@@ -35,13 +35,13 @@ public class AstNodeTests {
 
   @Test
   public void testCloneHeight1() {
-    AstNode tree = new AstNode(getClass(), 0);
+    AstNode tree = new AstNode(getClass(), null);
     tree.collectTreesAndDetermineHeight(100, null);
 
     AstNode clone = tree.cloneWithMaxHeight(1);
     assertSame(tree, clone);
 
-    tree.addChild(new AstNode(getClass(), 0));
+    tree.addChild(new AstNode(getClass(), null));
 
     tree.collectTreesAndDetermineHeight(100, null);
 
@@ -51,18 +51,18 @@ public class AstNodeTests {
 
   @Test
   public void testCloneHeight2() {
-    AstNode tree = new AstNode(getClass(), 0);
+    AstNode tree = new AstNode(getClass(), null);
 
-    AstNode child1 = new AstNode(getClass(), 0);
-    child1.addChild(new AstNode(getClass(), 0));
-    child1.addChild(new AstNode(getClass(), 0));
+    AstNode child1 = new AstNode(getClass(), null);
+    child1.addChild(new AstNode(getClass(), null));
+    child1.addChild(new AstNode(getClass(), null));
 
-    AstNode child2 = new AstNode(getClass(), 0);
-    AstNode child21 = new AstNode(getClass(), 0);
+    AstNode child2 = new AstNode(getClass(), null);
+    AstNode child21 = new AstNode(getClass(), null);
     child2.addChild(child21);
-    child2.addChild(new AstNode(getClass(), 0));
+    child2.addChild(new AstNode(getClass(), null));
 
-    child21.addChild(new AstNode(getClass(), 0));
+    child21.addChild(new AstNode(getClass(), null));
 
     tree.addChild(child1);
     tree.addChild(child2);

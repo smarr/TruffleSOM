@@ -154,7 +154,7 @@ public class NodeStatisticsCollector {
       for (PartialPair c : candidatesForHeight.values()) {
         AstNode tree = c.tree;
         assert tree.getHeight() >= 1;
-        SubTree candidate = new SubTree(tree, tree.getActivations());
+        SubTree candidate = new SubTree(tree, tree.getNumActivations());
         result.add(candidate);
       }
     }
