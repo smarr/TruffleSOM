@@ -151,16 +151,12 @@ public class AstNode implements Comparable<AstNode> {
 
   public AstNode cloneWithMaxHeight(final int maxTreeHeight) {
     assert height >= 0;
-    if (maxTreeHeight >= height || height == 0) {
-      return this;
-    }
-
-    assert height > 0 && children != null && children.size() > 0;
 
     ArrayList<AstNode> clonedChildren;
-    if (maxTreeHeight == 0) {
+    if (height == 0 || maxTreeHeight == 0) {
       clonedChildren = null;
     } else {
+      assert height > 0 && children != null && children.size() > 0;
       clonedChildren = new ArrayList<>(children.size());
       for (AstNode c : children) {
         clonedChildren.add(c.cloneWithMaxHeight(maxTreeHeight - 1));
