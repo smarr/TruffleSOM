@@ -64,8 +64,8 @@ runBenchmark Recurse "1 12"
 
 runTest EmptyTest
 runTest SpecialSelectorsTest
-runTest ArrayTest
-runTest BlockTest
+# runTest ArrayTest
+# runTest BlockTest
 runTest BooleanTest
 runTest ClassLoadingTest
 runTest ClassStructureTest
@@ -75,8 +75,8 @@ runTest CompilerReturnTest
 runTest DictionaryTest
 runTest DoesNotUnderstandTest
 runTest DoubleTest
-runTest GlobalTest
-runTest HashTest
+# runTest GlobalTest
+# runTest HashTest
 runTest IntegerTest
 runTest PreliminaryTest
 runTest ReflectionTest
