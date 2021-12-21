@@ -264,7 +264,7 @@ public abstract class FieldNode extends ExpressionNode {
 
   public static final class WriteAndReturnSelf extends ExpressionNode
       implements PreevaluatedExpression {
-    @Child FieldWriteNode write;
+    @Child ExpressionNode write;
 
     WriteAndReturnSelf(final FieldWriteNode write) {
       this.write = write;
