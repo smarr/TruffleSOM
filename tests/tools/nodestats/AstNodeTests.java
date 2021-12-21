@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 
 import java.util.List;
 
@@ -20,7 +19,8 @@ public class AstNodeTests {
     tree.collectTreesAndDetermineHeight(100, null);
 
     AstNode clone = tree.cloneWithMaxHeight(0);
-    assertSame(tree, clone);
+    assertNotSame(tree, clone);
+    assertEquals(tree, clone);
 
     tree.addChild(new AstNode(getClass(), null));
 
@@ -39,14 +39,16 @@ public class AstNodeTests {
     tree.collectTreesAndDetermineHeight(100, null);
 
     AstNode clone = tree.cloneWithMaxHeight(1);
-    assertSame(tree, clone);
+    assertNotSame(tree, clone);
+    assertEquals(tree, clone);
 
     tree.addChild(new AstNode(getClass(), null));
 
     tree.collectTreesAndDetermineHeight(100, null);
 
     clone = tree.cloneWithMaxHeight(1);
-    assertSame(tree, clone);
+    assertNotSame(tree, clone);
+    assertEquals(tree, clone);
   }
 
   @Test
