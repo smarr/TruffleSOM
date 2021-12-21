@@ -56,21 +56,19 @@ public class NodeStatisticsCollector {
     Map<WrapperNode, NodeActivation> result = new HashMap<>();
 
     for (Entry<Node, NodeActivation> e : nodeActivations.entrySet()) {
-      Node wrapper = e.getKey().getParent();
-      assert wrapper instanceof WrapperNode;
-
-      NodeActivation old = result.get(wrapper);
-      if (old != null) {
-        if (e.getValue().old == null) {
-          e.getValue().old = old;
-        } else {
-          assert old.old == null; // TODO: just need to append it in either case to the last
-                                  // node...
-          old.old = e.getValue();
-          continue;
-        }
+      Node key = e.getKey();
+      if (key.getParent() instanceof WrapperNode) {
+        key = key.getParent();
       }
-      result.put((WrapperNode) wrapper, e.getValue());
+
+      NodeActivation existing = result.get(key);
+      NodeActivation newNode = e.getValue();
+      if (existing != null) {
+        newNode.old = existing.old;
+        existing.old = newNode;
+      } else {
+        result.put((WrapperNode) key, e.getValue());
+      }
     }
 
     return result;
@@ -108,9 +106,12 @@ public class NodeStatisticsCollector {
   }
 
   @SuppressWarnings("unlikely-arg-type")
-  private AstNode collect(final Node node) {
-    if (node instanceof WrapperNode) {
-      return collect(((WrapperNode) node).getDelegateNode());
+  private AstNode collect(final Node n) {
+    Node node;
+    if (n instanceof WrapperNode) {
+      node = ((WrapperNode) n).getDelegateNode();
+    } else {
+      node = n;
     }
 
     nodeNumbers.merge(node.getClass(), 1, Integer::sum);
