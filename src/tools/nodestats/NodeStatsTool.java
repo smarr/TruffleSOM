@@ -73,14 +73,18 @@ public class NodeStatsTool extends TruffleInstrument {
 
     if (tracing) {
       factory = (final EventContext ctx) -> {
-        NodeActivation node = nodeActivations.computeIfAbsent(ctx.getInstrumentedNode(),
-            key -> new TracingNodeActivation(key));
+        Node instrumentedNode = ctx.getInstrumentedNode();
+        NodeActivation node = new TracingNodeActivation(instrumentedNode);
+        node.old = nodeActivations.get(instrumentedNode);
+        nodeActivations.put(instrumentedNode, node);
         return node;
       };
     } else {
       factory = (final EventContext ctx) -> {
-        NodeActivation node = nodeActivations.computeIfAbsent(ctx.getInstrumentedNode(),
-            key -> new NodeActivation());
+        Node instrumentedNode = ctx.getInstrumentedNode();
+        NodeActivation node = new NodeActivation();
+        node.old = nodeActivations.get(instrumentedNode);
+        nodeActivations.put(instrumentedNode, node);
         return node;
       };
     }
