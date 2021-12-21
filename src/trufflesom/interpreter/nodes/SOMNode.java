@@ -90,6 +90,9 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
         return null;
       }
 
+      while (!(parent instanceof WithSource)) {
+        parent = parent.getParent();
+      }
       node = (WithSource) parent;
     }
 
