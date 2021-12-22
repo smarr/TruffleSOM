@@ -41,7 +41,8 @@ function runTest {
   $HARNESS
 
   # processing things a little, filter out Hash, which is using the hashcode
-  cat $SCRIPT_PATH/results/$TEST | cut -c ${#SOM_DIR}- | grep -v Hash | sort > $SCRIPT_PATH/results/$TEST.processed
+  # also filter out the header, which doesn't sort well on all platforms
+  cat $SCRIPT_PATH/results/$TEST | cut -c ${#SOM_DIR}- | grep -v Hash | grep -v Statements | sort > $SCRIPT_PATH/results/$TEST.processed
 
   doDiff $SCRIPT_PATH/expected-results/$TEST.processed $SCRIPT_PATH/results/$TEST.processed
 }
