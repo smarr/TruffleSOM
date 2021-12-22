@@ -5,7 +5,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Argument;
-import trufflesom.interpreter.SArguments;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -33,7 +32,7 @@ public abstract class ArgumentReadNode {
 
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
-      return SArguments.arg(frame, argumentIndex);
+      return frame.getArguments()[argumentIndex];
     }
 
     @Override
@@ -88,7 +87,7 @@ public abstract class ArgumentReadNode {
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
       Object value = valueNode.executeGeneric(frame);
-      SArguments.setArg(frame, argumentIndex, value);
+      frame.getArguments()[argumentIndex] = value;
       return value;
     }
 
@@ -112,7 +111,7 @@ public abstract class ArgumentReadNode {
 
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
-      return SArguments.arg(determineContext(frame), argumentIndex);
+      return determineContext(frame).getArguments()[argumentIndex];
     }
 
     @Override
@@ -156,7 +155,7 @@ public abstract class ArgumentReadNode {
     @Override
     public final Object executeGeneric(final VirtualFrame frame) {
       Object value = valueNode.executeGeneric(frame);
-      SArguments.setArg(determineContext(frame), argumentIndex, value);
+      determineContext(frame).getArguments()[argumentIndex] = value;
       return value;
     }
 
