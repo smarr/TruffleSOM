@@ -24,10 +24,12 @@ package trufflesom.interpreter.nodes;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
+import bd.basic.nodes.DummyParent;
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.nodes.ScopeReference;
 import bd.inlining.nodes.WithSource;
@@ -83,7 +85,15 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
 
     WithSource node = this;
     while (node != null && !node.hasSource()) {
-      node = (WithSource) ((Node) node).getParent();
+      Node parent = ((Node) node).getParent();
+      if (parent.getClass() == DummyParent.class) {
+        return null;
+      }
+
+      while (!(parent instanceof WithSource)) {
+        parent = parent.getParent();
+      }
+      node = (WithSource) parent;
     }
 
     if (node == null) {
@@ -95,5 +105,21 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
   @Override
   public boolean hasSource() {
     return false;
+  }
+
+  public static Node getParentIgnoringWrapper(final Node node) {
+    Node n = node.getParent();
+    if (n instanceof WrapperNode) {
+      return n.getParent();
+    }
+    return n;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <N extends Node> N unwrapIfNeeded(final N node) {
+    if (node instanceof WrapperNode) {
+      return (N) ((WrapperNode) node).getDelegateNode();
+    }
+    return node;
   }
 }

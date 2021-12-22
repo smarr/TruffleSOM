@@ -2,15 +2,17 @@ package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.nodes.NodeCost;
 
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class GenericMessageSendNode extends AbstractMessageSendNode {
+public class GenericMessageSendNode extends AbstractMessageSendNode {
 
   private final SSymbol selector;
   private final int     numberOfSignatureArguments;
@@ -23,6 +25,15 @@ public final class GenericMessageSendNode extends AbstractMessageSendNode {
     this.selector = selector;
     this.dispatchNode = dispatchNode;
     this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
+  }
+
+  /**
+   * Only used for GenericMessageSendNodeWrapper.
+   */
+  protected GenericMessageSendNode() {
+    super(null);
+    selector = null;
+    numberOfSignatureArguments = 0;
   }
 
   @Override
@@ -55,5 +66,16 @@ public final class GenericMessageSendNode extends AbstractMessageSendNode {
   @Override
   public int getNumberOfArguments() {
     return numberOfSignatureArguments;
+  }
+
+  public void notifyDispatchInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(dispatchNode);
+    }
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new GenericMessageSendNodeWrapper(this, probe);
   }
 }

@@ -30,7 +30,7 @@ import trufflesom.interpreter.SArguments;
 import trufflesom.vmobjects.SBlock;
 
 
-public abstract class ContextualNode extends ExpressionNode {
+public abstract class ContextualNode extends NoPreEvalExprNode {
 
   private static final ValueProfile frameType = ValueProfile.createClassProfile();
 

@@ -2,6 +2,7 @@ package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
@@ -17,6 +18,13 @@ public abstract class IntIncrementNode extends ExpressionNode {
   @Specialization
   public double doInc(final double rcvr) {
     return rcvr + 1;
+  }
+
+  public abstract Object executeEvaluated(Object rcvr);
+
+  @Override
+  public final Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
+    return executeEvaluated(args[0]);
   }
 
   public abstract ExpressionNode getRcvr();

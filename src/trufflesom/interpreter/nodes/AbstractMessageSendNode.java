@@ -18,7 +18,7 @@ public abstract class AbstractMessageSendNode extends ExpressionNode
   }
 
   @Override
-  public final Object executeGeneric(final VirtualFrame frame) {
+  public Object executeGeneric(final VirtualFrame frame) {
     Object[] arguments = evaluateArguments(frame);
     return doPreEvaluated(frame, arguments);
   }

@@ -124,6 +124,8 @@
 
     <target name="truffle-libs" depends="jvmci-libs,core-lib">
         <exec executable="${mx.cmd}" dir="${compiler.dir}" failonerror="true">
+            <env key="DYNAMIC_IMPORTS" value="/tools" />
+            <env key="EXCLUDE_COMPONENTS" value="ins,dap,lsp,insight,insightheap,vvm" />
             <arg value="build"/>
             <arg value="--no-native"/>
             <env key="JAVA_HOME" value="${jvmci.home}" />
@@ -137,7 +139,7 @@
             <env key="DYNAMIC_IMPORTS" value="/substratevm,/tools,/truffle,/sdk,/compiler" />
             <env key="FORCE_BASH_LAUNCHERS" value="true" />
             <env key="DISABLE_LIBPOLYGLOT" value="true" />
-            <env key="EXCLUDE_COMPONENTS" value="svmag,nju,nic,ni,nil" />
+            <env key="EXCLUDE_COMPONENTS" value="svmag,nju,nic,ni,nil,ins,dap,lsp,insight,insightheap,vvm" />
             <arg line="build"/>
         </exec>
     </target>
@@ -336,7 +338,29 @@
       </exec>
     </target>
     
+    <target name="nodestats-test">
+        <exec executable="tests/tools/nodestats/test.sh" failonerror="true">
+        </exec>
+    </target>
+    
+    <target name="coverage-test">
+        <exec executable="tests/tools/coverage/test.sh" failonerror="true">
+        </exec>
+    </target>
+    
+    <target name="tools-test" depends="compile-for-jar,nodestats-test,coverage-test" description="Test Tools">
+    </target>
+    
     <target name="tests" depends="test,som-test" />
+    
+    <target name="update-test-data" depends="compile-for-jar" description="Update expected test data">
+        <exec executable="tests/tools/nodestats/test.sh" failonerror="true">
+          <arg value="update" />
+        </exec>
+        <exec executable="tests/tools/coverage/test.sh" failonerror="true">
+          <arg value="update" />
+        </exec>
+    </target>
 
     <target name="compile-svm">
       <exec executable="${mx.cmd}" dir="${svm.dir}" failonerror="true">

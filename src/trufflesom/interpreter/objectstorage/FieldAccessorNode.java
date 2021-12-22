@@ -7,9 +7,11 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.TypesGen;
+import trufflesom.interpreter.nodes.SOMNode;
 import trufflesom.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
 import trufflesom.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
 import trufflesom.interpreter.objectstorage.StorageLocation.LongStorageLocation;
+import trufflesom.vm.VmSettings;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 
@@ -37,6 +39,12 @@ public abstract class FieldAccessorNode extends Node {
 
   public final int getFieldIndex() {
     return fieldIndex;
+  }
+
+  public void notifyAsInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(this);
+    }
   }
 
   public abstract static class AbstractReadFieldNode extends FieldAccessorNode {
@@ -127,7 +135,7 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).read(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).read(obj);
+        return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
       }
     }
   }
@@ -150,7 +158,7 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).readLong(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).readLong(obj);
+        return replace(SOMNode.unwrapIfNeeded(nextInCache)).readLong(obj);
       }
     }
 
@@ -182,7 +190,7 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).readDouble(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).readDouble(obj);
+        return replace(SOMNode.unwrapIfNeeded(nextInCache)).readDouble(obj);
       }
     }
 
@@ -214,7 +222,7 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).read(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(nextInCache).read(obj);
+        return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
       }
     }
   }
@@ -310,7 +318,8 @@ public abstract class FieldAccessorNode extends Node {
         }
       } catch (InvalidAssumptionException e) {
         ensureNext(obj);
-        return replace(nextInCache).increment(obj);
+        return replace(SOMNode.unwrapIfNeeded(nextInCache)).increment(
+            obj);
       }
     }
 
@@ -344,7 +353,7 @@ public abstract class FieldAccessorNode extends Node {
           }
         }
       } catch (InvalidAssumptionException e) {
-        replace(nextInCache).write(obj, value);
+        replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
       }
       return value;
     }
@@ -386,7 +395,7 @@ public abstract class FieldAccessorNode extends Node {
           }
         }
       } catch (InvalidAssumptionException e) {
-        replace(nextInCache).write(obj, value);
+        replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
       }
       return value;
     }
@@ -428,7 +437,7 @@ public abstract class FieldAccessorNode extends Node {
           }
         }
       } catch (InvalidAssumptionException e) {
-        replace(nextInCache).write(obj, value);
+        replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
       }
       return value;
     }

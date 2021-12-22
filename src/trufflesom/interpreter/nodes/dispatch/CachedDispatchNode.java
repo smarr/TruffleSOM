@@ -5,6 +5,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
+import trufflesom.interpreter.nodes.SOMNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 
 
@@ -30,7 +31,8 @@ public final class CachedDispatchNode extends AbstractCachedDispatchNode {
       }
     } catch (InvalidAssumptionException e) {
       CompilerDirectives.transferToInterpreter();
-      return replace(nextInCache).executeDispatch(frame, arguments);
+      return replace(SOMNode.unwrapIfNeeded(
+          nextInCache)).executeDispatch(frame, arguments);
     }
   }
 }

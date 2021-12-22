@@ -25,18 +25,27 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
+import com.oracle.truffle.api.instrumentation.StandardTags.ExpressionTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.RootTag;
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import tools.nodestats.Tags.AnyNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
+import trufflesom.vm.VmSettings;
 
 
 @GenerateWrapper
-public abstract class ExpressionNode extends SOMNode implements InstrumentableNode {
+public abstract class ExpressionNode extends SOMNode
+    implements InstrumentableNode, PreevaluatedExpression {
 
   public abstract Object executeGeneric(VirtualFrame frame);
+
+  @Override
+  public abstract Object doPreEvaluated(VirtualFrame frame, Object[] args);
 
   public boolean isTrivial() {
     return false;
@@ -96,12 +105,40 @@ public abstract class ExpressionNode extends SOMNode implements InstrumentableNo
 
   @Override
   public boolean hasTag(final Class<? extends Tag> tag) {
+    if (tag == AnyNode.class) {
+      return true;
+    }
+
     if (tag == RootTag.class) {
       Node parent = getParent();
-      if (parent != null && parent.getParent() == null) {
+      if (parent instanceof WrapperNode) {
+        parent = parent.getParent();
+      }
+
+      if (parent.getClass() == CatchNonLocalReturnNode.class) {
         return true;
       }
+      if (parent != null) {
+        Node grandParent = parent.getParent();
+        if (grandParent == null) {
+          return true;
+        }
+        if (grandParent instanceof WrapperNode && grandParent.getParent() == null) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    if (tag == StatementTag.class || tag == ExpressionTag.class) {
+      return true;
     }
     return false;
+  }
+
+  public void notifyAsInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(this);
+    }
   }
 }

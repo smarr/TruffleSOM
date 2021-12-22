@@ -5,6 +5,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import bd.primitives.Specializer;
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vmobjects.SSymbol;
@@ -43,18 +44,24 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
 
     if (specializer != null) {
       PreevaluatedExpression newNode =
-          (PreevaluatedExpression) specializer.create(arguments, argumentNodes, sourceCoord);
+          specializer.create(arguments, argumentNodes, sourceCoord);
 
-      return (PreevaluatedExpression) replace((ExpressionNode) newNode);
+      replace((ExpressionNode) newNode);
+      // I don't think I get to the inserted nodes...
+      // notifyInserted((ExpressionNode) newNode);
+      return newNode;
     }
 
     return makeGenericSend();
   }
 
   private GenericMessageSendNode makeGenericSend() {
+    AbstractDispatchNode dispatch = new UninitializedDispatchNode(selector);
     GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
-        new UninitializedDispatchNode(selector)).initialize(sourceCoord);
-    return replace(send);
+        dispatch).initialize(sourceCoord);
+    replace(send);
+    dispatch.notifyAsInserted();
+    return send;
   }
 
   @Override

@@ -10,6 +10,8 @@ import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.ReportPolymorphism.Megamorphic;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import bd.primitives.Primitive;
@@ -47,6 +49,7 @@ public abstract class BlockPrims {
 
   @ReportPolymorphism
   @GenerateNodeFactory
+  @GenerateWrapper
   @Primitive(className = "Block", primitive = "value")
   @Primitive(className = "Block1", primitive = "value")
   @Primitive(selector = "value", inParser = false,
@@ -54,7 +57,7 @@ public abstract class BlockPrims {
   @ImportStatic(BlockPrims.class)
   public abstract static class ValueNonePrim extends UnaryExpressionNode {
 
-    public abstract Object executeEvaluated(SBlock receiver);
+    public abstract Object executeEvaluated(VirtualFrame frame, SBlock receiver);
 
     @Specialization(
         guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
@@ -84,16 +87,22 @@ public abstract class BlockPrims {
     public final boolean doBoolean(final boolean receiver) {
       return receiver;
     }
+
+    @Override
+    public WrapperNode createWrapper(final ProbeNode probe) {
+      return new ValueNonePrimWrapper(this, probe);
+    }
   }
 
   @ReportPolymorphism
+  @GenerateWrapper
   @GenerateNodeFactory
   @Primitive(className = "Block2", primitive = "value:", selector = "value:", inParser = false,
       receiverType = SBlock.class)
   @ImportStatic(BlockPrims.class)
   public abstract static class ValueOnePrim extends BinaryExpressionNode {
 
-    public abstract Object executeEvaluated(SBlock receiver, Object arg);
+    public abstract Object executeEvaluated(VirtualFrame frame, SBlock receiver, Object arg);
 
     @Specialization(
         guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
@@ -123,6 +132,11 @@ public abstract class BlockPrims {
     public final Object makeGenericSend(final Object receiver, final Object argument) {
       return makeGenericSend(SymbolTable.symbolFor("value:")).doPreEvaluated(null,
           new Object[] {receiver, argument});
+    }
+
+    @Override
+    public WrapperNode createWrapper(final ProbeNode probe) {
+      return new ValueOnePrimWrapper(this, probe);
     }
   }
 

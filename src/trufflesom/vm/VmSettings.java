@@ -10,7 +10,7 @@ public class VmSettings implements Settings {
   public static final boolean UseJitCompiler;
   public static final boolean PrintStackTraceOnDNU;
 
-  public static final boolean UseNodeStatsTool;
+  public static final boolean UseInstrumentation;
 
   static {
     String val = System.getProperty("som.interp", "AST").toUpperCase();
@@ -25,8 +25,9 @@ public class VmSettings implements Settings {
     val = System.getProperty("som.jitCompiler", "true");
     UseJitCompiler = "true".equals(val);
 
-    val = System.getProperty("som.nodestats", "false");
-    UseNodeStatsTool = "true".equals(val);
+    val = System.getProperty("polyglot.nodestats", "false");
+    String val2 = System.getProperty("polyglot.coverage", "false");
+    UseInstrumentation = "true".equals(val) || "true".equals(val2);
 
     val = System.getProperty("som.printStackTraceOnDNU", "false");
     PrintStackTraceOnDNU = "true".equals(val);

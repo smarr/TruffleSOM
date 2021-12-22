@@ -100,7 +100,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
    *
    * @author Stefan Marr
    */
-  public static final class ReturnLocalNode extends ExpressionNode {
+  public static final class ReturnLocalNode extends NoPreEvalExprNode {
     @Child private ExpressionNode expression;
 
     private final Internal  onStackMarkerVar;
@@ -148,7 +148,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
     }
   }
 
-  public static final class CatchNonLocalReturnNode extends ExpressionNode {
+  public static final class CatchNonLocalReturnNode extends NoPreEvalExprNode {
     @Child protected ExpressionNode methodBody;
 
     private final BranchProfile nonLocalReturnHandler;

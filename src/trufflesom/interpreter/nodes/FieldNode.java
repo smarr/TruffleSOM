@@ -196,6 +196,12 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Object executeGeneric(final VirtualFrame frame) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
       SObject obj = (SObject) self.executeGeneric(frame);
@@ -214,7 +220,10 @@ public abstract class FieldNode extends ExpressionNode {
       }
 
       IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
-      replace(new IncFieldNode(self, node, sourceCoord));
+      IncFieldNode incNode = new IncFieldNode(self, node, sourceCoord);
+      replace(incNode);
+      node.notifyAsInserted();
+
       return longVal;
     }
   }
@@ -236,6 +245,12 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
+    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
+      CompilerDirectives.transferToInterpreter();
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Object executeGeneric(final VirtualFrame frame) {
       return executeLong(frame);
     }
@@ -249,7 +264,7 @@ public abstract class FieldNode extends ExpressionNode {
 
   public static final class WriteAndReturnSelf extends ExpressionNode
       implements PreevaluatedExpression {
-    @Child FieldWriteNode write;
+    @Child ExpressionNode write;
 
     WriteAndReturnSelf(final FieldWriteNode write) {
       this.write = write;

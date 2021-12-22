@@ -2,6 +2,9 @@ package trufflesom.primitives.basics;
 
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 
 import bd.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -10,6 +13,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateNodeFactory
+@GenerateWrapper
 @Primitive(className = "Array", primitive = "length")
 @Primitive(className = "String", primitive = "length")
 @Primitive(selector = "length", receiverType = String.class, inParser = false)
@@ -45,7 +49,7 @@ public abstract class LengthPrim extends UnaryExpressionNode {
     return receiver.getBooleanStorage().length;
   }
 
-  public abstract long executeEvaluated(SArray receiver);
+  public abstract long executeEvaluated(VirtualFrame frame, SArray receiver);
 
   @Specialization
   public final long doString(final String receiver) {
@@ -55,5 +59,10 @@ public abstract class LengthPrim extends UnaryExpressionNode {
   @Specialization
   public final long doSSymbol(final SSymbol receiver) {
     return receiver.getString().length();
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new LengthPrimWrapper(this, probe);
   }
 }

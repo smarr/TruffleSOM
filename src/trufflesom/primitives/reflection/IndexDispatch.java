@@ -10,6 +10,7 @@ import trufflesom.interpreter.nodes.dispatch.DispatchChain;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 
@@ -31,6 +32,12 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
   public abstract Object executeDispatch(SObject obj, int index, Object value);
 
+  public void notifyAsInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(this);
+    }
+  }
+
   private static final class UninitializedDispatchNode extends IndexDispatch {
 
     UninitializedDispatchNode(final int depth) {
@@ -42,15 +49,18 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
       transferToInterpreterAndInvalidate("Initialize a dispatch node.");
 
       if (depth < INLINE_CACHE_SIZE) {
+        IndexDispatch uninit = new UninitializedDispatchNode(depth + 1);
         IndexDispatch specialized;
         if (read) {
           specialized = new CachedReadDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1), depth);
+              uninit, depth);
         } else {
           specialized = new CachedWriteDispatchNode(clazz, index,
-              new UninitializedDispatchNode(depth + 1), depth);
+              uninit, depth);
         }
-        return replace(specialized);
+        replace(specialized);
+        uninit.notifyAsInserted();
+        return specialized;
       }
 
       IndexDispatch headNode = determineChainHead();
