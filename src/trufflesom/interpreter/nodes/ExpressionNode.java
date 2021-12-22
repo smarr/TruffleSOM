@@ -35,6 +35,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import bd.primitives.nodes.PreevaluatedExpression;
 import tools.nodestats.Tags.AnyNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
+import trufflesom.vm.VmSettings;
 
 
 @GenerateWrapper
@@ -133,5 +134,11 @@ public abstract class ExpressionNode extends SOMNode
       return true;
     }
     return false;
+  }
+
+  public void notifyAsInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(this);
+    }
   }
 }

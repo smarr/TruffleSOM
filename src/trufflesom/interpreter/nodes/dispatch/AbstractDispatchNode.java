@@ -16,6 +16,7 @@ import bd.inlining.nodes.WithSource;
 import bd.source.SourceCoordinate;
 import tools.nodestats.Tags.AnyNode;
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
+import trufflesom.vm.VmSettings;
 
 
 @GenerateWrapper
@@ -85,6 +86,12 @@ public abstract class AbstractDispatchNode extends Node
     return false;
   }
 
+  public void notifyAsInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(this);
+    }
+  }
+
   @Override
   public SourceSection getSourceSection() {
     AbstractMessageSendNode send = getSendNode();
@@ -98,5 +105,4 @@ public abstract class AbstractDispatchNode extends Node
     }
     return (AbstractMessageSendNode) i.getParent();
   }
-
 }

@@ -60,7 +60,7 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
     GenericMessageSendNode send = new GenericMessageSendNode(selector, argumentNodes,
         dispatch).initialize(sourceCoord);
     replace(send);
-    notifyInserted(dispatch);
+    dispatch.notifyAsInserted();
     return send;
   }
 

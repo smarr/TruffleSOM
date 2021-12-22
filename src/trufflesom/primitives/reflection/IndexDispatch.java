@@ -10,6 +10,7 @@ import trufflesom.interpreter.nodes.dispatch.DispatchChain;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 
@@ -30,6 +31,12 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
   public abstract Object executeDispatch(SObject obj, int index);
 
   public abstract Object executeDispatch(SObject obj, int index, Object value);
+
+  public void notifyAsInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(this);
+    }
+  }
 
   private static final class UninitializedDispatchNode extends IndexDispatch {
 
@@ -52,7 +59,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
               uninit, depth);
         }
         replace(specialized);
-        notifyInserted(uninit);
+        uninit.notifyAsInserted();
         return specialized;
       }
 

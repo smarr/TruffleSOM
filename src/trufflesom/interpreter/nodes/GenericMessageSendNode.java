@@ -8,6 +8,7 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -68,7 +69,9 @@ public class GenericMessageSendNode extends AbstractMessageSendNode {
   }
 
   public void notifyDispatchInserted() {
-    notifyInserted(dispatchNode);
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(dispatchNode);
+    }
   }
 
   @Override

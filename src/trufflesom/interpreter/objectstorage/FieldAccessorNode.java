@@ -11,6 +11,7 @@ import trufflesom.interpreter.nodes.SOMNode;
 import trufflesom.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
 import trufflesom.interpreter.objectstorage.StorageLocation.DoubleStorageLocation;
 import trufflesom.interpreter.objectstorage.StorageLocation.LongStorageLocation;
+import trufflesom.vm.VmSettings;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 
@@ -38,6 +39,12 @@ public abstract class FieldAccessorNode extends Node {
 
   public final int getFieldIndex() {
     return fieldIndex;
+  }
+
+  public void notifyAsInserted() {
+    if (VmSettings.UseInstrumentation) {
+      notifyInserted(this);
+    }
   }
 
   public abstract static class AbstractReadFieldNode extends FieldAccessorNode {

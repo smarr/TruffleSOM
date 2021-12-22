@@ -65,7 +65,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
       }
 
       replace(node);
-      notifyInserted(newChainEnd);
+      newChainEnd.notifyAsInserted();
       return node;
     }
 
