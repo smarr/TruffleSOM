@@ -15,8 +15,12 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
 import static trufflesom.compiler.bc.BytecodeMethodGenContext.getJumpOffset;
+import static trufflesom.interpreter.bc.Bytecodes.DEC;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
 import static trufflesom.interpreter.bc.Bytecodes.HALT;
+import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
@@ -126,6 +130,7 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Classes;
 import trufflesom.vm.NotYetImplementedException;
@@ -666,6 +671,115 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           }
 
           return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+        }
+
+        case INC: {
+          Object top = stack[stackPointer];
+          if (top instanceof Long) {
+            try {
+              stack[stackPointer] = Math.addExact((Long) top, 1L);
+            } catch (ArithmeticException e) {
+              CompilerDirectives.transferToInterpreterAndInvalidate();
+              throw new NotYetImplementedException();
+            }
+          } else {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            if (top instanceof Double) {
+              stack[stackPointer] = ((Double) top) + 1.0d;
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+          break;
+        }
+
+        case DEC: {
+          Object top = stack[stackPointer];
+          if (top instanceof Long) {
+            stack[stackPointer] = ((Long) top) - 1;
+          } else {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            if (top instanceof Double) {
+              stack[stackPointer] = ((Double) top) - 1.0d;
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+          break;
+        }
+
+        case INC_FIELD: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            Object val = obj.getField(fieldIdx);
+            if (!(val instanceof Long)) {
+              throw new NotYetImplementedException();
+            }
+
+            try {
+              long longVal = Math.addExact((Long) val, 1);
+              obj.setField(fieldIdx, longVal);
+            } catch (ArithmeticException e) {
+              throw new NotYetImplementedException();
+            }
+
+            node = quickened[bytecodeIndex] =
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            break;
+          }
+
+          ((IncrementLongFieldNode) node).increment(obj);
+          break;
+        }
+
+        case INC_FIELD_PUSH: {
+          byte fieldIdx = bytecodes[bytecodeIndex + 1];
+          byte contextIdx = bytecodes[bytecodeIndex + 2];
+
+          VirtualFrame currentOrContext = frame;
+          if (contextIdx > 0) {
+            currentOrContext = determineContext(currentOrContext, contextIdx);
+          }
+
+          SObject obj = (SObject) currentOrContext.getArguments()[0];
+
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            Object val = obj.getField(fieldIdx);
+            if (!(val instanceof Long)) {
+              throw new NotYetImplementedException();
+            }
+
+            try {
+              long longVal = Math.addExact((Long) val, 1);
+              obj.setField(fieldIdx, longVal);
+              stackPointer += 1;
+              stack[stackPointer] = longVal;
+            } catch (ArithmeticException e) {
+              throw new NotYetImplementedException();
+            }
+
+            node = quickened[bytecodeIndex] =
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            break;
+          }
+
+          long value = ((IncrementLongFieldNode) node).increment(obj);
+          stackPointer += 1;
+          stack[stackPointer] = value;
+          break;
         }
 
         case JUMP: {
@@ -1332,6 +1446,20 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           throw new IllegalStateException(
               "I wouldn't expect RETURN_FIELD_n ever to be inlined, since it's only generated in the most outer methods");
 
+        case INC:
+        case DEC: {
+          emit1(mgenc, bytecode, 0);
+          break;
+        }
+
+        case INC_FIELD:
+        case INC_FIELD_PUSH: {
+          byte fieldIdx = bytecodes[i + 1];
+          byte contextIdx = bytecodes[i + 2];
+          emit3(mgenc, bytecode, fieldIdx, (byte) (contextIdx - 1), 1);
+          break;
+        }
+
         case JUMP:
         case JUMP2:
         case JUMP_ON_TRUE_TOP_NIL:
@@ -1521,6 +1649,16 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case RETURN_FIELD_0:
         case RETURN_FIELD_1:
         case RETURN_FIELD_2:
+        case INC:
+        case DEC: {
+          break;
+        }
+
+        case INC_FIELD:
+        case INC_FIELD_PUSH: {
+          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          break;
+        }
 
         case JUMP:
         case JUMP_ON_TRUE_TOP_NIL:

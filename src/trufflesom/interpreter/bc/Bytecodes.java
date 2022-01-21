@@ -87,6 +87,12 @@ public class Bytecodes {
   public static final byte RETURN_FIELD_1 = 38;
   public static final byte RETURN_FIELD_2 = 39;
 
+  public static final byte INC = 40;
+  public static final byte DEC = 41;
+
+  public static final byte INC_FIELD      = 42;
+  public static final byte INC_FIELD_PUSH = 43;
+
   public static final byte JUMP                  = 44;
   public static final byte JUMP_ON_TRUE_TOP_NIL  = 45;
   public static final byte JUMP_ON_FALSE_TOP_NIL = 46;

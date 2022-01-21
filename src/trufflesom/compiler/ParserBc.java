@@ -11,7 +11,9 @@ import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
 import static trufflesom.compiler.Symbol.Pound;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitDEC;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitDUP;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitINC;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
@@ -26,7 +28,9 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
 import static trufflesom.vm.SymbolTable.symArray;
 import static trufflesom.vm.SymbolTable.symArraySizePlaceholder;
 import static trufflesom.vm.SymbolTable.symAtPutMsg;
+import static trufflesom.vm.SymbolTable.symMinus;
 import static trufflesom.vm.SymbolTable.symNewMsg;
+import static trufflesom.vm.SymbolTable.symPlus;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symSuper;
 import static trufflesom.vm.SymbolTable.symbolFor;
@@ -241,6 +245,19 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     superSend = false;
 
     SSymbol msg = binarySelector();
+
+    boolean isPossibleIncOrDec = msg == symPlus || msg == symMinus;
+    if (isPossibleIncOrDec) {
+      if (sym == Integer && text.equals("1")) {
+        expect(Integer);
+        if (msg == symPlus) {
+          emitINC(mgenc);
+        } else {
+          emitDEC(mgenc);
+        }
+        return;
+      }
+    }
 
     binaryOperand(mgenc);
 

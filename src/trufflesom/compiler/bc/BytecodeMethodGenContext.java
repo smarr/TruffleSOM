@@ -6,6 +6,9 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
 import static trufflesom.interpreter.bc.Bytecodes.DUP;
+import static trufflesom.interpreter.bc.Bytecodes.INC;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD;
+import static trufflesom.interpreter.bc.Bytecodes.INC_FIELD_PUSH;
 import static trufflesom.interpreter.bc.Bytecodes.INVALID;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
@@ -277,6 +280,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       last4Bytecodes[0] = last4Bytecodes[1];
       last4Bytecodes[1] = last4Bytecodes[2];
       last4Bytecodes[2] = DUP;
+    } else if (last4Bytecodes[3] == INC_FIELD) {
+      // we optimized the sequence to an INC_FIELD, which doesn't modify the stack
+      // but since we need the value to return it from the block, we need to push it.
+      last4Bytecodes[3] = INC_FIELD_PUSH;
+
+      int bcOffset = bytecode.size() - 3;
+      assert Bytecodes.getBytecodeLength(INC_FIELD_PUSH) == 3;
+      assert Bytecodes.getBytecodeLength(INC_FIELD) == 3;
+      assert bytecode.get(bcOffset) == INC_FIELD;
+      bytecode.set(bcOffset, INC_FIELD_PUSH);
     }
   }
 
@@ -505,6 +518,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   private static final byte[] DUP_BYTECODES = new byte[] {DUP};
+  private static final byte[] INC_BYTECODES = new byte[] {INC};
 
   private static final byte[] PUSH_BLOCK_BYTECODES =
       new byte[] {PUSH_BLOCK, PUSH_BLOCK_NO_CTX};
@@ -633,6 +647,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       return false;
     }
 
+    if (lastBytecodeIs(0, INC_FIELD_PUSH) != INVALID) {
+      return optimizeIncFieldPush();
+    }
+
     final byte popCandidate = lastBytecodeIsOneOf(0, POP_X_BYTECODES);
     if (popCandidate == INVALID) {
       return false;
@@ -693,7 +711,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       case PUSH_GLOBAL:
       case POP_LOCAL:
       case POP_ARGUMENT:
-      case POP_FIELD: {
+      case POP_FIELD:
+      case INC_FIELD_PUSH: {
         int bcOffset = getOffsetOfLastBytecode(idxFromEnd);
         return bytecode.get(bcOffset + 1);
       }
@@ -737,6 +756,59 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
 
     return new byte[] {idx, ctx};
+  }
+
+  private boolean optimizeIncFieldPush() {
+    assert Bytecodes.getBytecodeLength(INC_FIELD_PUSH) == 3;
+
+    int bcIdx = bytecode.size() - 3;
+    assert bytecode.get(bcIdx) == INC_FIELD_PUSH;
+
+    bytecode.set(bcIdx, INC_FIELD);
+    last4Bytecodes[3] = INC_FIELD;
+
+    return true;
+  }
+
+  /**
+   * Try using a INC_FIELD bytecode instead of the following sequence.
+   *
+   * <pre>
+   *   PUSH_FIELD
+   *   INC
+   *   DUP
+   *   POP_FIELD
+   * </pre>
+   *
+   * @return true, if it optimized it.
+   */
+  public boolean optimizeIncField(final byte fieldIdx, final byte ctx) {
+    if (isCurrentlyInliningBlock) {
+      return false;
+    }
+
+    if (lastBytecodeIs(0, DUP) == INVALID) {
+      return false;
+    }
+    if (lastBytecodeIs(1, INC) == INVALID) {
+      return false;
+    }
+
+    if (lastBytecodeIsOneOf(2, PUSH_FIELD_BYTECODES) == INVALID) {
+      return false;
+    }
+
+    byte[] idxCtxPushField = getIndexAndContext(2);
+
+    if (fieldIdx == idxCtxPushField[0] && ctx == idxCtxPushField[1]) {
+      // remove all four of the bytecodes, we just checked for
+      removeLastBytecodes(3);
+
+      resetLastBytecodeBuffer();
+      BytecodeGenerator.emitINCFIELDPUSH(this, fieldIdx, ctx);
+      return true;
+    }
+    return false;
   }
 
   /**
