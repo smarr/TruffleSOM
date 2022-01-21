@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
@@ -39,19 +38,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
       throw new RuntimeException(e);
     }
     return mgenc.getBytecodeArray();
-  }
-
-  private void incDecBytecodes(final String op, final byte bytecode) {
-    byte[] bytecodes = methodToBytecodes("test = ( 1 " + op + "  1 )");
-
-    assertEquals(3, bytecodes.length);
-    check(bytecodes, Bytecodes.PUSH_1, bytecode, Bytecodes.RETURN_SELF);
-  }
-
-  @Test
-  public void testIncDecBytecodes() {
-    incDecBytecodes("+", Bytecodes.INC);
-    incDecBytecodes("-", Bytecodes.DEC);
   }
 
   @Test
@@ -286,45 +272,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.POP,
         Bytecodes.PUSH_CONSTANT);
 
-  }
-
-  @Test
-  public void testIfTrueAndIncField() {
-    addField("field");
-    byte[] bytecodes = methodToBytecodes(
-        "test: arg = (\n"
-            + "  #start.\n"
-            + "  (self key: 5) ifTrue: [ field := field + 1 ].\n"
-            + "  #end\n"
-            + ")");
-
-    assertEquals(16, bytecodes.length);
-    check(bytecodes,
-        t(4, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6), // jump to pop bytecode, which is the dot
-        new BC(Bytecodes.INC_FIELD_PUSH, 0, 0),
-        Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
-  }
-
-  @Test
-  public void testIfTrueAndIncArg() {
-    addField("field");
-    byte[] bytecodes = methodToBytecodes(
-        "test: arg = (\n"
-            + "  #start.\n"
-            + "  (self key: 5) ifTrue: [ arg + 1 ].\n"
-            + "  #end\n"
-            + ")");
-
-    assertEquals(15, bytecodes.length);
-    check(bytecodes,
-        t(4, Bytecodes.SEND),
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 5), // jump to pop bytecode, which is the dot
-        Bytecodes.PUSH_ARG1,
-        Bytecodes.INC,
-        Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
   }
 
   private void ifReturnNonLocal(final String ifSelector, final byte jumpBytecode) {
@@ -886,75 +833,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
-  @Test
-  public void testInliningOfToDo() {
-    byte[] bytecodes = methodToBytecodes(
-        "test = ( 1 to: 2 do: [:i | i ] )");
-
-    assertEquals(21, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.PUSH_CONSTANT,
-        -1, // TODO: Bytecodes.DUP_SECOND, // stack: Top[1, 2, 1]
-        -1, // TODO new BC(Bytecodes.jump_if_greater, 17), // consume only on jump
-        Bytecodes.DUP,
-        new BC(Bytecodes.POP_LOCAL, 0, 0), // store the i into the local (arg becomes local
-                                           // after inlining)
-        new BC(Bytecodes.PUSH_LOCAL, 0, 0), // push the local on the stack as part of the
-                                            // block's code
-        Bytecodes.POP, // cleanup after block.
-        Bytecodes.INC, // increment top, the iteration counter
-        -1, // TODO: Bytecodes.nil_local,
-        new BC(Bytecodes.JUMP_BACKWARDS, 14), // jump back to the jump_if_greater bytecode
-        // jump_if_greater target
-        Bytecodes.RETURN_SELF);
-  }
-
-  @Ignore("TODO")
-  @Test
-  public void testToDoBlockBlockInlinedSelf() {
-    addField("field");
-    byte[] bytecodes = methodToBytecodes(
-        "test = (\n"
-            + " | l1 l2 |\n"
-            + " 1 to: 2 do: [:a |\n"
-            + "   l1 do: [:b |\n"
-            + "     b ifTrue: [\n"
-            + "       a.\n"
-            + "       l2 := l2 + 1 ] ] ]\n"
-            + ")");
-
-    assertEquals(25, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.PUSH_CONSTANT,
-        -1, // TODO: Bytecodes.DUP_SECOND, // stack: Top[1, 2, 1]
-        -1, // TODO new BC(Bytecodes.jump_if_greater, 21), // consume only on jump
-        Bytecodes.DUP,
-        new BC(Bytecodes.POP_LOCAL, 2, 0), // store the i into the local (arg becomes local
-                                           // after inlining)
-        new BC(Bytecodes.PUSH_LOCAL, 0, 0), // push the local on the stack as part of the
-                                            // block's code
-        new BC(Bytecodes.PUSH_BLOCK, 2),
-        Bytecodes.SEND,
-        Bytecodes.POP, // cleanup after block.
-        Bytecodes.INC, // increment top, the iteration counter
-        -1, // TODO: Bytecodes.nil_local,
-        new BC(Bytecodes.JUMP_BACKWARDS, 10), // jump back to the jump_if_greater bytecode
-        // jump_if_greater target
-        Bytecodes.RETURN_SELF);
-
-    // TODO: fix bcIdx to the PUSH_BLOCK bc
-    SMethod blockMethod = (SMethod) mgenc.getConstant(-1);
-
-    check(
-        read(blockMethod.getInvokable(), "expressionOrSequence",
-            BytecodeLoopNode.class).getBytecodeArray(),
-        t(6, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local b")),
-        Bytecodes.POP);
-  }
-
   private void returnFieldTrivial(final String fieldName, final byte bytecode) {
     addField("fieldA");
     addField("fieldB");
@@ -1020,91 +898,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     trivialMethodInlining("Nil", Bytecodes.PUSH_GLOBAL);
     trivialMethodInlining("UnknownGlobal", Bytecodes.PUSH_GLOBAL);
     trivialMethodInlining("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
-  }
-
-  private void incField(final int field) {
-    addField("field0");
-    addField("field1");
-    addField("field2");
-    addField("field3");
-    addField("field4");
-    addField("field5");
-    addField("field6");
-
-    String fieldName = "field" + field;
-
-    byte[] bytecodes = methodToBytecodes(
-        "test = ( " + fieldName + " := " + fieldName + " + 1 )");
-
-    assertEquals(4, bytecodes.length);
-    check(bytecodes,
-        new BC(Bytecodes.INC_FIELD, field, 0),
-        Bytecodes.RETURN_SELF);
-  }
-
-  @Test
-  public void testIncField() {
-    for (int i = 0; i < 7; i += 1) {
-      incField(i);
-    }
-  }
-
-  private void incFieldNonTrivial(final int field) {
-    addField("field0");
-    addField("field1");
-    addField("field2");
-    addField("field3");
-    addField("field4");
-    addField("field5");
-    addField("field6");
-
-    String fieldName = "field" + field;
-
-    byte[] bytecodes = methodToBytecodes(
-        "test = ( 1. " + fieldName + " := " + fieldName + " + 1. 2 )");
-
-    assertEquals(7, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_1, Bytecodes.POP,
-        new BC(Bytecodes.INC_FIELD, field, 0),
-        Bytecodes.PUSH_CONSTANT_0,
-        Bytecodes.RETURN_SELF);
-  }
-
-  @Test
-  public void testIncFieldNonTrivial() {
-    for (int i = 0; i < 7; i += 1) {
-      incFieldNonTrivial(i);
-    }
-  }
-
-  private void returnIncField(final int field) {
-    addField("field0");
-    addField("field1");
-    addField("field2");
-    addField("field3");
-    addField("field4");
-    addField("field5");
-    addField("field6");
-
-    String fieldName = "field" + field;
-
-    byte[] bytecodes = methodToBytecodes(
-        "test = ( #foo. ^ " + fieldName + " := " + fieldName + " + 1 )");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT_0,
-        Bytecodes.POP,
-        new BC(Bytecodes.INC_FIELD_PUSH, field, 0),
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Test
-  public void testReturnIncField() {
-    for (int i = 0; i < 7; i += 1) {
-      returnIncField(i);
-    }
   }
 
   private void returnField(final int fieldNum, final Object bytecode) {

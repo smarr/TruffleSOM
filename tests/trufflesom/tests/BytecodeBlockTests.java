@@ -206,33 +206,4 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     blockIfReturnNonLocal("ifTrue:", Bytecodes.JUMP_ON_FALSE_TOP_NIL);
     blockIfReturnNonLocal("ifFalse:", Bytecodes.JUMP_ON_TRUE_TOP_NIL);
   }
-
-  private void returnIncFieldFromBlock(final int field) {
-    addField("field0");
-    addField("field1");
-    addField("field2");
-    addField("field3");
-    addField("field4");
-    addField("field5");
-    addField("field6");
-
-    String fieldName = "field" + field;
-
-    byte[] bytecodes = blockToBytecodes(
-        "[ #foo. " + fieldName + " := " + fieldName + " + 1 ]");
-
-    assertEquals(6, bytecodes.length);
-    check(bytecodes,
-        Bytecodes.PUSH_CONSTANT_0,
-        Bytecodes.POP,
-        new BC(Bytecodes.INC_FIELD_PUSH, field, 1),
-        Bytecodes.RETURN_LOCAL);
-  }
-
-  @Test
-  public void testReturnIncFieldFromBlock() {
-    for (int i = 0; i < 7; i += 1) {
-      returnIncFieldFromBlock(i);
-    }
-  }
 }

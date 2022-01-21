@@ -21,7 +21,6 @@
  */
 package trufflesom.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -34,8 +33,6 @@ import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
-import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
 
@@ -175,90 +172,6 @@ public abstract class FieldNode extends ExpressionNode {
           new LocalArgumentReadNode(self),
           new LocalArgumentReadNode(val));
       return new WriteAndReturnSelf(node);
-    }
-  }
-
-  public static final class UninitFieldIncNode extends FieldNode {
-
-    @Child private ExpressionNode self;
-    private final int             fieldIndex;
-
-    public UninitFieldIncNode(final ExpressionNode self, final int fieldIndex,
-        final long coord) {
-      this.self = self;
-      this.fieldIndex = fieldIndex;
-      this.sourceCoord = coord;
-    }
-
-    @Override
-    public ExpressionNode getSelf() {
-      return self;
-    }
-
-    @Override
-    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
-      CompilerDirectives.transferToInterpreter();
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      SObject obj = (SObject) self.executeGeneric(frame);
-
-      Object val = obj.getField(fieldIndex);
-      if (!(val instanceof Long)) {
-        throw new NotYetImplementedException();
-      }
-
-      long longVal = 0;
-      try {
-        longVal = Math.addExact((Long) val, 1);
-        obj.setField(fieldIndex, longVal);
-      } catch (ArithmeticException e) {
-        throw new NotYetImplementedException();
-      }
-
-      IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
-      IncFieldNode incNode = new IncFieldNode(self, node, sourceCoord);
-      replace(incNode);
-      node.notifyAsInserted();
-
-      return longVal;
-    }
-  }
-
-  private static final class IncFieldNode extends FieldNode {
-    @Child private ExpressionNode         self;
-    @Child private IncrementLongFieldNode inc;
-
-    IncFieldNode(final ExpressionNode self, final IncrementLongFieldNode inc,
-        final long coord) {
-      initialize(coord);
-      this.self = self;
-      this.inc = inc;
-    }
-
-    @Override
-    public ExpressionNode getSelf() {
-      return self;
-    }
-
-    @Override
-    public Object doPreEvaluated(final VirtualFrame frame, final Object[] arguments) {
-      CompilerDirectives.transferToInterpreter();
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      return executeLong(frame);
-    }
-
-    @Override
-    public long executeLong(final VirtualFrame frame) {
-      SObject obj = (SObject) self.executeGeneric(frame);
-      return inc.increment(obj);
     }
   }
 

@@ -32,8 +32,6 @@ public abstract class StorageLocation {
     long readLong(SObject obj) throws UnexpectedResultException;
 
     void writeLong(SObject obj, long value);
-
-    long increment(SObject obj);
   }
 
   public interface DoubleStorageLocation {
@@ -344,14 +342,6 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public long increment(final SObject obj) {
-      long val = unsafe.getLong(obj, fieldMemoryOffset);
-      long result = Math.addExact(val, 1);
-      unsafe.putLong(obj, fieldMemoryOffset, result);
-      return result;
-    }
-
-    @Override
     public void write(final SObject obj, final Object value) {
       assert value != null;
       if (value instanceof Long) {
@@ -423,14 +413,6 @@ public abstract class StorageLocation {
         TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
         throw new UnexpectedResultException(Nil.nilObject);
       }
-    }
-
-    @Override
-    public long increment(final SObject obj) {
-      long val = obj.getExtendedPrimFields()[extensionIndex];
-      long result = Math.addExact(val, 1);
-      obj.getExtendedPrimFields()[extensionIndex] = result;
-      return result;
     }
 
     @Override
