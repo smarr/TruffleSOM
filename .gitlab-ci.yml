@@ -43,41 +43,41 @@ build:native-interp-ast:
         put som-native-interp-ast-ee.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
 
-build:native-interp-bc:
-  stage: build-and-test
-  tags: [yuria3]
-  script:
-    - ${ANT} compile native-bc -Dno.jit=true
-    - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
-
-    - ${ANT} compile-native-bc-ee -Dno.jit=true
-    - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
-    
-    - lz4 som-native-interp-bc som-native-interp-bc.lz4
-    - lz4 som-native-interp-bc-ee som-native-interp-bc-ee.lz4
-    - |
-      sftp tmp-artifacts << EOF
-        -mkdir incoming/${CI_PIPELINE_ID}/
-        put som-native-interp-bc.lz4 incoming/${CI_PIPELINE_ID}/
-        put som-native-interp-bc-ee.lz4 incoming/${CI_PIPELINE_ID}/
-      EOF
+# build:native-interp-bc:
+#   stage: build-and-test
+#   tags: [yuria3]
+#   script:
+#     - ${ANT} compile native-bc -Dno.jit=true
+#     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
+#
+#     - ${ANT} compile-native-bc-ee -Dno.jit=true
+#     - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
+#
+#     - lz4 som-native-interp-bc som-native-interp-bc.lz4
+#     - lz4 som-native-interp-bc-ee som-native-interp-bc-ee.lz4
+#     - |
+#       sftp tmp-artifacts << EOF
+#         -mkdir incoming/${CI_PIPELINE_ID}/
+#         put som-native-interp-bc.lz4 incoming/${CI_PIPELINE_ID}/
+#         put som-native-interp-bc-ee.lz4 incoming/${CI_PIPELINE_ID}/
+#       EOF
 
 
 benchmark-y1:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs: ["build:native-interp-ast"]  # , "build:native-interp-bc"
   tags: [yuria]
   script:
     - ${ANT} compile
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
     
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+    # - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
     - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    # - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
@@ -86,19 +86,19 @@ benchmark-y1:
 
 benchmark-y2:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs: ["build:native-interp-ast"] # , "build:native-interp-bc"
   tags: [yuria2]
   script:
     - ${ANT} compile
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
     
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+    # - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
     - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    # - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
@@ -107,19 +107,19 @@ benchmark-y2:
 
 benchmark-y3:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs: ["build:native-interp-ast"]  # , "build:native-interp-bc"
   tags: [yuria3]
   script:
     - ${ANT} compile
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
     
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+    # - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
     - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    # - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
