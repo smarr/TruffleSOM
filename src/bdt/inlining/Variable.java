@@ -37,6 +37,8 @@ public interface Variable<N extends Node> {
    */
   N getReadNode(int contextLevel, long coord);
 
+  N getIncNode(int contextLevel, long incValue, long coord);
+
   /**
    * Create a node to write to this variable.
    *

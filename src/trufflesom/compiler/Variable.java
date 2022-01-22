@@ -26,6 +26,8 @@ import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNo
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
+import trufflesom.interpreter.supernodes.LocalVariableIncNodeGen;
+import trufflesom.interpreter.supernodes.NonLocalVariableIncNodeGen;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SSymbol;
 
@@ -126,6 +128,12 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     }
 
     @Override
+    public ExpressionNode getIncNode(final int contextLevel, final long incValue,
+        final long coord) {
+      throw new NotYetImplementedException();
+    }
+
+    @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
       transferToInterpreterAndInvalidate();
@@ -176,6 +184,17 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
         return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(coord);
       }
       return LocalVariableReadNodeGen.create(this).initialize(coord);
+    }
+
+    @Override
+    public ExpressionNode getIncNode(final int contextLevel, final long incValue,
+        final long coord) {
+      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      if (contextLevel > 0) {
+        return NonLocalVariableIncNodeGen.create(contextLevel, this, incValue)
+                                         .initialize(coord);
+      }
+      return LocalVariableIncNodeGen.create(this, incValue).initialize(coord);
     }
 
     public final int getIndex() {
@@ -235,6 +254,14 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     public ExpressionNode getReadNode(final int contextLevel, final long coord) {
       throw new UnsupportedOperationException(
           "There shouldn't be any language-level read nodes for internal slots. "
+              + "They are used directly by other nodes.");
+    }
+
+    @Override
+    public ExpressionNode getIncNode(final int contextLevel, final long incValue,
+        final long coord) {
+      throw new UnsupportedOperationException(
+          "There shouldn't be any language-level inc nodes for internal slots. "
               + "They are used directly by other nodes.");
     }
 

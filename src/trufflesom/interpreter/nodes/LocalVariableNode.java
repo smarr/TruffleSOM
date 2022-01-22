@@ -14,14 +14,15 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class LocalVariableNode extends NoPreEvalExprNode implements Invocation<SSymbol> {
+public abstract class LocalVariableNode extends NoPreEvalExprNode
+    implements Invocation<SSymbol> {
   protected final int   slotIndex;
   protected final Local local;
 
   // TODO: We currently assume that there is a 1:1 mapping between lexical contexts
   // and frame descriptors, which is apparently not strictly true anymore in Truffle 1.0.0.
   // Generally, we also need to revise everything in this area and address issue SOMns#240.
-  private LocalVariableNode(final Local local) {
+  protected LocalVariableNode(final Local local) {
     this.local = local;
     this.slotIndex = local.getIndex();
   }
