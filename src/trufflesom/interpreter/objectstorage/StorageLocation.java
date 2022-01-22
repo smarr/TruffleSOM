@@ -33,7 +33,7 @@ public abstract class StorageLocation {
 
     void writeLong(SObject obj, long value);
 
-    long increment(SObject obj);
+    long increment(SObject obj, long incValue);
   }
 
   public interface DoubleStorageLocation {
@@ -343,9 +343,9 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public long increment(final SObject obj) {
+    public long increment(final SObject obj, final long incValue) {
       long val = unsafe.getLong(obj, fieldMemoryOffset);
-      long result = Math.addExact(val, 1);
+      long result = Math.addExact(val, incValue);
       unsafe.putLong(obj, fieldMemoryOffset, result);
       return result;
     }
@@ -425,9 +425,9 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public long increment(final SObject obj) {
+    public long increment(final SObject obj, final long incValue) {
       long val = obj.getExtendedPrimFields()[extensionIndex];
-      long result = Math.addExact(val, 1);
+      long result = Math.addExact(val, incValue);
       obj.getExtendedPrimFields()[extensionIndex] = result;
       return result;
     }
