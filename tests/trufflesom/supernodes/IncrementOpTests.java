@@ -11,10 +11,10 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
-import trufflesom.tests.AstTests;
+import trufflesom.tests.AstTestSetup;
 
 
-public class IncrementOpTests extends AstTests {
+public class IncrementOpTests extends AstTestSetup {
 
   private void basicAddOrSubtract(final String test, final long literalValue,
       final Class<?> nodeType) {
