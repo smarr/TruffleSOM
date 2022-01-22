@@ -735,7 +735,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             }
 
             node = quickened[bytecodeIndex] =
-                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj, 1));
             break;
           }
 
@@ -772,7 +772,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             }
 
             node = quickened[bytecodeIndex] =
-                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+                insert(FieldAccessorNode.createIncrement(fieldIdx, obj, 1));
             break;
           }
 

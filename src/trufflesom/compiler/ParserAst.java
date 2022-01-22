@@ -249,10 +249,15 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
-    } else if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
+    } else if (operand instanceof IntegerLiteralNode) {
       IntegerLiteralNode lit = (IntegerLiteralNode) operand;
-      if (lit.executeLong(null) == 1) {
-        return IntIncrementNodeGen.create(receiver);
+      if (msg.getString().equals("+")) {
+        return IntIncrementNodeGen.create(lit.executeLong(null), false, receiver)
+                                  .initialize(coordWithL);
+      }
+      if (msg.getString().equals("-")) {
+        return IntIncrementNodeGen.create(-lit.executeLong(null), true, receiver)
+                                  .initialize(coordWithL);
       }
     }
 

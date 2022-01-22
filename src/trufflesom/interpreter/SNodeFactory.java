@@ -12,7 +12,6 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
@@ -40,7 +39,7 @@ public final class SNodeFactory {
     assert coord != 0;
     if (exp instanceof IntIncrementNode
         && ((IntIncrementNode) exp).doesAccessField(fieldIndex)) {
-      return new UninitFieldIncNode(self, fieldIndex, coord);
+      return ((IntIncrementNode) exp).createFieldIncNode(self, fieldIndex, coord);
     }
 
     return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);

@@ -28,9 +28,9 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   public static IncrementLongFieldNode createIncrement(final int fieldIndex,
-      final SObject obj) {
+      final SObject obj, final long incValue) {
     final ObjectLayout layout = obj.getObjectLayout();
-    return new IncrementLongFieldNode(fieldIndex, layout);
+    return new IncrementLongFieldNode(fieldIndex, layout, incValue);
   }
 
   private FieldAccessorNode(final int fieldIndex) {
@@ -293,13 +293,16 @@ public abstract class FieldAccessorNode extends Node {
   public static final class IncrementLongFieldNode extends FieldAccessorNode {
     protected final ObjectLayout      layout;
     private final LongStorageLocation storage;
+    private final long                incValue;
 
     @Child protected IncrementLongFieldNode nextInCache;
 
-    public IncrementLongFieldNode(final int fieldIndex, final ObjectLayout layout) {
+    public IncrementLongFieldNode(final int fieldIndex, final ObjectLayout layout,
+        final long incValue) {
       super(fieldIndex);
       this.layout = layout;
       this.storage = (LongStorageLocation) layout.getStorageLocation(fieldIndex);
+      this.incValue = incValue;
     }
 
     protected boolean hasExpectedLayout(final SObject obj)
@@ -311,7 +314,7 @@ public abstract class FieldAccessorNode extends Node {
     public long increment(final SObject obj) {
       try {
         if (hasExpectedLayout(obj)) {
-          return storage.increment(obj);
+          return storage.increment(obj, incValue);
         } else {
           ensureNext(obj);
           return nextInCache.increment(obj);
@@ -326,7 +329,7 @@ public abstract class FieldAccessorNode extends Node {
     private void ensureNext(final SObject obj) {
       if (nextInCache == null) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
-        nextInCache = new IncrementLongFieldNode(fieldIndex, obj.getObjectLayout());
+        nextInCache = new IncrementLongFieldNode(fieldIndex, obj.getObjectLayout(), incValue);
       }
     }
   }
