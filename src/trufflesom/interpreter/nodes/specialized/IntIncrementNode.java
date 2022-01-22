@@ -23,11 +23,11 @@ import trufflesom.vmobjects.SSymbol;
 @NodeChild(value = "rcvr", type = ExpressionNode.class)
 public abstract class IntIncrementNode extends ExpressionNode {
 
-  protected final long    value;
+  protected final long    incValue;
   protected final boolean isMinusAndValueNegated;
 
   public IntIncrementNode(final long value, final boolean isMinusAndValueNegated) {
-    this.value = value;
+    this.incValue = value;
     this.isMinusAndValueNegated = isMinusAndValueNegated;
   }
 
@@ -42,12 +42,12 @@ public abstract class IntIncrementNode extends ExpressionNode {
 
   @Specialization(rewriteOn = ArithmeticException.class)
   public long doInc(final long rcvr) {
-    return Math.addExact(rcvr, value);
+    return Math.addExact(rcvr, incValue);
   }
 
   @Specialization
   public double doInc(final double rcvr) {
-    return rcvr + value;
+    return rcvr + incValue;
   }
 
   public abstract Object executeEvaluated(Object rcvr);
@@ -61,7 +61,7 @@ public abstract class IntIncrementNode extends ExpressionNode {
   public final Object makeGenericSend(final VirtualFrame frame, final Object rcvr) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
     return makeGenericSend().doPreEvaluated(frame,
-        new Object[] {rcvr, isMinusAndValueNegated ? -value : value});
+        new Object[] {rcvr, isMinusAndValueNegated ? -incValue : incValue});
   }
 
   public boolean doesAccessField(final int fieldIdx) {
@@ -79,7 +79,7 @@ public abstract class IntIncrementNode extends ExpressionNode {
     ExpressionNode[] children;
     if (VmSettings.UseAstInterp) {
       children = new ExpressionNode[] {getRcvr(),
-          new IntegerLiteralNode(isMinusAndValueNegated ? -value : value)};
+          new IntegerLiteralNode(isMinusAndValueNegated ? -incValue : incValue)};
     } else {
       children = null;
     }
@@ -101,7 +101,7 @@ public abstract class IntIncrementNode extends ExpressionNode {
 
   public FieldNode createFieldIncNode(final ExpressionNode self, final int fieldIndex,
       final long coord) {
-    return new UninitFieldIncNode(self, fieldIndex, coord, value);
+    return new UninitFieldIncNode(self, fieldIndex, coord, incValue);
   }
 
 }
