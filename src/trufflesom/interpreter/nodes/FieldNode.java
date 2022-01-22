@@ -182,14 +182,14 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Child private ExpressionNode self;
     private final int             fieldIndex;
-    private final long            value;
+    private final long            incValue;
 
     public UninitFieldIncNode(final ExpressionNode self, final int fieldIndex,
         final long coord, final long value) {
       this.self = self;
       this.fieldIndex = fieldIndex;
       this.sourceCoord = coord;
-      this.value = value;
+      this.incValue = value;
     }
 
     @Override
@@ -215,13 +215,13 @@ public abstract class FieldNode extends ExpressionNode {
 
       long longVal = 0;
       try {
-        longVal = Math.addExact((Long) val, value);
+        longVal = Math.addExact((Long) val, incValue);
         obj.setField(fieldIndex, longVal);
       } catch (ArithmeticException e) {
         throw new NotYetImplementedException();
       }
 
-      IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj, value);
+      IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj, incValue);
       IncFieldNode incNode = new IncFieldNode(self, node, sourceCoord);
       replace(incNode);
       node.notifyAsInserted();

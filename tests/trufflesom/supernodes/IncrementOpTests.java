@@ -24,7 +24,7 @@ public class IncrementOpTests extends AstTestSetup {
 
     ExpressionNode testExpr = read(seq, "expressions", 0);
     assertThat(testExpr, instanceOf(nodeType));
-    long value = read(testExpr, "value", Long.class);
+    long value = read(testExpr, "incValue", Long.class);
     assertEquals(literalValue, value);
   }
 
