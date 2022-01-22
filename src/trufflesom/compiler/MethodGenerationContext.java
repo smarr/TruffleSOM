@@ -58,6 +58,7 @@ import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -391,7 +392,14 @@ public class MethodGenerationContext
 
   public ExpressionNode getLocalWriteNode(final Variable variable,
       final ExpressionNode valExpr, final long coord) {
-    return variable.getWriteNode(getContextLevel(variable), valExpr, coord);
+    int ctxLevel = getContextLevel(variable);
+
+    if (valExpr instanceof IntIncrementNode
+        && ((IntIncrementNode) valExpr).doesAccessVariable(variable)) {
+      return ((IntIncrementNode) valExpr).createIncNode((Local) variable, ctxLevel);
+    }
+
+    return variable.getWriteNode(ctxLevel, valExpr, coord);
   }
 
   protected Local getLocal(final SSymbol varName) {

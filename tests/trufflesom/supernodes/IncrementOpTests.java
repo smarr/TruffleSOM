@@ -8,7 +8,11 @@ import org.junit.Test;
 
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableIncNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableIncNode;
 import trufflesom.interpreter.nodes.SequenceNode;
+import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.tests.AstTestSetup;
@@ -72,6 +76,44 @@ public class IncrementOpTests extends AstTestSetup {
     LocalArgumentReadNode arg = (LocalArgumentReadNode) inc.getRcvr();
     assertEquals(1, arg.argumentIndex);
     assertEquals("arg", arg.getInvocationIdentifier().getString());
+  }
+
+  @Test
+  public void testFieldInc() {
+    basicAddOrSubtract("field := field + 1", 1, UninitFieldIncNode.class);
+    basicAddOrSubtract("field := field - 1", -1, UninitFieldIncNode.class);
+    basicAddOrSubtract("field := field + 1123", 1123, UninitFieldIncNode.class);
+    basicAddOrSubtract("field := field - 234234", -234234, UninitFieldIncNode.class);
+  }
+
+  @Test
+  public void testLocalInc() {
+    basicAddOrSubtract("var := var + 1", 1, LocalVariableIncNode.class);
+    basicAddOrSubtract("var := var - 1", -1, LocalVariableIncNode.class);
+    basicAddOrSubtract("var := var + 1123", 1123, LocalVariableIncNode.class);
+    basicAddOrSubtract("var := var - 234234", -234234, LocalVariableIncNode.class);
+  }
+
+  private void inBlock(final String test, final long literalValue,
+      final Class<?> nodeType) {
+    addField("field");
+    SequenceNode seq = (SequenceNode) parseMethod(
+        "test: arg = ( | var | \n" + test + " )");
+
+    BlockNode block = (BlockNode) read(seq, "expressions", 0);
+    ExpressionNode testExpr =
+        read(block.getMethod().getInvokable(), "expressionOrSequence", ExpressionNode.class);
+    assertThat(testExpr, instanceOf(nodeType));
+    long value = read(testExpr, "incValue", Long.class);
+    assertEquals(literalValue, value);
+  }
+
+  @Test
+  public void testNonLocalInc() {
+    inBlock("[ var := var + 1 ]", 1, NonLocalVariableIncNode.class);
+    inBlock("[ var := var - 1 ]", -1, NonLocalVariableIncNode.class);
+    inBlock("[ var := var + 1123 ]", 1123, NonLocalVariableIncNode.class);
+    inBlock("[ var := var - 234234 ]", -234234, NonLocalVariableIncNode.class);
   }
 
 }

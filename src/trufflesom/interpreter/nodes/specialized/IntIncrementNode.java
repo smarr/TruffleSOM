@@ -6,13 +6,19 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import trufflesom.compiler.Variable;
+import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
+import trufflesom.interpreter.nodes.LocalVariableNode;
+import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableIncNodeGen;
 import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableIncNodeGen;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.vm.SymbolTable;
@@ -67,6 +73,19 @@ public abstract class IntIncrementNode extends ExpressionNode {
     return false;
   }
 
+  public boolean doesAccessVariable(final Variable var) {
+    ExpressionNode rcvr = getRcvr();
+    Local local;
+    if (rcvr instanceof LocalVariableNode) {
+      local = ((LocalVariableNode) rcvr).getLocal();
+    } else if (rcvr instanceof NonLocalVariableNode) {
+      local = ((NonLocalVariableNode) rcvr).getLocal();
+    } else {
+      return false;
+    }
+    return local.equals(var);
+  }
+
   protected GenericMessageSendNode makeGenericSend() {
     CompilerDirectives.transferToInterpreterAndInvalidate();
     ExpressionNode[] children;
@@ -95,6 +114,14 @@ public abstract class IntIncrementNode extends ExpressionNode {
   public FieldNode createFieldIncNode(final ExpressionNode self, final int fieldIndex,
       final long coord) {
     return new UninitFieldIncNode(self, fieldIndex, coord, incValue);
+  }
+
+  public ExpressionNode createIncNode(final Local local, final int ctxLevel) {
+    if (ctxLevel == 0) {
+      return LocalVariableIncNodeGen.create(local, incValue).initialize(sourceCoord);
+    }
+    return NonLocalVariableIncNodeGen.create(ctxLevel, local, incValue)
+                                     .initialize(sourceCoord);
   }
 
 }

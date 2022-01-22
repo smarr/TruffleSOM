@@ -19,6 +19,7 @@ import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableIncNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.ReturnLocalNode;
@@ -33,7 +34,6 @@ import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInli
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.FalseIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
 import trufflesom.primitives.arithmetic.SubtractionPrim;
@@ -374,14 +374,10 @@ public class AstInliningTests extends AstTestSetup {
     assertEquals("b", readNode.getInvocationIdentifier().getString());
     assertEquals(1, readNode.argumentIndex);
 
-    NonLocalVariableWriteNode writeNode =
-        read(blockBIfTrue, "bodyNode", NonLocalVariableWriteNode.class);
+    NonLocalVariableIncNode writeNode =
+        read(blockBIfTrue, "bodyNode", NonLocalVariableIncNode.class);
     assertEquals(1, writeNode.getContextLevel());
     assertEquals("l2", writeNode.getInvocationIdentifier().getString());
-
-    IntIncrementNode incNode = (IntIncrementNode) writeNode.getExp();
-    NonLocalVariableReadNode readL2 = (NonLocalVariableReadNode) incNode.getRcvr();
-    assertEquals("l2", readL2.getInvocationIdentifier().getString());
   }
 
   @Test
