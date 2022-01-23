@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.SequenceNode;
+import trufflesom.interpreter.nodes.supernodes.LocalFieldStringEqualsNode;
 import trufflesom.interpreter.nodes.supernodes.StringEqualsNode;
 import trufflesom.tests.AstTestSetup;
 
@@ -26,12 +27,12 @@ public class StringEqualsTests extends AstTestSetup {
 
   @Test
   public void testStringEqual() {
-    assertThatMainNodeIs("field = 'str'", StringEqualsNode.class);
+    assertThatMainNodeIs("field = 'str'", LocalFieldStringEqualsNode.class);
     assertThatMainNodeIs("arg = 'str'", StringEqualsNode.class);
     assertThatMainNodeIs("var = 'str'", StringEqualsNode.class);
     assertThatMainNodeIs("('s' + 'dd') = 'str'", StringEqualsNode.class);
 
-    assertThatMainNodeIs("'str' = field", StringEqualsNode.class);
+    assertThatMainNodeIs("'str' = field", LocalFieldStringEqualsNode.class);
     assertThatMainNodeIs("'str' = arg", StringEqualsNode.class);
     assertThatMainNodeIs("'str' = var", StringEqualsNode.class);
     assertThatMainNodeIs("'str' = ('s' + 'dd')", StringEqualsNode.class);

@@ -29,6 +29,7 @@ import bdt.inlining.InlinableNodes;
 import bdt.tools.structure.StructuralProbe;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
@@ -39,12 +40,15 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.interpreter.nodes.supernodes.LocalFieldStringEqualsNode;
 import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNodeGen;
+import trufflesom.interpreter.nodes.supernodes.NonLocalFieldStringEqualsNode;
 import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.interpreter.nodes.supernodes.StringEqualsNodeGen;
 import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -285,13 +289,49 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       if (operand instanceof GenericLiteralNode) {
         Object literal = operand.executeGeneric(null);
         if (literal instanceof String) {
+          if (receiver instanceof FieldReadNode) {
+            FieldReadNode fieldRead = (FieldReadNode) receiver;
+            ExpressionNode self = fieldRead.getSelf();
+            if (self instanceof LocalArgumentReadNode) {
+              return new LocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
+                  ((LocalArgumentReadNode) self).getArg(), (String) literal).initialize(
+                      coordWithL);
+            } else if (self instanceof NonLocalArgumentReadNode) {
+              NonLocalArgumentReadNode arg = (NonLocalArgumentReadNode) self;
+              return new NonLocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
+                  arg.getArg(), arg.getContextLevel(), (String) literal).initialize(
+                      coordWithL);
+            } else {
+              throw new NotYetImplementedException();
+            }
+
+          }
+
           return StringEqualsNodeGen.create((String) literal, receiver)
                                     .initialize(coordWithL);
         }
       }
+
       if (receiver instanceof GenericLiteralNode) {
         Object literal = receiver.executeGeneric(null);
         if (literal instanceof String) {
+          if (operand instanceof FieldReadNode) {
+            FieldReadNode fieldRead = (FieldReadNode) operand;
+            ExpressionNode self = fieldRead.getSelf();
+            if (self instanceof LocalArgumentReadNode) {
+              return new LocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
+                  ((LocalArgumentReadNode) self).getArg(), (String) literal).initialize(
+                      coordWithL);
+            } else if (self instanceof NonLocalArgumentReadNode) {
+              NonLocalArgumentReadNode arg = (NonLocalArgumentReadNode) self;
+              return new NonLocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
+                  arg.getArg(), arg.getContextLevel(), (String) literal).initialize(
+                      coordWithL);
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+
           return StringEqualsNodeGen.create((String) literal, operand)
                                     .initialize(coordWithL);
         }

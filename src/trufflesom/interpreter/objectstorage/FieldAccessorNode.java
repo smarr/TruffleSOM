@@ -84,9 +84,9 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
-  private static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
+  public static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
 
-    UninitializedReadFieldNode(final int fieldIndex) {
+    public UninitializedReadFieldNode(final int fieldIndex) {
       super(fieldIndex);
     }
 
