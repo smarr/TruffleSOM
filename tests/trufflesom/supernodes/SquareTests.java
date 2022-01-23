@@ -8,10 +8,12 @@ import org.junit.Test;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.nodes.supernodes.AssignLocalSquareToLocalNode;
+import trufflesom.interpreter.nodes.supernodes.LocalVariableReadSquareWriteNode;
 import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNode;
+import trufflesom.interpreter.nodes.supernodes.NonLocalVariableReadSquareWriteNode;
 import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNode;
 import trufflesom.primitives.arithmetic.MultiplicationPrim;
 import trufflesom.tests.AstTestSetup;
@@ -66,18 +68,18 @@ public class SquareTests extends AstTestSetup {
 
   @Test
   public void testSquareAndAssignLocal() {
-    assertThatMainNodeIs("l1 := l2 * l2.", AssignLocalSquareToLocalNode.class);
-    assertThatMainNodeIs("l2 := l2 * l2.", AssignLocalSquareToLocalNode.class);
+    assertThatMainNodeIs("l1 := l2 * l2.", LocalVariableReadSquareWriteNode.class);
+    assertThatMainNodeIs("l2 := l2 * l2.", LocalVariableReadSquareWriteNode.class);
 
     assertThatMainNodeIs("l3 := l1 * l2.", LocalVariableWriteNode.class);
   }
 
   @Test
   public void testSquareAndAssignNonLocal() {
-    assertThatMainNodeIs("[ l1 := l2 * l2 ]", AssignLocalSquareToLocalNode.class);
-    assertThatMainNodeIs("[ l2 := l2 * l2 ]", AssignLocalSquareToLocalNode.class);
+    inBlock("[ l1 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
+    inBlock("[ l2 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
 
-    assertThatMainNodeIs("[ l3 := l1 * l2 ]", LocalVariableWriteNode.class);
+    inBlock("[ l3 := l1 * l2 ]", NonLocalVariableWriteNode.class);
   }
 
 }
