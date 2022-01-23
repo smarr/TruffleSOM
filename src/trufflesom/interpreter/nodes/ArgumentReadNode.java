@@ -40,6 +40,10 @@ public abstract class ArgumentReadNode {
       inliner.updateRead(arg, this, 0);
     }
 
+    public Argument getArg() {
+      return arg;
+    }
+
     @Override
     public SSymbol getInvocationIdentifier() {
       return arg.name;
@@ -117,6 +121,10 @@ public abstract class ArgumentReadNode {
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateRead(arg, this, contextLevel);
+    }
+
+    public Argument getArg() {
+      return arg;
     }
 
     @Override
