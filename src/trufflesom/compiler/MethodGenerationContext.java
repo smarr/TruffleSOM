@@ -55,8 +55,12 @@ import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNode;
+import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -84,7 +88,7 @@ public class MethodGenerationContext
   protected final LinkedHashMap<SSymbol, Argument> arguments;
   protected final LinkedHashMap<SSymbol, Local>    locals;
 
-  private Internal frameOnStack;
+  private Internal             frameOnStack;
 
   protected final LexicalScope currentScope;
 
@@ -408,6 +412,26 @@ public class MethodGenerationContext
       return ((IntIncrementNode) valExpr).createIncNode((Local) variable, ctxLevel);
     }
 
+    if (ctxLevel == 0) {
+      if (valExpr instanceof LocalVariableSquareNode) {
+        return variable.getReadSquareWriteNode(ctxLevel, coord,
+            ((LocalVariableSquareNode) valExpr).getLocal());
+      }
+      if (valExpr instanceof NonLocalVariableSquareNode) {
+        throw new NotYetImplementedException(
+            "a missing read/square/write combination, used in a benchmark?");
+      }
+    } else {
+      if (valExpr instanceof NonLocalVariableSquareNode) {
+        return variable.getReadSquareWriteNode(ctxLevel, coord,
+            ((NonLocalVariableSquareNode) valExpr).getLocal());
+      }
+
+      if (valExpr instanceof LocalVariableSquareNode) {
+        return variable.getReadSquareWriteNode(ctxLevel, coord,
+            ((LocalVariableSquareNode) valExpr).getLocal());
+      }
+    }
     return variable.getWriteNode(ctxLevel, valExpr, coord);
   }
 
