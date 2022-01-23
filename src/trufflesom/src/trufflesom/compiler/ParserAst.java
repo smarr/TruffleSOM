@@ -39,6 +39,7 @@ import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
+import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
 import trufflesom.vmobjects.SArray;
@@ -253,6 +254,25 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
+    }
+
+    String binSelector = msg.getString();
+
+    if (binSelector.equals("=")) {
+      if (operand instanceof GenericLiteralNode) {
+        Object literal = operand.executeGeneric(null);
+        if (literal instanceof String) {
+          return StringEqualsNodeGen.create((String) literal, receiver)
+                                    .initialize(coordWithL);
+        }
+      }
+      if (receiver instanceof GenericLiteralNode) {
+        Object literal = receiver.executeGeneric(null);
+        if (literal instanceof String) {
+          return StringEqualsNodeGen.create((String) literal, operand)
+                                    .initialize(coordWithL);
+        }
+      }
     }
 
     ExpressionNode inlined =
