@@ -39,6 +39,8 @@ public interface Variable<N extends Node> {
 
   N getIncNode(int contextLevel, long incValue, long coord);
 
+  N getSquareNode(int contextLevel, long coord);
+
   /**
    * Create a node to write to this variable.
    *

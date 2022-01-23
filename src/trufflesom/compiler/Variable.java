@@ -26,6 +26,8 @@ import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNo
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
+import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNodeGen;
+import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.LocalVariableIncNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalVariableIncNodeGen;
 import trufflesom.vm.NotYetImplementedException;
@@ -131,6 +133,11 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
+    public ExpressionNode getSquareNode(final int contextLevel, final long coord) {
+      throw new NotYetImplementedException();
+    }
+
+    @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
@@ -179,6 +186,15 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
                                          .initialize(coord);
       }
       return LocalVariableIncNodeGen.create(this, incValue).initialize(coord);
+    }
+
+    @Override
+    public ExpressionNode getSquareNode(final int contextLevel, final long coord) {
+      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      if (contextLevel > 0) {
+        return NonLocalVariableSquareNodeGen.create(contextLevel, this).initialize(coord);
+      }
+      return LocalVariableSquareNodeGen.create(this).initialize(coord);
     }
 
     public FrameSlot getSlot() {
@@ -258,6 +274,12 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       throw new UnsupportedOperationException(
           "There shouldn't be any language-level inc nodes for internal slots. "
               + "They are used directly by other nodes.");
+    }
+
+    @Override
+    public ExpressionNode getSquareNode(final int contextLevel, final long coord) {
+      throw new UnsupportedOperationException(
+          "There shouldn't be any language-level square nodes for internal slots. ");
     }
 
     @Override

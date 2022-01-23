@@ -270,7 +270,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         assert ((NonLocalVariableReadNode) receiver).getContextLevel() == ((NonLocalVariableReadNode) operand).getContextLevel();
         if (rcvrLocal.equals(opLocal)) {
           return NonLocalVariableSquareNodeGen.create(
-              ((NonLocalVariableReadNode) receiver).getContextLevel(), rcvrLocal);
+              ((NonLocalVariableReadNode) receiver).getContextLevel(), rcvrLocal)
+                                              .initialize(coordWithL);
         }
       }
     } else if (operand instanceof IntegerLiteralNode) {

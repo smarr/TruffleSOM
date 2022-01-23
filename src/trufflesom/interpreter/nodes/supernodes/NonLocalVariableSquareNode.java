@@ -39,7 +39,7 @@ public abstract class NonLocalVariableSquareNode extends NonLocalVariableNode {
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
     ScopeElement<? extends Node> se = inliner.getAdaptedVar(local);
     if (se.var != local || se.contextLevel < contextLevel) {
-      replace(se.var.getReadNode(se.contextLevel, sourceCoord));
+      replace(se.var.getSquareNode(se.contextLevel, sourceCoord));
     } else {
       assert contextLevel == se.contextLevel;
     }
