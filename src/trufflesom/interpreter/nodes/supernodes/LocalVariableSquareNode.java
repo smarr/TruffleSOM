@@ -20,7 +20,7 @@ public abstract class LocalVariableSquareNode extends LocalVariableNode {
   @Specialization(guards = {"frame.isLong(slot)"}, rewriteOn = {FrameSlotTypeException.class})
   public final long doLong(final VirtualFrame frame) throws FrameSlotTypeException {
     long value = frame.getLong(slot);
-    return value * value;
+    return Math.multiplyExact(value, value);
   }
 
   @Specialization(guards = {"frame.isDouble(slot)"},

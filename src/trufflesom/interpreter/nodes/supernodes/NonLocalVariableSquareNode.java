@@ -24,7 +24,7 @@ public abstract class NonLocalVariableSquareNode extends NonLocalVariableNode {
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
     long current = ctx.getLong(slot);
-    return current * current;
+    return Math.multiplyExact(current, current);
   }
 
   @Specialization(guards = {"ctx.isDouble(slot)"}, rewriteOn = {FrameSlotTypeException.class})
