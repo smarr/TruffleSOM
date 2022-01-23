@@ -28,16 +28,21 @@ import com.oracle.truffle.api.source.Source;
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.InlinableNodes;
 import bd.tools.structure.StructuralProbe;
+import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNodeGen;
+import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
@@ -249,6 +254,25 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
+    } else if (msg.getString().equals("*")) {
+      if (receiver instanceof LocalVariableReadNode
+          && operand instanceof LocalVariableReadNode) {
+        Local rcvrLocal = ((LocalVariableReadNode) receiver).getLocal();
+        Local opLocal = ((LocalVariableReadNode) operand).getLocal();
+        if (rcvrLocal.equals(opLocal)) {
+          return LocalVariableSquareNodeGen.create(rcvrLocal).initialize(coordWithL);
+        }
+      } else if (receiver instanceof NonLocalVariableReadNode
+          && operand instanceof NonLocalVariableReadNode) {
+        Local rcvrLocal = ((NonLocalVariableReadNode) receiver).getLocal();
+        Local opLocal = ((NonLocalVariableReadNode) operand).getLocal();
+
+        assert ((NonLocalVariableReadNode) receiver).getContextLevel() == ((NonLocalVariableReadNode) operand).getContextLevel();
+        if (rcvrLocal.equals(opLocal)) {
+          return NonLocalVariableSquareNodeGen.create(
+              ((NonLocalVariableReadNode) receiver).getContextLevel(), rcvrLocal);
+        }
+      }
     } else if (operand instanceof IntegerLiteralNode) {
       IntegerLiteralNode lit = (IntegerLiteralNode) operand;
       if (msg.getString().equals("+")) {
