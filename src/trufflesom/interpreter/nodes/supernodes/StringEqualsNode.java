@@ -21,6 +21,8 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class StringEqualsNode extends UnaryExpressionNode {
   private final String value;
 
+  protected static final Object nil = Nil.nilObject;
+
   protected StringEqualsNode(final String value) {
     this.value = value;
   }
@@ -33,8 +35,8 @@ public abstract class StringEqualsNode extends UnaryExpressionNode {
     return value.equals(rcvr);
   }
 
-  @Specialization
-  public final boolean doNil(final Nil rcvr) {
+  @Specialization(guards = "rcvr == nil")
+  public final boolean doNil(final Object rcvr) {
     return false;
   }
 
