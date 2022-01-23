@@ -21,7 +21,6 @@ import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
@@ -245,19 +244,21 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     long coordWithL = getCoordWithLength(coord);
 
-    ExpressionNode inlined =
-        inlinableNodes.inline(msg, Arrays.asList(receiver, operand), mgenc, coordWithL);
-    if (inlined != null) {
-      assert !isSuperSend;
-      return inlined;
-    }
-
     ExpressionNode[] args = new ExpressionNode[] {receiver, operand};
 
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
-    } else if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
+    }
+
+    ExpressionNode inlined =
+        inlinableNodes.inline(msg, args, mgenc, coordWithL);
+    if (inlined != null) {
+      assert !isSuperSend;
+      return inlined;
+    }
+
+    if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
       IntegerLiteralNode lit = (IntegerLiteralNode) operand;
       if (lit.executeLong(null) == 1) {
         return IntIncrementNodeGen.create(receiver);
@@ -285,17 +286,18 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     long coodWithL = getCoordWithLength(coord);
 
-    ExpressionNode inlined = inlinableNodes.inline(msg, arguments, mgenc, coodWithL);
-    if (inlined != null) {
-      assert !isSuperSend;
-      return inlined;
-    }
-
     ExpressionNode[] args = arguments.toArray(new ExpressionNode[0]);
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, coodWithL);
     }
+
+    ExpressionNode inlined = inlinableNodes.inline(msg, args, mgenc, coodWithL);
+    if (inlined != null) {
+      assert !isSuperSend;
+      return inlined;
+    }
+
     return MessageSendNode.create(msg, args, coodWithL);
   }
 

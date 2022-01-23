@@ -28,21 +28,21 @@ class Inliner {
     return inline.disabled();
   }
 
-  public boolean matches(final List<? extends Node> argNodes) {
+  public <N extends Node> boolean matches(final N[] argNodes) {
     int[] args = inline.inlineableArgIdx();
     assert args != null;
 
     boolean allInlinable = true;
     for (int i : args) {
-      allInlinable &= argNodes.get(i) instanceof Inlinable;
+      allInlinable &= argNodes[i] instanceof Inlinable;
     }
     return allInlinable;
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public <N extends Node> N create(final List<N> argNodes, final ScopeBuilder scopeBuilder,
+  public <N extends Node> N create(final N[] argNodes, final ScopeBuilder scopeBuilder,
       final long coord) throws ProgramDefinitionError {
-    Object[] args = new Object[argNodes.size() + inline.inlineableArgIdx().length
+    Object[] args = new Object[argNodes.length + inline.inlineableArgIdx().length
         + inline.additionalArgs().length];
 
     assert args.length == ctor.getParameterCount();
@@ -54,7 +54,7 @@ class Inliner {
     }
 
     for (int a : inline.inlineableArgIdx()) {
-      args[i] = ((Inlinable) argNodes.get(a)).inline(scopeBuilder);
+      args[i] = ((Inlinable) argNodes[a]).inline(scopeBuilder);
       i += 1;
     }
 
@@ -103,9 +103,9 @@ class Inliner {
 
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <N extends Node> N create(final List<N> argNodes, final ScopeBuilder scopeBuilder,
+    public <N extends Node> N create(final N[] argNodes, final ScopeBuilder scopeBuilder,
         final long coord) throws ProgramDefinitionError {
-      Object[] args = new Object[argNodes.size() + inline.inlineableArgIdx().length
+      Object[] args = new Object[argNodes.length + inline.inlineableArgIdx().length
           + inline.introduceTemps().length + inline.additionalArgs().length];
 
       assert args.length == factory.getNodeSignatures().get(0).size();
@@ -113,24 +113,24 @@ class Inliner {
       int restArgs = factory.getExecutionSignature().size();
 
       int i = 0;
-      for (int j = 0; j < argNodes.size(); j += 1) {
+      for (int j = 0; j < argNodes.length; j += 1) {
         if (j < restArgs) {
           int endOffset = args.length - restArgs + j;
-          args[endOffset] = argNodes.get(j);
+          args[endOffset] = argNodes[j];
         } else {
-          args[i] = argNodes.get(j);
+          args[i] = argNodes[j];
           i += 1;
         }
       }
 
       for (int a : inline.inlineableArgIdx()) {
-        args[i] = ((Inlinable) argNodes.get(a)).inline(scopeBuilder);
+        args[i] = ((Inlinable) argNodes[a]).inline(scopeBuilder);
         i += 1;
       }
 
       for (int a : inline.introduceTemps()) {
         args[i] = scopeBuilder.introduceTempForInlinedVersion(
-            (Inlinable) argNodes.get(a), coord);
+            (Inlinable) argNodes[a], coord);
       }
 
       for (Class<?> c : inline.additionalArgs()) {
