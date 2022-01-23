@@ -7,9 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import bd.basic.ProgramDefinitionError;
@@ -31,16 +28,15 @@ public class InliningTests {
 
   @Test
   public void testNonInlinableNode() throws ProgramDefinitionError {
-    List<ExprNode> argNodes = new ArrayList<>();
-    argNodes.add(AddNodeFactory.create(null, null));
+    ExprNode[] argNodes = new ExprNode[] {AddNodeFactory.create(null, null)};
     assertNull(nodes.inline("value", argNodes, null, coord));
   }
 
   @Test
   public void testValueNode() throws ProgramDefinitionError {
-    List<ExprNode> argNodes = new ArrayList<>();
     LambdaNode arg = new LambdaNode();
-    argNodes.add(arg);
+    ExprNode[] argNodes = new ExprNode[] {arg};
+
     ExprNode valueNode = nodes.inline("value", argNodes, null, coord);
     assertNotNull(valueNode);
     assertTrue(valueNode instanceof ValueNode);
@@ -58,9 +54,9 @@ public class InliningTests {
 
   @Test
   public void testValueSpecNode() throws ProgramDefinitionError {
-    List<ExprNode> argNodes = new ArrayList<>();
     LambdaNode arg = new LambdaNode();
-    argNodes.add(arg);
+    ExprNode[] argNodes = new ExprNode[] {arg};
+
     ExprNode valueNode = nodes.inline("valueSpec", argNodes, null, coord);
     assertNotNull(valueNode);
     assertTrue(valueNode instanceof ValueSpecializedNode);

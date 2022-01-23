@@ -123,7 +123,7 @@ public final class InlinableNodes<Id> {
    *           triggered by the inlining logic.
    */
   public <N extends Node, S extends ScopeBuilder<S>> N inline(final Id selector,
-      final List<N> argNodes, final S builder, final long coord)
+      final N[] argNodes, final S builder, final long coord)
       throws ProgramDefinitionError {
     Inliner inliner = inlinableNodes.get(selector);
     if (inliner == null || (VmSettings.DYNAMIC_METRICS && inliner.isDisabled())) {
