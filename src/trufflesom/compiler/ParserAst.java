@@ -43,6 +43,7 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNodeGen;
+import trufflesom.interpreter.nodes.supernodes.StringEqualsNodeGen;
 import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
@@ -254,7 +255,11 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
-    } else if (msg.getString().equals("*")) {
+    }
+
+    String binSelector = msg.getString();
+
+    if (binSelector.equals("*")) {
       if (receiver instanceof LocalVariableReadNode
           && operand instanceof LocalVariableReadNode) {
         Local rcvrLocal = ((LocalVariableReadNode) receiver).getLocal();
@@ -274,13 +279,28 @@ public class ParserAst extends Parser<MethodGenerationContext> {
                                               .initialize(coordWithL);
         }
       }
+    } else if (binSelector.equals("=")) {
+      if (operand instanceof GenericLiteralNode) {
+        Object literal = operand.executeGeneric(null);
+        if (literal instanceof String) {
+          return StringEqualsNodeGen.create((String) literal, receiver)
+                                    .initialize(coordWithL);
+        }
+      }
+      if (receiver instanceof GenericLiteralNode) {
+        Object literal = receiver.executeGeneric(null);
+        if (literal instanceof String) {
+          return StringEqualsNodeGen.create((String) literal, operand)
+                                    .initialize(coordWithL);
+        }
+      }
     } else if (operand instanceof IntegerLiteralNode) {
       IntegerLiteralNode lit = (IntegerLiteralNode) operand;
-      if (msg.getString().equals("+")) {
+      if (binSelector.equals("+")) {
         return IntIncrementNodeGen.create(lit.executeLong(null), false, receiver)
                                   .initialize(coordWithL);
       }
-      if (msg.getString().equals("-")) {
+      if (binSelector.equals("-")) {
         return IntIncrementNodeGen.create(-lit.executeLong(null), true, receiver)
                                   .initialize(coordWithL);
       }
