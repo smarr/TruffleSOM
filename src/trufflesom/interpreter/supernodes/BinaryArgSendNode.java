@@ -1,8 +1,10 @@
-package trufflesom.interpreter.nodes;
+package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import trufflesom.interpreter.nodes.AbstractMessageSendNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.vmobjects.SSymbol;
@@ -14,7 +16,7 @@ public class BinaryArgSendNode extends AbstractMessageSendNode {
   @Child private AbstractDispatchNode dispatchNode;
   @Child private ExpressionNode       arg1;
 
-  BinaryArgSendNode(final int argIdx, final ExpressionNode arg1, final SSymbol selector,
+  public BinaryArgSendNode(final int argIdx, final ExpressionNode arg1, final SSymbol selector,
       final AbstractDispatchNode dispatchNode) {
     super(null);
     this.argIdx = argIdx;

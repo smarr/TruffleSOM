@@ -1,23 +1,25 @@
-package trufflesom.interpreter.nodes;
+package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import trufflesom.interpreter.nodes.AbstractMessageSendNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class QuatArgSendNode extends AbstractMessageSendNode {
+public class TernaryArgSendNode extends AbstractMessageSendNode {
   private final int                   argIdx;
   private final SSymbol               selector;
   @Child private AbstractDispatchNode dispatchNode;
   @Child private ExpressionNode       arg1;
   @Child private ExpressionNode       arg2;
-  @Child private ExpressionNode       arg3;
 
-  QuatArgSendNode(final int argIdx, final ExpressionNode arg1, final ExpressionNode arg2,
-      final ExpressionNode arg3, final SSymbol selector,
+  public TernaryArgSendNode(final int argIdx, final ExpressionNode arg1,
+      final ExpressionNode arg2,
+      final SSymbol selector,
       final AbstractDispatchNode dispatchNode) {
     super(null);
     this.argIdx = argIdx;
@@ -25,7 +27,6 @@ public class QuatArgSendNode extends AbstractMessageSendNode {
     this.dispatchNode = dispatchNode;
     this.arg1 = arg1;
     this.arg2 = arg2;
-    this.arg3 = arg3;
   }
 
   @Override
@@ -33,8 +34,7 @@ public class QuatArgSendNode extends AbstractMessageSendNode {
     Object[] arguments = new Object[] {
         frame.getArguments()[argIdx],
         arg1.executeGeneric(frame),
-        arg2.executeGeneric(frame),
-        arg3.executeGeneric(frame)};
+        arg2.executeGeneric(frame)};
     return doPreEvaluated(frame, arguments);
   }
 
@@ -51,7 +51,7 @@ public class QuatArgSendNode extends AbstractMessageSendNode {
 
   @Override
   public int getNumberOfArguments() {
-    return 4;
+    return 3;
   }
 
   @Override
