@@ -58,7 +58,7 @@ import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;

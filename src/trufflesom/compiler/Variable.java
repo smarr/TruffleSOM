@@ -22,12 +22,12 @@ import com.oracle.truffle.api.source.Source;
 import bd.source.SourceCoordinate;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableIncNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
-import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableIncNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
+import trufflesom.interpreter.supernodes.LocalVariableIncNodeGen;
+import trufflesom.interpreter.supernodes.NonLocalVariableIncNodeGen;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SSymbol;
 

@@ -17,8 +17,8 @@ import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.nodes.SequenceNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 
 
 public final class SNodeFactory {

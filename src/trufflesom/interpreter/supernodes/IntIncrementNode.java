@@ -1,4 +1,4 @@
-package trufflesom.interpreter.nodes.specialized;
+package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Fallback;
@@ -9,16 +9,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.bc.RespecializeException;
+import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
-import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.LocalVariableNode;
-import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableIncNodeGen;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode;
-import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableIncNodeGen;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.vm.SymbolTable;
@@ -86,20 +83,15 @@ public abstract class IntIncrementNode extends ExpressionNode {
     return local.equals(var);
   }
 
-  protected GenericMessageSendNode makeGenericSend() {
+  protected AbstractMessageSendNode makeGenericSend() {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    ExpressionNode[] children;
-    if (VmSettings.UseAstInterp) {
-      children = new ExpressionNode[] {getRcvr(),
-          new IntegerLiteralNode(isMinusAndValueNegated ? -incValue : incValue)};
-    } else {
-      children = null;
-    }
 
     SSymbol selector =
         isMinusAndValueNegated ? SymbolTable.symbolFor("-") : SymbolTable.symbolFor("+");
-    GenericMessageSendNode send =
-        MessageSendNode.createGeneric(selector, children, sourceCoord);
+    AbstractMessageSendNode send =
+        MessageSendNode.createGenericBinary(selector, getRcvr(),
+            new IntegerLiteralNode(isMinusAndValueNegated ? -incValue : incValue),
+            sourceCoord);
 
     if (VmSettings.UseAstInterp) {
       replace(send);

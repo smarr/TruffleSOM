@@ -8,13 +8,13 @@ import org.junit.Test;
 
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
-import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableIncNode;
-import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableIncNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.LocalVariableIncNode;
+import trufflesom.interpreter.supernodes.NonLocalVariableIncNode;
+import trufflesom.interpreter.supernodes.UninitFieldIncNode;
 import trufflesom.tests.AstTestSetup;
 
 

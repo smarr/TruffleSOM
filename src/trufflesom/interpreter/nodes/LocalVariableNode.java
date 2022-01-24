@@ -7,10 +7,8 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
 
 import bd.inlining.ScopeAdaptationVisitor;
-import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
 import bd.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.vm.constants.Nil;
@@ -27,7 +25,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
   // TODO: We currently assume that there is a 1:1 mapping between lexical contexts
   // and frame descriptors, which is apparently not strictly true anymore in Truffle 1.0.0.
   // Generally, we also need to revise everything in this area and address issue SOMns#240.
-  private LocalVariableNode(final Local local) {
+  protected LocalVariableNode(final Local local) {
     this.local = local;
     this.slot = local.getSlot();
     this.descriptor = local.getFrameDescriptor();
@@ -186,43 +184,6 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateWrite(local, this, getExp(), 0);
-    }
-  }
-
-  public abstract static class LocalVariableIncNode extends LocalVariableNode {
-
-    private final long incValue;
-
-    public LocalVariableIncNode(final Local variable, final long incValue) {
-      super(variable);
-      this.incValue = incValue;
-    }
-
-    @Specialization(guards = "frame.isLong(slot)", rewriteOn = {FrameSlotTypeException.class})
-    public final long doLong(final VirtualFrame frame) throws FrameSlotTypeException {
-      long current = frame.getLong(slot);
-      long result = Math.addExact(current, incValue);
-      frame.setLong(slot, result);
-      return result;
-    }
-
-    @Specialization(guards = "frame.isDouble(slot)",
-        rewriteOn = {FrameSlotTypeException.class})
-    public final double doDouble(final VirtualFrame frame) throws FrameSlotTypeException {
-      double current = frame.getDouble(slot);
-      double result = current + incValue;
-      frame.setDouble(slot, result);
-      return result;
-    }
-
-    @Override
-    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-      ScopeElement<? extends Node> se = inliner.getAdaptedVar(local);
-      if (se.var != local || se.contextLevel < 0) {
-        replace(se.var.getIncNode(se.contextLevel, incValue, sourceCoord));
-      } else {
-        assert 0 == se.contextLevel;
-      }
     }
   }
 }

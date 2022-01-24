@@ -13,13 +13,11 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableIncNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.ReturnLocalNode;
@@ -36,6 +34,8 @@ import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
+import trufflesom.interpreter.supernodes.NonLocalVariableIncNode;
+import trufflesom.interpreter.supernodes.UninitFieldIncNode;
 import trufflesom.primitives.arithmetic.SubtractionPrim;
 import trufflesom.primitives.arrays.DoPrim;
 
