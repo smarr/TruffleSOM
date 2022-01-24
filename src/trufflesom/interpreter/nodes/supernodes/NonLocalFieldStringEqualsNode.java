@@ -10,11 +10,10 @@ import bd.inlining.ScopeAdaptationVisitor;
 import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.bc.RespecializeException;
+import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ContextualNode;
-import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
@@ -119,19 +118,11 @@ public class NonLocalFieldStringEqualsNode extends ContextualNode {
     throw new UnexpectedResultException(sendResult);
   }
 
-  public final GenericMessageSendNode makeGenericSend(final Object receiver) {
-    ExpressionNode[] children;
-    if (VmSettings.UseAstInterp) {
-      children =
-          new ExpressionNode[] {
-              new FieldReadNode(new NonLocalArgumentReadNode(arg, contextLevel), fieldIdx),
-              new GenericLiteralNode(value)};
-    } else {
-      children = null;
-    }
-
-    GenericMessageSendNode send =
-        MessageSendNode.createGeneric(SymbolTable.symbolFor("="), children, sourceCoord);
+  public final AbstractMessageSendNode makeGenericSend(final Object receiver) {
+    AbstractMessageSendNode send =
+        MessageSendNode.createGenericBinary(SymbolTable.symbolFor("="),
+            new FieldReadNode(new NonLocalArgumentReadNode(arg, contextLevel), fieldIdx),
+            new GenericLiteralNode(value), sourceCoord);
 
     if (VmSettings.UseAstInterp) {
       replace(send);

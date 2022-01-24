@@ -6,8 +6,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.interpreter.bc.RespecializeException;
+import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
@@ -49,17 +49,11 @@ public abstract class StringEqualsNode extends UnaryExpressionNode {
   }
 
   @Override
-  protected GenericMessageSendNode makeGenericSend(final SSymbol selector) {
+  protected AbstractMessageSendNode makeGenericSend(final SSymbol selector) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    ExpressionNode[] children;
-    if (VmSettings.UseAstInterp) {
-      children = new ExpressionNode[] {getReceiver(), new GenericLiteralNode(value)};
-    } else {
-      children = null;
-    }
-
-    GenericMessageSendNode send =
-        MessageSendNode.createGeneric(selector, children, sourceCoord);
+    AbstractMessageSendNode send =
+        MessageSendNode.createGenericBinary(selector, getReceiver(),
+            new GenericLiteralNode(value), sourceCoord);
 
     if (VmSettings.UseAstInterp) {
       replace(send);
