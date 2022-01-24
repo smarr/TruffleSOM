@@ -11,10 +11,10 @@ import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.nodes.supernodes.LocalVariableReadSquareWriteNode;
-import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNode;
-import trufflesom.interpreter.nodes.supernodes.NonLocalVariableReadSquareWriteNode;
-import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNode;
+import trufflesom.interpreter.supernodes.LocalVariableReadSquareWriteNode;
+import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
+import trufflesom.interpreter.supernodes.NonLocalVariableReadSquareWriteNode;
+import trufflesom.interpreter.supernodes.NonLocalVariableSquareNode;
 import trufflesom.primitives.arithmetic.MultiplicationPrim;
 import trufflesom.tests.AstTestSetup;
 
