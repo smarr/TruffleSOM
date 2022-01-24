@@ -5,8 +5,8 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.interpreter.bc.RespecializeException;
+import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.vm.VmSettings;
@@ -26,17 +26,10 @@ public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
     return executeEvaluated(frame, arguments[0]);
   }
 
-  protected GenericMessageSendNode makeGenericSend(final SSymbol selector) {
+  protected AbstractMessageSendNode makeGenericSend(final SSymbol selector) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    ExpressionNode[] children;
-    if (VmSettings.UseAstInterp) {
-      children = new ExpressionNode[] {getReceiver()};
-    } else {
-      children = null;
-    }
-
-    GenericMessageSendNode send =
-        MessageSendNode.createGeneric(selector, children, sourceCoord);
+    AbstractMessageSendNode send =
+        MessageSendNode.createGenericUnary(selector, getReceiver(), sourceCoord);
 
     if (VmSettings.UseAstInterp) {
       replace(send);
