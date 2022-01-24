@@ -44,11 +44,9 @@ public final class MessageSendNode {
   public static AbstractMessageSendNode createGenericUnary(final SSymbol selector,
       final ExpressionNode rcvrNode, final long coord) {
     UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
-    if (rcvrNode != null) {
-      if (rcvrNode instanceof LocalArgumentReadNode) {
-        int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
-        return new UnaryArgSendNode(argIdx, selector, dispatch).initialize(coord);
-      }
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new UnaryArgSendNode(argIdx, selector, dispatch).initialize(coord);
     }
 
     return new GenericMessageSendNode(
@@ -58,11 +56,9 @@ public final class MessageSendNode {
   public static AbstractMessageSendNode createGenericBinary(final SSymbol selector,
       final ExpressionNode rcvrNode, final ExpressionNode arg1, final long coord) {
     UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
-    if (rcvrNode != null) {
-      if (rcvrNode instanceof LocalArgumentReadNode) {
-        int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
-        return new BinaryArgSendNode(argIdx, arg1, selector, dispatch).initialize(coord);
-      }
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new BinaryArgSendNode(argIdx, arg1, selector, dispatch).initialize(coord);
     }
 
     return new GenericMessageSendNode(
@@ -73,12 +69,9 @@ public final class MessageSendNode {
       final ExpressionNode rcvrNode, final ExpressionNode arg1, final ExpressionNode arg2,
       final long coord) {
     UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
-    if (rcvrNode != null) {
-      if (rcvrNode instanceof LocalArgumentReadNode) {
-        int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
-        return new TernaryArgSendNode(argIdx, arg1, arg2, selector, dispatch).initialize(
-            coord);
-      }
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new TernaryArgSendNode(argIdx, arg1, arg2, selector, dispatch).initialize(coord);
     }
 
     return new GenericMessageSendNode(
@@ -89,12 +82,10 @@ public final class MessageSendNode {
       final ExpressionNode rcvrNode, final ExpressionNode arg1, final ExpressionNode arg2,
       final ExpressionNode arg3, final long coord) {
     UninitializedDispatchNode dispatch = new UninitializedDispatchNode(selector);
-    if (rcvrNode != null) {
-      if (rcvrNode instanceof LocalArgumentReadNode) {
-        int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
-        return new QuatArgSendNode(argIdx, arg1, arg2, arg3, selector, dispatch).initialize(
-            coord);
-      }
+    if (rcvrNode != null && rcvrNode instanceof LocalArgumentReadNode) {
+      int argIdx = ((LocalArgumentReadNode) rcvrNode).argumentIndex;
+      return new QuatArgSendNode(argIdx, arg1, arg2, arg3, selector, dispatch).initialize(
+          coord);
     }
 
     return new GenericMessageSendNode(
