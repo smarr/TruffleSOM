@@ -1,4 +1,4 @@
-package trufflesom.interpreter.nodes.supernodes;
+package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;

@@ -26,12 +26,12 @@ import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNo
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
-import trufflesom.interpreter.nodes.supernodes.LocalVariableReadSquareWriteNodeGen;
-import trufflesom.interpreter.nodes.supernodes.LocalVariableSquareNodeGen;
-import trufflesom.interpreter.nodes.supernodes.NonLocalVariableReadSquareWriteNodeGen;
-import trufflesom.interpreter.nodes.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.LocalVariableIncNodeGen;
+import trufflesom.interpreter.supernodes.LocalVariableReadSquareWriteNodeGen;
+import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalVariableIncNodeGen;
+import trufflesom.interpreter.supernodes.NonLocalVariableReadSquareWriteNodeGen;
+import trufflesom.interpreter.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SSymbol;
 
