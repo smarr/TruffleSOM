@@ -16,7 +16,8 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateWrapper
 @Primitive(className = "Array", primitive = "length")
 @Primitive(className = "String", primitive = "length")
-@Primitive(selector = "length", receiverType = String.class, inParser = false)
+@Primitive(selector = "length", receiverType = {String.class, SArray.class, SSymbol.class},
+    inParser = false)
 public abstract class LengthPrim extends UnaryExpressionNode {
 
   @Specialization(guards = "receiver.isEmptyType()")

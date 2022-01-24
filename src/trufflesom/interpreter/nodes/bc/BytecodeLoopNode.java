@@ -113,7 +113,6 @@ import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.ReturnException;
-import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.bc.RespecializeException;
@@ -1105,7 +1104,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     if (marker.isOnStack()) {
       throw new ReturnException(result, marker);
     } else {
-      SBlock block = (SBlock) SArguments.rcvr(frame);
+      SBlock block = (SBlock) frame.getArguments()[0];
       throw new EscapedBlockException(block);
     }
   }

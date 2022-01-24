@@ -32,7 +32,6 @@ import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.ReturnException;
-import trufflesom.interpreter.SArguments;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
 
@@ -71,8 +70,8 @@ public final class ReturnNonLocalNode extends ContextualNode {
       throw new ReturnException(result, marker);
     } else {
       blockEscaped.enter();
-      SBlock block = (SBlock) SArguments.rcvr(frame);
-      Object self = SArguments.rcvr(ctx);
+      SBlock block = (SBlock) frame.getArguments()[0];
+      Object self = ctx.getArguments()[0];
       return SAbstractObject.sendEscapedBlock(self, block);
     }
   }

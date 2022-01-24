@@ -26,8 +26,6 @@ package trufflesom.vmobjects;
 
 import com.oracle.truffle.api.frame.MaterializedFrame;
 
-import trufflesom.interpreter.SArguments;
-
 
 public final class SBlock extends SAbstractObject {
 
@@ -57,7 +55,7 @@ public final class SBlock extends SAbstractObject {
   }
 
   public Object getOuterSelf() {
-    return SArguments.rcvr(getContext());
+    return getContext().getArguments()[0];
   }
 
   private final SClass            blockClass;

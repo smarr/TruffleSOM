@@ -26,7 +26,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-import trufflesom.interpreter.SArguments;
 import trufflesom.vmobjects.SBlock;
 
 
@@ -50,7 +49,7 @@ public abstract class ContextualNode extends NoPreEvalExprNode {
 
   @ExplodeLoop
   protected final MaterializedFrame determineContext(final VirtualFrame frame) {
-    SBlock self = (SBlock) SArguments.rcvr(frame);
+    SBlock self = (SBlock) frame.getArguments()[0];
     int i = contextLevel - 1;
 
     while (i > 0) {
