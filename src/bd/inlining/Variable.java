@@ -2,6 +2,8 @@ package bd.inlining;
 
 import com.oracle.truffle.api.nodes.Node;
 
+import trufflesom.compiler.Variable.Local;
+
 
 /**
  * A {@link Variable} represents a variable most often in the user code, or sometimes internal
@@ -38,6 +40,10 @@ public interface Variable<N extends Node> {
   N getReadNode(int contextLevel, long coord);
 
   N getIncNode(int contextLevel, long incValue, long coord);
+
+  N getSquareNode(int contextLevel, long coord);
+
+  N getReadSquareWriteNode(int contextLevel, long coord, Local readLocal);
 
   /**
    * Create a node to write to this variable.
