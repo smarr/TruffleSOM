@@ -1,4 +1,4 @@
-package trufflesom.interpreter.nodes.supernodes;
+package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;

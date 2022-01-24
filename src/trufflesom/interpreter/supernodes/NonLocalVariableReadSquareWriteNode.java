@@ -1,4 +1,4 @@
-package trufflesom.interpreter.nodes.supernodes;
+package trufflesom.interpreter.supernodes;
 
 import static trufflesom.interpreter.TruffleCompiler.transferToInterpreter;
 
