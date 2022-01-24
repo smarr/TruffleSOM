@@ -27,6 +27,12 @@ public abstract class FieldAccessorNode extends Node {
     return new UninitializedWriteFieldNode(fieldIndex);
   }
 
+  public static IncrementLongFieldNode createIncrement(final int fieldIndex,
+      final SObject obj, final long incValue) {
+    final ObjectLayout layout = obj.getObjectLayout();
+    return new IncrementLongFieldNode(fieldIndex, layout, incValue);
+  }
+
   private FieldAccessorNode(final int fieldIndex) {
     this.fieldIndex = fieldIndex;
   }
@@ -281,6 +287,50 @@ public abstract class FieldAccessorNode extends Node {
         throws InvalidAssumptionException {
       layout.checkIsLatest();
       return layout == obj.getObjectLayout();
+    }
+  }
+
+  public static final class IncrementLongFieldNode extends FieldAccessorNode {
+    protected final ObjectLayout      layout;
+    private final LongStorageLocation storage;
+    private final long                incValue;
+
+    @Child protected IncrementLongFieldNode nextInCache;
+
+    public IncrementLongFieldNode(final int fieldIndex, final ObjectLayout layout,
+        final long incValue) {
+      super(fieldIndex);
+      this.layout = layout;
+      this.storage = (LongStorageLocation) layout.getStorageLocation(fieldIndex);
+      this.incValue = incValue;
+    }
+
+    protected boolean hasExpectedLayout(final SObject obj)
+        throws InvalidAssumptionException {
+      layout.checkIsLatest();
+      return layout == obj.getObjectLayout();
+    }
+
+    public long increment(final SObject obj) {
+      try {
+        if (hasExpectedLayout(obj)) {
+          return storage.increment(obj, incValue);
+        } else {
+          ensureNext(obj);
+          return nextInCache.increment(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        ensureNext(obj);
+        return replace(SOMNode.unwrapIfNeeded(nextInCache)).increment(
+            obj);
+      }
+    }
+
+    private void ensureNext(final SObject obj) {
+      if (nextInCache == null) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        nextInCache = new IncrementLongFieldNode(fieldIndex, obj.getObjectLayout(), incValue);
+      }
     }
   }
 

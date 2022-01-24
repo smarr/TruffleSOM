@@ -25,7 +25,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
   protected final Local           local;
   protected final FrameDescriptor descriptor;
 
-  private NonLocalVariableNode(final int contextLevel, final Local local) {
+  protected NonLocalVariableNode(final int contextLevel, final Local local) {
     super(contextLevel);
     this.local = local;
     this.descriptor = local.getFrameDescriptor();

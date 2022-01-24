@@ -34,7 +34,10 @@ import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
+import trufflesom.interpreter.supernodes.NonLocalVariableIncNode;
+import trufflesom.interpreter.supernodes.UninitFieldIncNode;
 import trufflesom.primitives.arithmetic.SubtractionPrim;
+import trufflesom.primitives.arrays.DoPrim;
 
 
 public class AstInliningTests extends AstTestSetup {
@@ -130,6 +133,24 @@ public class AstInliningTests extends AstTestSetup {
   public void testIfArg() {
     ifArg("ifTrue:", true);
     ifArg("ifFalse:", false);
+  }
+
+  @Test
+  public void testIfTrueAndIncField() {
+    addField("field");
+    SequenceNode seq = (SequenceNode) parseMethod(
+        "test: arg = (\n"
+            + "#start.\n"
+            + "(self key: 5) ifTrue: [ field := field + 1 ]. #end )");
+
+    IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 1);
+    UninitFieldIncNode incNode = read(ifNode, "bodyNode", UninitFieldIncNode.class);
+
+    int fieldIdx = read(incNode, "fieldIndex", Integer.class);
+    assertEquals(0, fieldIdx);
+
+    LocalArgumentReadNode selfNode = (LocalArgumentReadNode) incNode.getSelf();
+    assertTrue(selfNode.isSelfRead());
   }
 
   @Test
@@ -297,6 +318,66 @@ public class AstInliningTests extends AstTestSetup {
   public void testWhileInlining() {
     whileInlining("whileTrue:", true);
     whileInlining("whileFalse:", false);
+  }
+
+  @Test
+  public void testBlockBlockInlinedSelf() {
+    addField("field");
+    SequenceNode seq = (SequenceNode) parseMethod(
+        "test = (\n"
+            + "[:a |\n"
+            + "  [:b |\n"
+            + "     b ifTrue: [ field := field + 1 ] ] ]\n"
+            + ")");
+
+    BlockNode blockNodeA = (BlockNode) read(seq, "expressions", 0);
+
+    BlockNode blockNodeB =
+        (BlockNode) read(blockNodeA.getMethod().getInvokable(), "expressionOrSequence");
+
+    IfInlinedLiteralNode blockBIfTrue =
+        (IfInlinedLiteralNode) read(blockNodeB.getMethod().getInvokable(),
+            "expressionOrSequence");
+
+    LocalArgumentReadNode readB =
+        read(blockBIfTrue, "conditionNode", LocalArgumentReadNode.class);
+    assertEquals("b", readB.getInvocationIdentifier().getString());
+    assertEquals(1, readB.argumentIndex);
+
+    UninitFieldIncNode incNode = read(blockBIfTrue, "bodyNode", UninitFieldIncNode.class);
+    NonLocalArgumentReadNode selfNode = (NonLocalArgumentReadNode) incNode.getSelf();
+    assertEquals(2, selfNode.getContextLevel());
+    assertEquals(0, (int) read(incNode, "fieldIndex", Integer.class));
+  }
+
+  @Test
+  public void testToDoBlockBlockInlinedSelf() {
+    addField("field");
+    SequenceNode seq = (SequenceNode) parseMethod("test = (\n"
+        + "| l1 l2 |\n"
+        + "1 to: 2 do: [:a |\n"
+        + "  l1 do: [:b |\n"
+        + "    b ifTrue: [ l2 := l2 + 1 ] ] ]\n"
+        + ")");
+
+    IntToDoInlinedLiteralsNode toDo =
+        (IntToDoInlinedLiteralsNode) read(seq, "expressions", 0);
+
+    DoPrim doPrim = read(toDo, "body", DoPrim.class);
+    BlockNode blockA = (BlockNode) doPrim.getArgument();
+    IfInlinedLiteralNode blockBIfTrue =
+        read(blockA.getMethod().getInvokable(), "expressionOrSequence",
+            IfInlinedLiteralNode.class);
+
+    LocalArgumentReadNode readNode =
+        read(blockBIfTrue, "conditionNode", LocalArgumentReadNode.class);
+    assertEquals("b", readNode.getInvocationIdentifier().getString());
+    assertEquals(1, readNode.argumentIndex);
+
+    NonLocalVariableIncNode writeNode =
+        read(blockBIfTrue, "bodyNode", NonLocalVariableIncNode.class);
+    assertEquals(1, writeNode.getContextLevel());
+    assertEquals("l2", writeNode.getInvocationIdentifier().getString());
   }
 
   @Test

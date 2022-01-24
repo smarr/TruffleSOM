@@ -25,7 +25,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
   // TODO: We currently assume that there is a 1:1 mapping between lexical contexts
   // and frame descriptors, which is apparently not strictly true anymore in Truffle 1.0.0.
   // Generally, we also need to revise everything in this area and address issue SOMns#240.
-  private LocalVariableNode(final Local local) {
+  protected LocalVariableNode(final Local local) {
     this.local = local;
     this.slot = local.getSlot();
     this.descriptor = local.getFrameDescriptor();

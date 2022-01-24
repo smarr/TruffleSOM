@@ -38,6 +38,7 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
 import trufflesom.vmobjects.SArray;
@@ -248,6 +249,16 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
           mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
+    } else if (operand instanceof IntegerLiteralNode) {
+      IntegerLiteralNode lit = (IntegerLiteralNode) operand;
+      if (msg.getString().equals("+")) {
+        return IntIncrementNodeGen.create(lit.executeLong(null), false, receiver)
+                                  .initialize(coordWithL);
+      }
+      if (msg.getString().equals("-")) {
+        return IntIncrementNodeGen.create(-lit.executeLong(null), true, receiver)
+                                  .initialize(coordWithL);
+      }
     }
 
     ExpressionNode inlined =
