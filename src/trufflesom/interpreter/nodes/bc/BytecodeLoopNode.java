@@ -874,7 +874,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             break;
           }
 
-          long value = ((IncrementLongFieldNode) node).increment(obj);
+          long value = ((IncrementLongFieldNode) node).increment(obj, 1);
           stackPointer += 1;
           stack[stackPointer] = value;
           bytecodeIndex += Bytecodes.LEN_THREE_ARGS;

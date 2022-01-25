@@ -12,9 +12,10 @@ import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.IntUninitIncFieldNode;
 import trufflesom.interpreter.supernodes.LocalVariableIncNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableIncNode;
-import trufflesom.interpreter.supernodes.UninitFieldIncNode;
+import trufflesom.interpreter.supernodes.UninitIncFieldNode;
 import trufflesom.tests.AstTestSetup;
 
 
@@ -80,10 +81,27 @@ public class IncrementOpTests extends AstTestSetup {
 
   @Test
   public void testFieldInc() {
-    basicAddOrSubtract("field := field + 1", 1, UninitFieldIncNode.class);
-    basicAddOrSubtract("field := field - 1", -1, UninitFieldIncNode.class);
-    basicAddOrSubtract("field := field + 1123", 1123, UninitFieldIncNode.class);
-    basicAddOrSubtract("field := field - 234234", -234234, UninitFieldIncNode.class);
+    basicAddOrSubtract("field := field + 1", 1, IntUninitIncFieldNode.class);
+    basicAddOrSubtract("field := field - 1", -1, IntUninitIncFieldNode.class);
+    basicAddOrSubtract("field := field + 1123", 1123, IntUninitIncFieldNode.class);
+    basicAddOrSubtract("field := field - 234234", -234234, IntUninitIncFieldNode.class);
+
+  }
+
+  private void fieldIncWithExpr(final String test, final Class<?> nodeType) {
+    addField("field");
+    SequenceNode seq = (SequenceNode) parseMethod(
+        "test: arg = ( | var | \n" + test + " )");
+
+    ExpressionNode testExpr = read(seq, "expressions", 0);
+    assertThat(testExpr, instanceOf(nodeType));
+  }
+
+  @Test
+  public void testFieldIncWithExpression() {
+    fieldIncWithExpr("field := field + (23 + 434)", UninitIncFieldNode.class);
+    fieldIncWithExpr("field := field + var", UninitIncFieldNode.class);
+    fieldIncWithExpr("field := field + arg", UninitIncFieldNode.class);
   }
 
   @Test

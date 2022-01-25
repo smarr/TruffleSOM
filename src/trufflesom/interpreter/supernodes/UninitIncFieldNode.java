@@ -2,6 +2,7 @@ package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
@@ -11,18 +12,20 @@ import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
 
-public final class UninitFieldIncNode extends FieldNode {
+public final class UninitIncFieldNode extends FieldNode {
 
   @Child private ExpressionNode self;
-  private final int             fieldIndex;
-  private final long            incValue;
+  @Child private ExpressionNode valueExpr;
 
-  public UninitFieldIncNode(final ExpressionNode self, final int fieldIndex,
-      final long coord, final long value) {
+  private final int fieldIndex;
+
+  public UninitIncFieldNode(final ExpressionNode self, final ExpressionNode valueExpr,
+      final int fieldIndex,
+      final long coord) {
     this.self = self;
+    this.valueExpr = valueExpr;
     this.fieldIndex = fieldIndex;
     this.sourceCoord = coord;
-    this.incValue = value;
   }
 
   @Override
@@ -41,6 +44,13 @@ public final class UninitFieldIncNode extends FieldNode {
     CompilerDirectives.transferToInterpreterAndInvalidate();
     SObject obj = (SObject) self.executeGeneric(frame);
 
+    long incValue;
+    try {
+      incValue = valueExpr.executeLong(frame);
+    } catch (UnexpectedResultException e1) {
+      throw new NotYetImplementedException();
+    }
+
     Object val = obj.getField(fieldIndex);
     if (!(val instanceof Long)) {
       throw new NotYetImplementedException();
@@ -54,8 +64,8 @@ public final class UninitFieldIncNode extends FieldNode {
       throw new NotYetImplementedException();
     }
 
-    IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj, incValue);
-    IncFieldNode incNode = new IncFieldNode(self, node, sourceCoord);
+    IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
+    IncFieldNode incNode = new IncFieldNode(self, valueExpr, node, sourceCoord);
     replace(incNode);
     node.notifyAsInserted();
 
