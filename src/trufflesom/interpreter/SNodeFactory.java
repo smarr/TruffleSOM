@@ -17,8 +17,10 @@ import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
-import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.nodes.SequenceNode;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.UninitIncFieldNode;
+import trufflesom.primitives.arithmetic.AdditionPrim;
 
 
 public final class SNodeFactory {
@@ -40,6 +42,21 @@ public final class SNodeFactory {
     if (exp instanceof IntIncrementNode
         && ((IntIncrementNode) exp).doesAccessField(fieldIndex)) {
       return ((IntIncrementNode) exp).createFieldIncNode(self, fieldIndex, coord);
+    }
+
+    if (exp instanceof AdditionPrim) {
+      AdditionPrim add = (AdditionPrim) exp;
+      ExpressionNode rcvr = add.getReceiver();
+      ExpressionNode arg = add.getArgument();
+
+      if (rcvr instanceof FieldReadNode
+          && fieldIndex == ((FieldReadNode) rcvr).getFieldIndex()) {
+        return new UninitIncFieldNode(self, arg, fieldIndex, coord);
+      }
+      if (arg instanceof FieldReadNode
+          && fieldIndex == ((FieldReadNode) arg).getFieldIndex()) {
+        return new UninitIncFieldNode(self, rcvr, fieldIndex, coord);
+      }
     }
 
     return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);

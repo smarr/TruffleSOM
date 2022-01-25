@@ -2,26 +2,25 @@ package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
-import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
 
-final class IncFieldNode extends FieldNode {
+final class IntIncFieldNode extends FieldNode {
   @Child private ExpressionNode         self;
-  @Child private ExpressionNode         valueExpr;
   @Child private IncrementLongFieldNode inc;
 
-  IncFieldNode(final ExpressionNode self, final ExpressionNode valueExpr,
-      final IncrementLongFieldNode inc, final long coord) {
+  private final long incValue;
+
+  IntIncFieldNode(final ExpressionNode self, final IncrementLongFieldNode inc,
+      final long incValue, final long coord) {
     initialize(coord);
     this.self = self;
-    this.valueExpr = valueExpr;
     this.inc = inc;
+    this.incValue = incValue;
   }
 
   @Override
@@ -43,15 +42,6 @@ final class IncFieldNode extends FieldNode {
   @Override
   public long executeLong(final VirtualFrame frame) {
     SObject obj = (SObject) self.executeGeneric(frame);
-    long incValue;
-
-    try {
-      incValue = valueExpr.executeLong(frame);
-    } catch (UnexpectedResultException e) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      throw new NotYetImplementedException();
-    }
-
     return inc.increment(obj, incValue);
   }
 }

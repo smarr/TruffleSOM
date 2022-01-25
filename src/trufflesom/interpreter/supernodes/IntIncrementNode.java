@@ -105,7 +105,7 @@ public abstract class IntIncrementNode extends ExpressionNode {
 
   public FieldNode createFieldIncNode(final ExpressionNode self, final int fieldIndex,
       final long coord) {
-    return new UninitFieldIncNode(self, fieldIndex, coord, incValue);
+    return new IntUninitIncFieldNode(self, fieldIndex, coord, incValue);
   }
 
   public ExpressionNode createIncNode(final Local local, final int ctxLevel) {
@@ -115,5 +115,4 @@ public abstract class IntIncrementNode extends ExpressionNode {
     return NonLocalVariableIncNodeGen.create(ctxLevel, local, incValue)
                                      .initialize(sourceCoord);
   }
-
 }
