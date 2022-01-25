@@ -44,8 +44,11 @@ import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
+import trufflesom.interpreter.supernodes.GreaterThanIntNodeGen;
 import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
+import trufflesom.interpreter.supernodes.LessThanIntNodeGen;
 import trufflesom.interpreter.supernodes.LocalArgGreaterThanInt;
+import trufflesom.interpreter.supernodes.LocalArgLessThanInt;
 import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalFieldStringEqualsNode;
@@ -351,9 +354,23 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         return IntIncrementNodeGen.create(-lit.executeLong(null), true, receiver)
                                   .initialize(coordWithL);
       }
-      if (binSelector.equals(">") && receiver instanceof LocalArgumentReadNode) {
-        return new LocalArgGreaterThanInt(((LocalArgumentReadNode) receiver).getArg(),
-            lit.executeLong(null)).initialize(coordWithL);
+      if (binSelector.equals(">")) {
+        if (receiver instanceof LocalArgumentReadNode) {
+          return new LocalArgGreaterThanInt(((LocalArgumentReadNode) receiver).getArg(),
+              lit.executeLong(null)).initialize(coordWithL);
+        }
+
+        return GreaterThanIntNodeGen.create(lit.executeLong(null), receiver)
+                                    .initialize(coordWithL);
+      }
+      if (binSelector.equals("<")) {
+        if (receiver instanceof LocalArgumentReadNode) {
+          return new LocalArgLessThanInt(((LocalArgumentReadNode) receiver).getArg(),
+              lit.executeLong(null)).initialize(coordWithL);
+        }
+
+        return LessThanIntNodeGen.create(lit.executeLong(null), receiver)
+                                 .initialize(coordWithL);
       }
     }
 
