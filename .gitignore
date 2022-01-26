@@ -13,7 +13,13 @@ user-dict.txt
 /rebench.data
 /payload.json
 /tests/tools/coverage/expected-results
+/tests/tools/coverage/old-results
 /tests/tools/coverage/results
 /tests/tools/nodestats/expected-results
 /tests/tools/nodestats/old-results
 /tests/tools/nodestats/results
+*.yml
+*.jfr
+*.txt
+*.zip
+

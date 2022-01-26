@@ -34,8 +34,8 @@ import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
-import trufflesom.interpreter.supernodes.NonLocalVariableIncNode;
-import trufflesom.interpreter.supernodes.UninitFieldIncNode;
+import trufflesom.interpreter.supernodes.IntIncNonLocalVariableNode;
+import trufflesom.interpreter.supernodes.IntUninitIncFieldNode;
 import trufflesom.primitives.arithmetic.SubtractionPrim;
 import trufflesom.primitives.arrays.DoPrim;
 
@@ -144,7 +144,7 @@ public class AstInliningTests extends AstTestSetup {
             + "(self key: 5) ifTrue: [ field := field + 1 ]. #end )");
 
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 1);
-    UninitFieldIncNode incNode = read(ifNode, "bodyNode", UninitFieldIncNode.class);
+    IntUninitIncFieldNode incNode = read(ifNode, "bodyNode", IntUninitIncFieldNode.class);
 
     int fieldIdx = read(incNode, "fieldIndex", Integer.class);
     assertEquals(0, fieldIdx);
@@ -344,7 +344,7 @@ public class AstInliningTests extends AstTestSetup {
     assertEquals("b", readB.getInvocationIdentifier().getString());
     assertEquals(1, readB.argumentIndex);
 
-    UninitFieldIncNode incNode = read(blockBIfTrue, "bodyNode", UninitFieldIncNode.class);
+    IntUninitIncFieldNode incNode = read(blockBIfTrue, "bodyNode", IntUninitIncFieldNode.class);
     NonLocalArgumentReadNode selfNode = (NonLocalArgumentReadNode) incNode.getSelf();
     assertEquals(2, selfNode.getContextLevel());
     assertEquals(0, (int) read(incNode, "fieldIndex", Integer.class));
@@ -374,8 +374,8 @@ public class AstInliningTests extends AstTestSetup {
     assertEquals("b", readNode.getInvocationIdentifier().getString());
     assertEquals(1, readNode.argumentIndex);
 
-    NonLocalVariableIncNode writeNode =
-        read(blockBIfTrue, "bodyNode", NonLocalVariableIncNode.class);
+    IntIncNonLocalVariableNode writeNode =
+        read(blockBIfTrue, "bodyNode", IntIncNonLocalVariableNode.class);
     assertEquals(1, writeNode.getContextLevel());
     assertEquals("l2", writeNode.getInvocationIdentifier().getString());
   }

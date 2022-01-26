@@ -11,13 +11,13 @@ import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
 
-public final class UninitFieldIncNode extends FieldNode {
+public final class IntUninitIncFieldNode extends FieldNode {
 
   @Child private ExpressionNode self;
   private final int             fieldIndex;
   private final long            incValue;
 
-  public UninitFieldIncNode(final ExpressionNode self, final int fieldIndex,
+  public IntUninitIncFieldNode(final ExpressionNode self, final int fieldIndex,
       final long coord, final long value) {
     this.self = self;
     this.fieldIndex = fieldIndex;
@@ -54,8 +54,8 @@ public final class UninitFieldIncNode extends FieldNode {
       throw new NotYetImplementedException();
     }
 
-    IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj, incValue);
-    IncFieldNode incNode = new IncFieldNode(self, node, sourceCoord);
+    IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj);
+    IntIncFieldNode incNode = new IntIncFieldNode(self, node, incValue, sourceCoord);
     replace(incNode);
     node.notifyAsInserted();
 
