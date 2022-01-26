@@ -1,5 +1,6 @@
 package trufflesom.interpreter.supernodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -60,6 +61,7 @@ public abstract class IncNonLocalVariableNode extends NonLocalVariableNode {
   @Fallback
   public final Object fallback(final VirtualFrame frame, final Object value) {
     MaterializedFrame ctx = determineContext(frame);
+    CompilerDirectives.transferToInterpreterAndInvalidate();
 
     AdditionPrim add =
         AdditionPrimFactory.create(local.getReadNode(contextLevel, sourceCoord), getValue());
@@ -68,7 +70,7 @@ public abstract class IncNonLocalVariableNode extends NonLocalVariableNode {
     replace(local.getWriteNode(contextLevel, add, sourceCoord)).adoptChildren();
 
     Object preIncValue = ctx.getValue(slot);
-    Object result = add.executeEvaluated(frame, preIncValue, value);
+    Object result = add.executeEvaluated(null, preIncValue, value);
     ctx.setObject(slot, result);
     return result;
   }
