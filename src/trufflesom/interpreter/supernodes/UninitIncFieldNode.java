@@ -6,8 +6,11 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
+import trufflesom.primitives.arithmetic.AdditionPrim;
+import trufflesom.primitives.arithmetic.AdditionPrimFactory;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
@@ -17,13 +20,14 @@ public final class UninitIncFieldNode extends FieldNode {
   @Child private ExpressionNode self;
   @Child private ExpressionNode valueExpr;
 
-  private final int fieldIndex;
+  private final int     fieldIndex;
+  private final boolean valueExprIsArg;
 
   public UninitIncFieldNode(final ExpressionNode self, final ExpressionNode valueExpr,
-      final int fieldIndex,
-      final long coord) {
+      final boolean valueExprIsArg, final int fieldIndex, final long coord) {
     this.self = self;
     this.valueExpr = valueExpr;
+    this.valueExprIsArg = valueExprIsArg;
     this.fieldIndex = fieldIndex;
     this.sourceCoord = coord;
   }
@@ -48,7 +52,25 @@ public final class UninitIncFieldNode extends FieldNode {
     try {
       incValue = valueExpr.executeLong(frame);
     } catch (UnexpectedResultException e1) {
-      throw new NotYetImplementedException();
+      AdditionPrim add;
+      if (valueExprIsArg) {
+        add = AdditionPrimFactory.create(
+            new FieldReadNode((ExpressionNode) self.copy(), fieldIndex),
+            valueExpr);
+      } else {
+        add = AdditionPrimFactory.create(
+            valueExpr,
+            new FieldReadNode((ExpressionNode) self.copy(), fieldIndex));
+      }
+      add.initialize(sourceCoord);
+
+      replace(FieldWriteNodeGen.create(fieldIndex, self, add)
+                               .initialize(sourceCoord)).adoptChildren();
+
+      Object preIncValue = obj.getField(fieldIndex);
+      Object result = add.executeEvaluated(frame, preIncValue, e1.getResult());
+      obj.setField(fieldIndex, result);
+      return result;
     }
 
     Object val = obj.getField(fieldIndex);
