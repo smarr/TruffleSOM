@@ -11,10 +11,12 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
-import trufflesom.interpreter.supernodes.IntIncrementNode;
-import trufflesom.interpreter.supernodes.IntUninitIncFieldNode;
+import trufflesom.interpreter.supernodes.IncLocalVariableNode;
+import trufflesom.interpreter.supernodes.IncNonLocalVariableNode;
 import trufflesom.interpreter.supernodes.IntIncLocalVariableNode;
 import trufflesom.interpreter.supernodes.IntIncNonLocalVariableNode;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.IntUninitIncFieldNode;
 import trufflesom.interpreter.supernodes.UninitIncFieldNode;
 import trufflesom.tests.AstTestSetup;
 
@@ -88,7 +90,7 @@ public class IncrementOpTests extends AstTestSetup {
 
   }
 
-  private void fieldIncWithExpr(final String test, final Class<?> nodeType) {
+  private void incWithExpr(final String test, final Class<?> nodeType) {
     addField("field");
     SequenceNode seq = (SequenceNode) parseMethod(
         "test: arg = ( | var | \n" + test + " )");
@@ -99,9 +101,20 @@ public class IncrementOpTests extends AstTestSetup {
 
   @Test
   public void testFieldIncWithExpression() {
-    fieldIncWithExpr("field := field + (23 + 434)", UninitIncFieldNode.class);
-    fieldIncWithExpr("field := field + var", UninitIncFieldNode.class);
-    fieldIncWithExpr("field := field + arg", UninitIncFieldNode.class);
+    incWithExpr("field := field + (23 + 434)", UninitIncFieldNode.class);
+    incWithExpr("field := field + var", UninitIncFieldNode.class);
+    incWithExpr("field := field + arg", UninitIncFieldNode.class);
+  }
+
+  @Test
+  public void testLocalIncWithExpression() {
+    incWithExpr("var := var + (23 + 434)", IncLocalVariableNode.class);
+    incWithExpr("var := var + var", IncLocalVariableNode.class);
+    incWithExpr("var := var + arg", IncLocalVariableNode.class);
+
+    incWithExpr("var := (23 + 434) + var", IncLocalVariableNode.class);
+    incWithExpr("var := var + var", IncLocalVariableNode.class);
+    incWithExpr("var := arg + var", IncLocalVariableNode.class);
   }
 
   @Test
@@ -134,4 +147,25 @@ public class IncrementOpTests extends AstTestSetup {
     inBlock("[ var := var - 234234 ]", -234234, IntIncNonLocalVariableNode.class);
   }
 
+  private void incWithExprInBlock(final String test, final Class<?> nodeType) {
+    addField("field");
+    SequenceNode seq = (SequenceNode) parseMethod(
+        "test: arg = ( | var | \n" + test + " )");
+
+    BlockNode block = (BlockNode) read(seq, "expressions", 0);
+    ExpressionNode testExpr =
+        read(block.getMethod().getInvokable(), "expressionOrSequence", ExpressionNode.class);
+    assertThat(testExpr, instanceOf(nodeType));
+  }
+
+  @Test
+  public void testNonLocalIncWithExpression() {
+    incWithExprInBlock("[ var := var + (23 + 434) ]", IncNonLocalVariableNode.class);
+    incWithExprInBlock("[ var := var + var ]", IncNonLocalVariableNode.class);
+    incWithExprInBlock("[ var := var + arg ]", IncNonLocalVariableNode.class);
+
+    incWithExprInBlock("[ var := (23 + 434) + var ]", IncNonLocalVariableNode.class);
+    incWithExprInBlock("[ var := var + var ]", IncNonLocalVariableNode.class);
+    incWithExprInBlock("[ var := arg + var ]", IncNonLocalVariableNode.class);
+  }
 }

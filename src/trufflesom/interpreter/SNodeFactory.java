@@ -4,7 +4,6 @@ import java.util.List;
 
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
-import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
@@ -13,8 +12,6 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
-import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SequenceNode;
@@ -69,11 +66,6 @@ public final class SNodeFactory {
     } else {
       return new NonLocalArgumentReadNode(variable, contextLevel).initialize(coord);
     }
-  }
-
-  public static LocalVariableWriteNode createLocalVariableWrite(
-      final Local var, final ExpressionNode exp, final long coord) {
-    return LocalVariableWriteNodeGen.create(var, exp).initialize(coord);
   }
 
   public static ExpressionNode createArgumentWrite(final Argument variable,
