@@ -51,11 +51,11 @@ public final class SNodeFactory {
 
       if (rcvr instanceof FieldReadNode
           && fieldIndex == ((FieldReadNode) rcvr).getFieldIndex()) {
-        return new UninitIncFieldNode(self, arg, fieldIndex, coord);
+        return new UninitIncFieldNode(self, arg, true, fieldIndex, coord);
       }
       if (arg instanceof FieldReadNode
           && fieldIndex == ((FieldReadNode) arg).getFieldIndex()) {
-        return new UninitIncFieldNode(self, rcvr, fieldIndex, coord);
+        return new UninitIncFieldNode(self, rcvr, false, fieldIndex, coord);
       }
     }
 
