@@ -34,7 +34,7 @@ import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
-import trufflesom.interpreter.supernodes.NonLocalVariableIncNode;
+import trufflesom.interpreter.supernodes.IntIncNonLocalVariableNode;
 import trufflesom.interpreter.supernodes.IntUninitIncFieldNode;
 import trufflesom.primitives.arithmetic.SubtractionPrim;
 import trufflesom.primitives.arrays.DoPrim;
@@ -374,8 +374,8 @@ public class AstInliningTests extends AstTestSetup {
     assertEquals("b", readNode.getInvocationIdentifier().getString());
     assertEquals(1, readNode.argumentIndex);
 
-    NonLocalVariableIncNode writeNode =
-        read(blockBIfTrue, "bodyNode", NonLocalVariableIncNode.class);
+    IntIncNonLocalVariableNode writeNode =
+        read(blockBIfTrue, "bodyNode", IntIncNonLocalVariableNode.class);
     assertEquals(1, writeNode.getContextLevel());
     assertEquals("l2", writeNode.getInvocationIdentifier().getString());
   }

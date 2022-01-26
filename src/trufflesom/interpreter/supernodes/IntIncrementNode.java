@@ -110,9 +110,9 @@ public abstract class IntIncrementNode extends ExpressionNode {
 
   public ExpressionNode createIncNode(final Local local, final int ctxLevel) {
     if (ctxLevel == 0) {
-      return LocalVariableIncNodeGen.create(local, incValue).initialize(sourceCoord);
+      return IntIncLocalVariableNodeGen.create(local, incValue).initialize(sourceCoord);
     }
-    return NonLocalVariableIncNodeGen.create(ctxLevel, local, incValue)
-                                     .initialize(sourceCoord);
+    return IntIncNonLocalVariableNodeGen.create(ctxLevel, local, incValue)
+                                        .initialize(sourceCoord);
   }
 }
