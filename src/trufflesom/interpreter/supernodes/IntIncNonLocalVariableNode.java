@@ -13,11 +13,11 @@ import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.NonLocalVariableNode;
 
 
-public abstract class NonLocalVariableIncNode extends NonLocalVariableNode {
+public abstract class IntIncNonLocalVariableNode extends NonLocalVariableNode {
 
   private final long incValue;
 
-  public NonLocalVariableIncNode(final int contextLevel, final Local local,
+  public IntIncNonLocalVariableNode(final int contextLevel, final Local local,
       final long incValue) {
     super(contextLevel, local);
     this.incValue = incValue;

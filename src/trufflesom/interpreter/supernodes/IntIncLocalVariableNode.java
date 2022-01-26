@@ -11,11 +11,11 @@ import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.LocalVariableNode;
 
 
-public abstract class LocalVariableIncNode extends LocalVariableNode {
+public abstract class IntIncLocalVariableNode extends LocalVariableNode {
 
   private final long incValue;
 
-  public LocalVariableIncNode(final Local variable, final long incValue) {
+  public IntIncLocalVariableNode(final Local variable, final long incValue) {
     super(variable);
     this.incValue = incValue;
   }

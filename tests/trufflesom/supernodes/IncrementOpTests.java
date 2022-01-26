@@ -13,8 +13,8 @@ import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.supernodes.IntUninitIncFieldNode;
-import trufflesom.interpreter.supernodes.LocalVariableIncNode;
-import trufflesom.interpreter.supernodes.NonLocalVariableIncNode;
+import trufflesom.interpreter.supernodes.IntIncLocalVariableNode;
+import trufflesom.interpreter.supernodes.IntIncNonLocalVariableNode;
 import trufflesom.interpreter.supernodes.UninitIncFieldNode;
 import trufflesom.tests.AstTestSetup;
 
@@ -106,10 +106,10 @@ public class IncrementOpTests extends AstTestSetup {
 
   @Test
   public void testLocalInc() {
-    basicAddOrSubtract("var := var + 1", 1, LocalVariableIncNode.class);
-    basicAddOrSubtract("var := var - 1", -1, LocalVariableIncNode.class);
-    basicAddOrSubtract("var := var + 1123", 1123, LocalVariableIncNode.class);
-    basicAddOrSubtract("var := var - 234234", -234234, LocalVariableIncNode.class);
+    basicAddOrSubtract("var := var + 1", 1, IntIncLocalVariableNode.class);
+    basicAddOrSubtract("var := var - 1", -1, IntIncLocalVariableNode.class);
+    basicAddOrSubtract("var := var + 1123", 1123, IntIncLocalVariableNode.class);
+    basicAddOrSubtract("var := var - 234234", -234234, IntIncLocalVariableNode.class);
   }
 
   private void inBlock(final String test, final long literalValue,
@@ -128,10 +128,10 @@ public class IncrementOpTests extends AstTestSetup {
 
   @Test
   public void testNonLocalInc() {
-    inBlock("[ var := var + 1 ]", 1, NonLocalVariableIncNode.class);
-    inBlock("[ var := var - 1 ]", -1, NonLocalVariableIncNode.class);
-    inBlock("[ var := var + 1123 ]", 1123, NonLocalVariableIncNode.class);
-    inBlock("[ var := var - 234234 ]", -234234, NonLocalVariableIncNode.class);
+    inBlock("[ var := var + 1 ]", 1, IntIncNonLocalVariableNode.class);
+    inBlock("[ var := var - 1 ]", -1, IntIncNonLocalVariableNode.class);
+    inBlock("[ var := var + 1123 ]", 1123, IntIncNonLocalVariableNode.class);
+    inBlock("[ var := var - 234234 ]", -234234, IntIncNonLocalVariableNode.class);
   }
 
 }
