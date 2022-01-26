@@ -22,16 +22,21 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
-import trufflesom.interpreter.supernodes.LocalVariableIncNodeGen;
+import trufflesom.interpreter.supernodes.IncLocalVariableNodeGen;
+import trufflesom.interpreter.supernodes.IncNonLocalVariableNodeGen;
+import trufflesom.interpreter.supernodes.IntIncLocalVariableNodeGen;
+import trufflesom.interpreter.supernodes.IntIncNonLocalVariableNodeGen;
 import trufflesom.interpreter.supernodes.LocalVariableReadSquareWriteNodeGen;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
-import trufflesom.interpreter.supernodes.NonLocalVariableIncNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalVariableReadSquareWriteNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNodeGen;
+import trufflesom.primitives.arithmetic.AdditionPrim;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SSymbol;
 
@@ -204,17 +209,17 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     @Override
     public ExpressionNode getIncNode(final int contextLevel, final long incValue,
         final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
-        return NonLocalVariableIncNodeGen.create(contextLevel, this, incValue)
-                                         .initialize(coord);
+        return IntIncNonLocalVariableNodeGen.create(contextLevel, this, incValue)
+                                            .initialize(coord);
       }
-      return LocalVariableIncNodeGen.create(this, incValue).initialize(coord);
+      return IntIncLocalVariableNodeGen.create(this, incValue).initialize(coord);
     }
 
     @Override
     public ExpressionNode getSquareNode(final int contextLevel, final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableSquareNodeGen.create(contextLevel, this).initialize(coord);
       }
@@ -249,10 +254,48 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
       transferToInterpreterAndInvalidate();
+
       if (contextLevel > 0) {
+        if (valueExpr instanceof AdditionPrim) {
+          AdditionPrim add = (AdditionPrim) valueExpr;
+          ExpressionNode rcvr = add.getReceiver();
+          ExpressionNode arg = add.getArgument();
+
+          if (rcvr instanceof NonLocalVariableReadNode
+              && ((NonLocalVariableReadNode) rcvr).getLocal() == this) {
+            return IncNonLocalVariableNodeGen.create(contextLevel, this, arg)
+                                             .initialize(coord);
+          }
+
+          if (arg instanceof NonLocalVariableReadNode
+              && ((NonLocalVariableReadNode) arg).getLocal() == this) {
+            return IncNonLocalVariableNodeGen.create(contextLevel, this, rcvr)
+                                             .initialize(coord);
+          }
+        }
+
         return NonLocalVariableWriteNodeGen.create(contextLevel, this, valueExpr)
                                            .initialize(coord);
       }
+
+      if (valueExpr instanceof AdditionPrim) {
+        AdditionPrim add = (AdditionPrim) valueExpr;
+        ExpressionNode rcvr = add.getReceiver();
+        ExpressionNode arg = add.getArgument();
+
+        if (rcvr instanceof LocalVariableReadNode
+            && ((LocalVariableReadNode) rcvr).getLocal() == this) {
+          return IncLocalVariableNodeGen.create(this, arg)
+                                        .initialize(coord);
+        }
+
+        if (arg instanceof LocalVariableReadNode
+            && ((LocalVariableReadNode) arg).getLocal() == this) {
+          return IncLocalVariableNodeGen.create(this, rcvr)
+                                        .initialize(coord);
+        }
+      }
+
       return LocalVariableWriteNodeGen.create(this, valueExpr).initialize(coord);
     }
 
