@@ -61,6 +61,11 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
+import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
+import trufflesom.interpreter.ubernodes.ListBenchmark.ListIsShorter;
+import trufflesom.interpreter.ubernodes.ListBenchmark.ListMakeList;
+import trufflesom.interpreter.ubernodes.ListBenchmark.ListTail;
+import trufflesom.interpreter.ubernodes.ListBenchmark.ListVerifyResult;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -214,23 +219,42 @@ public class MethodGenerationContext
     return assembleMethod(body, coord);
   }
 
+  private SMethod smethod(final AbstractInvokable invokable) {
+    return new SMethod(signature, invokable, embeddedBlockMethods.toArray(new SMethod[0]));
+  }
+
   protected SMethod assembleMethod(ExpressionNode body, final long coord) {
     String className = holderGenc.getName().getString();
-    if (className.equals("BenchmarkHarness")) {
-      if (signature.getString().equals("doRuns:")) {
+    String methodName = signature.getString();
+    Source source = holderGenc.getSource();
 
-        AbstractInvokable root = new BenchmarkHarnessDoRuns(holderGenc.getSource(), coord);
-        SMethod meth = new SMethod(signature, root,
-            embeddedBlockMethods.toArray(new SMethod[0]));
-        return meth;
+    if (className.equals("BenchmarkHarness")) {
+      if (methodName.equals("doRuns:")) {
+        return smethod(new BenchmarkHarnessDoRuns(source, coord));
       }
     } else if (className.equals("Benchmark")) {
-      if (signature.getString().equals("innerBenchmarkLoop:")) {
-        AbstractInvokable root =
-            new BenchmarkInnerBenchmarkLoop(holderGenc.getSource(), coord);
-        SMethod meth = new SMethod(signature, root,
-            embeddedBlockMethods.toArray(new SMethod[0]));
-        return meth;
+      if (methodName.equals("innerBenchmarkLoop:")) {
+        return smethod(new BenchmarkInnerBenchmarkLoop(source, coord));
+      }
+    } else if (className.equals("List")) {
+      if (methodName.equals("benchmark")) {
+        return smethod(new ListBenchmarkMethod(source, coord));
+      }
+
+      if (methodName.equals("verifyResult:")) {
+        return smethod(new ListVerifyResult(source, coord));
+      }
+
+      if (methodName.equals("makeList:")) {
+        return smethod(new ListMakeList(source, coord));
+      }
+
+      if (methodName.equals("isShorter:than:")) {
+        return smethod(new ListIsShorter(source, coord));
+      }
+
+      if (methodName.equals("tailWithX:withY:withZ:")) {
+        return smethod(new ListTail(source, coord));
       }
     }
 
@@ -239,7 +263,7 @@ public class MethodGenerationContext
     }
 
     Method truffleMethod =
-        new Method(getMethodIdentifier(), holderGenc.getSource(), coord,
+        new Method(getMethodIdentifier(), source, coord,
             body, currentScope, (ExpressionNode) body.deepCopy());
 
     SMethod meth = new SMethod(signature, truffleMethod,

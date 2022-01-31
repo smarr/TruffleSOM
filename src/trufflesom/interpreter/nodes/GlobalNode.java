@@ -78,6 +78,17 @@ public abstract class GlobalNode extends ExpressionNode
     return new UninitializedGlobalReadNode(globalName);
   }
 
+  public static Object sendUnknownGlobalToMethodRcvr(Object self, final SSymbol globalName) {
+    while (self instanceof SBlock) {
+      self = ((SBlock) self).getOuterSelf();
+    }
+
+    // if it is not defined, we will send a error message to the current
+    // receiver object
+
+    return SAbstractObject.sendUnknownGlobal(self, globalName);
+  }
+
   protected final SSymbol globalName;
 
   public GlobalNode(final SSymbol globalName) {
@@ -144,14 +155,7 @@ public abstract class GlobalNode extends ExpressionNode
 
       // find outer self
       Object self = frame.getArguments()[0];
-      while (self instanceof SBlock) {
-        self = ((SBlock) self).getOuterSelf();
-      }
-
-      // if it is not defined, we will send a error message to the current
-      // receiver object
-
-      return SAbstractObject.sendUnknownGlobal(self, globalName);
+      return sendUnknownGlobalToMethodRcvr(self, globalName);
     }
 
     @Override

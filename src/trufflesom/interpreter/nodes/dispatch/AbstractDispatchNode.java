@@ -15,7 +15,6 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.inlining.nodes.WithSource;
 import bd.source.SourceCoordinate;
 import tools.nodestats.Tags.AnyNode;
-import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.vm.VmSettings;
 
 
@@ -94,15 +93,15 @@ public abstract class AbstractDispatchNode extends Node
 
   @Override
   public SourceSection getSourceSection() {
-    AbstractMessageSendNode send = getSendNode();
+    WithSource send = getSendNode();
     return SourceCoordinate.createSourceSection(send, send.getSourceCoordinate());
   }
 
-  protected AbstractMessageSendNode getSendNode() {
+  protected WithSource getSendNode() {
     Node i = this;
     while (i.getParent() instanceof AbstractDispatchNode) {
       i = i.getParent();
     }
-    return (AbstractMessageSendNode) i.getParent();
+    return (WithSource) i.getParent();
   }
 }
