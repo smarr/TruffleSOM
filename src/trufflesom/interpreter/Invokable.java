@@ -2,23 +2,17 @@ package trufflesom.interpreter;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.source.SourceSection;
 
-import bd.inlining.nodes.WithSource;
 import bd.primitives.nodes.PreevaluatedExpression;
-import bd.source.SourceCoordinate;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
-public abstract class Invokable extends RootNode implements WithSource {
+public abstract class Invokable extends AbstractInvokable {
   protected final String name;
-  protected final Source source;
-  protected final long   sourceCoord;
 
   @Child protected ExpressionNode expressionOrSequence;
 
@@ -30,43 +24,15 @@ public abstract class Invokable extends RootNode implements WithSource {
       final FrameDescriptor frameDescriptor,
       final ExpressionNode expressionOrSequence,
       final ExpressionNode uninitialized) {
-    super(SomLanguage.getCurrent(), frameDescriptor);
+    super(frameDescriptor, source, sourceCoord);
     this.name = name;
-    this.source = source;
-    this.sourceCoord = sourceCoord;
     this.uninitializedBody = uninitialized;
     this.expressionOrSequence = expressionOrSequence;
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public Invokable initialize(final long sourceCoord) {
-    throw new UnsupportedOperationException();
   }
 
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public Source getSource() {
-    return source;
-  }
-
-  @Override
-  public boolean hasSource() {
-    return true;
-  }
-
-  @Override
-  public long getSourceCoordinate() {
-    return sourceCoord;
-  }
-
-  @Override
-  public SourceSection getSourceSection() {
-    return SourceCoordinate.createSourceSection(source, sourceCoord);
   }
 
   @Override

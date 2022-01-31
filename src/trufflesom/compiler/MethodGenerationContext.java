@@ -51,6 +51,7 @@ import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.AbstractInvokable;
 import trufflesom.interpreter.LexicalScope;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -58,6 +59,7 @@ import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -212,6 +214,15 @@ public class MethodGenerationContext
   }
 
   protected SMethod assembleMethod(ExpressionNode body, final long coord) {
+    if (holderGenc != null && holderGenc.getName().getString().equals("BenchmarkHarness") &&
+        signature.getString().equals("doRuns:")) {
+
+      AbstractInvokable root = new BenchmarkHarnessDoRuns(holderGenc.getSource(), coord);
+      SMethod meth = new SMethod(signature, root,
+          embeddedBlockMethods.toArray(new SMethod[0]));
+      return meth;
+    }
+
     if (needsToCatchNonLocalReturn()) {
       body = createCatchNonLocalReturn(body, getFrameOnStackMarker(coord));
     }

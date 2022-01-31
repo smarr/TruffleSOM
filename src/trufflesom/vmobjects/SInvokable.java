@@ -39,13 +39,14 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.AbstractInvokable;
 import trufflesom.interpreter.Invokable;
 import trufflesom.vm.Classes;
 
 
 public abstract class SInvokable extends SAbstractObject {
 
-  public SInvokable(final SSymbol signature, final Invokable invokable) {
+  public SInvokable(final SSymbol signature, final AbstractInvokable invokable) {
     this.signature = signature;
     this.invokable = invokable;
   }
@@ -53,7 +54,7 @@ public abstract class SInvokable extends SAbstractObject {
   public static final class SMethod extends SInvokable {
     private final SMethod[] embeddedBlocks;
 
-    public SMethod(final SSymbol signature, final Invokable invokable,
+    public SMethod(final SSymbol signature, final AbstractInvokable invokable,
         final SMethod[] embeddedBlocks) {
       super(signature, invokable);
       this.embeddedBlocks = embeddedBlocks;
@@ -137,7 +138,7 @@ public abstract class SInvokable extends SAbstractObject {
     return ct;
   }
 
-  public final Invokable getInvokable() {
+  public final AbstractInvokable getInvokable() {
     return invokable;
   }
 
@@ -180,8 +181,8 @@ public abstract class SInvokable extends SAbstractObject {
 
   public abstract String getIdentifier();
 
-  protected final Invokable invokable;
-  protected final SSymbol   signature;
+  protected final AbstractInvokable invokable;
+  protected final SSymbol           signature;
 
   @CompilationFinal protected SClass holder;
 
