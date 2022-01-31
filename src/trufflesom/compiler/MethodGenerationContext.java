@@ -62,6 +62,8 @@ import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
+import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
+import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListIsShorter;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListMakeList;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListTail;
@@ -255,6 +257,14 @@ public class MethodGenerationContext
 
       if (methodName.equals("tailWithX:withY:withZ:")) {
         return smethod(new ListTail(source, coord));
+      }
+    } else if (className.equals("ListElement")) {
+      if (methodName.equals("length")) {
+        return smethod(new ListElementLength(source, coord));
+      }
+
+      if (holderGenc.isClassSide() && methodName.equals("new:")) {
+        return smethod(new ListElementNew(source, coord));
       }
     }
 

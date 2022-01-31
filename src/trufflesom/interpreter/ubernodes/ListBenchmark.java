@@ -10,10 +10,16 @@ import trufflesom.interpreter.AbstractInvokable;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.primitives.basics.NewObjectPrim;
+import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.vm.Globals;
 import trufflesom.vm.Globals.Association;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SClass;
+import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -233,6 +239,63 @@ public abstract class ListBenchmark {
       }
 
       return z;
+    }
+  }
+
+  /**
+   * <pre>
+   * length = ( next isNil ifTrue: [ ^1 ] ifFalse: [ ^(1 + next length) ] )
+   * </pre>
+   */
+  public static final class ListElementLength extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readNext;
+    @Child private AbstractDispatchNode  dispatchLength;
+
+    public ListElementLength(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readNext = FieldAccessorNode.createRead(1);
+      dispatchLength = new UninitializedDispatchNode(SymbolTable.symbolFor("length"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      Object next = readNext.read(rcvr);
+      if (next == Nil.nilObject) {
+        return 1L;
+      }
+
+      return 1L + (Long) dispatchLength.executeDispatch(
+          frame, new Object[] {readNext.read(rcvr)});
+    }
+  }
+
+  /**
+   * <pre>
+   * new: n = ( ^super new val: n )
+   * </pre>
+   */
+  public static final class ListElementNew extends AbstractInvokable {
+    @Child private NewObjectPrim        newPrim;
+    @Child private AbstractDispatchNode dispatchVal;
+
+    public ListElementNew(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      newPrim = NewObjectPrimFactory.create(null);
+      dispatchVal = new UninitializedDispatchNode(SymbolTable.symbolFor("val:"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SClass clazz = (SClass) args[0];
+      Object n = args[1];
+
+      Object newObj = newPrim.executeEvaluated(frame, clazz);
+      return dispatchVal.executeDispatch(frame, new Object[] {newObj, n});
     }
   }
 }
