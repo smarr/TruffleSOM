@@ -85,7 +85,6 @@ public class BenchmarkHarnessDoRuns extends AbstractInvokable {
     long total = 0;
 
     while (true) {
-      System.out.print(".");
       long numIterations;
 
       try {
