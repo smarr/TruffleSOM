@@ -70,4 +70,9 @@ public abstract class AbstractInvokable extends RootNode implements WithSource {
   public final SourceSection getSourceSection() {
     return SourceCoordinate.createSourceSection(source, sourceCoord);
   }
+
+  @Override
+  public boolean isCloningAllowed() {
+    return false;
+  }
 }

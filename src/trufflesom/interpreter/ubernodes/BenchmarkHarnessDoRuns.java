@@ -45,7 +45,7 @@ import trufflesom.vmobjects.SObject;
     )
  * </pre>
  */
-public class BenchmarkHarnessDoRuns extends AbstractInvokable {
+public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
 
   @Child private AbstractReadFieldNode readNumIterations;
   @Child private AbstractReadFieldNode readInnerIterations;
@@ -159,10 +159,5 @@ public class BenchmarkHarnessDoRuns extends AbstractInvokable {
   @Override
   public String getName() {
     return getClass().getSimpleName();
-  }
-
-  @Override
-  public final boolean isCloningAllowed() {
-    return false;
   }
 }

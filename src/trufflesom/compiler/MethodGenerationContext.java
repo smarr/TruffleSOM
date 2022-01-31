@@ -60,6 +60,7 @@ import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
+import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -214,13 +215,23 @@ public class MethodGenerationContext
   }
 
   protected SMethod assembleMethod(ExpressionNode body, final long coord) {
-    if (holderGenc != null && holderGenc.getName().getString().equals("BenchmarkHarness") &&
-        signature.getString().equals("doRuns:")) {
+    String className = holderGenc.getName().getString();
+    if (className.equals("BenchmarkHarness")) {
+      if (signature.getString().equals("doRuns:")) {
 
-      AbstractInvokable root = new BenchmarkHarnessDoRuns(holderGenc.getSource(), coord);
-      SMethod meth = new SMethod(signature, root,
-          embeddedBlockMethods.toArray(new SMethod[0]));
-      return meth;
+        AbstractInvokable root = new BenchmarkHarnessDoRuns(holderGenc.getSource(), coord);
+        SMethod meth = new SMethod(signature, root,
+            embeddedBlockMethods.toArray(new SMethod[0]));
+        return meth;
+      }
+    } else if (className.equals("Benchmark")) {
+      if (signature.getString().equals("innerBenchmarkLoop:")) {
+        AbstractInvokable root =
+            new BenchmarkInnerBenchmarkLoop(holderGenc.getSource(), coord);
+        SMethod meth = new SMethod(signature, root,
+            embeddedBlockMethods.toArray(new SMethod[0]));
+        return meth;
+      }
     }
 
     if (needsToCatchNonLocalReturn()) {
