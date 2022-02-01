@@ -428,6 +428,17 @@ public abstract class StorageLocation {
     }
 
     @Override
+    public long readLongSafe(final SObject obj) {
+      if (isSet(obj)) {
+        // perhaps we should use the unsafe operations as for doubles
+        return obj.getExtendedPrimFields()[extensionIndex];
+      } else {
+        TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
+        throw new UnsupportedOperationException();
+      }
+    }
+
+    @Override
     public void write(final SObject obj, final Object value) {
       assert value != null;
       if (value instanceof Long) {
