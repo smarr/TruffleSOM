@@ -199,11 +199,13 @@ public abstract class MandelbrotBenchmark {
     private final FrameSlot bitNumSlot;
     private final FrameSlot sumSlot;
 
+    private final FrameSlot ySlot;
+
     private MandelbrotMandelbrot(final Source source, final long sourceCoord,
         final FrameDescriptor fd, final FrameSlot notDone, final FrameSlot escape,
         final FrameSlot cr, final FrameSlot z, final FrameSlot zi, final FrameSlot zizi,
         final FrameSlot zrzr, final FrameSlot ci, final FrameSlot x, final FrameSlot byteAcc,
-        final FrameSlot bitNum, final FrameSlot sum) {
+        final FrameSlot bitNum, final FrameSlot sum, final FrameSlot y) {
       super(fd, source, sourceCoord);
       this.notDoneSlot = notDone;
       this.escapeSlot = escape;
@@ -221,6 +223,7 @@ public abstract class MandelbrotBenchmark {
       this.bitNumSlot = bitNum;
       this.sumSlot = sum;
 
+      this.ySlot = y;
     }
 
     public static MandelbrotMandelbrot create(final Source source, final long sourceCoord) {
@@ -241,34 +244,41 @@ public abstract class MandelbrotBenchmark {
       FrameSlot bitNum = fd.addFrameSlot("bitNum");
       FrameSlot sum = fd.addFrameSlot("sum");
 
+      FrameSlot y = fd.addFrameSlot("y");
+
       return new MandelbrotMandelbrot(source, sourceCoord, fd, notDoneSlot, escapeSlot,
-          crSlot, z, zi, zizi, zrzr, ci, x, byteAcc, bitNum, sum);
+          crSlot, z, zi, zizi, zrzr, ci, x, byteAcc, bitNum, sum, y);
     }
 
     @Override
     public Object execute(final VirtualFrame frame) {
       Object[] args = frame.getArguments();
-      final long size = (Long) args[1];
 
       frame.setLong(sumSlot, 0);
       frame.setLong(byteAccSlot, 0);
       frame.setLong(bitNumSlot, 0);
 
-      long y = 0;
+      frame.setLong(ySlot, 0);
 
-      while (y < size) {
+      while (true) {
+        final long size = (Long) args[1];
+        final long y = FrameUtil.getLongSafe(frame, ySlot);
+        if (!(y < size)) {
+          break;
+        }
         frame.setDouble(ciSlot, (2.0 * y / size) - 1.0);
 
         xLoop(frame);
 
         try {
-          y = Math.addExact(y, 1);
+          frame.setLong(ySlot, Math.addExact(y, 1));
         } catch (ArithmeticException e) {
           CompilerDirectives.transferToInterpreterAndInvalidate();
           throw new NotYetImplementedException();
         }
       }
 
+      final long size = (Long) args[1];
       LoopNode.reportLoopCount(this, (int) size);
 
       return FrameUtil.getLongSafe(frame, sumSlot);
@@ -312,10 +322,11 @@ public abstract class MandelbrotBenchmark {
     }
 
     private void xLoop(final VirtualFrame frame) {
-      long x = 0;
+      frame.setLong(xSlot, 0);
 
       while (true) {
         final long size = (Long) frame.getArguments()[1];
+        final long x = FrameUtil.getLongSafe(frame, xSlot);
 
         if (!(x < size)) {
           break;
@@ -387,7 +398,7 @@ public abstract class MandelbrotBenchmark {
         }
 
         try {
-          x = Math.addExact(x, 1);
+          frame.setLong(xSlot, Math.addExact(x, 1));
         } catch (ArithmeticException e) {
           CompilerDirectives.transferToInterpreterAndInvalidate();
           throw new NotYetImplementedException();
