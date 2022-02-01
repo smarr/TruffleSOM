@@ -196,9 +196,14 @@ if args.use_libgraal:
 classpath = (BASE_DIR + '/build/classes:'
            + BASE_DIR + '/libs/black-diamonds/build/classes')
 
-BOOT_CLASSPATH = ('-Xbootclasspath/a:'
-             + TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar:'
+BOOT_CLASSPATH_ELEMENTS = (
+             TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar:'
              + TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar')
+
+BOOT_CLASSPATH = '-Xbootclasspath/a:' + BOOT_CLASSPATH_ELEMENTS
+
+if args.interpreter:
+  classpath += ':' + BOOT_CLASSPATH_ELEMENTS
 
 if args.use_libgraal:
   GRAAL_JAVA_8_FLAGS = ['-XX:+UseJVMCICompiler', '-XX:+UseJVMCINativeLibrary',
@@ -352,9 +357,9 @@ if 'Havlak' in args.args:
   JAVA_ARGS += ['-Xss3072k']
 
 if not args.interpreter:
-    flags += ['-DCompilationFailureAction=ExitVM']
+    flags = [BOOT_CLASSPATH] + flags + ['-DCompilationFailureAction=ExitVM']
 
-all_args = JAVA_ARGS + ['-classpath', classpath] + [BOOT_CLASSPATH] + flags + SOM_ARGS + unknown_args + args.args
+all_args = JAVA_ARGS + ['-classpath', classpath] + flags + SOM_ARGS + unknown_args + args.args
 
 if args.verbose:
     print "CMD: " + java_bin + ' ' + ' '.join(all_args)
