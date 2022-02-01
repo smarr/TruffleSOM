@@ -87,7 +87,7 @@ public abstract class MandelbrotBenchmark {
       }
 
       dispatchPrintln.executeDispatch(frame, new Object[] {
-          "No verification result for " + innerIterations + " found"});
+          stringAdd("No verification result for ", innerIterations, " found")});
       dispatchPrintln.executeDispatch(frame, new Object[] {
           stringAdd("Result is: ",
               (String) dispatchAsString.executeDispatch(frame, new Object[] {result}))});
@@ -98,6 +98,11 @@ public abstract class MandelbrotBenchmark {
     @TruffleBoundary
     private static String stringAdd(final String a, final String b) {
       return a + b;
+    }
+
+    @TruffleBoundary
+    private static String stringAdd(final String a, final long b, final String c) {
+      return a + b + c;
     }
   }
 
