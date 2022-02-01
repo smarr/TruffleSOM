@@ -31,6 +31,8 @@ public abstract class StorageLocation {
   public interface LongStorageLocation {
     long readLong(SObject obj) throws UnexpectedResultException;
 
+    long readLongSafe(SObject obj);
+
     void writeLong(SObject obj, long value);
   }
 
@@ -338,6 +340,16 @@ public abstract class StorageLocation {
       } else {
         TruffleCompiler.transferToInterpreter("unstabelized read node");
         throw new UnexpectedResultException(Nil.nilObject);
+      }
+    }
+
+    @Override
+    public long readLongSafe(final SObject obj) {
+      if (isSet(obj)) {
+        return unsafe.getLong(obj, fieldMemoryOffset);
+      } else {
+        TruffleCompiler.transferToInterpreter("unstabelized read node");
+        throw new UnsupportedOperationException();
       }
     }
 

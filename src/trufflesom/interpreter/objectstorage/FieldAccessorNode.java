@@ -52,6 +52,10 @@ public abstract class FieldAccessorNode extends Node {
       return TypesGen.expectLong(read(obj));
     }
 
+    public long readLongSafe(final SObject obj) {
+      throw new UnsupportedOperationException();
+    }
+
     public double readDouble(final SObject obj) throws UnexpectedResultException {
       return TypesGen.expectDouble(read(obj));
     }
@@ -84,6 +88,12 @@ public abstract class FieldAccessorNode extends Node {
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
       return specializeAndRead(obj, "uninitalized node",
+          new UninitializedReadFieldNode(fieldIndex));
+    }
+
+    @Override
+    public long readLongSafe(final SObject obj) {
+      return (Long) specializeAndRead(obj, "uninitalized node",
           new UninitializedReadFieldNode(fieldIndex));
     }
   }
@@ -141,6 +151,19 @@ public abstract class FieldAccessorNode extends Node {
         final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
       this.storage = (LongStorageLocation) layout.getStorageLocation(fieldIndex);
+    }
+
+    @Override
+    public long readLongSafe(final SObject obj) {
+      try {
+        if (hasExpectedLayout(obj)) {
+          return storage.readLongSafe(obj);
+        } else {
+          return respecializedNodeOrNext(obj).readLongSafe(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        return replace(SOMNode.unwrapIfNeeded(nextInCache)).readLongSafe(obj);
+      }
     }
 
     @Override
