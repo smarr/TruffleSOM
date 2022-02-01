@@ -194,10 +194,16 @@ public abstract class MandelbrotBenchmark {
 
     private final FrameSlot ciSlot;
 
+    private final FrameSlot xSlot;
+    private final FrameSlot byteAccSlot;
+    private final FrameSlot bitNumSlot;
+    private final FrameSlot sumSlot;
+
     private MandelbrotMandelbrot(final Source source, final long sourceCoord,
         final FrameDescriptor fd, final FrameSlot notDone, final FrameSlot escape,
         final FrameSlot cr, final FrameSlot z, final FrameSlot zi, final FrameSlot zizi,
-        final FrameSlot zrzr, final FrameSlot ci) {
+        final FrameSlot zrzr, final FrameSlot ci, final FrameSlot x, final FrameSlot byteAcc,
+        final FrameSlot bitNum, final FrameSlot sum) {
       super(fd, source, sourceCoord);
       this.notDoneSlot = notDone;
       this.escapeSlot = escape;
@@ -209,6 +215,12 @@ public abstract class MandelbrotBenchmark {
       this.zrzrSlot = zrzr;
 
       this.ciSlot = ci;
+
+      this.xSlot = x;
+      this.byteAccSlot = byteAcc;
+      this.bitNumSlot = bitNum;
+      this.sumSlot = sum;
+
     }
 
     public static MandelbrotMandelbrot create(final Source source, final long sourceCoord) {
@@ -224,8 +236,13 @@ public abstract class MandelbrotBenchmark {
 
       FrameSlot ci = fd.addFrameSlot("ci");
 
+      FrameSlot x = fd.addFrameSlot("x");
+      FrameSlot byteAcc = fd.addFrameSlot("byteAcc");
+      FrameSlot bitNum = fd.addFrameSlot("bitNum");
+      FrameSlot sum = fd.addFrameSlot("sum");
+
       return new MandelbrotMandelbrot(source, sourceCoord, fd, notDoneSlot, escapeSlot,
-          crSlot, z, zi, zizi, zrzr, ci);
+          crSlot, z, zi, zizi, zrzr, ci, x, byteAcc, bitNum, sum);
     }
 
     @Override
@@ -233,87 +250,16 @@ public abstract class MandelbrotBenchmark {
       Object[] args = frame.getArguments();
       final long size = (Long) args[1];
 
-      long sum = 0;
-      long byteAcc = 0;
-      long bitNum = 0;
+      frame.setLong(sumSlot, 0);
+      frame.setLong(byteAccSlot, 0);
+      frame.setLong(bitNumSlot, 0);
 
       long y = 0;
 
       while (y < size) {
         frame.setDouble(ciSlot, (2.0 * y / size) - 1.0);
-        long x = 0;
 
-        while (x < size) {
-          frame.setDouble(zrzrSlot, 0.0);
-          frame.setDouble(ziziSlot, 0.0);
-          frame.setDouble(ziSlot, 0.0);
-
-          frame.setDouble(crSlot, (2.0 * x / size) - 1.5);
-          frame.setLong(zSlot, 0);
-
-          frame.setBoolean(notDoneSlot, true);
-          frame.setLong(escapeSlot, 0);
-
-          zLoop(frame);
-
-          if (Long.SIZE - Long.numberOfLeadingZeros(byteAcc) + 1 > Long.SIZE - 1) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            throw new ArithmeticException("shift overflows long");
-          }
-
-          try {
-            byteAcc = Math.addExact(byteAcc << 1, FrameUtil.getLongSafe(frame, escapeSlot));
-          } catch (ArithmeticException e) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            throw new NotYetImplementedException();
-          }
-
-          try {
-            bitNum = Math.addExact(bitNum, 1);
-          } catch (ArithmeticException e) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            throw new NotYetImplementedException();
-          }
-
-          if (bitNum == 8) {
-            sum = sum ^ byteAcc;
-            byteAcc = 0;
-            bitNum = 0;
-          } else {
-            long sizeM1;
-            try {
-              sizeM1 = Math.subtractExact(size, 1);
-            } catch (ArithmeticException e) {
-              CompilerDirectives.transferToInterpreterAndInvalidate();
-              throw new NotYetImplementedException();
-            }
-
-            if (x == sizeM1) {
-              long remainingBits;
-              try {
-                remainingBits = Math.subtractExact(8, bitNum);
-              } catch (ArithmeticException e) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                throw new NotYetImplementedException();
-              }
-
-              byteAcc = byteAcc << remainingBits;
-
-              sum = sum ^ byteAcc;
-              byteAcc = 0;
-              bitNum = 0;
-            }
-          }
-
-          try {
-            x = Math.addExact(x, 1);
-          } catch (ArithmeticException e) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            throw new NotYetImplementedException();
-          }
-        }
-
-        LoopNode.reportLoopCount(this, (int) size);
+        xLoop(frame);
 
         try {
           y = Math.addExact(y, 1);
@@ -325,7 +271,7 @@ public abstract class MandelbrotBenchmark {
 
       LoopNode.reportLoopCount(this, (int) size);
 
-      return sum;
+      return FrameUtil.getLongSafe(frame, sumSlot);
     }
 
     public void zLoop(final VirtualFrame frame) {
@@ -363,6 +309,97 @@ public abstract class MandelbrotBenchmark {
       }
 
       LoopNode.reportLoopCount(this, 50);
+    }
+
+    private void xLoop(final VirtualFrame frame) {
+      long x = 0;
+
+      while (true) {
+        final long size = (Long) frame.getArguments()[1];
+
+        if (!(x < size)) {
+          break;
+        }
+
+        long byteAcc = FrameUtil.getLongSafe(frame, byteAccSlot);
+        long bitNum = FrameUtil.getLongSafe(frame, bitNumSlot);
+        long sum = FrameUtil.getLongSafe(frame, sumSlot);
+
+        frame.setDouble(zrzrSlot, 0.0);
+        frame.setDouble(ziziSlot, 0.0);
+        frame.setDouble(ziSlot, 0.0);
+
+        frame.setDouble(crSlot, (2.0 * x / size) - 1.5);
+        frame.setLong(zSlot, 0);
+
+        frame.setBoolean(notDoneSlot, true);
+        frame.setLong(escapeSlot, 0);
+
+        zLoop(frame);
+
+        if (Long.SIZE - Long.numberOfLeadingZeros(byteAcc) + 1 > Long.SIZE - 1) {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+          throw new ArithmeticException("shift overflows long");
+        }
+
+        try {
+          byteAcc = Math.addExact(byteAcc << 1, FrameUtil.getLongSafe(frame, escapeSlot));
+        } catch (ArithmeticException e) {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+          throw new NotYetImplementedException();
+        }
+
+        try {
+          bitNum = Math.addExact(bitNum, 1);
+        } catch (ArithmeticException e) {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+          throw new NotYetImplementedException();
+        }
+
+        if (bitNum == 8) {
+          sum = sum ^ byteAcc;
+          byteAcc = 0;
+          bitNum = 0;
+        } else {
+          long sizeM1;
+          try {
+            sizeM1 = Math.subtractExact(size, 1);
+          } catch (ArithmeticException e) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            throw new NotYetImplementedException();
+          }
+
+          if (x == sizeM1) {
+            long remainingBits;
+            try {
+              remainingBits = Math.subtractExact(8, bitNum);
+            } catch (ArithmeticException e) {
+              CompilerDirectives.transferToInterpreterAndInvalidate();
+              throw new NotYetImplementedException();
+            }
+
+            byteAcc = byteAcc << remainingBits;
+
+            sum = sum ^ byteAcc;
+            byteAcc = 0;
+            bitNum = 0;
+          }
+        }
+
+        try {
+          x = Math.addExact(x, 1);
+        } catch (ArithmeticException e) {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+          throw new NotYetImplementedException();
+        }
+
+        frame.setLong(byteAccSlot, byteAcc);
+        frame.setLong(bitNumSlot, bitNum);
+        frame.setLong(sumSlot, sum);
+      }
+
+      final long size = (Long) frame.getArguments()[1];
+      LoopNode.reportLoopCount(this, (int) size);
     }
   }
 }
