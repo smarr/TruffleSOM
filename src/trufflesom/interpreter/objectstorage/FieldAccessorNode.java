@@ -94,6 +94,7 @@ public abstract class FieldAccessorNode extends Node {
 
     @Override
     public long readLongSafe(final SObject obj) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       return (Long) specializeAndRead(obj, "uninitalized node",
           new UninitializedReadFieldNode(fieldIndex));
     }
