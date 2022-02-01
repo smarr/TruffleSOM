@@ -1,6 +1,7 @@
 package trufflesom.interpreter.ubernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.Source;
@@ -88,9 +89,15 @@ public abstract class MandelbrotBenchmark {
       dispatchPrintln.executeDispatch(frame, new Object[] {
           "No verification result for " + innerIterations + " found"});
       dispatchPrintln.executeDispatch(frame, new Object[] {
-          "Result is: " + dispatchAsString.executeDispatch(frame, new Object[] {result})});
+          stringAdd("Result is: ",
+              (String) dispatchAsString.executeDispatch(frame, new Object[] {result}))});
 
       return false;
+    }
+
+    @TruffleBoundary
+    private static String stringAdd(final String a, final String b) {
+      return a + b;
     }
   }
 
