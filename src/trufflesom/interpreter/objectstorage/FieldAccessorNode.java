@@ -53,6 +53,7 @@ public abstract class FieldAccessorNode extends Node {
     }
 
     public long readLongSafe(final SObject obj) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       throw new UnsupportedOperationException();
     }
 
