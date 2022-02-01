@@ -82,6 +82,10 @@ public abstract class MandelbrotBenchmark {
         return result == 15;
       }
 
+      if (innerIterations == 1000) {
+        return result == 101;
+      }
+
       if (innerIterations == 750) {
         return result == 50;
       }
