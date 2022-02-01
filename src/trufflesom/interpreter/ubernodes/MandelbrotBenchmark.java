@@ -192,10 +192,12 @@ public abstract class MandelbrotBenchmark {
     private final FrameSlot ziziSlot;
     private final FrameSlot zrzrSlot;
 
+    private final FrameSlot ciSlot;
+
     private MandelbrotMandelbrot(final Source source, final long sourceCoord,
         final FrameDescriptor fd, final FrameSlot notDone, final FrameSlot escape,
         final FrameSlot cr, final FrameSlot z, final FrameSlot zi, final FrameSlot zizi,
-        final FrameSlot zrzr) {
+        final FrameSlot zrzr, final FrameSlot ci) {
       super(fd, source, sourceCoord);
       this.notDoneSlot = notDone;
       this.escapeSlot = escape;
@@ -205,6 +207,8 @@ public abstract class MandelbrotBenchmark {
       this.ziSlot = zi;
       this.ziziSlot = zizi;
       this.zrzrSlot = zrzr;
+
+      this.ciSlot = ci;
     }
 
     public static MandelbrotMandelbrot create(final Source source, final long sourceCoord) {
@@ -217,8 +221,11 @@ public abstract class MandelbrotBenchmark {
       FrameSlot zi = fd.addFrameSlot("zi");
       FrameSlot zizi = fd.addFrameSlot("zizi");
       FrameSlot zrzr = fd.addFrameSlot("zrzr");
+
+      FrameSlot ci = fd.addFrameSlot("ci");
+
       return new MandelbrotMandelbrot(source, sourceCoord, fd, notDoneSlot, escapeSlot,
-          crSlot, z, zi, zizi, zrzr);
+          crSlot, z, zi, zizi, zrzr, ci);
     }
 
     @Override
@@ -233,7 +240,7 @@ public abstract class MandelbrotBenchmark {
       long y = 0;
 
       while (y < size) {
-        double ci = (2.0 * y / size) - 1.0;
+        frame.setDouble(ciSlot, (2.0 * y / size) - 1.0);
         long x = 0;
 
         while (x < size) {
@@ -247,39 +254,7 @@ public abstract class MandelbrotBenchmark {
           frame.setBoolean(notDoneSlot, true);
           frame.setLong(escapeSlot, 0);
 
-          while (true) {
-            final boolean notDone = FrameUtil.getBooleanSafe(frame, notDoneSlot);
-            final long z = FrameUtil.getLongSafe(frame, zSlot);
-            if (!(notDone && z < 50)) {
-              break;
-            }
-
-            double zr = FrameUtil.getDoubleSafe(frame, zrzrSlot)
-                - FrameUtil.getDoubleSafe(frame, ziziSlot)
-                + FrameUtil.getDoubleSafe(frame, crSlot);
-            final double zi = 2.0 * zr * FrameUtil.getDoubleSafe(frame, ziSlot) + ci;
-            frame.setDouble(ziSlot, zi);
-
-            // preserve recalulation
-            final double zrzr = zr * zr;
-            final double zizi = zi * zi;
-            frame.setDouble(zrzrSlot, zrzr);
-            frame.setDouble(ziziSlot, zizi);
-
-            if (zrzr + zizi > 4.0) {
-              frame.setBoolean(notDoneSlot, false);
-              frame.setLong(escapeSlot, 1);
-            }
-
-            try {
-              frame.setLong(zSlot, Math.addExact(z, 1));
-            } catch (ArithmeticException e) {
-              CompilerDirectives.transferToInterpreterAndInvalidate();
-              throw new NotYetImplementedException();
-            }
-          }
-
-          LoopNode.reportLoopCount(this, 50);
+          zLoop(frame);
 
           if (Long.SIZE - Long.numberOfLeadingZeros(byteAcc) + 1 > Long.SIZE - 1) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -351,6 +326,43 @@ public abstract class MandelbrotBenchmark {
       LoopNode.reportLoopCount(this, (int) size);
 
       return sum;
+    }
+
+    public void zLoop(final VirtualFrame frame) {
+      while (true) {
+        final boolean notDone = FrameUtil.getBooleanSafe(frame, notDoneSlot);
+        final long z = FrameUtil.getLongSafe(frame, zSlot);
+        if (!(notDone && z < 50)) {
+          break;
+        }
+
+        double zr = FrameUtil.getDoubleSafe(frame, zrzrSlot)
+            - FrameUtil.getDoubleSafe(frame, ziziSlot)
+            + FrameUtil.getDoubleSafe(frame, crSlot);
+        final double zi = 2.0 * zr * FrameUtil.getDoubleSafe(frame, ziSlot)
+            + FrameUtil.getDoubleSafe(frame, ciSlot);
+        frame.setDouble(ziSlot, zi);
+
+        // preserve recalulation
+        final double zrzr = zr * zr;
+        final double zizi = zi * zi;
+        frame.setDouble(zrzrSlot, zrzr);
+        frame.setDouble(ziziSlot, zizi);
+
+        if (zrzr + zizi > 4.0) {
+          frame.setBoolean(notDoneSlot, false);
+          frame.setLong(escapeSlot, 1);
+        }
+
+        try {
+          frame.setLong(zSlot, Math.addExact(z, 1));
+        } catch (ArithmeticException e) {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+          throw new NotYetImplementedException();
+        }
+      }
+
+      LoopNode.reportLoopCount(this, 50);
     }
   }
 }
