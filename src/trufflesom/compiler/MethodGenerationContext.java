@@ -63,7 +63,6 @@ import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
-import trufflesom.interpreter.ubernodes.BounceBenchmark.BallNew;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
@@ -74,6 +73,7 @@ import trufflesom.interpreter.ubernodes.ListBenchmark.ListVerifyResult;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotMandelbrot;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotVerifyInner;
+import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -286,7 +286,7 @@ public class MethodGenerationContext
       }
     } else if (className.equals("Ball")) {
       if (holderGenc.isClassSide() && methodName.equals("new")) {
-        return smethod(new BallNew(source, coord));
+        return smethod(new SuperNewInit(source, coord));
       }
 
       if (methodName.equals("initialize")) {
@@ -295,6 +295,10 @@ public class MethodGenerationContext
 
       if (methodName.equals("bounce")) {
         return smethod(new BallBounce(source, coord));
+      }
+    } else if (className.equals("Random")) {
+      if (holderGenc.isClassSide() && methodName.equals("new")) {
+        return smethod(new SuperNewInit(source, coord));
       }
     }
 

@@ -13,13 +13,10 @@ import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import trufflesom.primitives.basics.NewObjectPrim;
-import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.vm.Globals;
 import trufflesom.vm.Globals.Association;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.SymbolTable;
-import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -193,30 +190,6 @@ public abstract class BounceBenchmark {
         GlobalNode.sendUnknownGlobalToMethodRcvr(rcvr, sym);
         globalRandom = Globals.getGlobalsAssociation(sym);
       }
-    }
-  }
-
-  /**
-   * <pre>
-    new = ( ^super new initialize ).
-   * </pre>
-   */
-  public static final class BallNew extends AbstractInvokable {
-    @Child private NewObjectPrim        newPrim;
-    @Child private AbstractDispatchNode dispatchInit;
-
-    public BallNew(final Source source, final long sourceCoord) {
-      super(new FrameDescriptor(), source, sourceCoord);
-      newPrim = NewObjectPrimFactory.create(null);
-      dispatchInit = new UninitializedDispatchNode(SymbolTable.symbolFor("initialize"));
-    }
-
-    @Override
-    public Object execute(final VirtualFrame frame) {
-      Object[] args = frame.getArguments();
-      SClass clazz = (SClass) args[0];
-      Object newObj = newPrim.executeEvaluated(frame, clazz);
-      return dispatchInit.executeDispatch(frame, new Object[] {newObj});
     }
   }
 }
