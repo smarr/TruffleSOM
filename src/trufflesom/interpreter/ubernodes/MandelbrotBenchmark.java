@@ -3,6 +3,8 @@ package trufflesom.interpreter.ubernodes;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.source.Source;
@@ -181,8 +183,42 @@ public abstract class MandelbrotBenchmark {
    * </pre>
    */
   public static final class MandelbrotMandelbrot extends AbstractInvokable {
-    public MandelbrotMandelbrot(final Source source, final long sourceCoord) {
-      super(new FrameDescriptor(), source, sourceCoord);
+    private final FrameSlot notDoneSlot;
+    private final FrameSlot escapeSlot;
+    private final FrameSlot crSlot;
+    private final FrameSlot zSlot;
+
+    private final FrameSlot ziSlot;
+    private final FrameSlot ziziSlot;
+    private final FrameSlot zrzrSlot;
+
+    private MandelbrotMandelbrot(final Source source, final long sourceCoord,
+        final FrameDescriptor fd, final FrameSlot notDone, final FrameSlot escape,
+        final FrameSlot cr, final FrameSlot z, final FrameSlot zi, final FrameSlot zizi,
+        final FrameSlot zrzr) {
+      super(fd, source, sourceCoord);
+      this.notDoneSlot = notDone;
+      this.escapeSlot = escape;
+      this.crSlot = cr;
+      this.zSlot = z;
+
+      this.ziSlot = zi;
+      this.ziziSlot = zizi;
+      this.zrzrSlot = zrzr;
+    }
+
+    public static MandelbrotMandelbrot create(final Source source, final long sourceCoord) {
+      FrameDescriptor fd = new FrameDescriptor();
+      FrameSlot notDoneSlot = fd.addFrameSlot("notDone");
+      FrameSlot escapeSlot = fd.addFrameSlot("escape");
+      FrameSlot crSlot = fd.addFrameSlot("cr");
+      FrameSlot z = fd.addFrameSlot("z");
+
+      FrameSlot zi = fd.addFrameSlot("zi");
+      FrameSlot zizi = fd.addFrameSlot("zizi");
+      FrameSlot zrzr = fd.addFrameSlot("zrzr");
+      return new MandelbrotMandelbrot(source, sourceCoord, fd, notDoneSlot, escapeSlot,
+          crSlot, z, zi, zizi, zrzr);
     }
 
     @Override
@@ -201,32 +237,42 @@ public abstract class MandelbrotBenchmark {
         long x = 0;
 
         while (x < size) {
-          double zrzr = 0.0;
-          double zr = 0.0;
-          double zizi = 0.0;
-          double zi = 0.0;
+          frame.setDouble(zrzrSlot, 0.0);
+          frame.setDouble(ziziSlot, 0.0);
+          frame.setDouble(ziSlot, 0.0);
 
-          double cr = (2.0 * x / size) - 1.5;
+          frame.setDouble(crSlot, (2.0 * x / size) - 1.5);
+          frame.setLong(zSlot, 0);
 
-          long z = 0;
-          boolean notDone = true;
-          long escape = 0;
+          frame.setBoolean(notDoneSlot, true);
+          frame.setLong(escapeSlot, 0);
 
-          while (notDone && z < 50) {
-            zr = zrzr - zizi + cr;
-            zi = 2.0 * zr * zi + ci;
+          while (true) {
+            final boolean notDone = FrameUtil.getBooleanSafe(frame, notDoneSlot);
+            final long z = FrameUtil.getLongSafe(frame, zSlot);
+            if (!(notDone && z < 50)) {
+              break;
+            }
+
+            double zr = FrameUtil.getDoubleSafe(frame, zrzrSlot)
+                - FrameUtil.getDoubleSafe(frame, ziziSlot)
+                + FrameUtil.getDoubleSafe(frame, crSlot);
+            final double zi = 2.0 * zr * FrameUtil.getDoubleSafe(frame, ziSlot) + ci;
+            frame.setDouble(ziSlot, zi);
 
             // preserve recalulation
-            zrzr = zr * zr;
-            zizi = zi * zi;
+            final double zrzr = zr * zr;
+            final double zizi = zi * zi;
+            frame.setDouble(zrzrSlot, zrzr);
+            frame.setDouble(ziziSlot, zizi);
 
             if (zrzr + zizi > 4.0) {
-              notDone = false;
-              escape = 1;
+              frame.setBoolean(notDoneSlot, false);
+              frame.setLong(escapeSlot, 1);
             }
 
             try {
-              z = Math.addExact(z, 1);
+              frame.setLong(zSlot, Math.addExact(z, 1));
             } catch (ArithmeticException e) {
               CompilerDirectives.transferToInterpreterAndInvalidate();
               throw new NotYetImplementedException();
@@ -241,7 +287,7 @@ public abstract class MandelbrotBenchmark {
           }
 
           try {
-            byteAcc = Math.addExact(byteAcc << 1, escape);
+            byteAcc = Math.addExact(byteAcc << 1, FrameUtil.getLongSafe(frame, escapeSlot));
           } catch (ArithmeticException e) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             throw new NotYetImplementedException();

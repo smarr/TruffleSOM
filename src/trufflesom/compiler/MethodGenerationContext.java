@@ -279,7 +279,7 @@ public class MethodGenerationContext
       }
 
       if (methodName.equals("mandelbrot:")) {
-        return smethod(new MandelbrotMandelbrot(source, coord));
+        return smethod(MandelbrotMandelbrot.create(source, coord));
       }
     }
 
