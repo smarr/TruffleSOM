@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.interpreter.AbstractInvokable;
@@ -187,7 +188,7 @@ public abstract class MandelbrotBenchmark {
     @Override
     public Object execute(final VirtualFrame frame) {
       Object[] args = frame.getArguments();
-      long size = (Long) args[1];
+      final long size = (Long) args[1];
 
       long sum = 0;
       long byteAcc = 0;
@@ -231,6 +232,8 @@ public abstract class MandelbrotBenchmark {
               throw new NotYetImplementedException();
             }
           }
+
+          LoopNode.reportLoopCount(this, 50);
 
           if (Long.SIZE - Long.numberOfLeadingZeros(byteAcc) + 1 > Long.SIZE - 1) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -289,6 +292,8 @@ public abstract class MandelbrotBenchmark {
           }
         }
 
+        LoopNode.reportLoopCount(this, (int) size);
+
         try {
           y = Math.addExact(y, 1);
         } catch (ArithmeticException e) {
@@ -296,6 +301,8 @@ public abstract class MandelbrotBenchmark {
           throw new NotYetImplementedException();
         }
       }
+
+      LoopNode.reportLoopCount(this, (int) size);
 
       return sum;
     }
