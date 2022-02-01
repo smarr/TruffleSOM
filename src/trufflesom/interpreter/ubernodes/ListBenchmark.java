@@ -244,7 +244,7 @@ public abstract class ListBenchmark {
 
   /**
    * <pre>
-   * length = ( next isNil ifTrue: [ ^1 ] ifFalse: [ ^(1 + next length) ] )
+   * length = ( next isNil ifTrue: [ ^1 ] ifFalse: [ ^(1 + next length) ] ).
    * </pre>
    */
   public static final class ListElementLength extends AbstractInvokable {
@@ -275,7 +275,7 @@ public abstract class ListBenchmark {
 
   /**
    * <pre>
-   * new: n = ( ^super new val: n )
+   * new: n = ( ^super new val: n ).
    * </pre>
    */
   public static final class ListElementNew extends AbstractInvokable {

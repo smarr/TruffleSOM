@@ -68,6 +68,9 @@ import trufflesom.interpreter.ubernodes.ListBenchmark.ListIsShorter;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListMakeList;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListTail;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListVerifyResult;
+import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotInnerBenchmarkLoop;
+import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotMandelbrot;
+import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotVerifyInner;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -265,6 +268,21 @@ public class MethodGenerationContext
 
       if (holderGenc.isClassSide() && methodName.equals("new:")) {
         return smethod(new ListElementNew(source, coord));
+      }
+    } else if (className.equals("Mandelbrot")) {
+      if (methodName.equals("innerBenchmarkLoop:")) {
+        System.out.println("!");
+        return smethod(new MandelbrotInnerBenchmarkLoop(source, coord));
+      }
+
+      if (methodName.equals("verify:inner:")) {
+        System.out.println("!");
+        return smethod(new MandelbrotVerifyInner(source, coord));
+      }
+
+      if (methodName.equals("mandelbrot:")) {
+        System.out.println("!");
+        return smethod(new MandelbrotMandelbrot(source, coord));
       }
     }
 
