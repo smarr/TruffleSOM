@@ -61,6 +61,9 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
+import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
+import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
+import trufflesom.interpreter.ubernodes.BounceBenchmark.BallNew;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
@@ -280,6 +283,18 @@ public class MethodGenerationContext
 
       if (methodName.equals("mandelbrot:")) {
         return smethod(MandelbrotMandelbrot.create(source, coord));
+      }
+    } else if (className.equals("Ball")) {
+      if (holderGenc.isClassSide() && methodName.equals("new")) {
+        return smethod(new BallNew(source, coord));
+      }
+
+      if (methodName.equals("initialize")) {
+        return smethod(new BallInitialize(source, coord));
+      }
+
+      if (methodName.equals("bounce")) {
+        return smethod(new BallBounce(source, coord));
       }
     }
 
