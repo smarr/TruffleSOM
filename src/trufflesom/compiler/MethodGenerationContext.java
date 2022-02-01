@@ -271,17 +271,14 @@ public class MethodGenerationContext
       }
     } else if (className.equals("Mandelbrot")) {
       if (methodName.equals("innerBenchmarkLoop:")) {
-        System.out.println("!");
         return smethod(new MandelbrotInnerBenchmarkLoop(source, coord));
       }
 
       if (methodName.equals("verify:inner:")) {
-        System.out.println("!");
         return smethod(new MandelbrotVerifyInner(source, coord));
       }
 
       if (methodName.equals("mandelbrot:")) {
-        System.out.println("!");
         return smethod(new MandelbrotMandelbrot(source, coord));
       }
     }
