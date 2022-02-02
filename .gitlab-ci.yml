@@ -20,7 +20,7 @@ test:
   tags: [yuria]
   script:
     - ${ANT} tests native-obj-storage-test native-tests
-    - ${ANT} nodestats-test coverage-test
+    # - ${ANT} nodestats-test coverage-test
     - ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives core-lib/SomSom/tests/SomSomTests.som
 
 build:native-interp-ast:
