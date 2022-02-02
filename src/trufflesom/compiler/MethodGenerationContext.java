@@ -85,6 +85,7 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAt;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
+import trufflesom.interpreter.ubernodes.SomIdentitySet.IsObject;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAppend;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAt;
@@ -176,7 +177,10 @@ public class MethodGenerationContext
 
   public void addEmbeddedBlockMethod(final SMethod blockMethod) {
     embeddedBlockMethods.add(blockMethod);
-    currentScope.addEmbeddedScope(((Method) blockMethod.getInvokable()).getScope());
+    AbstractInvokable ivk = blockMethod.getInvokable();
+    if (ivk instanceof Method) {
+      currentScope.addEmbeddedScope(((Method) ivk).getScope());
+    }
   }
 
   public LexicalScope getCurrentLexicalScope() {
@@ -386,6 +390,10 @@ public class MethodGenerationContext
 
       if (methodName.equals("bucket:")) {
         return smethod(new SomDictBucket(source, coord));
+      }
+    } else if (className.equals("SomIdentitySet")) {
+      if (blockMethod && methodName.contains("contains")) {
+        return smethod(new IsObject(source, coord));
       }
     }
 
