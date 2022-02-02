@@ -63,6 +63,8 @@ import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
+import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
+import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
@@ -333,6 +335,16 @@ public class MethodGenerationContext
       } else {
         if (methodName.equals("initialize:")) {
           return smethod(new VectorInitialize(source, coord));
+        }
+      }
+    } else if (className.equals("DictIdEntry")) {
+      if (holderGenc.isClassSide()) {
+        if (methodName.equals("new:key:value:next:")) {
+          return smethod(new DictIdEntryNewKeyValueNext(source, coord));
+        }
+      } else {
+        if (methodName.equals("match:key:")) {
+          return smethod(new DictIdEntryMatchKey(source, coord));
         }
       }
     }
