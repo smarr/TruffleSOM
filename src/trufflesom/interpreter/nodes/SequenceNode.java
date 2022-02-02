@@ -51,8 +51,8 @@ public final class SequenceNode extends NoPreEvalExprNode {
     return expressions[lastI].executeGeneric(frame);
   }
 
-  public int getNumberOfExpressions() {
-    return expressions.length;
+  public ExpressionNode[] getExpressions() {
+    return expressions;
   }
 
   @Override

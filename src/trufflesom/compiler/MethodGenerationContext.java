@@ -57,6 +57,7 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
@@ -345,10 +346,16 @@ public class MethodGenerationContext
         if (methodName.equals("size")) {
           return smethod(new VectorSize(source, coord));
         }
-        if (methodName.equals("at:") && body instanceof SequenceNode
-            && ((SequenceNode) body).getNumberOfExpressions() == 2) {
-          // this is only for the AWFY Vector
-          return smethod(new VectorAt(source, coord));
+        if (methodName.equals("at:")) {
+          if (body instanceof SequenceNode) {
+            SequenceNode seq = (SequenceNode) body;
+            ExpressionNode[] seqExp = seq.getExpressions();
+            if (seqExp.length == 2 && !(seqExp[0] instanceof LocalVariableWriteNode)) {
+              // this is only for the AWFY Vector
+              return smethod(new VectorAt(source, coord));
+            }
+          }
+
         }
       }
     } else if (className.equals("DictIdEntry")) {
