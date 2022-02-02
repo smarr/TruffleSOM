@@ -67,6 +67,7 @@ import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
+import trufflesom.interpreter.ubernodes.HavlakLoopFinder.IsAncestor;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
@@ -394,6 +395,10 @@ public class MethodGenerationContext
     } else if (className.equals("SomIdentitySet")) {
       if (blockMethod && methodName.contains("contains")) {
         return smethod(new IsObject(source, coord));
+      }
+    } else if (className.equals("HavlakLoopFinder")) {
+      if (methodName.equals("isAncestor:v:")) {
+        return smethod(new IsAncestor(source, coord));
       }
     }
 
