@@ -31,7 +31,7 @@ HavlakLoopFinder = (
   )
   
   Unvisited = ( ^ 2147483647 )
-  MaxNonBackPreds = ( ^ 32 * 1024 )
+  MaxNonBackPreds = ( ^ 32768 "32 * 1024" )
   
   isAncestor: w v: v = (
     ^ (w <= v) && (v <= (last at: w))
