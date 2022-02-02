@@ -51,6 +51,10 @@ public final class SequenceNode extends NoPreEvalExprNode {
     return expressions[lastI].executeGeneric(frame);
   }
 
+  public int getNumberOfExpressions() {
+    return expressions.length;
+  }
+
   @Override
   public boolean isTrivial() {
     // has exactly two expressions

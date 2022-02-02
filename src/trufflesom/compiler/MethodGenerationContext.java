@@ -58,6 +58,7 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
+import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
@@ -83,8 +84,10 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
+import trufflesom.interpreter.ubernodes.VectorClass.VectorAt;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorInitialize;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
+import trufflesom.interpreter.ubernodes.VectorClass.VectorSize;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -338,6 +341,14 @@ public class MethodGenerationContext
       } else {
         if (methodName.equals("initialize:")) {
           return smethod(new VectorInitialize(source, coord));
+        }
+        if (methodName.equals("size")) {
+          return smethod(new VectorSize(source, coord));
+        }
+        if (methodName.equals("at:") && body instanceof SequenceNode
+            && ((SequenceNode) body).getNumberOfExpressions() == 2) {
+          // this is only for the AWFY Vector
+          return smethod(new VectorAt(source, coord));
         }
       }
     } else if (className.equals("DictIdEntry")) {
