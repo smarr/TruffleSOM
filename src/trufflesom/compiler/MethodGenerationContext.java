@@ -78,6 +78,8 @@ import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomNext;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
+import trufflesom.interpreter.ubernodes.VectorClass.VectorInitialize;
+import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -321,6 +323,16 @@ public class MethodGenerationContext
 
         if (methodName.equals("next")) {
           return smethod(new RandomNext(source, coord));
+        }
+      }
+    } else if (className.equals("Vector")) {
+      if (holderGenc.isClassSide()) {
+        if (methodName.equals("new:")) {
+          return smethod(new VectorNew2(source, coord));
+        }
+      } else {
+        if (methodName.equals("initialize:")) {
+          return smethod(new VectorInitialize(source, coord));
         }
       }
     }
