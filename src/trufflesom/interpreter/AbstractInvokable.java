@@ -75,4 +75,10 @@ public abstract class AbstractInvokable extends RootNode implements WithSource {
   public boolean isCloningAllowed() {
     return false;
   }
+
+  public void propagateLoopCountThroughoutLexicalScope(final long count) {
+    CompilerDirectives.transferToInterpreter();
+    throw new UnsupportedOperationException(
+        "If this needs to be supported, it needs to be implemented in subclass");
+  }
 }

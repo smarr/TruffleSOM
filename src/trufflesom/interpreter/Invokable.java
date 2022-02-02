@@ -41,6 +41,7 @@ public abstract class Invokable extends AbstractInvokable {
   }
 
   /** Inline invokable into the lexical context of the target method generation context. */
+  @Override
   public abstract ExpressionNode inline(MethodGenerationContext targetMgenc,
       SMethod toBeInlined);
 
@@ -49,12 +50,11 @@ public abstract class Invokable extends AbstractInvokable {
     return true;
   }
 
-  public abstract void propagateLoopCountThroughoutLexicalScope(long count);
-
   public SClass getHolder() {
     return holder;
   }
 
+  @Override
   public void setHolder(final SClass holder) {
     this.holder = holder;
   }
@@ -64,6 +64,7 @@ public abstract class Invokable extends AbstractInvokable {
     return expressionOrSequence.isTrivial();
   }
 
+  @Override
   public PreevaluatedExpression copyTrivialNode() {
     return expressionOrSequence.copyTrivialNode();
   }

@@ -85,6 +85,7 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
+import trufflesom.interpreter.ubernodes.VectorClass.VectorAppend;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAt;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorInitialize;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
@@ -345,6 +346,9 @@ public class MethodGenerationContext
         }
         if (methodName.equals("size")) {
           return smethod(new VectorSize(source, coord));
+        }
+        if (methodName.equals("append:")) {
+          return smethod(VectorAppend.create(source, coord));
         }
         if (methodName.equals("at:")) {
           if (body instanceof SequenceNode) {

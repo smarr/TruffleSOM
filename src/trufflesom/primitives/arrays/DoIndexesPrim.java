@@ -6,10 +6,9 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.RootNode;
 
 import bd.primitives.Primitive;
-import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.AbstractInvokable;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
 import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
@@ -72,13 +71,10 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
   protected final void reportLoopCount(final long count) {
     assert count >= 0;
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");
-    Node current = getParent();
-    while (current != null && !(current instanceof RootNode)) {
-      current = current.getParent();
-    }
+    Node current = getRootNode();
+
     if (current != null) {
-      ((Invokable) current).propagateLoopCountThroughoutLexicalScope(count);
+      ((AbstractInvokable) current).propagateLoopCountThroughoutLexicalScope(count);
     }
   }
-
 }
