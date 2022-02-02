@@ -115,4 +115,63 @@ public abstract class SomDictionaryClass {
       return atPrim.executeEvaluated(frame, buckets, idx);
     }
   }
+
+  /**
+   * <pre>
+   * at: aKey = (
+        | hash e |
+        hash := self hash: aKey.
+        e    := self bucket: hash.
+
+        [ e notNil ] whileTrue: [
+          (e match: hash key: aKey)
+            ifTrue: [ ^ e value ].
+          e := e next ].
+        ^ nil
+      )
+   * </pre>
+   */
+  public static final class SomDictAt extends AbstractInvokable {
+
+    @Child private AbstractDispatchNode dispatchHash;
+    @Child private AbstractDispatchNode dispatchBucket;
+    @Child private AbstractDispatchNode dispatchMatchKey;
+    @Child private AbstractDispatchNode dispatchValue;
+    @Child private AbstractDispatchNode dispatchNext;
+
+    public SomDictAt(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      dispatchHash =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("hash:"));
+      dispatchBucket =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("bucket:"));
+      dispatchMatchKey =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("match:key:"));
+      dispatchValue =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("value"));
+      dispatchNext =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("next"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object aKey = args[1];
+
+      Object hash = dispatchHash.executeDispatch(frame, new Object[] {rcvr, aKey});
+      Object e = dispatchBucket.executeDispatch(frame, new Object[] {rcvr, hash});
+
+      while (e != Nil.nilObject) {
+        boolean matched =
+            (Boolean) dispatchMatchKey.executeDispatch(frame, new Object[] {e, hash, aKey});
+        if (matched) {
+          return dispatchValue.executeDispatch(frame, new Object[] {e});
+        }
+        e = dispatchNext.executeDispatch(frame, new Object[] {e});
+      }
+
+      return Nil.nilObject;
+    }
+  }
 }
