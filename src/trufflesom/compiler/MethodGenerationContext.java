@@ -79,6 +79,9 @@ import trufflesom.interpreter.ubernodes.RandomClass.RandomClassInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomNext;
+import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
+import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
+import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorInitialize;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
@@ -346,6 +349,17 @@ public class MethodGenerationContext
         if (methodName.equals("match:key:")) {
           return smethod(new DictIdEntryMatchKey(source, coord));
         }
+      }
+    } else if (className.equals("SomDictionary")) {
+      if (methodName.equals("hash:")) {
+        return smethod(new SomDictHash(source, coord));
+      }
+      if (methodName.equals("bucketIdx:")) {
+        return smethod(new SomDictBucketIdx(source, coord));
+      }
+
+      if (methodName.equals("bucket:")) {
+        return smethod(new SomDictBucket(source, coord));
       }
     }
 

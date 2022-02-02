@@ -10,7 +10,6 @@ import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.basics.NewObjectPrim;
 import trufflesom.primitives.basics.NewObjectPrimFactory;
 import trufflesom.vm.SymbolTable;
-import trufflesom.vmobjects.SClass;
 
 
 /**
@@ -31,7 +30,7 @@ public final class SuperNewInit extends AbstractInvokable {
   @Override
   public Object execute(final VirtualFrame frame) {
     Object[] args = frame.getArguments();
-    SClass clazz = (SClass) args[0];
+    Object clazz = args[0];
     Object newObj = newPrim.executeEvaluated(frame, clazz);
     return dispatchInit.executeDispatch(frame, new Object[] {newObj});
   }
