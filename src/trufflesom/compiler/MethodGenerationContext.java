@@ -73,6 +73,10 @@ import trufflesom.interpreter.ubernodes.ListBenchmark.ListVerifyResult;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotMandelbrot;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotVerifyInner;
+import trufflesom.interpreter.ubernodes.RandomClass.RandomClassInitialize;
+import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
+import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
+import trufflesom.interpreter.ubernodes.RandomClass.RandomNext;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
@@ -297,8 +301,27 @@ public class MethodGenerationContext
         return smethod(new BallBounce(source, coord));
       }
     } else if (className.equals("Random")) {
-      if (holderGenc.isClassSide() && methodName.equals("new")) {
-        return smethod(new SuperNewInit(source, coord));
+      if (holderGenc.isClassSide()) {
+        if (methodName.equals("new")) {
+          return smethod(new SuperNewInit(source, coord));
+        }
+
+        if (methodName.equals("initialize")) {
+          return smethod(new RandomClassInitialize(source, coord));
+        }
+
+        if (methodName.equals("next")) {
+          return smethod(new RandomClassNext(source, coord));
+        }
+      } else {
+        // instance methods
+        if (methodName.equals("initialize")) {
+          return smethod(new RandomInitialize(source, coord));
+        }
+
+        if (methodName.equals("next")) {
+          return smethod(new RandomNext(source, coord));
+        }
       }
     }
 
