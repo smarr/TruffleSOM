@@ -91,6 +91,7 @@ import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAppend;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAt;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorInitialize;
+import trufflesom.interpreter.ubernodes.VectorClass.VectorIsEmpty;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorSize;
 import trufflesom.primitives.Primitives;
@@ -352,6 +353,9 @@ public class MethodGenerationContext
         }
         if (methodName.equals("size")) {
           return smethod(new VectorSize(source, coord));
+        }
+        if (methodName.equals("isEmpty")) {
+          return smethod(new VectorIsEmpty(source, coord));
         }
         if (methodName.equals("append:")) {
           return smethod(VectorAppend.create(source, coord));

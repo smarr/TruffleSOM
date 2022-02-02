@@ -137,6 +137,32 @@ public abstract class VectorClass {
 
   /**
    * <pre>
+   * isEmpty = ( ^last = first ).
+   * </pre>
+   */
+  public static final class VectorIsEmpty extends AbstractInvokable {
+
+    @Child private AbstractReadFieldNode readFirst;
+    @Child private AbstractReadFieldNode readLast;
+
+    public VectorIsEmpty(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readFirst = FieldAccessorNode.createRead(0);
+      readLast = FieldAccessorNode.createRead(1);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      return readLast.readLongSafe(rcvr) == readFirst.readLongSafe(rcvr);
+    }
+  }
+
+  /**
+   * <pre>
    * at: index = (
    * index > storage length ifTrue: [ ^ nil ].
    * ^ storage at: index
