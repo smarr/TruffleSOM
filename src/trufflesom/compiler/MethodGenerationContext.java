@@ -88,6 +88,8 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SomIdentitySet.IsObject;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
+import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dCompareAnd;
+import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dInitXY;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAppend;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAt;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorInitialize;
@@ -403,6 +405,13 @@ public class MethodGenerationContext
     } else if (className.equals("HavlakLoopFinder")) {
       if (methodName.equals("isAncestor:v:")) {
         return smethod(new IsAncestor(source, coord));
+      }
+    } else if (className.equals("Vector2D")) {
+      if (methodName.equals("compare:and:")) {
+        return smethod(new Vector2dCompareAnd(source, coord));
+      }
+      if (methodName.equals("initX:y:")) {
+        return smethod(new Vector2dInitXY(source, coord));
       }
     }
 
