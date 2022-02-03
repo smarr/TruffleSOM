@@ -84,6 +84,7 @@ import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomNext;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAt;
+import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAtPut;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
@@ -395,6 +396,9 @@ public class MethodGenerationContext
       }
       if (methodName.equals("at:")) {
         return smethod(new SomDictAt(source, coord));
+      }
+      if (methodName.equals("at:put:")) {
+        return smethod(new SomDictAtPut(source, coord));
       }
       if (methodName.equals("bucketIdx:")) {
         return smethod(new SomDictBucketIdx(source, coord));
