@@ -22,6 +22,8 @@ import trufflesom.primitives.arrays.DoIndexesPrim;
 import trufflesom.primitives.arrays.DoIndexesPrimFactory;
 import trufflesom.primitives.arrays.NewPrim;
 import trufflesom.primitives.arrays.NewPrimFactory;
+import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
+import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
 import trufflesom.primitives.basics.LengthPrim;
 import trufflesom.primitives.basics.LengthPrimFactory;
 import trufflesom.primitives.basics.NewObjectPrim;
@@ -345,6 +347,57 @@ public abstract class VectorClass {
       Object value = atPrim.executeEvaluated(frame, storage, i);
       atPutPrim.executeEvaluated(frame, newStorage, i, value);
       return value;
+    }
+  }
+
+  /**
+   * <pre>
+   * hasSome: block = (
+       first to: last - 1 do: [ :i |
+         (block value: (storage at: i))
+           ifTrue: [ ^ true ] ].
+       ^ false
+     )
+   * </pre>
+   */
+  public static final class VectorHasSome extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readFirst;
+    @Child private AbstractReadFieldNode readLast;
+    @Child private AbstractReadFieldNode readStorage;
+
+    @Child private AtPrim       atPrim;
+    @Child private ValueOnePrim valueOnePrim;
+
+    public VectorHasSome(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      atPrim = AtPrimFactory.create(null, null);
+      valueOnePrim = ValueOnePrimFactory.create(null, null);
+
+      readFirst = FieldAccessorNode.createRead(0);
+      readLast = FieldAccessorNode.createRead(1);
+      readStorage = FieldAccessorNode.createRead(2);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      SBlock block = (SBlock) args[1];
+
+      long first = readFirst.readLongSafe(rcvr);
+      long last = readLast.readLongSafe(rcvr);
+
+      SArray storage = (SArray) readStorage.read(rcvr);
+
+      for (long i = first; i < last; i += 1) {
+        Object value = atPrim.executeEvaluated(frame, storage, i);
+        boolean isPresent = (Boolean) valueOnePrim.executeEvaluated(frame, block, value);
+        if (isPresent) {
+          return true;
+        }
+      }
+
+      return false;
     }
   }
 }

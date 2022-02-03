@@ -92,6 +92,7 @@ import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dCompareAnd;
 import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dInitXY;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAppend;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAt;
+import trufflesom.interpreter.ubernodes.VectorClass.VectorHasSome;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorInitialize;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorIsEmpty;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
@@ -361,6 +362,9 @@ public class MethodGenerationContext
         }
         if (methodName.equals("append:")) {
           return smethod(VectorAppend.create(source, coord));
+        }
+        if (methodName.equals("hasSome:")) {
+          return smethod(new VectorHasSome(source, coord));
         }
         if (methodName.equals("at:")) {
           if (body instanceof SequenceNode) {
