@@ -88,6 +88,7 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAtPut;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
+import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictInsertBucketEntry;
 import trufflesom.interpreter.ubernodes.SomIdentitySet.IsObject;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dCompareAnd;
@@ -403,9 +404,11 @@ public class MethodGenerationContext
       if (methodName.equals("bucketIdx:")) {
         return smethod(new SomDictBucketIdx(source, coord));
       }
-
       if (methodName.equals("bucket:")) {
         return smethod(new SomDictBucket(source, coord));
+      }
+      if (methodName.equals("insertBucketEntry:value:hash:head:")) {
+        return smethod(new SomDictInsertBucketEntry(source, coord));
       }
     } else if (className.equals("SomIdentitySet")) {
       if (blockMethod && methodName.contains("contains")) {

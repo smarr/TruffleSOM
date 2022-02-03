@@ -126,7 +126,7 @@ public abstract class SomDictionaryClass {
         | hash e |
         hash := self hash: aKey.
         e    := self bucket: hash.
-  
+
         [ e notNil ] whileTrue: [
           (e match: hash key: aKey)
             ifTrue: [ ^ e value ].
@@ -186,14 +186,14 @@ public abstract class SomDictionaryClass {
     hash := self hash: aKey.
     i    := self bucketIdx: hash.
     current := buckets at: i.
-
+  
     current isNil
       ifTrue: [
         buckets at: i put: (self newEntry: aKey value: aVal hash: hash).
         size_ := size_ + 1 ]
       ifFalse: [
         self insertBucketEntry: aKey value: aVal hash: hash head: current ].
-  
+
     size_ > buckets length ifTrue: [ self resize ]
   )
    * </pre>
@@ -283,7 +283,7 @@ public abstract class SomDictionaryClass {
   insertBucketEntry: key value: value hash: hash head: head = (
     | current |
     current := head.
-
+  
     [true] whileTrue: [
       (current match: hash key: key) ifTrue: [
         current value: value.
@@ -299,45 +299,84 @@ public abstract class SomDictionaryClass {
    */
   public static final class SomDictInsertBucketEntry extends AbstractInvokable {
 
-    @Child private AbstractDispatchNode dispatchHash;
-    @Child private AbstractDispatchNode dispatchBucket;
     @Child private AbstractDispatchNode dispatchMatchKey;
     @Child private AbstractDispatchNode dispatchValue;
     @Child private AbstractDispatchNode dispatchNext;
+    @Child private AbstractDispatchNode dispatchNext_;
+    @Child private AbstractDispatchNode dispatchNewEntry;
+
+    @Child private AbstractReadFieldNode  readSize;
+    @Child private AbstractWriteFieldNode writeSize;
 
     public SomDictInsertBucketEntry(final Source source, final long sourceCoord) {
       super(new FrameDescriptor(), source, sourceCoord);
-      dispatchHash =
-          new UninitializedDispatchNode(SymbolTable.symbolFor("hash:"));
-      dispatchBucket =
-          new UninitializedDispatchNode(SymbolTable.symbolFor("bucket:"));
+
       dispatchMatchKey =
           new UninitializedDispatchNode(SymbolTable.symbolFor("match:key:"));
       dispatchValue =
-          new UninitializedDispatchNode(SymbolTable.symbolFor("value"));
+          new UninitializedDispatchNode(SymbolTable.symbolFor("value:"));
       dispatchNext =
           new UninitializedDispatchNode(SymbolTable.symbolFor("next"));
+      dispatchNext_ =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("next:"));
+      dispatchNewEntry =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("newEntry:value:hash:"));
+
+      readSize = FieldAccessorNode.createRead(1);
+      writeSize = FieldAccessorNode.createWrite(1);
     }
 
     @Override
     public Object execute(final VirtualFrame frame) {
       Object[] args = frame.getArguments();
       SObject rcvr = (SObject) args[0];
-      Object aKey = args[1];
+      Object key = args[1];
+      Object value = args[2];
+      Object hash = args[3];
+      Object head = args[4];
 
-      Object hash = dispatchHash.executeDispatch(frame, new Object[] {rcvr, aKey});
-      Object e = dispatchBucket.executeDispatch(frame, new Object[] {rcvr, hash});
+      // current := head.
+      Object current = head;
 
-      while (e != Nil.nilObject) {
-        boolean matched =
-            (Boolean) dispatchMatchKey.executeDispatch(frame, new Object[] {e, hash, aKey});
-        if (matched) {
-          return dispatchValue.executeDispatch(frame, new Object[] {e});
+      // [true] whileTrue: [
+      while (true) {
+        // (current match: hash key: key) ifTrue: [
+        boolean matches = (Boolean) dispatchMatchKey.executeDispatch(frame,
+            new Object[] {current, hash, key});
+        if (matches) {
+          // current value: value.
+          dispatchValue.executeDispatch(frame, new Object[] {current, value});
+
+          // ^ self
+          return rcvr;
         }
-        e = dispatchNext.executeDispatch(frame, new Object[] {e});
-      }
 
-      return Nil.nilObject;
+        // current next isNil ifTrue: [
+        Object currentNext = dispatchNext.executeDispatch(frame, new Object[] {current});
+        if (currentNext == Nil.nilObject) {
+          // size_ := size_ + 1.
+          long size = readSize.readLongSafe(rcvr);
+          try {
+            size = Math.addExact(size, 1);
+          } catch (ArithmeticException e) {
+            CompilerDirectives.transferToInterpreter();
+            throw new UnsupportedOperationException();
+          }
+
+          writeSize.write(rcvr, size);
+
+          // current next: (self newEntry: key value: value hash: hash).
+          Object newEntry =
+              dispatchNewEntry.executeDispatch(frame, new Object[] {rcvr, key, value, hash});
+          dispatchNext_.executeDispatch(frame, new Object[] {current, newEntry});
+
+          // ^ self
+          return rcvr;
+        }
+
+        // current := current next
+        current = dispatchNext.executeDispatch(frame, new Object[] {current});
+      }
     }
   }
 }

@@ -56,22 +56,22 @@ public abstract class HavlakLoopFinder {
    * | cfg lsg
     nonBackPreds backPreds number (4)
     maxSize header type last (8) nodes (9) |
-  
+
    *   doDFS: currentNode current: current = (
     | lastId outerBlocks |
-  
+
     (nodes at: current) initNode: currentNode dfs: current.
     number at: currentNode put: current.
-  
+
     lastId := current.
     outerBlocks := currentNode outEdges.
-  
+
     1 to: outerBlocks size do: [:i |
       | target |
       target := outerBlocks at: i.
       (number at: target) = self Unvisited ifTrue: [
         lastId := self doDFS: target current: lastId + 1 ] ].
-  
+
     last at: current put: lastId.
     ^ lastId
   )
@@ -121,9 +121,11 @@ public abstract class HavlakLoopFinder {
       Object currentNode = args[1];
       Object current = args[2];
 
-      // (nodes at: current) initNode: currentNode dfs: current.
+      // (nodes at: current)
       SArray nodes = (SArray) readNodes.read(rcvr);
       Object nodesAtCurrent = atPrim.executeEvaluated(frame, nodes, current);
+
+      // nodesAtCurrent initNode: currentNode dfs: current.
       dispatchInitNode.executeDispatch(frame,
           new Object[] {nodesAtCurrent, currentNode, current});
 
@@ -143,10 +145,14 @@ public abstract class HavlakLoopFinder {
         // target := outerBlocks at: i.
         Object target = dispatchAt.executeDispatch(frame, new Object[] {outerBlocks, i});
 
-        // (number at: target) = self Unvisited ifTrue: [
+        // (number at: target)
         long numberAtTarget =
             (Long) dispatchAt.executeDispatch(frame, new Object[] {number, target});
+
+        // self Unvisited
         long unvisited = (Long) dispatchUnvisited.executeDispatch(frame, new Object[] {rcvr});
+
+        // numberAtTarget = self Unvisited ifTrue: [
         if (numberAtTarget == unvisited) {
           // lastId := self doDFS: target current: lastId + 1 ] ].
           lastId = (Long) dispatchDoDFSCurrent.executeDispatch(frame,
