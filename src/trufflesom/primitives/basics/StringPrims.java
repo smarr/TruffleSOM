@@ -51,6 +51,29 @@ public class StringPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "charAt:", selector = "charAt:")
+  public abstract static class CharAtPrim extends BinaryMsgExprNode {
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("charAt:");
+    }
+
+    @Specialization
+    @TruffleBoundary
+    public final String doString(final String receiver, final long idx) {
+      int i = (int) idx;
+      return receiver.substring(i - 1, i);
+    }
+
+    @Specialization
+    @TruffleBoundary
+    public final String doSSymbol(final SSymbol receiver, final long idx) {
+      int i = (int) idx;
+      return receiver.getString().substring(i - 1, i);
+    }
+  }
+
+  @GenerateNodeFactory
   @Primitive(className = "String", primitive = "asSymbol")
   public abstract static class AsSymbolPrim extends UnaryExpressionNode {
     @Specialization
