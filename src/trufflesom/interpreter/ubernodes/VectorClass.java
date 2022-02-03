@@ -400,4 +400,49 @@ public abstract class VectorClass {
       return false;
     }
   }
+
+  /**
+   * <pre>
+   *  forEach: block = (
+        first to: last - 1 do: [ :i | block value: (storage at: i) ].
+      )
+   * </pre>
+   */
+  public static final class VectorForEach extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readFirst;
+    @Child private AbstractReadFieldNode readLast;
+    @Child private AbstractReadFieldNode readStorage;
+
+    @Child private AtPrim       atPrim;
+    @Child private ValueOnePrim valueOnePrim;
+
+    public VectorForEach(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      atPrim = AtPrimFactory.create(null, null);
+      valueOnePrim = ValueOnePrimFactory.create(null, null);
+
+      readFirst = FieldAccessorNode.createRead(0);
+      readLast = FieldAccessorNode.createRead(1);
+      readStorage = FieldAccessorNode.createRead(2);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      SBlock block = (SBlock) args[1];
+
+      long first = readFirst.readLongSafe(rcvr);
+      long last = readLast.readLongSafe(rcvr);
+
+      SArray storage = (SArray) readStorage.read(rcvr);
+
+      for (long i = first; i < last; i += 1) {
+        Object value = atPrim.executeEvaluated(frame, storage, i);
+        valueOnePrim.executeEvaluated(frame, block, value);
+      }
+
+      return rcvr;
+    }
+  }
 }
