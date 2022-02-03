@@ -73,12 +73,10 @@ public abstract class IntToByDoMessageNode extends QuaternaryMsgExprNode {
 
   protected final void reportLoopCount(final long count) {
     CompilerAsserts.neverPartOfCompilation("reportLoopCount");
-    Node current = getParent();
-    while (current != null && !(current instanceof Invokable)) {
-      current = current.getParent();
-    }
+    Node current = getRootNode();
+
     if (current != null) {
-      ((Invokable) current).propagateLoopCountThroughoutLexicalScope(count);
+      ((Invokable) current).propagateLoopCountThroughoutLexicalScope(Math.abs(count));
     }
   }
 }
