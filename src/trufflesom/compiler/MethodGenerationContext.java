@@ -91,6 +91,8 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictInsertBucketEntry;
 import trufflesom.interpreter.ubernodes.SomIdentitySet.IsObject;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
+import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitNode;
+import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitialize;
 import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dCompareAnd;
 import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dInitXY;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAppend;
@@ -431,6 +433,13 @@ public class MethodGenerationContext
       }
       if (methodName.equals("initX:y:")) {
         return smethod(new Vector2dInitXY(source, coord));
+      }
+    } else if (className.equals("UnionFindNode")) {
+      if (methodName.equals("initialize")) {
+        return smethod(new UFNInitialize(source, coord));
+      }
+      if (methodName.equals("initNode:dfs:")) {
+        return smethod(new UFNInitNode(source, coord));
       }
     }
 
