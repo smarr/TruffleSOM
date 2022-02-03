@@ -68,9 +68,9 @@ explore.add_argument('-cov', '--coverage', help='collect coverage statistics. Op
                      const='', default=False)
 explore.add_argument('-ct', '--coverage-type', help="human readable 'histogram' (per file coverage summary) or 'detailed' (per line coverage summary), machine readable 'json', tool compliant 'lcov'. (default: histogram)",
                      dest='coverage_type', action='store', default='histogram')
-explore.add_argument('-cs', '--cpu-sampler', help='Truffle CPU Sampler',
+explore.add_argument('-cs', '--cpu-sampler', help='Truffle CPU Sampler. [CPUSAMPLE] can be one of histogram, calltree, json',
                      dest='cpusampler', action='store', nargs='?',
-                     const='', default=False)
+                     const='histogram', default=False)
 
 parser.add_argument('-o', '--only', help='only compile give methods, comma separated list',
                     dest='only_compile', default=None)
@@ -325,7 +325,8 @@ if args.coverage != False:
 
 if args.cpusampler != False:
     classpath += ':' + TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-profiler.jar'
-    flags += ['-Dpolyglot.cpusampler=true']
+    flags += ['-Dpolyglot.cpusampler=true', '-Dpolyglot.cpusampler.Output=' + args.cpusampler]
+    
 
 if args.assert_:
     flags += ['-esa', '-ea']
