@@ -62,14 +62,22 @@ public class StringPrims {
     @TruffleBoundary
     public final String doString(final String receiver, final long idx) {
       int i = (int) idx;
-      return receiver.substring(i - 1, i);
+      try {
+        return receiver.substring(i - 1, i);
+      } catch (IndexOutOfBoundsException e) {
+        return "Error - index out of bounds";
+      }
     }
 
     @Specialization
     @TruffleBoundary
     public final String doSSymbol(final SSymbol receiver, final long idx) {
       int i = (int) idx;
-      return receiver.getString().substring(i - 1, i);
+      try {
+        return receiver.getString().substring(i - 1, i);
+      } catch (IndexOutOfBoundsException e) {
+        return "Error - index out of bounds";
+      }
     }
   }
 
