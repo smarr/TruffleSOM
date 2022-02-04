@@ -375,4 +375,9 @@ if args.verbose:
 env = dict(os.environ)
 env['JVMCI_VERSION_CHECK'] = 'ignore'
 
-os.execvpe(java_bin, all_args, env)
+try:
+  os.execvpe(java_bin, all_args, env)
+except OSError as e:
+  if e.errno == 2 and e.strerror == "No such file or directory":
+    print("Could not find JVM: " + java_bin)
+    sys.exit(1)
