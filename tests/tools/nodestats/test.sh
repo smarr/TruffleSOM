@@ -79,14 +79,14 @@ runTest DoubleTest
 # runTest HashTest
 runTest IntegerTest
 runTest PreliminaryTest
-runTest ReflectionTest
-runTest SelfBlockTest
-runTest SetTest
-runTest StringTest
-runTest SuperTest
-runTest SymbolTest
-runTest SystemTest
-runTest VectorTest
+# runTest ReflectionTest
+# runTest SelfBlockTest
+# runTest SetTest
+# runTest StringTest
+# runTest SuperTest
+# runTest SymbolTest
+# runTest SystemTest
+# runTest VectorTest
 
 
 if [ "$1" = "update" ] && [ "$NEEDS_UPDATE" = true ]

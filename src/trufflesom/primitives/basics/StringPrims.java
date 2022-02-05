@@ -2,6 +2,8 @@ package trufflesom.primitives.basics;
 
 import static trufflesom.vm.SymbolTable.symbolFor;
 
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -51,6 +53,47 @@ public class StringPrims {
   }
 
   @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "charAt:", selector = "charAt:")
+  public abstract static class CharAtPrim extends BinaryMsgExprNode {
+
+    @CompilationFinal private boolean branchTaken;
+
+    @Override
+    public SSymbol getSelector() {
+      return SymbolTable.symbolFor("charAt:");
+    }
+
+    @Specialization
+    public final String doString(final String receiver, final long idx) {
+      int index = (int) idx;
+      if (0 < index && index <= receiver.length()) {
+        return receiver.substring(index - 1, index);
+      }
+
+      if (!branchTaken) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        branchTaken = true;
+      }
+      return "Error - index out of bounds";
+    }
+
+    @Specialization
+    public final String doSSymbol(final SSymbol receiver, final long idx) {
+      int index = (int) idx;
+      String s = receiver.getString();
+      if (0 < index && index <= s.length()) {
+        return s.substring(index - 1, index);
+      }
+
+      if (!branchTaken) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        branchTaken = true;
+      }
+      return "Error - index out of bounds";
+    }
+  }
+
+  @GenerateNodeFactory
   @Primitive(className = "String", primitive = "asSymbol")
   public abstract static class AsSymbolPrim extends UnaryExpressionNode {
     @Specialization
@@ -72,7 +115,7 @@ public class StringPrims {
         final long end) {
       try {
         return receiver.substring((int) start - 1, (int) end);
-      } catch (IndexOutOfBoundsException e) {
+      } catch (StringIndexOutOfBoundsException e) {
         return "Error - index out of bounds";
       }
     }
