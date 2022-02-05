@@ -69,6 +69,7 @@ import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.DoDFSCurrent;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.IsAncestor;
+import trufflesom.interpreter.ubernodes.JsonParserClass.JPRead;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
@@ -440,6 +441,10 @@ public class MethodGenerationContext
       }
       if (methodName.equals("initNode:dfs:")) {
         return smethod(new UFNInitNode(source, coord));
+      }
+    } else if (className.equals("JsonParser")) {
+      if (methodName.equals("read")) {
+        return smethod(new JPRead(source, coord));
       }
     }
 
