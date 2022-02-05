@@ -54,6 +54,8 @@ import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInli
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfMessageNodeGen.IfFalseMessageNodeFactory;
 import trufflesom.interpreter.nodes.specialized.IfMessageNodeGen.IfTrueMessageNodeFactory;
+import trufflesom.interpreter.nodes.specialized.IfNilInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfNotNilInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.FalseIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
@@ -316,6 +318,8 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
     List<Class<? extends Node>> nodes = new ArrayList<>();
 
     nodes.add(IfInlinedLiteralNode.class);
+    nodes.add(IfNilInlinedLiteralNode.class);
+    nodes.add(IfNotNilInlinedLiteralNode.class);
     nodes.add(TrueIfElseLiteralNode.class);
     nodes.add(FalseIfElseLiteralNode.class);
     nodes.add(AndInlinedLiteralNode.class);
