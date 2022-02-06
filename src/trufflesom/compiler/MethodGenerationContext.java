@@ -65,6 +65,8 @@ import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
+import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDIsInVoxel;
+import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDRecurse;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.DoDFSCurrent;
@@ -479,6 +481,13 @@ public class MethodGenerationContext
     } else if (className.equals("JsonNumber")) {
       if (holderGenc.isClassSide() && methodName.equals("new:")) {
         return smethod(new JNumberNew(source, coord));
+      }
+    } else if (className.equals("CollisionDetector")) {
+      if (methodName.equals("isInVoxel:motion:")) {
+        return smethod(new CDIsInVoxel(source, coord));
+      }
+      if (methodName.equals("recurse:seen:voxel:motion:")) {
+        return smethod(new CDRecurse(source, coord));
       }
     }
 
