@@ -7,8 +7,11 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Primitive;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -108,7 +111,8 @@ public class StringPrims {
   }
 
   @GenerateNodeFactory
-  @Primitive(className = "String", primitive = "primSubstringFrom:to:")
+  @Primitive(className = "String", primitive = "primSubstringFrom:to:",
+      selector = "primSubstringFrom:to:")
   public abstract static class SubstringPrim extends TernaryExpressionNode {
     @Specialization
     public final String doString(final String receiver, final long start,
@@ -124,6 +128,50 @@ public class StringPrims {
     public final String doSSymbol(final SSymbol receiver, final long start,
         final long end) {
       return doString(receiver.getString(), start, end);
+    }
+  }
+
+  /**
+   * Not normally a primitive, but seems the best place. It qualifies as an uber node, but is a
+   * core class, soo...
+   *
+   * <pre>
+   * substringFrom: start to: end = (
+        ((end <= self length) && (start > 0) && (start <= end))
+            ifTrue: [^self primSubstringFrom: start to: end]
+            ifFalse: [
+                self error: 'Attempting to index string out of its bounds (start: ' + start asString + ' end: ' + end asString + ' length: ' + self length asString + ')' ]
+    )
+   * </pre>
+   */
+  @GenerateNodeFactory
+  @Primitive(className = "String", primitive = "substringFrom:to:",
+      selector = "substringFrom:to:")
+  public abstract static class SubstringFrom extends TernaryExpressionNode {
+    @CompilationFinal private boolean   indexOutOfBounds;
+    @Child private AbstractDispatchNode dispatchError;
+
+    @Specialization
+    public final String doString(final VirtualFrame frame, final String receiver,
+        final long start, final long end) {
+      if (end <= receiver.length() && (start > 0) && (start <= end)) {
+        return receiver.substring((int) start - 1, (int) end);
+      } else {
+        if (!indexOutOfBounds) {
+          CompilerDirectives.transferToInterpreterAndInvalidate();
+          dispatchError = new UninitializedDispatchNode(SymbolTable.symbolFor("error:"));
+        }
+        dispatchError.executeDispatch(frame, new Object[] {receiver,
+            "Attempting to index string out of its bounds (start: " + start + " end: " + end
+                + " length: " + receiver.length() + ")"});
+        return receiver;
+      }
+    }
+
+    @Specialization
+    public final String doSSymbol(final VirtualFrame frame, final SSymbol receiver,
+        final long start, final long end) {
+      return doString(frame, receiver.getString(), start, end);
     }
   }
 
