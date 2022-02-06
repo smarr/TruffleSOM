@@ -26,10 +26,10 @@ public abstract class JsonParserClass {
           line := line + 1.
           column := 0.
         ].
-  
+
         index := index + 1.
         column := column + 1.
-  
+
         input ifNil: [ self error:'input nil'].
         index <= input length
           ifTrue:  [ current := input charAt: index ]
@@ -127,6 +127,108 @@ public abstract class JsonParserClass {
       }
 
       return rcvr;
+    }
+  }
+
+  /**
+   * <pre>
+   * readChar: ch = (
+      current = ch ifFalse: [ ^ false ].
+      self read.
+      ^ true
+    )
+   * </pre>
+   */
+  public static final class JPReadChar extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readCurrent;
+    @Child private AbstractDispatchNode  dispatchRead;
+
+    public JPReadChar(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readCurrent = FieldAccessorNode.createRead(4);
+      dispatchRead = new UninitializedDispatchNode(SymbolTable.symbolFor("read"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      String ch = (String) args[1];
+      if (!ch.equals(readCurrent.read(rcvr))) {
+        return false;
+      }
+
+      dispatchRead.executeDispatch(frame, new Object[] {rcvr});
+
+      return true;
+    }
+  }
+
+  /**
+   * <pre>
+   * isDigit = (
+    current = '0' ifTrue: [^ true].
+    current = '1' ifTrue: [^ true].
+    current = '2' ifTrue: [^ true].
+    current = '3' ifTrue: [^ true].
+    current = '4' ifTrue: [^ true].
+    current = '5' ifTrue: [^ true].
+    current = '6' ifTrue: [^ true].
+    current = '7' ifTrue: [^ true].
+    current = '8' ifTrue: [^ true].
+    current = '9' ifTrue: [^ true].
+    ^ false
+  )
+   * </pre>
+   */
+  public static final class JPIsDigit extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readCurrent;
+
+    public JPIsDigit(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readCurrent = FieldAccessorNode.createRead(4);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      Object current = readCurrent.read(rcvr);
+      if ("0".equals(current)) {
+        return true;
+      }
+      if ("1".equals(current)) {
+        return true;
+      }
+      if ("2".equals(current)) {
+        return true;
+      }
+      if ("3".equals(current)) {
+        return true;
+      }
+      if ("4".equals(current)) {
+        return true;
+      }
+      if ("5".equals(current)) {
+        return true;
+      }
+      if ("6".equals(current)) {
+        return true;
+      }
+      if ("7".equals(current)) {
+        return true;
+      }
+      if ("8".equals(current)) {
+        return true;
+      }
+      if ("9".equals(current)) {
+        return true;
+      }
+
+      return false;
     }
   }
 }

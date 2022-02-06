@@ -69,7 +69,9 @@ import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.DoDFSCurrent;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.IsAncestor;
+import trufflesom.interpreter.ubernodes.JsonParserClass.JPIsDigit;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPRead;
+import trufflesom.interpreter.ubernodes.JsonParserClass.JPReadChar;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
@@ -445,6 +447,12 @@ public class MethodGenerationContext
     } else if (className.equals("JsonParser")) {
       if (methodName.equals("read")) {
         return smethod(new JPRead(source, coord));
+      }
+      if (methodName.equals("readChar:")) {
+        return smethod(new JPReadChar(source, coord));
+      }
+      if (methodName.equals("isDigit")) {
+        return smethod(new JPIsDigit(source, coord));
       }
     }
 
