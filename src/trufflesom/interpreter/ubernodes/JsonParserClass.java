@@ -12,6 +12,8 @@ import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.primitives.basics.StringPrims.SubstringFrom;
+import trufflesom.primitives.basics.StringPrimsFactory.SubstringFromFactory;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
@@ -20,7 +22,7 @@ import trufflesom.vmobjects.SObject;
 public abstract class JsonParserClass {
   /**
    * <pre>
-   * | input index line column current captureBuffer captureStart exceptionBlock |
+   * | input index (1) line column current captureBuffer captureStart (6) exceptionBlock |
    * read = (
         current = '\n' ifTrue: [
           line := line + 1.
@@ -363,6 +365,107 @@ public abstract class JsonParserClass {
 
       dispatchExpected.executeDispatch(frame, new Object[] {rcvr, "value"});
       return rcvr;
+    }
+  }
+
+  /**
+   * <pre>
+   * startCapture = (
+        captureStart := index.
+      )
+   * </pre>
+   */
+  public static final class JPStartCapture extends AbstractInvokable {
+    @Child private AbstractReadFieldNode  readIndex;
+    @Child private AbstractWriteFieldNode writeCaptureStart;
+
+    public JPStartCapture(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readIndex = FieldAccessorNode.createRead(1);
+      writeCaptureStart = FieldAccessorNode.createWrite(6);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      long index = readIndex.readLongSafe(rcvr);
+      writeCaptureStart.write(rcvr, index);
+
+      return rcvr;
+    }
+  }
+
+  /**
+   * <pre>
+   * | input index (1) line column current captureBuffer captureStart (6) exceptionBlock |
+   * endCapture = (
+        | captured |
+        '' = captureBuffer
+          ifTrue:  [ captured := input substringFrom: captureStart to: index - 1 ]
+          ifFalse: [
+            self pauseCapture.
+            captured := captureBuffer.
+            captureBuffer := '' ].
+        captureStart := -1.
+  
+        ^ captured
+      )
+   * </pre>
+   */
+  public static final class JPEndCapture extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readCaptureBuffer;
+    @Child private AbstractReadFieldNode readCaptureStart;
+    @Child private AbstractReadFieldNode readInput;
+    @Child private AbstractReadFieldNode readIndex;
+
+    @Child private AbstractWriteFieldNode writeCaptureStart;
+    @Child private AbstractWriteFieldNode writeCaptureBuffer;
+
+    @Child private AbstractDispatchNode dispatchPauseCapture;
+
+    @Child private SubstringFrom substringFrom;
+
+    public JPEndCapture(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readCaptureBuffer = FieldAccessorNode.createRead(5);
+      readCaptureStart = FieldAccessorNode.createRead(6);
+      readInput = FieldAccessorNode.createRead(0);
+      readIndex = FieldAccessorNode.createRead(1);
+
+      writeCaptureStart = FieldAccessorNode.createWrite(6);
+      writeCaptureBuffer = FieldAccessorNode.createWrite(5);
+
+      dispatchPauseCapture =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("pauseCapture"));
+
+      substringFrom = SubstringFromFactory.create(null, null, null);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      Object captureBuffer = readCaptureBuffer.read(rcvr);
+      Object captured;
+      if ("".equals(captureBuffer)) {
+        String input = (String) readInput.read(rcvr);
+        long index = readIndex.readLongSafe(rcvr);
+        long captureStart = readCaptureStart.readLongSafe(rcvr);
+        captured = substringFrom.executeEvaluated(frame, input, captureStart, index - 1L);
+      } else {
+        dispatchPauseCapture.executeDispatch(frame, new Object[] {rcvr});
+        captured = captureBuffer;
+        writeCaptureBuffer.write(rcvr, "");
+      }
+
+      writeCaptureStart.write(rcvr, -1L);
+
+      return captured;
     }
   }
 }

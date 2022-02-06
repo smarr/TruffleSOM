@@ -69,11 +69,13 @@ import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.DoDFSCurrent;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.IsAncestor;
+import trufflesom.interpreter.ubernodes.JsonParserClass.JPEndCapture;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPIsDigit;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPIsWhiteSpace;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPRead;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPReadChar;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPReadValue;
+import trufflesom.interpreter.ubernodes.JsonParserClass.JPStartCapture;
 import trufflesom.interpreter.ubernodes.JsonValues.JNumberNew;
 import trufflesom.interpreter.ubernodes.JsonValues.JStringNew;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
@@ -463,6 +465,12 @@ public class MethodGenerationContext
       }
       if (methodName.equals("readValue")) {
         return smethod(new JPReadValue(source, coord));
+      }
+      if (methodName.equals("startCapture")) {
+        return smethod(new JPStartCapture(source, coord));
+      }
+      if (methodName.equals("endCapture")) {
+        return smethod(new JPEndCapture(source, coord));
       }
     } else if (className.equals("JsonString")) {
       if (holderGenc.isClassSide() && methodName.equals("new:")) {
