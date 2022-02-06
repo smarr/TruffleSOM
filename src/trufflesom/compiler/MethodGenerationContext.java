@@ -74,6 +74,8 @@ import trufflesom.interpreter.ubernodes.JsonParserClass.JPIsWhiteSpace;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPRead;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPReadChar;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPReadValue;
+import trufflesom.interpreter.ubernodes.JsonValues.JNumberNew;
+import trufflesom.interpreter.ubernodes.JsonValues.JStringNew;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListBenchmarkMethod;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementLength;
 import trufflesom.interpreter.ubernodes.ListBenchmark.ListElementNew;
@@ -461,6 +463,14 @@ public class MethodGenerationContext
       }
       if (methodName.equals("readValue")) {
         return smethod(new JPReadValue(source, coord));
+      }
+    } else if (className.equals("JsonString")) {
+      if (holderGenc.isClassSide() && methodName.equals("new:")) {
+        return smethod(new JStringNew(source, coord));
+      }
+    } else if (className.equals("JsonNumber")) {
+      if (holderGenc.isClassSide() && methodName.equals("new:")) {
+        return smethod(new JNumberNew(source, coord));
       }
     }
 
