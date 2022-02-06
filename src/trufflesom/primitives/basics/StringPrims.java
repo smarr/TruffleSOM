@@ -161,11 +161,17 @@ public class StringPrims {
           CompilerDirectives.transferToInterpreterAndInvalidate();
           dispatchError = new UninitializedDispatchNode(SymbolTable.symbolFor("error:"));
         }
-        dispatchError.executeDispatch(frame, new Object[] {receiver,
-            "Attempting to index string out of its bounds (start: " + start + " end: " + end
-                + " length: " + receiver.length() + ")"});
+        dispatchError.executeDispatch(frame,
+            new Object[] {receiver, errorMessage(receiver, start, end)});
         return receiver;
       }
+    }
+
+    @TruffleBoundary
+    private static String errorMessage(final String receiver, final long start,
+        final long end) {
+      return "Attempting to index string out of its bounds (start: " + start + " end: " + end
+          + " length: " + receiver.length() + ")";
     }
 
     @Specialization
