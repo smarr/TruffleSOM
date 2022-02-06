@@ -26,10 +26,10 @@ public abstract class JsonParserClass {
           line := line + 1.
           column := 0.
         ].
-
+  
         index := index + 1.
         column := column + 1.
-
+  
         input ifNil: [ self error:'input nil'].
         index <= input length
           ifTrue:  [ current := input charAt: index ]
@@ -229,6 +229,140 @@ public abstract class JsonParserClass {
       }
 
       return false;
+    }
+  }
+
+  /**
+   * <pre>
+   * isWhiteSpace = (
+        current = ' '  ifTrue: [^ true].
+        current = '\t' ifTrue: [^ true].
+        current = '\n' ifTrue: [^ true].
+        current = '\r' ifTrue: [^ true].
+        ^ false
+      )
+   * </pre>
+   */
+  public static final class JPIsWhiteSpace extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readCurrent;
+
+    public JPIsWhiteSpace(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readCurrent = FieldAccessorNode.createRead(4);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      Object current = readCurrent.read(rcvr);
+      if (" ".equals(current)) {
+        return true;
+      }
+      if ("\t".equals(current)) {
+        return true;
+      }
+      if ("\n".equals(current)) {
+        return true;
+      }
+      if ("\r".equals(current)) {
+        return true;
+      }
+
+      return false;
+    }
+  }
+
+  /**
+   * <pre>
+   * readValue = (
+        current = 'n' ifTrue: [ ^ self readNull   ].
+        current = 't' ifTrue: [ ^ self readTrue   ].
+        current = 'f' ifTrue: [ ^ self readFalse  ].
+        current = '"' ifTrue: [ ^ self readString ].
+        current = '[' ifTrue: [ ^ self readArray  ].
+        current = '{' ifTrue: [ ^ self readObject ].
+  
+        "Is this really the best way to write this?, or better #or:?,
+         but with all the nesting, it's just ugly."
+        current = '-' ifTrue: [ ^ self readNumber ].
+        current = '0' ifTrue: [ ^ self readNumber ].
+        current = '1' ifTrue: [ ^ self readNumber ].
+        current = '2' ifTrue: [ ^ self readNumber ].
+        current = '3' ifTrue: [ ^ self readNumber ].
+        current = '4' ifTrue: [ ^ self readNumber ].
+        current = '5' ifTrue: [ ^ self readNumber ].
+        current = '6' ifTrue: [ ^ self readNumber ].
+        current = '7' ifTrue: [ ^ self readNumber ].
+        current = '8' ifTrue: [ ^ self readNumber ].
+        current = '9' ifTrue: [ ^ self readNumber ].
+  
+        "else"
+        self expected: 'value'
+      )
+   * </pre>
+   */
+  public static final class JPReadValue extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readCurrent;
+    @Child private AbstractDispatchNode  dispatchReadNull;
+    @Child private AbstractDispatchNode  dispatchReadTrue;
+    @Child private AbstractDispatchNode  dispatchReadFalse;
+    @Child private AbstractDispatchNode  dispatchReadString;
+    @Child private AbstractDispatchNode  dispatchReadArray;
+    @Child private AbstractDispatchNode  dispatchReadObject;
+    @Child private AbstractDispatchNode  dispatchReadNumber;
+    @Child private AbstractDispatchNode  dispatchExpected;
+
+    public JPReadValue(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readCurrent = FieldAccessorNode.createRead(4);
+      dispatchReadNull = new UninitializedDispatchNode(SymbolTable.symbolFor("readNull"));
+      dispatchReadTrue = new UninitializedDispatchNode(SymbolTable.symbolFor("readTrue"));
+      dispatchReadFalse = new UninitializedDispatchNode(SymbolTable.symbolFor("readFalse"));
+      dispatchReadString = new UninitializedDispatchNode(SymbolTable.symbolFor("readString"));
+      dispatchReadArray = new UninitializedDispatchNode(SymbolTable.symbolFor("readArray"));
+      dispatchReadObject = new UninitializedDispatchNode(SymbolTable.symbolFor("readObject"));
+      dispatchReadNumber = new UninitializedDispatchNode(SymbolTable.symbolFor("readNumber"));
+      dispatchExpected = new UninitializedDispatchNode(SymbolTable.symbolFor("expected:"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      Object current = readCurrent.read(rcvr);
+      if ("n".equals(current)) {
+        return dispatchReadNull.executeDispatch(frame, new Object[] {rcvr});
+      }
+      if ("t".equals(current)) {
+        return dispatchReadTrue.executeDispatch(frame, new Object[] {rcvr});
+      }
+      if ("f".equals(current)) {
+        return dispatchReadFalse.executeDispatch(frame, new Object[] {rcvr});
+      }
+      if ("\"".equals(current)) {
+        return dispatchReadString.executeDispatch(frame, new Object[] {rcvr});
+      }
+      if ("[".equals(current)) {
+        return dispatchReadArray.executeDispatch(frame, new Object[] {rcvr});
+      }
+      if ("{".equals(current)) {
+        return dispatchReadObject.executeDispatch(frame, new Object[] {rcvr});
+      }
+
+      if ("-".equals(current) || "0".equals(current) || "1".equals(current)
+          || "2".equals(current) || "3".equals(current) || "4".equals(current)
+          || "5".equals(current) || "6".equals(current) || "7".equals(current)
+          || "8".equals(current) || "9".equals(current)) {
+        return dispatchReadNumber.executeDispatch(frame, new Object[] {rcvr});
+      }
+
+      dispatchExpected.executeDispatch(frame, new Object[] {rcvr, "value"});
+      return rcvr;
     }
   }
 }
