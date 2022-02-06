@@ -5,8 +5,12 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.interpreter.AbstractInvokable;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SObject;
 
 
@@ -17,7 +21,7 @@ public abstract class Vector2DClass {
         a = b ifTrue: [ ^  0 ].
         a < b ifTrue: [ ^ -1 ].
         a > b ifTrue: [ ^  1 ].
-  
+
         "We say that NaN is smaller than non-NaN."
         a = a ifTrue: [ ^ 1 ].
         ^ -1
@@ -84,6 +88,57 @@ public abstract class Vector2DClass {
       writeY.write(rcvr, y);
 
       return rcvr;
+    }
+  }
+
+  /**
+   * <pre>
+   * compareTo: other = (
+      | result |
+      result := self compare: x and: other x.
+      result <> 0 ifTrue: [ ^ result ].
+      ^ self compare: y and: other y
+    )
+   * </pre>
+   */
+  public static final class Vector2dCompareTo extends AbstractInvokable {
+    @Child private AbstractDispatchNode dispatchCompareAnd;
+    @Child private AbstractDispatchNode dispatchX;
+    @Child private AbstractDispatchNode dispatchY;
+
+    @Child private AbstractReadFieldNode readX;
+    @Child private AbstractReadFieldNode readY;
+
+    public Vector2dCompareTo(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      dispatchCompareAnd =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("compare:and:"));
+      dispatchX = new UninitializedDispatchNode(SymbolTable.symbolFor("x"));
+      dispatchY = new UninitializedDispatchNode(SymbolTable.symbolFor("y"));
+
+      readX = FieldAccessorNode.createRead(0);
+      readY = FieldAccessorNode.createRead(1);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object other = args[1];
+
+      long result = (Long) dispatchCompareAnd.executeDispatch(frame, new Object[] {
+          rcvr,
+          readX.read(rcvr),
+          dispatchX.executeDispatch(frame, new Object[] {other})});
+
+      if (result != 0L) {
+        return result;
+      }
+
+      return dispatchCompareAnd.executeDispatch(frame, new Object[] {
+          rcvr,
+          readY.read(rcvr),
+          dispatchY.executeDispatch(frame, new Object[] {other})});
     }
   }
 }

@@ -67,6 +67,7 @@ import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDIsInVoxel;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDRecurse;
+import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CallSignCompareTo;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.DoDFSCurrent;
@@ -94,6 +95,9 @@ import trufflesom.interpreter.ubernodes.RandomClass.RandomClassInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomNext;
+import trufflesom.interpreter.ubernodes.RedBlackTreeClass.IRInit;
+import trufflesom.interpreter.ubernodes.RedBlackTreeClass.NodeInit;
+import trufflesom.interpreter.ubernodes.RedBlackTreeClass.RBTAtPut;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAt;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAtPut;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
@@ -105,6 +109,7 @@ import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitNode;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitialize;
 import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dCompareAnd;
+import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dCompareTo;
 import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dInitXY;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAppend;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorAt;
@@ -442,6 +447,9 @@ public class MethodGenerationContext
       if (methodName.equals("compare:and:")) {
         return smethod(new Vector2dCompareAnd(source, coord));
       }
+      if (methodName.equals("compareTo:")) {
+        return smethod(new Vector2dCompareTo(source, coord));
+      }
       if (methodName.equals("initX:y:")) {
         return smethod(new Vector2dInitXY(source, coord));
       }
@@ -488,6 +496,22 @@ public class MethodGenerationContext
       }
       if (methodName.equals("recurse:seen:voxel:motion:")) {
         return smethod(new CDRecurse(source, coord));
+      }
+    } else if (className.equals("RedBlackTree")) {
+      if (methodName.equals("at:put:")) {
+        return smethod(new RBTAtPut(source, coord));
+      }
+    } else if (className.equals("InsertResult")) {
+      if (methodName.equals("init:node:value:")) {
+        return smethod(new IRInit(source, coord));
+      }
+    } else if (className.equals("CallSign")) {
+      if (methodName.equals("compareTo:")) {
+        return smethod(new CallSignCompareTo(source, coord));
+      }
+    } else if (className.equals("Node")) {
+      if (methodName.equals("init:value:")) {
+        return smethod(new NodeInit(source, coord));
       }
     }
 

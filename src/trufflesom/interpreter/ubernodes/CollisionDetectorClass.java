@@ -10,6 +10,8 @@ import trufflesom.interpreter.AbstractInvokable;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.vm.Globals;
 import trufflesom.vm.Globals.Association;
 import trufflesom.vm.SymbolTable;
@@ -466,6 +468,46 @@ public abstract class CollisionDetectorClass {
         GlobalNode.sendUnknownGlobalToMethodRcvr(rcvr, sym);
         globalConstants = Globals.getGlobalsAssociation(sym);
       }
+    }
+  }
+
+  /**
+   * <pre>
+   *   | value |.
+   *   compareTo: other = (
+        ^ value = other value
+            ifTrue:  [ 0 ]
+            ifFalse: [
+              value < other value ifTrue: [ -1 ] ifFalse: [ 1 ]]
+      )
+   * </pre>
+   */
+  public static final class CallSignCompareTo extends AbstractInvokable {
+    @Child private AbstractDispatchNode  dispatchValue;
+    @Child private AbstractReadFieldNode readValue;
+
+    public CallSignCompareTo(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      readValue = FieldAccessorNode.createRead(0);
+      dispatchValue = new UninitializedDispatchNode(SymbolTable.symbolFor("value"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object other = args[1];
+
+      long value = readValue.readLongSafe(rcvr);
+      if (value == (Long) dispatchValue.executeDispatch(frame, new Object[] {other})) {
+        return 0L;
+      }
+
+      value = readValue.readLongSafe(rcvr);
+      if (value < (Long) dispatchValue.executeDispatch(frame, new Object[] {other})) {
+        return -1L;
+      }
+      return 1L;
     }
   }
 }
