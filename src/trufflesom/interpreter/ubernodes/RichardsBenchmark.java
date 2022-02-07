@@ -143,6 +143,70 @@ public abstract class RichardsBenchmark {
 
   /**
    * <pre>
+   * packetPending = (
+   *   packetPending := true.
+   *   taskWaiting := false.
+   *   taskHolding := false
+   * )
+   * </pre>
+   */
+  public static final class TSPacketPending extends AbstractInvokable {
+    @Child private AbstractWriteFieldNode writeTaskHolding;
+    @Child private AbstractWriteFieldNode writePacketPending;
+    @Child private AbstractWriteFieldNode writeTaskWaiting;
+
+    public TSPacketPending(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      writePacketPending = FieldAccessorNode.createWrite(0);
+      writeTaskWaiting = FieldAccessorNode.createWrite(1);
+      writeTaskHolding = FieldAccessorNode.createWrite(2);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      writePacketPending.write(rcvr, true);
+      writeTaskWaiting.write(rcvr, false);
+      writeTaskHolding.write(rcvr, false);
+      return rcvr;
+    }
+  }
+
+  /**
+   * <pre>
+    running = (
+        packetPending := taskWaiting := taskHolding := false.
+    )
+   * </pre>
+   */
+  public static final class TSRunning extends AbstractInvokable {
+    @Child private AbstractWriteFieldNode writeTaskHolding;
+    @Child private AbstractWriteFieldNode writePacketPending;
+    @Child private AbstractWriteFieldNode writeTaskWaiting;
+
+    public TSRunning(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      writePacketPending = FieldAccessorNode.createWrite(0);
+      writeTaskWaiting = FieldAccessorNode.createWrite(1);
+      writeTaskHolding = FieldAccessorNode.createWrite(2);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      writeTaskHolding.write(rcvr, false);
+      writeTaskWaiting.write(rcvr, false);
+      writePacketPending.write(rcvr, false);
+      return rcvr;
+    }
+  }
+
+  /**
+   * <pre>
    * append: packet head: queueHead = (
       | mouse link |
       packet link: RBObject NoWork.
@@ -244,7 +308,6 @@ public abstract class RichardsBenchmark {
    *
    * </pre>
    */
-
   public static final class TCBAddInputCheckPriority extends AbstractInvokable {
     @Child private AbstractReadFieldNode  readInput;
     @Child private AbstractWriteFieldNode writeInput;
@@ -311,4 +374,161 @@ public abstract class RichardsBenchmark {
     }
   }
 
+  /**
+   * <pre>
+   * |taskList currentTask(1) currentTaskIdentity taskTable(3) tracing layout(5) queuePacketCount holdCount(7)|
+   * release: identity = (
+      | t |
+      t := self findTask: identity.
+      RBObject NoTask == t ifTrue: [ ^ RBObject NoTask ].
+      t taskHolding: false.
+      t priority > currentTask priority
+        ifTrue:  [ ^ t ]
+        ifFalse: [ ^ currentTask ]
+    )
+   * </pre>
+   */
+  public static final class RBRelease extends AbstractInvokable {
+    @CompilationFinal Association globalRBObject;
+
+    @Child private AbstractDispatchNode dispatchFindTask;
+    @Child private AbstractDispatchNode dispatchNoTask;
+    @Child private AbstractDispatchNode dispatchTaskHolding;
+    @Child private AbstractDispatchNode dispatchPriority;
+
+    @Child private AbstractReadFieldNode readCurrentTask;
+
+    public RBRelease(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      dispatchFindTask = new UninitializedDispatchNode(SymbolTable.symbolFor("findTask:"));
+      dispatchNoTask = new UninitializedDispatchNode(SymbolTable.symbolFor("NoTask"));
+      dispatchTaskHolding =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("taskHolding:"));
+      dispatchPriority = new UninitializedDispatchNode(SymbolTable.symbolFor("priority"));
+
+      readCurrentTask = FieldAccessorNode.createRead(1);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object identity = args[1];
+
+      Object t = dispatchFindTask.executeDispatch(frame, new Object[] {rcvr, identity});
+
+      if (globalRBObject == null) {
+        lookupRBObject(rcvr);
+      }
+
+      if (dispatchNoTask.executeDispatch(frame,
+          new Object[] {globalRBObject.getValue()}) == t) {
+        return dispatchNoTask.executeDispatch(frame, new Object[] {globalRBObject.getValue()});
+      }
+
+      dispatchTaskHolding.executeDispatch(frame, new Object[] {t, false});
+
+      if ((Long) dispatchPriority.executeDispatch(frame,
+          new Object[] {t}) > (Long) dispatchPriority.executeDispatch(frame,
+              new Object[] {readCurrentTask.read(rcvr)})) {
+        return t;
+      }
+      return readCurrentTask.read(rcvr);
+    }
+
+    private void lookupRBObject(final Object rcvr) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
+      SSymbol sym = SymbolTable.symbolFor("RBObject");
+      globalRBObject = Globals.getGlobalsAssociation(sym);
+
+      if (globalRBObject == null) {
+        GlobalNode.sendUnknownGlobalToMethodRcvr(rcvr, sym);
+        globalRBObject = Globals.getGlobalsAssociation(sym);
+      }
+    }
+  }
+
+  /**
+   * <pre>
+   * wait = (
+        currentTask taskWaiting: true.
+        ^currentTask
+     )
+   * </pre>
+   */
+  public static final class RBWait extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readCurrentTask;
+    @Child private AbstractDispatchNode  dispatchTaskWaiting;
+
+    public RBWait(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readCurrentTask = FieldAccessorNode.createRead(1);
+      dispatchTaskWaiting =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("taskWaiting:"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      dispatchTaskWaiting.executeDispatch(frame,
+          new Object[] {readCurrentTask.read(rcvr), true});
+      return readCurrentTask.read(rcvr);
+    }
+  }
+
+  /**
+   * <pre>
+   * holdSelf = (
+        holdCount := holdCount + 1.
+        currentTask taskHolding: true.
+        ^ currentTask link
+     )
+   * </pre>
+   */
+  public static final class RBHoldSelf extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readCurrentTask;
+    @Child private AbstractReadFieldNode readHoldCount;
+
+    @Child private AbstractWriteFieldNode writeHoldCount;
+
+    @Child private AbstractDispatchNode dispatchTaskHolding;
+    @Child private AbstractDispatchNode dispatchLink;
+
+    public RBHoldSelf(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readCurrentTask = FieldAccessorNode.createRead(1);
+      readHoldCount = FieldAccessorNode.createRead(7);
+      writeHoldCount = FieldAccessorNode.createWrite(7);
+
+      dispatchTaskHolding =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("taskHolding:"));
+      dispatchLink =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("link"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      long count = readHoldCount.readLongSafe(rcvr);
+      try {
+        count = Math.addExact(count, 1);
+      } catch (ArithmeticException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        throw new UnsupportedOperationException();
+      }
+
+      writeHoldCount.write(rcvr, count);
+
+      dispatchTaskHolding.executeDispatch(frame,
+          new Object[] {readCurrentTask.read(rcvr), true});
+      return dispatchLink.executeDispatch(frame, new Object[] {readCurrentTask.read(rcvr)});
+    }
+  }
 }

@@ -98,11 +98,16 @@ import trufflesom.interpreter.ubernodes.RandomClass.RandomNext;
 import trufflesom.interpreter.ubernodes.RedBlackTreeClass.IRInit;
 import trufflesom.interpreter.ubernodes.RedBlackTreeClass.NodeInit;
 import trufflesom.interpreter.ubernodes.RedBlackTreeClass.RBTAtPut;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.RBHoldSelf;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.RBOAppendHead;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.RBRelease;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.RBWait;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.SchedulerFindTask;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.TCBAddInputCheckPriority;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSIsTask;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSIsWaitingWithPacket;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSPacketPending;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSRunning;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAt;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAtPut;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
@@ -522,12 +527,29 @@ public class MethodGenerationContext
       if (methodName.equals("findTask:")) {
         return smethod(new SchedulerFindTask(source, coord));
       }
-    } else if (className.equals("TaskState")) {
-      if (methodName.equals("isTaskHoldingOrWaiting")) {
-        return smethod(new TSIsTask(source, coord));
+      if (methodName.equals("release:")) {
+        return smethod(new RBRelease(source, coord));
       }
-      if (methodName.equals("isWaitingWithPacket")) {
-        return smethod(new TSIsWaitingWithPacket(source, coord));
+      if (methodName.equals("wait")) {
+        return smethod(new RBWait(source, coord));
+      }
+      if (methodName.equals("holdSelf")) {
+        return smethod(new RBHoldSelf(source, coord));
+      }
+    } else if (className.equals("TaskState")) {
+      if (!holderGenc.isClassSide()) {
+        if (methodName.equals("isTaskHoldingOrWaiting")) {
+          return smethod(new TSIsTask(source, coord));
+        }
+        if (methodName.equals("isWaitingWithPacket")) {
+          return smethod(new TSIsWaitingWithPacket(source, coord));
+        }
+        if (methodName.equals("packetPending")) {
+          return smethod(new TSPacketPending(source, coord));
+        }
+        if (methodName.equals("running")) {
+          return smethod(new TSRunning(source, coord));
+        }
       }
     } else if (className.equals("RBObject")) {
       if (methodName.equals("append:head:")) {
