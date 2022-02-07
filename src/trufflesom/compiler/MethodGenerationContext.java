@@ -98,6 +98,11 @@ import trufflesom.interpreter.ubernodes.RandomClass.RandomNext;
 import trufflesom.interpreter.ubernodes.RedBlackTreeClass.IRInit;
 import trufflesom.interpreter.ubernodes.RedBlackTreeClass.NodeInit;
 import trufflesom.interpreter.ubernodes.RedBlackTreeClass.RBTAtPut;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.RBOAppendHead;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.SchedulerFindTask;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.TCBAddInputCheckPriority;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSIsTask;
+import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSIsWaitingWithPacket;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAt;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAtPut;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
@@ -512,6 +517,25 @@ public class MethodGenerationContext
     } else if (className.equals("Node")) {
       if (methodName.equals("init:value:")) {
         return smethod(new NodeInit(source, coord));
+      }
+    } else if (className.equals("Scheduler") || className.equals("RichardsBenchmarks")) {
+      if (methodName.equals("findTask:")) {
+        return smethod(new SchedulerFindTask(source, coord));
+      }
+    } else if (className.equals("TaskState")) {
+      if (methodName.equals("isTaskHoldingOrWaiting")) {
+        return smethod(new TSIsTask(source, coord));
+      }
+      if (methodName.equals("isWaitingWithPacket")) {
+        return smethod(new TSIsWaitingWithPacket(source, coord));
+      }
+    } else if (className.equals("RBObject")) {
+      if (methodName.equals("append:head:")) {
+        return smethod(new RBOAppendHead(source, coord));
+      }
+    } else if (className.equals("TaskControlBlock")) {
+      if (methodName.equals("addInput:checkPriority:")) {
+        return smethod(new TCBAddInputCheckPriority(source, coord));
       }
     }
 
