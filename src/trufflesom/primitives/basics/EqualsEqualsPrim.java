@@ -12,6 +12,7 @@ import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 @Primitive(className = "Integer", primitive = "==")
 @Primitive(className = "Double", primitive = "==")
 @Primitive(className = "Object", primitive = "==")
+@Primitive(className = "Object", primitive = "=")
 @Primitive(selector = "==")
 public abstract class EqualsEqualsPrim extends BinaryExpressionNode {
   @Specialization
