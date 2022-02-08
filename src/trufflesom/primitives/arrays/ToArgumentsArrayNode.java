@@ -6,6 +6,9 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeChildren;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
@@ -13,15 +16,17 @@ import trufflesom.vmobjects.SArray;
 
 
 @GenerateNodeFactory
+@GenerateWrapper
 @NodeChildren({
     @NodeChild("somArray"),
     @NodeChild("receiver")})
 public abstract class ToArgumentsArrayNode extends NoPreEvalExprNode {
 
-  public abstract Object[] executedEvaluated(SArray somArray, Object rcvr);
+  public abstract Object[] executedEvaluated(VirtualFrame frame, SArray somArray, Object rcvr);
 
-  public final Object[] executedEvaluated(final Object somArray, final Object rcvr) {
-    return executedEvaluated((SArray) somArray, rcvr);
+  public final Object[] executedEvaluated(final VirtualFrame frame, final Object somArray,
+      final Object rcvr) {
+    return executedEvaluated(frame, (SArray) somArray, rcvr);
   }
 
   @Specialization(guards = "somArray == null")
@@ -91,5 +96,10 @@ public abstract class ToArgumentsArrayNode extends NoPreEvalExprNode {
       args[i + 1] = arr[i];
     }
     return args;
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new ToArgumentsArrayNodeWrapper(this, probe);
   }
 }

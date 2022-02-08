@@ -32,6 +32,8 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.GenerateWrapper;
+import com.oracle.truffle.api.instrumentation.ProbeNode;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.primitives.nodes.PreevaluatedExpression;
@@ -48,6 +50,7 @@ import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SSymbol;
 
 
+@GenerateWrapper
 public abstract class GlobalNode extends ExpressionNode
     implements Invocation<SSymbol>, PreevaluatedExpression {
 
@@ -82,6 +85,15 @@ public abstract class GlobalNode extends ExpressionNode
 
   public GlobalNode(final SSymbol globalName) {
     this.globalName = globalName;
+  }
+
+  protected GlobalNode() {
+    this.globalName = null;
+  }
+
+  @Override
+  public WrapperNode createWrapper(final ProbeNode probe) {
+    return new GlobalNodeWrapper(this, probe);
   }
 
   @Override
