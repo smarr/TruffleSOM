@@ -67,8 +67,8 @@ runTest SpecialSelectorsTest
 # runTest ArrayTest
 # runTest BlockTest
 runTest BooleanTest
-runTest ClassLoadingTest
-runTest ClassStructureTest
+# runTest ClassLoadingTest
+# runTest ClassStructureTest
 runTest ClosureTest
 runTest CoercionTest
 runTest CompilerReturnTest

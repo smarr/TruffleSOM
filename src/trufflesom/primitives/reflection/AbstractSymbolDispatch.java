@@ -116,7 +116,7 @@ public abstract class AbstractSymbolDispatch extends Node
       @Cached("selector") final SSymbol cachedSelector,
       @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend,
       @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
-    Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
+    Object[] arguments = toArgArray.executedEvaluated(frame, argsArr, receiver);
 
     PreevaluatedExpression realCachedSend = cachedSend;
     return realCachedSend.doPreEvaluated(frame, arguments);
@@ -140,7 +140,7 @@ public abstract class AbstractSymbolDispatch extends Node
       @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
 
-    Object[] arguments = toArgArray.executedEvaluated(argsArr, receiver);
+    Object[] arguments = toArgArray.executedEvaluated(null, argsArr, receiver);
 
     return call.call(invokable.getCallTarget(), arguments);
   }

@@ -564,7 +564,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     SMethod blockMethod = (SMethod) mgenc.getConstant(10);
     BytecodeLoopNode blockNode =
-        read(blockMethod.getInvokable(), "expressionOrSequence", BytecodeLoopNode.class);
+        read(blockMethod.getInvokable(), "body", BytecodeLoopNode.class);
     byte[] blockBytecodes = blockNode.getBytecodeArray();
 
     check(blockBytecodes,
@@ -576,7 +576,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     blockMethod = (SMethod) blockNode.getConstant(blockBytecodes[14 + 1]);
 
     check(
-        read(blockMethod.getInvokable(), "expressionOrSequence",
+        read(blockMethod.getInvokable(), "body",
             BytecodeLoopNode.class).getBytecodeArray(),
         new BC(Bytecodes.PUSH_ARGUMENT, 1, 2, "arg a"),
         t(4, new BC(Bytecodes.PUSH_LOCAL, 0, 2, "local b")),
@@ -949,7 +949,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     SMethod blockMethod = (SMethod) mgenc.getConstant(-1);
 
     check(
-        read(blockMethod.getInvokable(), "expressionOrSequence",
+        read(blockMethod.getInvokable(), "body",
             BytecodeLoopNode.class).getBytecodeArray(),
         t(6, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local b")),
         Bytecodes.POP);

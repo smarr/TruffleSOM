@@ -23,6 +23,7 @@ package trufflesom.interpreter;
 
 import java.util.Objects;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
@@ -30,6 +31,7 @@ import com.oracle.truffle.api.source.Source;
 
 import bd.inlining.Scope;
 import bd.inlining.ScopeAdaptationVisitor;
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -40,13 +42,23 @@ public final class Method extends Invokable {
 
   private final LexicalScope currentLexicalScope;
 
+  @Child protected ExpressionNode body;
+
+  protected final ExpressionNode uninitializedBody;
+
   public Method(final String name, final Source source, final long sourceCoord,
       final ExpressionNode expressions, final LexicalScope currentLexicalScope,
       final ExpressionNode uninitialized) {
-    super(name, source, sourceCoord, currentLexicalScope.getFrameDescriptor(), expressions,
-        uninitialized);
+    super(name, source, sourceCoord, currentLexicalScope.getFrameDescriptor());
     this.currentLexicalScope = currentLexicalScope;
     currentLexicalScope.setMethod(this);
+    body = expressions;
+    uninitializedBody = uninitialized;
+  }
+
+  @Override
+  public Object execute(final VirtualFrame frame) {
+    return body.executeGeneric(frame);
   }
 
   public LexicalScope getScope() {
@@ -127,8 +139,12 @@ public final class Method extends Invokable {
   @Override
   public boolean isTrivial() {
     if (currentLexicalScope.isBlock()) {
-      return expressionOrSequence.isTrivialInBlock();
+      return body.isTrivialInBlock();
     }
-    return expressionOrSequence.isTrivial();
+    return body.isTrivial();
+  }
+
+  public PreevaluatedExpression copyTrivialNode() {
+    return body.copyTrivialNode();
   }
 }
