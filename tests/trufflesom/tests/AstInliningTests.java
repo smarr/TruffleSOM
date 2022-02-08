@@ -210,7 +210,7 @@ public class AstInliningTests extends AstTestSetup {
     BlockNode blockNode =
         (BlockNode) read(read(ifTrueNode, "bodyNode"), "expressions", 1);
     NonLocalVariableWriteNode write = (NonLocalVariableWriteNode) read(
-        read(blockNode.getMethod().getInvokable(), "expressionOrSequence"), "expressions", 0);
+        read(blockNode.getMethod().getInvokable(), "body"), "expressions", 0);
     assertEquals(1, write.getContextLevel());
     assertEquals("a", write.getInvocationIdentifier().getString());
 
