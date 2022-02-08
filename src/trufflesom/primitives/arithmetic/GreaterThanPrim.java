@@ -27,14 +27,8 @@ public abstract class GreaterThanPrim extends ArithmeticPrim {
   }
 
   @Specialization
-  @TruffleBoundary
-  public final boolean doBigInteger(final BigInteger left, final BigInteger right) {
-    return left.compareTo(right) > 0;
-  }
-
-  @Specialization
-  public final boolean doDouble(final double left, final double right) {
-    return left > right;
+  public final boolean doLong(final long left, final double right) {
+    return doDouble(left, right);
   }
 
   @Specialization
@@ -44,24 +38,30 @@ public abstract class GreaterThanPrim extends ArithmeticPrim {
   }
 
   @Specialization
-  public final boolean doLong(final long left, final double right) {
-    return doDouble(left, right);
-  }
-
-  @Specialization
-  @TruffleBoundary
-  public final boolean doBigInteger(final BigInteger left, final long right) {
-    return doBigInteger(left, BigInteger.valueOf(right));
-  }
-
-  @Specialization
   public final boolean doDouble(final double left, final long right) {
     return doDouble(left, (double) right);
+  }
+
+  @Specialization
+  public final boolean doDouble(final double left, final double right) {
+    return left > right;
   }
 
   @Specialization
   @TruffleBoundary
   public final boolean doDouble(final double left, final BigInteger right) {
     return left > right.doubleValue();
+  }
+
+  @Specialization
+  @TruffleBoundary
+  public final boolean doBigInteger(final BigInteger left, final BigInteger right) {
+    return left.compareTo(right) > 0;
+  }
+
+  @Specialization
+  @TruffleBoundary
+  public final boolean doBigInteger(final BigInteger left, final long right) {
+    return doBigInteger(left, BigInteger.valueOf(right));
   }
 }
