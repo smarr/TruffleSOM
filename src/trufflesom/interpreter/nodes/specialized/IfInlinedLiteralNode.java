@@ -55,4 +55,8 @@ public final class IfInlinedLiteralNode extends NoPreEvalExprNode {
       return Nil.nilObject;
     }
   }
+
+  public ExpressionNode getBodyNode() {
+    return bodyNode;
+  }
 }

@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.Source;
 
@@ -61,6 +62,7 @@ import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
@@ -70,6 +72,8 @@ import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDRecurse;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CallSignCompareTo;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
+import trufflesom.interpreter.ubernodes.DictionaryClass.DictAtBlock;
+import trufflesom.interpreter.ubernodes.DictionaryClass.DictContainsKeyBlock;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.DoDFSCurrent;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.IsAncestor;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPEndCapture;
@@ -568,6 +572,23 @@ public class MethodGenerationContext
     } else if (className.equals("SMethod")) {
       if (methodName.equals("bytecode:")) {
         return smethod(new SMethodBytecode(source, coord));
+      }
+    } else if (className.equals("Dictionary")) {
+      if (blockMethod) {
+        if (methodName.startsWith("λat⫶@")) {
+          assert body instanceof IfInlinedLiteralNode;
+          ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
+          assert bodyOfIf instanceof ReturnNonLocalNode;
+          FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
+          return smethod(new DictAtBlock(source, coord, onStackMarker));
+        }
+        if (methodName.startsWith("λcontainsKey⫶@")) {
+          assert body instanceof IfInlinedLiteralNode;
+          ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
+          assert bodyOfIf instanceof ReturnNonLocalNode;
+          FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
+          return smethod(new DictContainsKeyBlock(source, coord, onStackMarker));
+        }
       }
     }
 

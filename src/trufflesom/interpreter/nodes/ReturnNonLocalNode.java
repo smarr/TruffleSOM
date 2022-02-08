@@ -58,6 +58,10 @@ public final class ReturnNonLocalNode extends ContextualNode {
     this(node.expression, node.onStackMarkerVar, node.contextLevel);
   }
 
+  public FrameSlot getFrameOnStackMarker() {
+    return frameOnStackMarker;
+  }
+
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
     Object result = expression.executeGeneric(frame);
