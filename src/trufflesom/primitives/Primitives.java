@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
@@ -221,19 +222,16 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
       final Specializer<ExpressionNode, SSymbol> specializer,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
+
     final int numArgs = signature.getNumberOfSignatureArguments();
 
-    MethodGenerationContext mgen = new MethodGenerationContext(probe);
+    // args is needed to communicate the number of arguments to the constructor
     ExpressionNode[] args = new ExpressionNode[numArgs];
-    for (int i = 0; i < numArgs; i++) {
-      args[i] = new LocalArgumentReadNode(true, i).initialize(coord);
-    }
 
     ExpressionNode primNode = specializer.create(null, args, coord);
 
     Primitive primMethodNode = new Primitive(signature.getString(), source, coord, primNode,
-        mgen.getCurrentLexicalScope().getFrameDescriptor(),
-        (ExpressionNode) primNode.deepCopy());
+        new FrameDescriptor(), (ExpressionNode) primNode.deepCopy());
     return new SPrimitive(signature, primMethodNode);
   }
 

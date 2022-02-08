@@ -1,7 +1,6 @@
 package trufflesom.interpreter;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
@@ -20,22 +19,14 @@ public abstract class Invokable extends RootNode implements WithSource {
   protected final Source source;
   protected final long   sourceCoord;
 
-  @Child protected ExpressionNode expressionOrSequence;
-
-  protected final ExpressionNode uninitializedBody;
-
   protected SClass holder;
 
   protected Invokable(final String name, final Source source, final long sourceCoord,
-      final FrameDescriptor frameDescriptor,
-      final ExpressionNode expressionOrSequence,
-      final ExpressionNode uninitialized) {
+      final FrameDescriptor frameDescriptor) {
     super(SomLanguage.getCurrent(), frameDescriptor);
     this.name = name;
     this.source = source;
     this.sourceCoord = sourceCoord;
-    this.uninitializedBody = uninitialized;
-    this.expressionOrSequence = expressionOrSequence;
   }
 
   @SuppressWarnings("unchecked")
@@ -69,11 +60,6 @@ public abstract class Invokable extends RootNode implements WithSource {
     return SourceCoordinate.createSourceSection(source, sourceCoord);
   }
 
-  @Override
-  public final Object execute(final VirtualFrame frame) {
-    return expressionOrSequence.executeGeneric(frame);
-  }
-
   /** Inline invokable into the lexical context of the target method generation context. */
   public abstract ExpressionNode inline(MethodGenerationContext targetMgenc,
       SMethod toBeInlined);
@@ -94,11 +80,7 @@ public abstract class Invokable extends RootNode implements WithSource {
   }
 
   @Override
-  public boolean isTrivial() {
-    return expressionOrSequence.isTrivial();
-  }
+  public abstract boolean isTrivial();
 
-  public PreevaluatedExpression copyTrivialNode() {
-    return expressionOrSequence.copyTrivialNode();
-  }
+  public abstract PreevaluatedExpression copyTrivialNode();
 }
