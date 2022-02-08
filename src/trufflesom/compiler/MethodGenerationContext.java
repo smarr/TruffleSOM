@@ -136,6 +136,7 @@ import trufflesom.interpreter.ubernodes.VectorClass.VectorIsEmpty;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorSize;
 import trufflesom.primitives.Primitives;
+import trufflesom.vm.VmSettings;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -300,294 +301,296 @@ public class MethodGenerationContext
     String methodName = signature.getString();
     Source source = holderGenc.getSource();
 
-    if (className.equals("BenchmarkHarness")) {
-      if (methodName.equals("doRuns:")) {
-        return smethod(new BenchmarkHarnessDoRuns(source, coord));
-      }
-    } else if (className.equals("Benchmark")) {
-      if (methodName.equals("innerBenchmarkLoop:")) {
-        return smethod(new BenchmarkInnerBenchmarkLoop(source, coord));
-      }
-    } else if (className.equals("List")) {
-      if (methodName.equals("benchmark")) {
-        return smethod(new ListBenchmarkMethod(source, coord));
-      }
+    if (VmSettings.UseAstInterp) {
+      if (className.equals("BenchmarkHarness")) {
+        if (methodName.equals("doRuns:")) {
+          return smethod(new BenchmarkHarnessDoRuns(source, coord));
+        }
+      } else if (className.equals("Benchmark")) {
+        if (methodName.equals("innerBenchmarkLoop:")) {
+          return smethod(new BenchmarkInnerBenchmarkLoop(source, coord));
+        }
+      } else if (className.equals("List")) {
+        if (methodName.equals("benchmark")) {
+          return smethod(new ListBenchmarkMethod(source, coord));
+        }
 
-      if (methodName.equals("verifyResult:")) {
-        return smethod(new ListVerifyResult(source, coord));
-      }
+        if (methodName.equals("verifyResult:")) {
+          return smethod(new ListVerifyResult(source, coord));
+        }
 
-      if (methodName.equals("makeList:")) {
-        return smethod(new ListMakeList(source, coord));
-      }
+        if (methodName.equals("makeList:")) {
+          return smethod(new ListMakeList(source, coord));
+        }
 
-      if (methodName.equals("isShorter:than:")) {
-        return smethod(new ListIsShorter(source, coord));
-      }
+        if (methodName.equals("isShorter:than:")) {
+          return smethod(new ListIsShorter(source, coord));
+        }
 
-      if (methodName.equals("tailWithX:withY:withZ:")) {
-        return smethod(new ListTail(source, coord));
-      }
-    } else if (className.equals("ListElement")) {
-      if (methodName.equals("length")) {
-        return smethod(new ListElementLength(source, coord));
-      }
+        if (methodName.equals("tailWithX:withY:withZ:")) {
+          return smethod(new ListTail(source, coord));
+        }
+      } else if (className.equals("ListElement")) {
+        if (methodName.equals("length")) {
+          return smethod(new ListElementLength(source, coord));
+        }
 
-      if (holderGenc.isClassSide() && methodName.equals("new:")) {
-        return smethod(new ListElementNew(source, coord));
-      }
-    } else if (className.equals("Mandelbrot")) {
-      if (methodName.equals("innerBenchmarkLoop:")) {
-        return smethod(new MandelbrotInnerBenchmarkLoop(source, coord));
-      }
+        if (holderGenc.isClassSide() && methodName.equals("new:")) {
+          return smethod(new ListElementNew(source, coord));
+        }
+      } else if (className.equals("Mandelbrot")) {
+        if (methodName.equals("innerBenchmarkLoop:")) {
+          return smethod(new MandelbrotInnerBenchmarkLoop(source, coord));
+        }
 
-      if (methodName.equals("verify:inner:")) {
-        return smethod(new MandelbrotVerifyInner(source, coord));
-      }
+        if (methodName.equals("verify:inner:")) {
+          return smethod(new MandelbrotVerifyInner(source, coord));
+        }
 
-      if (methodName.equals("mandelbrot:")) {
-        return smethod(MandelbrotMandelbrot.create(source, coord));
-      }
-    } else if (className.equals("Ball")) {
-      if (holderGenc.isClassSide() && methodName.equals("new")) {
-        return smethod(new SuperNewInit(source, coord));
-      }
-
-      if (methodName.equals("initialize")) {
-        return smethod(new BallInitialize(source, coord));
-      }
-
-      if (methodName.equals("bounce")) {
-        return smethod(new BallBounce(source, coord));
-      }
-    } else if (className.equals("Random")) {
-      if (holderGenc.isClassSide()) {
-        if (methodName.equals("new")) {
+        if (methodName.equals("mandelbrot:")) {
+          return smethod(MandelbrotMandelbrot.create(source, coord));
+        }
+      } else if (className.equals("Ball")) {
+        if (holderGenc.isClassSide() && methodName.equals("new")) {
           return smethod(new SuperNewInit(source, coord));
         }
 
         if (methodName.equals("initialize")) {
-          return smethod(new RandomClassInitialize(source, coord));
+          return smethod(new BallInitialize(source, coord));
         }
 
-        if (methodName.equals("next")) {
-          return smethod(new RandomClassNext(source, coord));
+        if (methodName.equals("bounce")) {
+          return smethod(new BallBounce(source, coord));
         }
-      } else {
-        // instance methods
-        if (methodName.equals("initialize")) {
-          return smethod(new RandomInitialize(source, coord));
-        }
-
-        if (methodName.equals("next")) {
-          return smethod(new RandomNext(source, coord));
-        }
-      }
-    } else if (className.equals("Vector")) {
-      if (holderGenc.isClassSide()) {
-        if (methodName.equals("new:")) {
-          return smethod(new VectorNew2(source, coord));
-        }
-      } else {
-        if (methodName.equals("initialize:")) {
-          return smethod(new VectorInitialize(source, coord));
-        }
-        if (methodName.equals("size")) {
-          return smethod(new VectorSize(source, coord));
-        }
-        if (methodName.equals("isEmpty")) {
-          return smethod(new VectorIsEmpty(source, coord));
-        }
-        if (methodName.equals("append:")) {
-          return smethod(VectorAppend.create(source, coord));
-        }
-        if (methodName.equals("hasSome:")) {
-          return smethod(new VectorHasSome(source, coord));
-        }
-        if (methodName.equals("forEach:")) {
-          return smethod(new VectorForEach(source, coord));
-        }
-        if (methodName.equals("at:")) {
-          if (body instanceof SequenceNode) {
-            SequenceNode seq = (SequenceNode) body;
-            ExpressionNode[] seqExp = seq.getExpressions();
-            if (seqExp.length == 2 && !(seqExp[0] instanceof LocalVariableWriteNode)) {
-              // this is only for the AWFY Vector
-              return smethod(new VectorAt(source, coord));
-            }
+      } else if (className.equals("Random")) {
+        if (holderGenc.isClassSide()) {
+          if (methodName.equals("new")) {
+            return smethod(new SuperNewInit(source, coord));
           }
 
+          if (methodName.equals("initialize")) {
+            return smethod(new RandomClassInitialize(source, coord));
+          }
+
+          if (methodName.equals("next")) {
+            return smethod(new RandomClassNext(source, coord));
+          }
+        } else {
+          // instance methods
+          if (methodName.equals("initialize")) {
+            return smethod(new RandomInitialize(source, coord));
+          }
+
+          if (methodName.equals("next")) {
+            return smethod(new RandomNext(source, coord));
+          }
         }
-      }
-    } else if (className.equals("DictIdEntry")) {
-      if (holderGenc.isClassSide()) {
-        if (methodName.equals("new:key:value:next:")) {
-          return smethod(new DictIdEntryNewKeyValueNext(source, coord));
+      } else if (className.equals("Vector")) {
+        if (holderGenc.isClassSide()) {
+          if (methodName.equals("new:")) {
+            return smethod(new VectorNew2(source, coord));
+          }
+        } else {
+          if (methodName.equals("initialize:")) {
+            return smethod(new VectorInitialize(source, coord));
+          }
+          if (methodName.equals("size")) {
+            return smethod(new VectorSize(source, coord));
+          }
+          if (methodName.equals("isEmpty")) {
+            return smethod(new VectorIsEmpty(source, coord));
+          }
+          if (methodName.equals("append:")) {
+            return smethod(VectorAppend.create(source, coord));
+          }
+          if (methodName.equals("hasSome:")) {
+            return smethod(new VectorHasSome(source, coord));
+          }
+          if (methodName.equals("forEach:")) {
+            return smethod(new VectorForEach(source, coord));
+          }
+          if (methodName.equals("at:")) {
+            if (body instanceof SequenceNode) {
+              SequenceNode seq = (SequenceNode) body;
+              ExpressionNode[] seqExp = seq.getExpressions();
+              if (seqExp.length == 2 && !(seqExp[0] instanceof LocalVariableWriteNode)) {
+                // this is only for the AWFY Vector
+                return smethod(new VectorAt(source, coord));
+              }
+            }
+
+          }
         }
-      } else {
-        if (methodName.equals("match:key:")) {
-          return smethod(new DictIdEntryMatchKey(source, coord));
+      } else if (className.equals("DictIdEntry")) {
+        if (holderGenc.isClassSide()) {
+          if (methodName.equals("new:key:value:next:")) {
+            return smethod(new DictIdEntryNewKeyValueNext(source, coord));
+          }
+        } else {
+          if (methodName.equals("match:key:")) {
+            return smethod(new DictIdEntryMatchKey(source, coord));
+          }
         }
-      }
-    } else if (className.equals("SomDictionary")) {
-      if (methodName.equals("hash:")) {
-        return smethod(new SomDictHash(source, coord));
-      }
-      if (methodName.equals("at:")) {
-        return smethod(new SomDictAt(source, coord));
-      }
-      if (methodName.equals("at:put:")) {
-        return smethod(new SomDictAtPut(source, coord));
-      }
-      if (methodName.equals("bucketIdx:")) {
-        return smethod(new SomDictBucketIdx(source, coord));
-      }
-      if (methodName.equals("bucket:")) {
-        return smethod(new SomDictBucket(source, coord));
-      }
-      if (methodName.equals("insertBucketEntry:value:hash:head:")) {
-        return smethod(new SomDictInsertBucketEntry(source, coord));
-      }
-    } else if (className.equals("SomIdentitySet")) {
-      if (blockMethod && methodName.contains("contains")) {
-        return smethod(new IsObject(source, coord));
-      }
-    } else if (className.equals("HavlakLoopFinder")) {
-      if (methodName.equals("isAncestor:v:")) {
-        return smethod(new IsAncestor(source, coord));
-      }
-      if (methodName.equals("doDFS:current:")) {
-        return smethod(new DoDFSCurrent(source, coord));
-      }
-    } else if (className.equals("Vector2D")) {
-      if (methodName.equals("compare:and:")) {
-        return smethod(new Vector2dCompareAnd(source, coord));
-      }
-      if (methodName.equals("compareTo:")) {
-        return smethod(new Vector2dCompareTo(source, coord));
-      }
-      if (methodName.equals("initX:y:")) {
-        return smethod(new Vector2dInitXY(source, coord));
-      }
-    } else if (className.equals("UnionFindNode")) {
-      if (methodName.equals("initialize")) {
-        return smethod(new UFNInitialize(source, coord));
-      }
-      if (methodName.equals("initNode:dfs:")) {
-        return smethod(new UFNInitNode(source, coord));
-      }
-    } else if (className.equals("JsonParser")) {
-      if (methodName.equals("read")) {
-        return smethod(new JPRead(source, coord));
-      }
-      if (methodName.equals("readChar:")) {
-        return smethod(new JPReadChar(source, coord));
-      }
-      if (methodName.equals("isDigit")) {
-        return smethod(new JPIsDigit(source, coord));
-      }
-      if (methodName.equals("isWhiteSpace")) {
-        return smethod(new JPIsWhiteSpace(source, coord));
-      }
-      if (methodName.equals("readValue")) {
-        return smethod(new JPReadValue(source, coord));
-      }
-      if (methodName.equals("startCapture")) {
-        return smethod(new JPStartCapture(source, coord));
-      }
-      if (methodName.equals("endCapture")) {
-        return smethod(new JPEndCapture(source, coord));
-      }
-    } else if (className.equals("JsonString")) {
-      if (holderGenc.isClassSide() && methodName.equals("new:")) {
-        return smethod(new JStringNew(source, coord));
-      }
-    } else if (className.equals("JsonNumber")) {
-      if (holderGenc.isClassSide() && methodName.equals("new:")) {
-        return smethod(new JNumberNew(source, coord));
-      }
-    } else if (className.equals("CollisionDetector")) {
-      if (methodName.equals("isInVoxel:motion:")) {
-        return smethod(new CDIsInVoxel(source, coord));
-      }
-      if (methodName.equals("recurse:seen:voxel:motion:")) {
-        return smethod(new CDRecurse(source, coord));
-      }
-    } else if (className.equals("RedBlackTree")) {
-      if (methodName.equals("at:put:")) {
-        return smethod(new RBTAtPut(source, coord));
-      }
-    } else if (className.equals("InsertResult")) {
-      if (methodName.equals("init:node:value:")) {
-        return smethod(new IRInit(source, coord));
-      }
-    } else if (className.equals("CallSign")) {
-      if (methodName.equals("compareTo:")) {
-        return smethod(new CallSignCompareTo(source, coord));
-      }
-    } else if (className.equals("Node")) {
-      if (methodName.equals("init:value:")) {
-        return smethod(new NodeInit(source, coord));
-      }
-    } else if (className.equals("Scheduler") || className.equals("RichardsBenchmarks")) {
-      if (methodName.equals("findTask:")) {
-        return smethod(new SchedulerFindTask(source, coord));
-      }
-      if (methodName.equals("release:")) {
-        return smethod(new RBRelease(source, coord));
-      }
-      if (methodName.equals("wait")) {
-        return smethod(new RBWait(source, coord));
-      }
-      if (methodName.equals("holdSelf")) {
-        return smethod(new RBHoldSelf(source, coord));
-      }
-    } else if (className.equals("TaskState")) {
-      if (!holderGenc.isClassSide()) {
-        if (methodName.equals("isTaskHoldingOrWaiting")) {
-          return smethod(new TSIsTask(source, coord));
+      } else if (className.equals("SomDictionary")) {
+        if (methodName.equals("hash:")) {
+          return smethod(new SomDictHash(source, coord));
         }
-        if (methodName.equals("isWaitingWithPacket")) {
-          return smethod(new TSIsWaitingWithPacket(source, coord));
+        if (methodName.equals("at:")) {
+          return smethod(new SomDictAt(source, coord));
         }
-        if (methodName.equals("packetPending")) {
-          return smethod(new TSPacketPending(source, coord));
+        if (methodName.equals("at:put:")) {
+          return smethod(new SomDictAtPut(source, coord));
         }
-        if (methodName.equals("running")) {
-          return smethod(new TSRunning(source, coord));
+        if (methodName.equals("bucketIdx:")) {
+          return smethod(new SomDictBucketIdx(source, coord));
         }
-      }
-    } else if (className.equals("RBObject")) {
-      if (methodName.equals("append:head:")) {
-        return smethod(new RBOAppendHead(source, coord));
-      }
-    } else if (className.equals("TaskControlBlock")) {
-      if (methodName.equals("addInput:checkPriority:")) {
-        return smethod(new TCBAddInputCheckPriority(source, coord));
-      }
-    } else if (className.equals("Bytecodes")) {
-      if (methodName.equals("length:")) {
-        return smethod(new BytecodesLength(source, coord));
-      }
-    } else if (className.equals("SMethod")) {
-      if (methodName.equals("bytecode:")) {
-        return smethod(new SMethodBytecode(source, coord));
-      }
-    } else if (className.equals("Dictionary")) {
-      if (blockMethod) {
-        if (methodName.startsWith("λat⫶@")) {
-          assert body instanceof IfInlinedLiteralNode;
-          ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
-          assert bodyOfIf instanceof ReturnNonLocalNode;
-          FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
-          return smethod(new DictAtBlock(source, coord, onStackMarker));
+        if (methodName.equals("bucket:")) {
+          return smethod(new SomDictBucket(source, coord));
         }
-        if (methodName.startsWith("λcontainsKey⫶@")) {
-          assert body instanceof IfInlinedLiteralNode;
-          ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
-          assert bodyOfIf instanceof ReturnNonLocalNode;
-          FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
-          return smethod(new DictContainsKeyBlock(source, coord, onStackMarker));
+        if (methodName.equals("insertBucketEntry:value:hash:head:")) {
+          return smethod(new SomDictInsertBucketEntry(source, coord));
+        }
+      } else if (className.equals("SomIdentitySet")) {
+        if (blockMethod && methodName.contains("contains")) {
+          return smethod(new IsObject(source, coord));
+        }
+      } else if (className.equals("HavlakLoopFinder")) {
+        if (methodName.equals("isAncestor:v:")) {
+          return smethod(new IsAncestor(source, coord));
+        }
+        if (methodName.equals("doDFS:current:")) {
+          return smethod(new DoDFSCurrent(source, coord));
+        }
+      } else if (className.equals("Vector2D")) {
+        if (methodName.equals("compare:and:")) {
+          return smethod(new Vector2dCompareAnd(source, coord));
+        }
+        if (methodName.equals("compareTo:")) {
+          return smethod(new Vector2dCompareTo(source, coord));
+        }
+        if (methodName.equals("initX:y:")) {
+          return smethod(new Vector2dInitXY(source, coord));
+        }
+      } else if (className.equals("UnionFindNode")) {
+        if (methodName.equals("initialize")) {
+          return smethod(new UFNInitialize(source, coord));
+        }
+        if (methodName.equals("initNode:dfs:")) {
+          return smethod(new UFNInitNode(source, coord));
+        }
+      } else if (className.equals("JsonParser")) {
+        if (methodName.equals("read")) {
+          return smethod(new JPRead(source, coord));
+        }
+        if (methodName.equals("readChar:")) {
+          return smethod(new JPReadChar(source, coord));
+        }
+        if (methodName.equals("isDigit")) {
+          return smethod(new JPIsDigit(source, coord));
+        }
+        if (methodName.equals("isWhiteSpace")) {
+          return smethod(new JPIsWhiteSpace(source, coord));
+        }
+        if (methodName.equals("readValue")) {
+          return smethod(new JPReadValue(source, coord));
+        }
+        if (methodName.equals("startCapture")) {
+          return smethod(new JPStartCapture(source, coord));
+        }
+        if (methodName.equals("endCapture")) {
+          return smethod(new JPEndCapture(source, coord));
+        }
+      } else if (className.equals("JsonString")) {
+        if (holderGenc.isClassSide() && methodName.equals("new:")) {
+          return smethod(new JStringNew(source, coord));
+        }
+      } else if (className.equals("JsonNumber")) {
+        if (holderGenc.isClassSide() && methodName.equals("new:")) {
+          return smethod(new JNumberNew(source, coord));
+        }
+      } else if (className.equals("CollisionDetector")) {
+        if (methodName.equals("isInVoxel:motion:")) {
+          return smethod(new CDIsInVoxel(source, coord));
+        }
+        if (methodName.equals("recurse:seen:voxel:motion:")) {
+          return smethod(new CDRecurse(source, coord));
+        }
+      } else if (className.equals("RedBlackTree")) {
+        if (methodName.equals("at:put:")) {
+          return smethod(new RBTAtPut(source, coord));
+        }
+      } else if (className.equals("InsertResult")) {
+        if (methodName.equals("init:node:value:")) {
+          return smethod(new IRInit(source, coord));
+        }
+      } else if (className.equals("CallSign")) {
+        if (methodName.equals("compareTo:")) {
+          return smethod(new CallSignCompareTo(source, coord));
+        }
+      } else if (className.equals("Node")) {
+        if (methodName.equals("init:value:")) {
+          return smethod(new NodeInit(source, coord));
+        }
+      } else if (className.equals("Scheduler") || className.equals("RichardsBenchmarks")) {
+        if (methodName.equals("findTask:")) {
+          return smethod(new SchedulerFindTask(source, coord));
+        }
+        if (methodName.equals("release:")) {
+          return smethod(new RBRelease(source, coord));
+        }
+        if (methodName.equals("wait")) {
+          return smethod(new RBWait(source, coord));
+        }
+        if (methodName.equals("holdSelf")) {
+          return smethod(new RBHoldSelf(source, coord));
+        }
+      } else if (className.equals("TaskState")) {
+        if (!holderGenc.isClassSide()) {
+          if (methodName.equals("isTaskHoldingOrWaiting")) {
+            return smethod(new TSIsTask(source, coord));
+          }
+          if (methodName.equals("isWaitingWithPacket")) {
+            return smethod(new TSIsWaitingWithPacket(source, coord));
+          }
+          if (methodName.equals("packetPending")) {
+            return smethod(new TSPacketPending(source, coord));
+          }
+          if (methodName.equals("running")) {
+            return smethod(new TSRunning(source, coord));
+          }
+        }
+      } else if (className.equals("RBObject")) {
+        if (methodName.equals("append:head:")) {
+          return smethod(new RBOAppendHead(source, coord));
+        }
+      } else if (className.equals("TaskControlBlock")) {
+        if (methodName.equals("addInput:checkPriority:")) {
+          return smethod(new TCBAddInputCheckPriority(source, coord));
+        }
+      } else if (className.equals("Bytecodes")) {
+        if (methodName.equals("length:")) {
+          return smethod(new BytecodesLength(source, coord));
+        }
+      } else if (className.equals("SMethod")) {
+        if (methodName.equals("bytecode:")) {
+          return smethod(new SMethodBytecode(source, coord));
+        }
+      } else if (className.equals("Dictionary")) {
+        if (blockMethod) {
+          if (methodName.startsWith("λat⫶@")) {
+            assert body instanceof IfInlinedLiteralNode;
+            ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
+            assert bodyOfIf instanceof ReturnNonLocalNode;
+            FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
+            return smethod(new DictAtBlock(source, coord, onStackMarker));
+          }
+          if (methodName.startsWith("λcontainsKey⫶@")) {
+            assert body instanceof IfInlinedLiteralNode;
+            ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
+            assert bodyOfIf instanceof ReturnNonLocalNode;
+            FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
+            return smethod(new DictContainsKeyBlock(source, coord, onStackMarker));
+          }
         }
       }
     }
