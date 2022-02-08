@@ -1,8 +1,6 @@
 package trufflesom.interpreter;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
 import bd.primitives.nodes.PreevaluatedExpression;
@@ -14,17 +12,13 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 
 public abstract class Invokable extends AbstractInvokable {
   protected final String name;
-  protected final Source source;
-  protected final long   sourceCoord;
 
   protected SClass holder;
 
   protected Invokable(final String name, final Source source, final long sourceCoord,
       final FrameDescriptor frameDescriptor) {
-    super(SomLanguage.getCurrent(), frameDescriptor);
+    super(frameDescriptor, source, sourceCoord);
     this.name = name;
-    this.source = source;
-    this.sourceCoord = sourceCoord;
   }
 
   @Override
@@ -54,5 +48,6 @@ public abstract class Invokable extends AbstractInvokable {
   @Override
   public abstract boolean isTrivial();
 
+  @Override
   public abstract PreevaluatedExpression copyTrivialNode();
 }
