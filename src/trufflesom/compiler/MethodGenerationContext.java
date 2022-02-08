@@ -115,6 +115,8 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucketIdx;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictInsertBucketEntry;
 import trufflesom.interpreter.ubernodes.SomIdentitySet.IsObject;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.BytecodesLength;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodBytecode;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitNode;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitialize;
@@ -558,6 +560,14 @@ public class MethodGenerationContext
     } else if (className.equals("TaskControlBlock")) {
       if (methodName.equals("addInput:checkPriority:")) {
         return smethod(new TCBAddInputCheckPriority(source, coord));
+      }
+    } else if (className.equals("Bytecodes")) {
+      if (methodName.equals("length:")) {
+        return smethod(new BytecodesLength(source, coord));
+      }
+    } else if (className.equals("SMethod")) {
+      if (methodName.equals("bytecode:")) {
+        return smethod(new SMethodBytecode(source, coord));
       }
     }
 
