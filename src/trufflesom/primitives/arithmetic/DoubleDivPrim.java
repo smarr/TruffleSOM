@@ -30,13 +30,18 @@ public abstract class DoubleDivPrim extends ArithmeticPrim {
   }
 
   @Specialization
+  public final double doDouble(final double left, final long right) {
+    return doDouble(left, (double) right);
+  }
+
+  @Specialization
   public final double doLong(final long left, final long right) {
     return ((double) left) / right;
   }
 
   @Specialization
-  public final double doDouble(final double left, final long right) {
-    return doDouble(left, (double) right);
+  public final double doLong(final long left, final double right) {
+    return left / right;
   }
 
   @Specialization
@@ -46,10 +51,5 @@ public abstract class DoubleDivPrim extends ArithmeticPrim {
     // TODO: need to implement the "/" case here directly... :
     // return resendAsBigInteger("/", left, (SBigInteger) rightObj, frame.pack());
     throw new NotYetImplementedException();
-  }
-
-  @Specialization
-  public final double doLong(final long left, final double right) {
-    return left / right;
   }
 }

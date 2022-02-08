@@ -26,14 +26,14 @@ public abstract class LogicAndPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
-  public final Object doBigInteger(final BigInteger left, final BigInteger right) {
-    return reduceToLongIfPossible(left.and(right));
+  public final Object doLong(final long left, final BigInteger right) {
+    return doBigInteger(BigInteger.valueOf(left), right);
   }
 
   @Specialization
   @TruffleBoundary
-  public final Object doLong(final long left, final BigInteger right) {
-    return doBigInteger(BigInteger.valueOf(left), right);
+  public final Object doBigInteger(final BigInteger left, final BigInteger right) {
+    return reduceToLongIfPossible(left.and(right));
   }
 
   @Specialization
