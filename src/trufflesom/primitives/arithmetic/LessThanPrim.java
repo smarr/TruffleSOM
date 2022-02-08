@@ -28,17 +28,6 @@ public abstract class LessThanPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
-  public final boolean doBigInteger(final BigInteger left, final BigInteger right) {
-    return left.compareTo(right) < 0;
-  }
-
-  @Specialization
-  public final boolean doDouble(final double left, final double right) {
-    return left < right;
-  }
-
-  @Specialization
-  @TruffleBoundary
   public final boolean doLong(final long left, final BigInteger right) {
     return doBigInteger(BigInteger.valueOf(left), right);
   }
@@ -50,8 +39,19 @@ public abstract class LessThanPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
+  public final boolean doBigInteger(final BigInteger left, final BigInteger right) {
+    return left.compareTo(right) < 0;
+  }
+
+  @Specialization
+  @TruffleBoundary
   public final boolean doBigInteger(final BigInteger left, final long right) {
     return doBigInteger(left, BigInteger.valueOf(right));
+  }
+
+  @Specialization
+  public final boolean doDouble(final double left, final double right) {
+    return left < right;
   }
 
   @Specialization
