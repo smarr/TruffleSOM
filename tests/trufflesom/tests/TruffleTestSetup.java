@@ -94,7 +94,7 @@ public class TruffleTestSetup {
   }
 
   protected ExpressionNode[] getBlockExprs(final BlockNode blockNode) {
-    return read(read(blockNode.getMethod().getInvokable(), "expressionOrSequence"),
+    return read(read(blockNode.getMethod().getInvokable(), "body"),
         "expressions", ExpressionNode[].class);
   }
 

@@ -6,10 +6,12 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.source.Source;
 
+import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -17,17 +19,29 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 
 public final class Primitive extends Invokable {
 
+  @Child private PreevaluatedExpression primitive;
+
+  private final PreevaluatedExpression uninitialized;
+
   public Primitive(final String name, final Source source, final long sourceCoord,
-      final ExpressionNode primitive, final FrameDescriptor frameDescriptor,
-      final ExpressionNode uninitialized) {
-    super(name, source, sourceCoord, frameDescriptor, primitive, uninitialized);
+      final PreevaluatedExpression body, final FrameDescriptor frameDescriptor,
+      final PreevaluatedExpression uninitialized) {
+    super(name, source, sourceCoord, frameDescriptor);
+    this.primitive = body;
+    this.uninitialized = uninitialized;
+  }
+
+  @Override
+  public Object execute(final VirtualFrame frame) {
+    return primitive.doPreEvaluated(frame, frame.getArguments());
   }
 
   @Override
   public Node deepCopy() {
     assert getFrameDescriptor().getSize() == 0 : "Make sure there are no slots to be taken care off";
-    return new Primitive(name, source, sourceCoord, NodeUtil.cloneNode(uninitializedBody),
-        getFrameDescriptor(), uninitializedBody);
+    return new Primitive(name, source, sourceCoord,
+        copyTrivialNode(),
+        getFrameDescriptor(), uninitialized);
   }
 
   @Override
@@ -40,7 +54,7 @@ public final class Primitive extends Invokable {
 
   @Override
   public String toString() {
-    return expressionOrSequence.getClass().getSimpleName();
+    return primitive.getClass().getSimpleName();
   }
 
   @Override
@@ -81,5 +95,15 @@ public final class Primitive extends Invokable {
     if (m != null && !(m instanceof Primitive)) {
       m.propagateLoopCountThroughoutLexicalScope(count);
     }
+  }
+
+  @Override
+  public boolean isTrivial() {
+    return true;
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return (PreevaluatedExpression) NodeUtil.cloneNode((Node) uninitialized);
   }
 }

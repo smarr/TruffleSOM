@@ -26,7 +26,7 @@ public class BytecodeTestSetup extends TruffleTestSetup {
   protected byte[] getBytecodesOfBlock(final int bytecodeIdx) {
     SMethod blockMethod = (SMethod) mgenc.getConstant(bytecodeIdx);
     Method blockIvkbl = (Method) blockMethod.getInvokable();
-    return read(blockIvkbl, "expressionOrSequence", BytecodeLoopNode.class).getBytecodeArray();
+    return read(blockIvkbl, "body", BytecodeLoopNode.class).getBytecodeArray();
   }
 
   protected static class BC {
