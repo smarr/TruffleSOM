@@ -93,6 +93,7 @@ import trufflesom.interpreter.ubernodes.ListBenchmark.ListVerifyResult;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotMandelbrot;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotVerifyInner;
+import trufflesom.interpreter.ubernodes.NBodyBenchmark.NBodyAdvanceBlock;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
@@ -626,6 +627,13 @@ public class MethodGenerationContext
         }
         if (methodName.equals("context:")) {
           return smethod(new FrameContext(source, coord));
+        }
+      } else if (className.equals("NBodySystem")) {
+        if (blockMethod) {
+          if (methodName.startsWith("λadvance") && body instanceof SequenceNode
+              && ((SequenceNode) body).getExpressions().length == 3) {
+            return smethod(new NBodyAdvanceBlock(source, coord));
+          }
         }
       }
     }
