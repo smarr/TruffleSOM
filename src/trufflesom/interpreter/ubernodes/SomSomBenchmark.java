@@ -1,5 +1,6 @@
 package trufflesom.interpreter.ubernodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.Source;
@@ -7,8 +8,11 @@ import com.oracle.truffle.api.source.Source;
 import trufflesom.interpreter.AbstractInvokable;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.primitives.arrays.AtPrim;
 import trufflesom.primitives.arrays.AtPrimFactory;
+import trufflesom.primitives.arrays.AtPutPrim;
+import trufflesom.primitives.arrays.AtPutPrimFactory;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
@@ -148,6 +152,97 @@ public abstract class SomSomBenchmark {
       SObject rcvr = (SObject) args[0];
       Object index = args[1];
       return atPrim.executeEvaluated(frame, readBytecodes.read(rcvr), index);
+    }
+  }
+
+  /**
+   * <pre>
+   *  stackPointer (0)
+      stack (6)
+  
+   * pop = (
+        | sp |
+        "Pop an object from the expression stack and return it"
+        sp := stackPointer.
+        stackPointer := stackPointer - 1.
+        ^ stack at: sp.
+     )
+   * </pre>
+   */
+  public static final class FramePop extends AbstractInvokable {
+    @Child private AbstractReadFieldNode  readStackPointer;
+    @Child private AbstractWriteFieldNode writeStackPointer;
+    @Child private AbstractReadFieldNode  readStack;
+    @Child private AtPrim                 atPrim;
+
+    public FramePop(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      readStackPointer = FieldAccessorNode.createRead(0);
+      writeStackPointer = FieldAccessorNode.createWrite(0);
+      readStack = FieldAccessorNode.createRead(6);
+      atPrim = AtPrimFactory.create(null, null);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      long sp = readStackPointer.readLongSafe(rcvr);
+      long sp1;
+      try {
+        sp1 = Math.subtractExact(sp, 1);
+      } catch (ArithmeticException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        throw new UnsupportedOperationException();
+      }
+
+      writeStackPointer.write(rcvr, sp1);
+      return atPrim.executeEvaluated(frame, readStack.read(rcvr), sp);
+    }
+  }
+
+  /**
+   * <pre>
+    push: aSAbstractObject = (
+      "Push an object onto the expression stack"
+      | sp |
+      sp := stackPointer + 1.
+      stack at: sp put: aSAbstractObject.
+      stackPointer := sp
+    )
+   * </pre>
+   */
+  public static final class FramePush extends AbstractInvokable {
+    @Child private AbstractReadFieldNode  readStackPointer;
+    @Child private AbstractWriteFieldNode writeStackPointer;
+    @Child private AbstractReadFieldNode  readStack;
+    @Child private AtPutPrim              atPutPrim;
+
+    public FramePush(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      readStackPointer = FieldAccessorNode.createRead(0);
+      writeStackPointer = FieldAccessorNode.createWrite(0);
+      readStack = FieldAccessorNode.createRead(6);
+      atPutPrim = AtPutPrimFactory.create(null, null, null);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object aSAbstractObject = args[1];
+
+      long sp = readStackPointer.readLongSafe(rcvr);
+      try {
+        sp = Math.addExact(sp, 1);
+      } catch (ArithmeticException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        throw new UnsupportedOperationException();
+      }
+      atPutPrim.executeEvaluated(frame, readStack.read(rcvr), sp, aSAbstractObject);
+      writeStackPointer.write(rcvr, sp);
+      return rcvr;
     }
   }
 }

@@ -1,6 +1,7 @@
 package trufflesom.interpreter.ubernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameUtil;
@@ -13,9 +14,14 @@ import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode;
+import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.vm.Classes;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SBlock;
+import trufflesom.vmobjects.SInvokable.SMethod;
+import trufflesom.vmobjects.SObject;
 
 
 public abstract class DictionaryClass {
@@ -25,14 +31,14 @@ public abstract class DictionaryClass {
    * [ :p | p key = aKey ifTrue: [ ^p value ] ].
    * </pre>
    */
-  public static final class DictAtBlock extends AbstractInvokable {
+  private static final class DictAtBlock extends AbstractInvokable {
     @Child private AbstractDispatchNode dispatchKey;
     @Child private AbstractDispatchNode dispatchValue;
     @Child private AbstractDispatchNode dispatchEquals;
 
     private final FrameSlot onStackMarker;
 
-    public DictAtBlock(final Source source, final long sourceCoord,
+    private DictAtBlock(final Source source, final long sourceCoord,
         final FrameSlot onStackMarker) {
       super(new FrameDescriptor(), source, sourceCoord);
       dispatchKey = new UninitializedDispatchNode(SymbolTable.symbolFor("key"));
@@ -74,13 +80,13 @@ public abstract class DictionaryClass {
     [ :p | p key = aKey ifTrue: [ ^true ] ].
    * </pre>
    */
-  public static final class DictContainsKeyBlock extends AbstractInvokable {
+  private static final class DictContainsKeyBlock extends AbstractInvokable {
     @Child private AbstractDispatchNode dispatchKey;
     @Child private AbstractDispatchNode dispatchEquals;
 
     private final FrameSlot onStackMarker;
 
-    public DictContainsKeyBlock(final Source source, final long sourceCoord,
+    private DictContainsKeyBlock(final Source source, final long sourceCoord,
         final FrameSlot onStackMarker) {
       super(new FrameDescriptor(), source, sourceCoord);
       dispatchKey = new UninitializedDispatchNode(SymbolTable.symbolFor("key"));
@@ -110,6 +116,140 @@ public abstract class DictionaryClass {
       }
 
       return Nil.nilObject;
+    }
+  }
+
+  /**
+   * <pre>
+   * at: aKey = (
+   * pairs do: [ :p | p key = aKey ifTrue: [ ^p value ] ].
+   * ^nil
+   * )
+   */
+  public static final class DictAt extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readPairs;
+
+    @Child private AbstractDispatchNode dispatchDo;
+
+    private final FrameSlot onStackMarker;
+    private final SMethod   doBlock;
+
+    @CompilationFinal private boolean rethrows;
+
+    public static DictAt create(final Source source, final long sourceCoord) {
+      FrameDescriptor fd = new FrameDescriptor();
+      FrameSlot onStackMarker = fd.addFrameSlot("#onStackMarker");
+      return new DictAt(source, sourceCoord, onStackMarker, fd);
+    }
+
+    private DictAt(final Source source, final long sourceCoord, final FrameSlot onStackMarker,
+        final FrameDescriptor fd) {
+      super(fd, source, sourceCoord);
+      dispatchDo = new UninitializedDispatchNode(SymbolTable.symbolFor("do:"));
+      readPairs = FieldAccessorNode.createRead(0);
+      this.onStackMarker = onStackMarker;
+
+      doBlock = new SMethod(SymbolTable.symbolFor("value:"),
+          new DictAtBlock(source, sourceCoord, onStackMarker),
+          new SMethod[0]);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      Object pairs = readPairs.read(rcvr);
+
+      FrameOnStackMarker marker = new FrameOnStackMarker();
+      frame.setObject(onStackMarker, marker);
+      SBlock block = new SBlock(doBlock, Classes.blockClasses[1], frame.materialize());
+
+      try {
+        dispatchDo.executeDispatch(frame, new Object[] {pairs, block});
+      } catch (ReturnException e) {
+        if (e.reachedTarget(marker)) {
+          return e.result();
+        } else {
+          if (!rethrows) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            rethrows = true;
+          }
+          throw e;
+        }
+      } finally {
+        marker.frameNoLongerOnStack();
+      }
+
+      return Nil.nilObject;
+    }
+  }
+
+  /**
+   * <pre>
+    containsKey: aKey = (
+        pairs do: [ :p | p key = aKey ifTrue: [ ^true ] ].
+        ^false
+    )
+   * </pre>
+   */
+  public static final class DictContainsKey extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readPairs;
+
+    @Child private AbstractDispatchNode dispatchDo;
+
+    private final FrameSlot onStackMarker;
+    private final SMethod   doBlock;
+
+    @CompilationFinal private boolean rethrows;
+
+    public static DictContainsKey create(final Source source, final long sourceCoord) {
+      FrameDescriptor fd = new FrameDescriptor();
+      FrameSlot onStackMarker = fd.addFrameSlot("#onStackMarker");
+      return new DictContainsKey(source, sourceCoord, onStackMarker, fd);
+    }
+
+    private DictContainsKey(final Source source, final long sourceCoord,
+        final FrameSlot onStackMarker,
+        final FrameDescriptor fd) {
+      super(fd, source, sourceCoord);
+      dispatchDo = new UninitializedDispatchNode(SymbolTable.symbolFor("do:"));
+      readPairs = FieldAccessorNode.createRead(0);
+      this.onStackMarker = onStackMarker;
+
+      doBlock = new SMethod(SymbolTable.symbolFor("value:"),
+          new DictContainsKeyBlock(source, sourceCoord, onStackMarker),
+          new SMethod[0]);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+
+      Object pairs = readPairs.read(rcvr);
+
+      FrameOnStackMarker marker = new FrameOnStackMarker();
+      frame.setObject(onStackMarker, marker);
+      SBlock block = new SBlock(doBlock, Classes.blockClasses[1], frame.materialize());
+
+      try {
+        dispatchDo.executeDispatch(frame, new Object[] {pairs, block});
+      } catch (ReturnException e) {
+        if (e.reachedTarget(marker)) {
+          return e.result();
+        } else {
+          if (!rethrows) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            rethrows = true;
+          }
+          throw e;
+        }
+      } finally {
+        marker.frameNoLongerOnStack();
+      }
+
+      return false;
     }
   }
 }

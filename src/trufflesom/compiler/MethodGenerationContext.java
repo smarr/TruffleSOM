@@ -39,7 +39,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.Source;
 
@@ -62,7 +61,6 @@ import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
 import trufflesom.interpreter.ubernodes.BenchmarkInnerBenchmarkLoop;
 import trufflesom.interpreter.ubernodes.BounceBenchmark.BallBounce;
@@ -72,8 +70,8 @@ import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDRecurse;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CallSignCompareTo;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
-import trufflesom.interpreter.ubernodes.DictionaryClass.DictAtBlock;
-import trufflesom.interpreter.ubernodes.DictionaryClass.DictContainsKeyBlock;
+import trufflesom.interpreter.ubernodes.DictionaryClass.DictAt;
+import trufflesom.interpreter.ubernodes.DictionaryClass.DictContainsKey;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.DoDFSCurrent;
 import trufflesom.interpreter.ubernodes.HavlakLoopFinder.IsAncestor;
 import trufflesom.interpreter.ubernodes.JsonParserClass.JPEndCapture;
@@ -120,6 +118,8 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictInsertBucketEntry;
 import trufflesom.interpreter.ubernodes.SomIdentitySet.IsObject;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.BytecodesLength;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FramePop;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FramePush;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodBytecode;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitNode;
@@ -576,21 +576,20 @@ public class MethodGenerationContext
           return smethod(new SMethodBytecode(source, coord));
         }
       } else if (className.equals("Dictionary")) {
-        if (blockMethod) {
-          if (methodName.startsWith("λat⫶@")) {
-            assert body instanceof IfInlinedLiteralNode;
-            ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
-            assert bodyOfIf instanceof ReturnNonLocalNode;
-            FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
-            return smethod(new DictAtBlock(source, coord, onStackMarker));
+        if (!blockMethod) {
+          if (methodName.equals("at:")) {
+            return smethod(DictAt.create(source, coord));
           }
-          if (methodName.startsWith("λcontainsKey⫶@")) {
-            assert body instanceof IfInlinedLiteralNode;
-            ExpressionNode bodyOfIf = ((IfInlinedLiteralNode) body).getBodyNode();
-            assert bodyOfIf instanceof ReturnNonLocalNode;
-            FrameSlot onStackMarker = ((ReturnNonLocalNode) bodyOfIf).getFrameOnStackMarker();
-            return smethod(new DictContainsKeyBlock(source, coord, onStackMarker));
+          if (methodName.equals("containsKey:")) {
+            return smethod(DictContainsKey.create(source, coord));
           }
+        }
+      } else if (className.equals("Frame")) {
+        if (methodName.equals("pop")) {
+          return smethod(new FramePop(source, coord));
+        }
+        if (methodName.equals("push:")) {
+          return smethod(new FramePush(source, coord));
         }
       }
     }
