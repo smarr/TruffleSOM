@@ -118,9 +118,18 @@ import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictHash;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictInsertBucketEntry;
 import trufflesom.interpreter.ubernodes.SomIdentitySet.IsObject;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.BytecodesLength;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FrameArgument;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FrameClearPrevious;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FrameContext;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FrameHasContext;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FrameLocal;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FrameLocalPut;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.FramePop;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.FramePush;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.FrameStackElement;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodBytecode;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodConstant;
+import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodNumArgs;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitNode;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitialize;
@@ -575,6 +584,12 @@ public class MethodGenerationContext
         if (methodName.equals("bytecode:")) {
           return smethod(new SMethodBytecode(source, coord));
         }
+        if (methodName.equals("constant:")) {
+          return smethod(new SMethodConstant(source, coord));
+        }
+        if (methodName.equals("numberOfArguments")) {
+          return smethod(new SMethodNumArgs(source, coord));
+        }
       } else if (className.equals("Dictionary")) {
         if (!blockMethod) {
           if (methodName.equals("at:")) {
@@ -590,6 +605,27 @@ public class MethodGenerationContext
         }
         if (methodName.equals("push:")) {
           return smethod(new FramePush(source, coord));
+        }
+        if (methodName.equals("hasContext")) {
+          return smethod(new FrameHasContext(source, coord));
+        }
+        if (methodName.equals("stackElement:")) {
+          return smethod(new FrameStackElement(source, coord));
+        }
+        if (methodName.equals("clearPreviousFrame")) {
+          return smethod(new FrameClearPrevious(source, coord));
+        }
+        if (methodName.equals("local:")) {
+          return smethod(new FrameLocal(source, coord));
+        }
+        if (methodName.equals("local:put:")) {
+          return smethod(new FrameLocalPut(source, coord));
+        }
+        if (methodName.equals("argument:")) {
+          return smethod(new FrameArgument(source, coord));
+        }
+        if (methodName.equals("context:")) {
+          return smethod(new FrameContext(source, coord));
         }
       }
     }
