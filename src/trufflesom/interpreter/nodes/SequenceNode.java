@@ -69,7 +69,10 @@ public final class SequenceNode extends NoPreEvalExprNode {
 
   @Override
   public PreevaluatedExpression copyTrivialNode() {
-    return expressions[0].copyTrivialNode();
+    if (isTrivial()) {
+      return expressions[0].copyTrivialNode();
+    }
+    return null;
   }
 
   @Override

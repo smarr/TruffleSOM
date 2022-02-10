@@ -40,6 +40,7 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vm.Classes;
 
 
@@ -190,11 +191,11 @@ public abstract class SInvokable extends SAbstractObject {
   }
 
   public PreevaluatedExpression copyTrivialNode() {
-    if (!isTrivial()) {
-      throw new IllegalStateException();
-    }
-    PreevaluatedExpression n = invokable.copyTrivialNode();
-    assert n != null;
-    return n;
+    return invokable.copyTrivialNode();
+  }
+
+  public AbstractDispatchNode asDispatchNode(final Object rcvr,
+      final AbstractDispatchNode next) {
+    return invokable.asDispatchNode(rcvr, next);
   }
 }

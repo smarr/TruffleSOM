@@ -10,6 +10,7 @@ import bd.primitives.nodes.PreevaluatedExpression;
 import bd.source.SourceCoordinate;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
@@ -82,5 +83,12 @@ public abstract class Invokable extends RootNode implements WithSource {
   @Override
   public abstract boolean isTrivial();
 
-  public abstract PreevaluatedExpression copyTrivialNode();
+  public PreevaluatedExpression copyTrivialNode() {
+    return null;
+  }
+
+  public AbstractDispatchNode asDispatchNode(final Object rcvr,
+      final AbstractDispatchNode next) {
+    return null;
+  }
 }

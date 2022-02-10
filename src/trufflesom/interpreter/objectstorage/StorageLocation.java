@@ -102,7 +102,6 @@ public abstract class StorageLocation {
 
     @Override
     public Object read(final SObject obj) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
       return Nil.nilObject;
     }
 

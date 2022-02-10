@@ -31,10 +31,12 @@ import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.Source;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import tools.nodestats.Tags.AnyNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vm.VmSettings;
 
 
@@ -60,8 +62,14 @@ public abstract class ExpressionNode extends SOMNode
   }
 
   public PreevaluatedExpression copyTrivialNode() {
-    throw new UnsupportedOperationException(
-        "Some of the subclasses may be trivial and implement this");
+    // Some of the subclasses may be trivial and implement this
+    return null;
+  }
+
+  public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+      final AbstractDispatchNode next) {
+    // Some of the subclasses may be trivial and implement this
+    return null;
   }
 
   @Override

@@ -26,15 +26,20 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.Source;
 
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.CachedFieldRead;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
+import trufflesom.interpreter.objectstorage.ObjectLayout;
+import trufflesom.interpreter.objectstorage.StorageLocation;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
@@ -102,6 +107,14 @@ public abstract class FieldNode extends ExpressionNode {
       node.read = (AbstractReadFieldNode) node.read.deepCopy();
       return node;
     }
+
+    @Override
+    public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+        final AbstractDispatchNode next) {
+      ObjectLayout layout = ((SObject) rcvr).getObjectLayout();
+      StorageLocation storage = layout.getStorageLocation(read.getFieldIndex());
+      return new CachedFieldRead(rcvr.getClass(), layout, source, storage, next);
+    }
   }
 
   @NodeChild(value = "self", type = ExpressionNode.class)
@@ -135,8 +148,11 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public PreevaluatedExpression copyTrivialNode() {
-      return new WriteAndReturnSelf(
-          FieldWriteNodeGen.create(write.getFieldIndex(), null, null));
+      if (isTrivial()) {
+        return new WriteAndReturnSelf(
+            FieldWriteNodeGen.create(write.getFieldIndex(), null, null));
+      }
+      return null;
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,

@@ -28,13 +28,18 @@ public class BlockNode extends LiteralNode {
     this.blockMethod = blockMethod;
   }
 
+  public SMethod getMethod() {
+    return blockMethod;
+  }
+
   @Override
   public boolean isTrivial() {
     return false;
   }
 
-  public SMethod getMethod() {
-    return blockMethod;
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    return null;
   }
 
   public Argument[] getArguments() {
@@ -122,11 +127,6 @@ public class BlockNode extends LiteralNode {
     @Override
     protected BlockNode createNode(final SMethod adapted) {
       return new BlockNodeWithContext(adapted).initialize(sourceCoord);
-    }
-
-    @Override
-    public PreevaluatedExpression copyTrivialNode() {
-      throw new UnsupportedOperationException("Block literals with context are not trivial.");
     }
   }
 }
