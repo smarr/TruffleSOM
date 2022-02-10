@@ -53,16 +53,19 @@ public abstract class NBodyBenchmark {
       Object body = args[1];
       double dt = (Double) block.getContext().getArguments()[1];
 
-      double vx = (Double) dispatchVX.executeDispatch(frame, new Object[] {body});
-      double x = (Double) dispatchX.executeDispatch(frame, new Object[] {body});
+      // common out the args array, because we know it's not captured
+      Object[] bodySelf = new Object[] {body};
+
+      double vx = (Double) dispatchVX.executeDispatch(frame, bodySelf);
+      double x = (Double) dispatchX.executeDispatch(frame, bodySelf);
       dispatchX_.executeDispatch(frame, new Object[] {body, x + (dt * vx)});
 
-      double vy = (Double) dispatchVY.executeDispatch(frame, new Object[] {body});
-      double y = (Double) dispatchY.executeDispatch(frame, new Object[] {body});
+      double vy = (Double) dispatchVY.executeDispatch(frame, bodySelf);
+      double y = (Double) dispatchY.executeDispatch(frame, bodySelf);
       dispatchY_.executeDispatch(frame, new Object[] {body, y + (dt * vy)});
 
-      double vz = (Double) dispatchVZ.executeDispatch(frame, new Object[] {body});
-      double z = (Double) dispatchZ.executeDispatch(frame, new Object[] {body});
+      double vz = (Double) dispatchVZ.executeDispatch(frame, bodySelf);
+      double z = (Double) dispatchZ.executeDispatch(frame, bodySelf);
       return dispatchZ_.executeDispatch(frame, new Object[] {body, z + (dt * vz)});
     }
   }
