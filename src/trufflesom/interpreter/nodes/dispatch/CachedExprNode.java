@@ -10,7 +10,7 @@ import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.SOMNode;
 
 
-public class CachedExprNode extends AbstractDispatchNode implements WithSource {
+public final class CachedExprNode extends AbstractDispatchNode implements WithSource {
 
   private final DispatchGuard guard;
   private final Source        source;
@@ -38,13 +38,13 @@ public class CachedExprNode extends AbstractDispatchNode implements WithSource {
         return nextInCache.executeDispatch(frame, arguments);
       }
     } catch (InvalidAssumptionException e) {
-      CompilerDirectives.transferToInterpreter();
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       return replace(SOMNode.unwrapIfNeeded(nextInCache)).executeDispatch(frame, arguments);
     }
   }
 
   @Override
-  public final int lengthOfDispatchChain() {
+  public int lengthOfDispatchChain() {
     return 1 + nextInCache.lengthOfDispatchChain();
   }
 
