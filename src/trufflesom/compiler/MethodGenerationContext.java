@@ -68,6 +68,9 @@ import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDIsInVoxel;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDRecurse;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CallSignCompareTo;
+import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBBCOutput;
+import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBECExecute;
+import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBSCExecute;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.DictionaryClass.DictAt;
@@ -634,6 +637,18 @@ public class MethodGenerationContext
               && ((SequenceNode) body).getExpressions().length == 3) {
             return smethod(new NBodyAdvanceBlock(source, coord));
           }
+        }
+      } else if (className.equals("EqualityConstraint")) {
+        if (methodName.equals("execute")) {
+          return smethod(new DBECExecute(source, coord));
+        }
+      } else if (className.equals("BinaryConstraint")) {
+        if (methodName.equals("output")) {
+          return smethod(new DBBCOutput(source, coord));
+        }
+      } else if (className.equals("ScaleConstraint")) {
+        if (methodName.equals("execute")) {
+          return smethod(new DBSCExecute(source, coord));
         }
       }
     }
