@@ -34,6 +34,7 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedFieldRead;
+import trufflesom.interpreter.nodes.dispatch.CachedFieldWriteAndSelf;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
@@ -153,6 +154,17 @@ public abstract class FieldNode extends ExpressionNode {
             FieldWriteNodeGen.create(write.getFieldIndex(), null, null));
       }
       return null;
+    }
+
+    @Override
+    public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+        final AbstractDispatchNode next) {
+      if (!isTrivial()) {
+        return null;
+      }
+      ObjectLayout layout = ((SObject) rcvr).getObjectLayout();
+      StorageLocation storage = layout.getStorageLocation(write.getFieldIndex());
+      return new CachedFieldWriteAndSelf(rcvr.getClass(), layout, source, storage, next);
     }
 
     public final Object executeEvaluated(final VirtualFrame frame,
@@ -305,6 +317,15 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public PreevaluatedExpression copyTrivialNode() {
       return (PreevaluatedExpression) deepCopy();
+    }
+
+    @Override
+    public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+        final AbstractDispatchNode next) {
+      ObjectLayout layout = ((SObject) rcvr).getObjectLayout();
+      StorageLocation storage =
+          layout.getStorageLocation(((FieldWriteNode) write).getFieldIndex());
+      return new CachedFieldWriteAndSelf(rcvr.getClass(), layout, source, storage, next);
     }
   }
 }
