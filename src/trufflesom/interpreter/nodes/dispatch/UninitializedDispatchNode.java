@@ -59,11 +59,10 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
         if (node == null) {
           PreevaluatedExpression expr = method.copyTrivialNode();
 
+          DispatchGuard guard = DispatchGuard.create(rcvr);
           if (expr != null) {
-            DispatchGuard guard = DispatchGuard.create(rcvr);
             node = new CachedExprNode(guard, expr, method.getSource(), newChainEnd);
           } else {
-            DispatchGuard guard = DispatchGuard.create(rcvr);
             CallTarget callTarget = method.getCallTarget();
             node = new CachedDispatchNode(guard, callTarget, newChainEnd);
           }

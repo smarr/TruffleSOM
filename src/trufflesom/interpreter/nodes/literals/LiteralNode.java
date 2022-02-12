@@ -26,11 +26,15 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 
 import bd.inlining.nodes.Inlinable;
 import bd.primitives.nodes.PreevaluatedExpression;
+import com.oracle.truffle.api.source.Source;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.CachedLiteralNode;
+import trufflesom.interpreter.nodes.dispatch.DispatchGuard;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SBlock;
 
@@ -80,5 +84,11 @@ public abstract class LiteralNode extends ExpressionNode
   @Override
   public PreevaluatedExpression copyTrivialNode() {
     return (PreevaluatedExpression) copy();
+  }
+
+  @Override
+  public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+      final AbstractDispatchNode next) {
+    return new CachedLiteralNode(DispatchGuard.create(rcvr), source, executeGeneric(null), next);
   }
 }

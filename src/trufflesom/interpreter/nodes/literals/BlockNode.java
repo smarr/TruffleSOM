@@ -8,11 +8,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.primitives.nodes.PreevaluatedExpression;
+import com.oracle.truffle.api.source.Source;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vm.Classes;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SClass;
@@ -39,6 +41,12 @@ public class BlockNode extends LiteralNode {
 
   @Override
   public PreevaluatedExpression copyTrivialNode() {
+    return null;
+  }
+
+  @Override
+  public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+      final AbstractDispatchNode next) {
     return null;
   }
 
