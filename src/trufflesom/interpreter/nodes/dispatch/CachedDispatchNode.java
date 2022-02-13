@@ -6,7 +6,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 import trufflesom.interpreter.nodes.SOMNode;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 
 
 public final class CachedDispatchNode extends AbstractCachedDispatchNode {

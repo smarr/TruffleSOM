@@ -11,28 +11,18 @@ import trufflesom.interpreter.objectstorage.StorageLocation;
 import trufflesom.vmobjects.SObject;
 
 
-public final class CachedFieldRead extends AbstractDispatchNode {
+public final class CachedFieldRead extends AbstractDispatchWithSource {
 
   private final Class<?>        expectedClass;
   private final ObjectLayout    expectedLayout;
-  private final Source          source;
   private final StorageLocation storage;
-
-  @Child protected AbstractDispatchNode nextInCache;
 
   public CachedFieldRead(final Class<?> expectedClass, final ObjectLayout expectedLayout,
       final Source source, final StorageLocation storage, final AbstractDispatchNode next) {
+    super(source, next);
     this.expectedClass = expectedClass;
     this.expectedLayout = expectedLayout;
-    this.source = source;
     this.storage = storage;
-
-    this.nextInCache = next;
-  }
-
-  @Override
-  public int lengthOfDispatchChain() {
-    return 1 + nextInCache.lengthOfDispatchChain();
   }
 
   @Override
@@ -52,26 +42,5 @@ public final class CachedFieldRead extends AbstractDispatchNode {
       return replace(SOMNode.unwrapIfNeeded(nextInCache)).executeDispatch(frame, arguments);
     }
     return nextInCache.executeDispatch(frame, arguments);
-  }
-
-  @Override
-  public Source getSource() {
-    return source;
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public AbstractDispatchNode initialize(final long sourceCoord) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public long getSourceCoordinate() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean hasSource() {
-    return true;
   }
 }
