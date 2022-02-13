@@ -475,7 +475,7 @@ public final class Universe {
     return result;
   }
 
-  private static void loadPrimitives(final SClass result, final boolean isSystemClass) {
+  public static void loadPrimitives(final SClass result, final boolean isSystemClass) {
     if (result == null) {
       return;
     }

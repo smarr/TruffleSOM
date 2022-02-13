@@ -12,6 +12,7 @@ import bd.primitives.nodes.PreevaluatedExpression;
 import bd.source.SourceCoordinate;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
@@ -40,8 +41,12 @@ public abstract class AbstractInvokable extends RootNode implements WithSource {
   }
 
   public PreevaluatedExpression copyTrivialNode() {
-    CompilerDirectives.transferToInterpreterAndInvalidate();
-    throw new UnsupportedOperationException();
+    return null;
+  }
+
+  public AbstractDispatchNode asDispatchNode(final Object rcvr,
+      final AbstractDispatchNode next) {
+    return null;
   }
 
   public void setHolder(final SClass holder) { /* no op */ }

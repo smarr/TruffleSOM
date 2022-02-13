@@ -49,8 +49,8 @@ public final class MessageSendNode {
           "Currently #dnu with super sent is not yet implemented. ");
     }
 
-    if (method.isTrivial()) {
-      PreevaluatedExpression node = method.copyTrivialNode();
+    PreevaluatedExpression node = method.copyTrivialNode();
+    if (node != null) {
       return new SuperExprNode(selector, arguments, node).initialize(coord);
     }
 

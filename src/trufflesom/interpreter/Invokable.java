@@ -3,7 +3,6 @@ package trufflesom.interpreter;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.source.Source;
 
-import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SClass;
@@ -44,10 +43,4 @@ public abstract class Invokable extends AbstractInvokable {
   public void setHolder(final SClass holder) {
     this.holder = holder;
   }
-
-  @Override
-  public abstract boolean isTrivial();
-
-  @Override
-  public abstract PreevaluatedExpression copyTrivialNode();
 }

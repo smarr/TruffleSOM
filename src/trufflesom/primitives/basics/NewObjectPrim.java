@@ -6,6 +6,9 @@ import com.oracle.truffle.api.dsl.Specialization;
 
 import bd.primitives.Primitive;
 import bd.primitives.nodes.PreevaluatedExpression;
+import com.oracle.truffle.api.source.Source;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.CachedNewObject;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
 import trufflesom.vmobjects.SAbstractObject;
@@ -36,5 +39,13 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
   @Override
   public PreevaluatedExpression copyTrivialNode() {
     return NewObjectPrimFactory.create(null);
+  }
+
+  @Override
+  public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+      final AbstractDispatchNode next) {
+    SClass clazz = (SClass) rcvr;
+    ObjectLayout layout = clazz.getLayoutForInstances();
+    return new CachedNewObject(clazz.getObjectLayout(), layout.getAssumption(), layout, source, next);
   }
 }

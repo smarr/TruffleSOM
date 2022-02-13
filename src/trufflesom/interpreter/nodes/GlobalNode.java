@@ -34,6 +34,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
+import com.oracle.truffle.api.source.Source;
 
 import bd.inlining.ScopeAdaptationVisitor;
 import bd.primitives.nodes.PreevaluatedExpression;
@@ -43,6 +44,9 @@ import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.TruffleCompiler;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.CachedLiteralNode;
+import trufflesom.interpreter.nodes.dispatch.DispatchGuard;
 import trufflesom.vm.Globals.Association;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
@@ -255,6 +259,12 @@ public abstract class GlobalNode extends ExpressionNode
         }
       }
     }
+
+    @Override
+    public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+        final AbstractDispatchNode next) {
+      return new CachedLiteralNode(DispatchGuard.create(rcvr), source, true, next);
+    }
   }
 
   public static final class FalseGlobalNode extends GlobalNode {
@@ -285,6 +295,12 @@ public abstract class GlobalNode extends ExpressionNode
         }
       }
     }
+
+    @Override
+    public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+        final AbstractDispatchNode next) {
+      return new CachedLiteralNode(DispatchGuard.create(rcvr), source, false, next);
+    }
   }
 
   public static final class NilGlobalNode extends GlobalNode {
@@ -309,6 +325,12 @@ public abstract class GlobalNode extends ExpressionNode
           throw new RuntimeException(e);
         }
       }
+    }
+
+    @Override
+    public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+        final AbstractDispatchNode next) {
+      return new CachedLiteralNode(DispatchGuard.create(rcvr), source, Nil.nilObject, next);
     }
   }
 }

@@ -30,7 +30,9 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
 import bd.primitives.nodes.PreevaluatedExpression;
+import com.oracle.truffle.api.source.Source;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 
 
 @NodeInfo(cost = NodeCost.NONE)
@@ -73,7 +75,19 @@ public final class SequenceNode extends NoPreEvalExprNode {
 
   @Override
   public PreevaluatedExpression copyTrivialNode() {
-    return expressions[0].copyTrivialNode();
+    if (isTrivial()) {
+      return expressions[0].copyTrivialNode();
+    }
+    return null;
+  }
+
+  @Override
+  public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
+      final AbstractDispatchNode next) {
+    if (isTrivial()) {
+      return expressions[0].asDispatchNode(rcvr, source, next);
+    }
+    return null;
   }
 
   @Override
