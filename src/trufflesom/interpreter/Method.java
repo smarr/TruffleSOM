@@ -35,6 +35,7 @@ import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
@@ -144,7 +145,14 @@ public final class Method extends Invokable {
     return body.isTrivial();
   }
 
+  @Override
   public PreevaluatedExpression copyTrivialNode() {
     return body.copyTrivialNode();
+  }
+
+  @Override
+  public AbstractDispatchNode asDispatchNode(final Object rcvr,
+      final AbstractDispatchNode next) {
+    return body.asDispatchNode(rcvr, source, next);
   }
 }
