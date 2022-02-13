@@ -14,6 +14,7 @@ import com.oracle.truffle.api.source.Source;
 import bd.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
@@ -105,5 +106,11 @@ public final class Primitive extends Invokable {
   @Override
   public PreevaluatedExpression copyTrivialNode() {
     return (PreevaluatedExpression) NodeUtil.cloneNode((Node) uninitialized);
+  }
+
+  @Override
+  public AbstractDispatchNode asDispatchNode(final Object rcvr,
+      final AbstractDispatchNode next) {
+    return ((ExpressionNode) primitive).asDispatchNode(rcvr, source, next);
   }
 }

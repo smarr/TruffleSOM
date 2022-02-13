@@ -9,7 +9,6 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 
 import trufflesom.interpreter.SArguments;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode.AbstractCachedDispatchNode;
 import trufflesom.primitives.basics.SystemPrims.PrintStackTracePrim;
 import trufflesom.vm.Universe;
 import trufflesom.vm.VmSettings;

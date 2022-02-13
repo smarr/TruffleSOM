@@ -3,6 +3,7 @@ package trufflesom.interpreter.objectstorage;
 import java.lang.reflect.Field;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import sun.misc.Unsafe;
@@ -102,13 +103,12 @@ public abstract class StorageLocation {
 
     @Override
     public Object read(final SObject obj) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
       return Nil.nilObject;
     }
 
     @Override
     public void write(final SObject obj, final Object value) {
-      CompilerAsserts.neverPartOfCompilation("StorageLocation");
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       obj.setUninitializedField(fieldIndex, value);
     }
 

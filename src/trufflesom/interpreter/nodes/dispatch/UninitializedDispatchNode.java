@@ -44,25 +44,8 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     }
 
     if (chainDepth < INLINE_CACHE_SIZE) {
-      SClass rcvrClass = Types.getClassOf(rcvr);
-      SInvokable method = rcvrClass.lookupInvokable(selector);
-
       UninitializedDispatchNode newChainEnd = new UninitializedDispatchNode(selector);
-      DispatchGuard guard = DispatchGuard.create(rcvr);
-
-      AbstractDispatchNode node;
-      if (method == null) {
-        node = new CachedDnuNode(rcvrClass, guard, selector, newChainEnd);
-      } else {
-        if (method.isTrivial()) {
-          PreevaluatedExpression expr = method.copyTrivialNode();
-          assert expr != null;
-          node = new CachedExprNode(guard, expr, method.getSource(), newChainEnd);
-        } else {
-          CallTarget callTarget = method.getCallTarget();
-          node = new CachedDispatchNode(guard, callTarget, newChainEnd);
-        }
-      }
+      AbstractDispatchNode node = createDispatch(rcvr, selector, newChainEnd);
 
       replace(node);
       newChainEnd.notifyAsInserted();
@@ -70,12 +53,37 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     }
 
     // the chain is longer than the maximum defined by INLINE_CACHE_SIZE and
-    // thus, this callsite is considered to be megaprophic, and we generalize
-    // it.
+    // thus, this callsite is considered to be megaprophic, and we generalize it.
     GenericDispatchNode genericReplacement = new GenericDispatchNode(selector);
     AbstractMessageSendNode sendNode = (AbstractMessageSendNode) first.getParent();
     sendNode.replaceDispatchListHead(genericReplacement);
     return genericReplacement;
+  }
+
+  public static AbstractDispatchNode createDispatch(final Object rcvr, final SSymbol selector,
+      final UninitializedDispatchNode newChainEnd) {
+    SClass rcvrClass = Types.getClassOf(rcvr);
+    SInvokable method = rcvrClass.lookupInvokable(selector);
+
+    if (method == null) {
+      DispatchGuard guard = DispatchGuard.create(rcvr);
+      return new CachedDnuNode(rcvrClass, guard, selector, newChainEnd);
+    }
+
+    AbstractDispatchNode node = method.asDispatchNode(rcvr, newChainEnd);
+    if (node != null) {
+      return node;
+    }
+
+    PreevaluatedExpression expr = method.copyTrivialNode();
+
+    DispatchGuard guard = DispatchGuard.create(rcvr);
+    if (expr != null) {
+      return new CachedExprNode(guard, expr, method.getSource(), newChainEnd);
+    }
+
+    CallTarget callTarget = method.getCallTarget();
+    return new CachedDispatchNode(guard, callTarget, newChainEnd);
   }
 
   @Override
