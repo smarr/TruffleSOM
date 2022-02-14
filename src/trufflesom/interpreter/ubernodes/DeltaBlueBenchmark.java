@@ -11,6 +11,7 @@ import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.vm.SymbolTable;
+import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -106,6 +107,28 @@ public abstract class DeltaBlueBenchmark {
 
   /**
    * <pre>
+   * isSatisfied = (
+       ^ direction notNil.
+     )
+   * </pre>
+   */
+  public static final class DBBCIsSatisfied extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readDirection;
+
+    public DBBCIsSatisfied(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      readDirection = FieldAccessorNode.createRead(3);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      SObject rcvr = (SObject) frame.getArguments()[0];
+      return readDirection.read(rcvr) != Nil.nilObject;
+    }
+  }
+
+  /**
+   * <pre>
    * | strength |
    * | v1 v2 direction |
    * | scale offset |
@@ -175,6 +198,99 @@ public abstract class DeltaBlueBenchmark {
         }
       }
 
+      return rcvr;
+    }
+  }
+
+  /**
+   * <pre>
+   * | symbolicValue arithmeticValue |.
+   * weaker: aStrength = (
+        ^ arithmeticValue > aStrength arithmeticValue
+     )
+   * </pre>
+   */
+  public static final class DBSWeaker extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readArithValue;
+    @Child private AbstractDispatchNode  dispatchArithValue;
+
+    public DBSWeaker(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      readArithValue = FieldAccessorNode.createRead(1);
+      dispatchArithValue =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("arithmeticValue"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object aStrength = args[1];
+      long arithVal = readArithValue.readLongSafe(rcvr);
+
+      return arithVal > (Long) dispatchArithValue.executeDispatch(
+          frame, new Object[] {aStrength});
+    }
+  }
+
+  /**
+   * <pre>
+   * stronger: aStrength = (
+        ^ arithmeticValue < aStrength arithmeticValue.
+     )
+   * </pre>
+   */
+  public static final class DBSStronger extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readArithValue;
+    @Child private AbstractDispatchNode  dispatchArithValue;
+
+    public DBSStronger(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      readArithValue = FieldAccessorNode.createRead(1);
+      dispatchArithValue =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("arithmeticValue"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object aStrength = args[1];
+      long arithVal = readArithValue.readLongSafe(rcvr);
+
+      return arithVal < (Long) dispatchArithValue.executeDispatch(
+          frame, new Object[] {aStrength});
+    }
+  }
+
+  /**
+   * <pre>
+   *  weakest: aStrength = (
+        (aStrength weaker: self)
+          ifTrue:  [ ^ aStrength ]
+          ifFalse: [ ^ self ].
+     )
+   * </pre>
+   */
+  public static final class DBSWeakest extends AbstractInvokable {
+    @Child private AbstractDispatchNode dispatchWeaker;
+
+    public DBSWeakest(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+      dispatchWeaker =
+          new UninitializedDispatchNode(SymbolTable.symbolFor("weaker:"));
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      Object aStrength = args[1];
+
+      if ((Boolean) dispatchWeaker.executeDispatch(
+          frame, new Object[] {aStrength, rcvr})) {
+        return aStrength;
+      }
       return rcvr;
     }
   }

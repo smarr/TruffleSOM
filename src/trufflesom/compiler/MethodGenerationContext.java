@@ -68,9 +68,13 @@ import trufflesom.interpreter.ubernodes.BounceBenchmark.BallInitialize;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDIsInVoxel;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CDRecurse;
 import trufflesom.interpreter.ubernodes.CollisionDetectorClass.CallSignCompareTo;
+import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBBCIsSatisfied;
 import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBBCOutput;
 import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBECExecute;
 import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBSCExecute;
+import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBSStronger;
+import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBSWeaker;
+import trufflesom.interpreter.ubernodes.DeltaBlueBenchmark.DBSWeakest;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryMatchKey;
 import trufflesom.interpreter.ubernodes.DictIdEntry.DictIdEntryNewKeyValueNext;
 import trufflesom.interpreter.ubernodes.DictionaryClass.DictAt;
@@ -646,9 +650,22 @@ public class MethodGenerationContext
         if (methodName.equals("output")) {
           return smethod(new DBBCOutput(source, coord));
         }
+        if (methodName.equals("isSatisfied")) {
+          return smethod(new DBBCIsSatisfied(source, coord));
+        }
       } else if (className.equals("ScaleConstraint")) {
         if (methodName.equals("execute")) {
           return smethod(new DBSCExecute(source, coord));
+        }
+      } else if (className.equals("Strength")) {
+        if (methodName.equals("weaker:")) {
+          return smethod(new DBSWeaker(source, coord));
+        }
+        if (methodName.equals("stronger:")) {
+          return smethod(new DBSStronger(source, coord));
+        }
+        if (methodName.equals("weakest:")) {
+          return smethod(new DBSWeakest(source, coord));
         }
       }
     }
