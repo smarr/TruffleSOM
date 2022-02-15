@@ -22,6 +22,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
 import tools.nodestats.Tags.AnyNode;
+import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.SomExit;
@@ -53,6 +54,8 @@ public class SomLanguage extends TruffleLanguage<SomLanguage> {
 
   @Override
   protected SomLanguage createContext(final Env env) {
+    StorageAnalyzer.initAccessors();
+
     OptionValues config = env.getOptions();
     args = env.getApplicationArguments();
     classPath = config.get(CLASS_PATH);
