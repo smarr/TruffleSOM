@@ -37,10 +37,8 @@ import trufflesom.interpreter.nodes.dispatch.CachedFieldWriteAndSelf;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
-import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
 import trufflesom.interpreter.objectstorage.StorageLocation;
-import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SObject;
 
 
