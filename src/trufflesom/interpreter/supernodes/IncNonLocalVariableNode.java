@@ -1,6 +1,7 @@
 package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -48,14 +49,19 @@ public abstract class IncNonLocalVariableNode extends NonLocalVariableNode {
     return result;
   }
 
-  @Specialization(guards = "ctx.isDouble(slot)", rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = "ctx.isObject(slot)", rewriteOn = {FrameSlotTypeException.class})
   public final Object doString(final VirtualFrame frame, final String value,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
     String current = (String) ctx.getObject(slot);
-    String result = current + value;
+    String result = concat(current, value);
     ctx.setObject(slot, result);
     return result;
+  }
+
+  @TruffleBoundary
+  private static String concat(final String a, final String b) {
+    return a.concat(b);
   }
 
   @Fallback

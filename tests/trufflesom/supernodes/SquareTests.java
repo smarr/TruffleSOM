@@ -50,7 +50,7 @@ public class SquareTests extends AstTestSetup {
 
     BlockNode block = (BlockNode) read(seq, "expressions", 0);
     ExpressionNode testExpr =
-        read(block.getMethod().getInvokable(), "expressionOrSequence", ExpressionNode.class);
+        read(block.getMethod().getInvokable(), "body", ExpressionNode.class);
     assertThat(testExpr, instanceOf(expectedNode));
     return (T) testExpr;
   }

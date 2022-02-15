@@ -1,5 +1,6 @@
 package trufflesom.interpreter.supernodes;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
@@ -46,9 +47,14 @@ public abstract class IncLocalVariableNode extends LocalVariableNode {
   public final Object doString(final VirtualFrame frame, final String value)
       throws FrameSlotTypeException {
     String current = (String) frame.getObject(slot);
-    String result = current + value;
+    String result = concat(current, value);
     frame.setObject(slot, result);
     return result;
+  }
+
+  @TruffleBoundary
+  private static String concat(final String a, final String b) {
+    return a.concat(b);
   }
 
   @Override
