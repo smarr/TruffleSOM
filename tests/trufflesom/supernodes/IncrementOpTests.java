@@ -133,7 +133,7 @@ public class IncrementOpTests extends AstTestSetup {
 
     BlockNode block = (BlockNode) read(seq, "expressions", 0);
     ExpressionNode testExpr =
-        read(block.getMethod().getInvokable(), "expressionOrSequence", ExpressionNode.class);
+        read(block.getMethod().getInvokable(), "body", ExpressionNode.class);
     assertThat(testExpr, instanceOf(nodeType));
     long value = read(testExpr, "incValue", Long.class);
     assertEquals(literalValue, value);
@@ -154,7 +154,7 @@ public class IncrementOpTests extends AstTestSetup {
 
     BlockNode block = (BlockNode) read(seq, "expressions", 0);
     ExpressionNode testExpr =
-        read(block.getMethod().getInvokable(), "expressionOrSequence", ExpressionNode.class);
+        read(block.getMethod().getInvokable(), "body", ExpressionNode.class);
     assertThat(testExpr, instanceOf(nodeType));
   }
 
