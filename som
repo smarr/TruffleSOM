@@ -215,7 +215,7 @@ TWEAK_INLINING = ['-Dpolyglot.engine.CompilationThreshold=191',
                   '-Dpolyglot.engine.InliningMaxCallerSize=10000',
                   '-Dpolyglot.engine.SplittingMaxCalleeSize=100000']
 
-JAVA_ARGS = ['-server']
+JAVA_ARGS = ['-server', '-XX:+UseParallelGC']
 
 ##
 ## Processing Parameters and Assembling Command Line
