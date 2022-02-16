@@ -19,6 +19,7 @@ test:
   stage: build-and-test
   tags: [yuria]
   script:
+    - (cd libs/truffle/compiler/mxbuild && sudo reown-project.sh) || true
     - ${ANT} tests native-obj-storage-test native-tests
     - ${ANT} nodestats-test coverage-test
     - ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives core-lib/SomSom/tests/SomSomTests.som
@@ -27,6 +28,7 @@ build:native-interp-ast:
   stage: build-and-test
   tags: [yuria2]
   script:
+    - (cd libs/truffle/compiler/mxbuild && sudo reown-project.sh) || true
     - ${ANT} compile native-ast -Dno.jit=true
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
 
@@ -47,6 +49,7 @@ build:native-interp-bc:
   stage: build-and-test
   tags: [yuria3]
   script:
+    - (cd libs/truffle/compiler/mxbuild && sudo reown-project.sh) || true
     - ${ANT} compile native-bc -Dno.jit=true
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
 
