@@ -101,6 +101,7 @@ import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotInnerBench
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotMandelbrot;
 import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotVerifyInner;
 import trufflesom.interpreter.ubernodes.NBodyBenchmark.NBodyAdvanceBlock;
+import trufflesom.interpreter.ubernodes.PermuteBenchmark.PermuteSwap;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
@@ -666,6 +667,10 @@ public class MethodGenerationContext
         }
         if (methodName.equals("weakest:")) {
           return smethod(new DBSWeakest(source, coord));
+        }
+      } else if (className.equals("Permute")) {
+        if (methodName.equals("swap:with:")) {
+          return smethod(new PermuteSwap(source, coord));
         }
       }
     }
