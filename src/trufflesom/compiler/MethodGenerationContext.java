@@ -103,6 +103,7 @@ import trufflesom.interpreter.ubernodes.MandelbrotBenchmark.MandelbrotVerifyInne
 import trufflesom.interpreter.ubernodes.NBodyBenchmark.NBodyAdvanceBlock;
 import trufflesom.interpreter.ubernodes.PermuteBenchmark.PermutePermute;
 import trufflesom.interpreter.ubernodes.PermuteBenchmark.PermuteSwap;
+import trufflesom.interpreter.ubernodes.QueensBenchmark.QueensRowColumn;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassInitialize;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomClassNext;
 import trufflesom.interpreter.ubernodes.RandomClass.RandomInitialize;
@@ -676,6 +677,11 @@ public class MethodGenerationContext
         if (methodName.equals("permute:")) {
           return smethod(new PermutePermute(source, coord));
         }
+      } else if (className.equals("Queens")) {
+        if (methodName.equals("row:column:")) {
+          return smethod(new QueensRowColumn(source, coord));
+        }
+
       }
     }
 
