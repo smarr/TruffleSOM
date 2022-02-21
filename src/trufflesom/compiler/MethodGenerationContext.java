@@ -143,6 +143,8 @@ import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodBytecode;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodConstant;
 import trufflesom.interpreter.ubernodes.SomSomBenchmark.SMethodNumArgs;
 import trufflesom.interpreter.ubernodes.SuperNewInit;
+import trufflesom.interpreter.ubernodes.TowersBenchmark.TowersPopDisk;
+import trufflesom.interpreter.ubernodes.TowersBenchmark.TowersPushDisk;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitNode;
 import trufflesom.interpreter.ubernodes.UnionFindNodeClass.UFNInitialize;
 import trufflesom.interpreter.ubernodes.Vector2DClass.Vector2dCompareAnd;
@@ -684,6 +686,13 @@ public class MethodGenerationContext
         }
         if (methodName.equals("row:column:put:")) {
           return smethod(new QueensRowColumnPut(source, coord));
+        }
+      } else if (className.equals("Towers")) {
+        if (methodName.equals("pushDisk:onPile:")) {
+          return smethod(new TowersPushDisk(source, coord));
+        }
+        if (methodName.equals("popDiskFrom:")) {
+          return smethod(new TowersPopDisk(source, coord));
         }
       }
     }
