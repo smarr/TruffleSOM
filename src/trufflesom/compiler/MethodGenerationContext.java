@@ -385,7 +385,7 @@ public class MethodGenerationContext
         if (methodName.equals("bounce")) {
           return smethod(new BallBounce(source, coord));
         }
-      } else if (className.equals("Random")) {
+      } else if (className.equals("Random") || className.equals("SomRandom")) {
         if (holderGenc.isClassSide()) {
           if (methodName.equals("new")) {
             return smethod(new SuperNewInit(source, coord));
