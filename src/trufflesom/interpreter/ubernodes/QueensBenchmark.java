@@ -10,6 +10,8 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.primitives.arrays.AtPrim;
 import trufflesom.primitives.arrays.AtPrimFactory;
+import trufflesom.primitives.arrays.AtPutPrim;
+import trufflesom.primitives.arrays.AtPutPrimFactory;
 import trufflesom.vmobjects.SObject;
 
 
@@ -83,6 +85,7 @@ public abstract class QueensBenchmark {
       return atPrim.executeEvaluated(frame, freeMins, cr8);
     }
   }
+
   /**
    * <pre>
    row: r column: c put: v = (
@@ -92,4 +95,65 @@ public abstract class QueensBenchmark {
    )
    * </pre>
    */
+  public static final class QueensRowColumnPut extends AbstractInvokable {
+    @Child private AbstractReadFieldNode readMaxs;
+    @Child private AbstractReadFieldNode readRows;
+    @Child private AbstractReadFieldNode readMins;
+    @Child private AtPutPrim             atPutPrim;
+
+    public QueensRowColumnPut(final Source source, final long sourceCoord) {
+      super(new FrameDescriptor(), source, sourceCoord);
+
+      readMaxs = FieldAccessorNode.createRead(0);
+      readRows = FieldAccessorNode.createRead(1);
+      readMins = FieldAccessorNode.createRead(2);
+
+      atPutPrim = AtPutPrimFactory.create(null, null, null);
+    }
+
+    @Override
+    public Object execute(final VirtualFrame frame) {
+      Object[] args = frame.getArguments();
+      SObject rcvr = (SObject) args[0];
+      long r = (Long) args[1];
+      long c = (Long) args[2];
+      Object v = args[3];
+
+      atPutPrim.executeEvaluated(frame,
+          readRows.read(rcvr),
+          r,
+          v);
+
+      long cr;
+      try {
+        cr = Math.addExact(c, r);
+      } catch (ArithmeticException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        throw new UnsupportedOperationException();
+      }
+
+      atPutPrim.executeEvaluated(frame,
+          readMaxs.read(rcvr), cr, v);
+
+      try {
+        cr = Math.subtractExact(c, r);
+      } catch (ArithmeticException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        throw new UnsupportedOperationException();
+      }
+
+      long cr8;
+      try {
+        cr8 = Math.addExact(cr, 8);
+      } catch (ArithmeticException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        throw new UnsupportedOperationException();
+      }
+
+      atPutPrim.executeEvaluated(frame,
+          readMins.read(rcvr), cr8, v);
+
+      return rcvr;
+    }
+  }
 }
