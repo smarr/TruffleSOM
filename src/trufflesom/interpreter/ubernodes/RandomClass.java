@@ -13,6 +13,7 @@ import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
+import trufflesom.interpreter.objectstorage.StorageLocation.LongStorageLocation;
 import trufflesom.vm.Globals;
 import trufflesom.vm.Globals.Association;
 import trufflesom.vm.SymbolTable;
@@ -68,8 +69,10 @@ public abstract class RandomClass {
     public Object execute(final VirtualFrame frame) {
       SObject rcvr = (SObject) frame.getArguments()[0];
 
-      long seed = ((readSeed.readLongSafe(rcvr) * 1309L) + 13849L) & 65535L;
-      writeSeed.write(rcvr, seed);
+      LongStorageLocation storage = readSeed.getLongStorage(rcvr);
+
+      long seed = ((storage.readLongSafe(rcvr) * 1309L) + 13849L) & 65535L;
+      storage.writeLong(rcvr, seed);
       return seed;
     }
   }
