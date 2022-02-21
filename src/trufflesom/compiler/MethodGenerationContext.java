@@ -122,6 +122,7 @@ import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSIsTask;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSIsWaitingWithPacket;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSPacketPending;
 import trufflesom.interpreter.ubernodes.RichardsBenchmark.TSRunning;
+import trufflesom.interpreter.ubernodes.SieveBenchmark.SieveSieve;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAt;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictAtPut;
 import trufflesom.interpreter.ubernodes.SomDictionaryClass.SomDictBucket;
@@ -693,6 +694,10 @@ public class MethodGenerationContext
         }
         if (methodName.equals("popDiskFrom:")) {
           return smethod(new TowersPopDisk(source, coord));
+        }
+      } else if (className.equals("Sieve")) {
+        if (methodName.equals("sieve:size:")) {
+          return smethod(SieveSieve.create(source, coord));
         }
       }
     }
