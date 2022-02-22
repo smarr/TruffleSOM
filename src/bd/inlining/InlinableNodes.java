@@ -11,9 +11,6 @@ import com.oracle.truffle.api.source.SourceSection;
 import bd.basic.IdProvider;
 import bd.basic.ProgramDefinitionError;
 import bd.inlining.Inliner.FactoryInliner;
-import trufflesom.compiler.MethodGenerationContext;
-import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.vmobjects.SSymbol;
 
 
 /**

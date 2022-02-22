@@ -158,6 +158,7 @@ import trufflesom.interpreter.ubernodes.VectorClass.VectorIsEmpty;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorNew2;
 import trufflesom.interpreter.ubernodes.VectorClass.VectorSize;
 import trufflesom.primitives.Primitives;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
