@@ -3,15 +3,9 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="jvmci.version" value="jvmci-21.3-b05" />
-    <property name="jdk8.version"  value="302+06" />
+    <property name="jvmci.version" value="jvmci-22.0-b05" />
+    <property name="jdk.version"   value="17.0.2+8" />
 
-    <condition property="is.atLeastJava9" value="true" else="false">
-      <or>
-        <matches string="${java.version}" pattern="^9"/>
-        <matches string="${java.version}" pattern="^1[0-9]"/>
-      </or>
-    </condition>
     <condition property="kernel" value="darwin-amd64" else="linux-amd64">
         <os family="mac"/>
     </condition>
@@ -22,7 +16,6 @@
     <echo>
         ant.java.version: ${ant.java.version}
         java.version:     ${java.version}
-        is.atLeastJava9:  ${is.atLeastJava9}
         kernel:           ${kernel}
     </echo>
 
@@ -161,7 +154,7 @@
     </target>
 
     <target name="jvmci-libs" unless="skip.libs">
-        <get src="https://github.com/graalvm/graal-jvmci-8/releases/download/${jvmci.version}/openjdk-8u${jdk8.version}-${jvmci.version}-${kernel}.tar.gz"
+        <get src="https://github.com/graalvm/labs-openjdk-17/releases/download/${jvmci.version}/labsjdk-ce-${jdk.version}-${jvmci.version}-${kernel}.tar.gz"
              usetimestamp="true"
              dest="${lib.dir}/jvmci.tar.gz" />
         <mkdir dir="${lib.dir}/jvmci" />
@@ -314,7 +307,7 @@
     <target name="som-test" depends="compile-for-jar" description="Test som script">
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
-            <arg value="--no-libgraal" />
+            <arg value="--no-embedded-graal" />
             <arg value="-Dsom.interp=AST" />
             <arg value="-cp" />
             <arg value="Smalltalk" />
@@ -323,7 +316,7 @@
         
         <exec executable="./som" failonerror="true">
             <arg value="-G" />
-            <arg value="--no-libgraal" />
+            <arg value="--no-embedded-graal" />
             <arg value="-Dsom.interp=BC" />
             <arg value="-cp" />
             <arg value="Smalltalk" />
@@ -383,7 +376,7 @@
             <exec executable="@{exe}" dir="@{dir}" failonerror="true">
               <env key="JAVA_HOME" value="@{java-home}" />
               <arg line="native-image" if:true="@{is-ce}" />
-              <arg line="--macro:truffle --no-fallback --initialize-at-build-time -H:+ReportExceptionStackTraces" />
+              <arg line="--macro:truffle --no-fallback --initialize-at-build-time='bd,tools,trufflesom' --allow-incomplete-classpath -H:+ReportExceptionStackTraces" />
               <arg line="--gc=G1" unless:true="@{is-ce}" if:blank="${home.ext}" />
               <arg line="-H:-DeleteLocalSymbols" />
               <arg line="-Dsom.interp=@{type}" />
