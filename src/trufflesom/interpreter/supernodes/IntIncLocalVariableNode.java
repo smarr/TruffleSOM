@@ -20,20 +20,21 @@ public abstract class IntIncLocalVariableNode extends LocalVariableNode {
     this.incValue = incValue;
   }
 
-  @Specialization(guards = "frame.isLong(slot)", rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = "frame.isLong(slotIndex)",
+      rewriteOn = {FrameSlotTypeException.class})
   public final long doLong(final VirtualFrame frame) throws FrameSlotTypeException {
-    long current = frame.getLong(slot);
+    long current = frame.getLong(slotIndex);
     long result = Math.addExact(current, incValue);
-    frame.setLong(slot, result);
+    frame.setLong(slotIndex, result);
     return result;
   }
 
-  @Specialization(guards = "frame.isDouble(slot)",
+  @Specialization(guards = "frame.isDouble(slotIndex)",
       rewriteOn = {FrameSlotTypeException.class})
   public final double doDouble(final VirtualFrame frame) throws FrameSlotTypeException {
-    double current = frame.getDouble(slot);
+    double current = frame.getDouble(slotIndex);
     double result = current + incValue;
-    frame.setDouble(slot, result);
+    frame.setDouble(slotIndex, result);
     return result;
   }
 

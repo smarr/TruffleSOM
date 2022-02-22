@@ -17,16 +17,17 @@ public abstract class LocalVariableSquareNode extends LocalVariableNode {
     super(variable);
   }
 
-  @Specialization(guards = {"frame.isLong(slot)"}, rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = {"frame.isLong(slotIndex)"},
+      rewriteOn = {FrameSlotTypeException.class})
   public final long doLong(final VirtualFrame frame) throws FrameSlotTypeException {
-    long value = frame.getLong(slot);
+    long value = frame.getLong(slotIndex);
     return Math.multiplyExact(value, value);
   }
 
-  @Specialization(guards = {"frame.isDouble(slot)"},
+  @Specialization(guards = {"frame.isDouble(slotIndex)"},
       rewriteOn = {FrameSlotTypeException.class})
   public final double doDouble(final VirtualFrame frame) throws FrameSlotTypeException {
-    double value = frame.getDouble(slot);
+    double value = frame.getDouble(slotIndex);
     return value * value;
   }
 
