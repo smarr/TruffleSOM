@@ -1,7 +1,7 @@
 package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -15,40 +15,41 @@ import trufflesom.interpreter.nodes.LocalVariableNode;
 
 public abstract class LocalVariableReadSquareWriteNode extends LocalVariableNode {
 
-  protected final Local     readLocal;
-  protected final FrameSlot readSlot;
+  protected final Local readLocal;
+  protected final int   readIndex;
 
   public LocalVariableReadSquareWriteNode(final Local writeLocal, final Local readLocal) {
     super(writeLocal);
     this.readLocal = readLocal;
-    this.readSlot = readLocal.getSlot();
+    this.readIndex = readLocal.getIndex();
   }
 
-  @Specialization(guards = {"isLongKind(frame)", "frame.isLong(readSlot)"},
+  @Specialization(guards = {"isLongKind(frame)", "frame.isLong(readIndex)"},
       rewriteOn = {FrameSlotTypeException.class})
   public final long writeLong(final VirtualFrame frame) throws FrameSlotTypeException {
-    long current = frame.getLong(readSlot);
+    long current = frame.getLong(readIndex);
     long result = Math.multiplyExact(current, current);
-    frame.setLong(slot, result);
+    frame.setLong(slotIndex, result);
     return result;
   }
 
-  @Specialization(guards = {"isDoubleKind(frame)", "frame.isDouble(readSlot)"},
+  @Specialization(guards = {"isDoubleKind(frame)", "frame.isDouble(readIndex)"},
       rewriteOn = {FrameSlotTypeException.class})
   public final double writeDouble(final VirtualFrame frame) throws FrameSlotTypeException {
-    double current = frame.getDouble(readSlot);
+    double current = frame.getDouble(readIndex);
     double result = current * current;
-    frame.setDouble(slot, result);
+    frame.setDouble(slotIndex, result);
     return result;
   }
 
   // uses frame to make sure guard is not converted to assertion
   protected final boolean isLongKind(final VirtualFrame frame) {
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Long) {
+    FrameDescriptor descriptor = local.getFrameDescriptor();
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Long) {
       return true;
     }
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-      descriptor.setFrameSlotKind(slot, FrameSlotKind.Long);
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
+      descriptor.setSlotKind(slotIndex, FrameSlotKind.Long);
       return true;
     }
     return false;
@@ -56,11 +57,12 @@ public abstract class LocalVariableReadSquareWriteNode extends LocalVariableNode
 
   // uses frame to make sure guard is not converted to assertion
   protected final boolean isDoubleKind(final VirtualFrame frame) {
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Double) {
+    FrameDescriptor descriptor = local.getFrameDescriptor();
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Double) {
       return true;
     }
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-      descriptor.setFrameSlotKind(slot, FrameSlotKind.Double);
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
+      descriptor.setSlotKind(slotIndex, FrameSlotKind.Double);
       return true;
     }
     return false;

@@ -23,32 +23,33 @@ public abstract class IncLocalVariableNode extends LocalVariableNode {
 
   public abstract ExpressionNode getValue();
 
-  @Specialization(guards = "frame.isLong(slot)", rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = "frame.isLong(slotIndex)",
+      rewriteOn = {FrameSlotTypeException.class})
   public final long doLong(final VirtualFrame frame, final long value)
       throws FrameSlotTypeException {
-    long current = frame.getLong(slot);
+    long current = frame.getLong(slotIndex);
     long result = Math.addExact(current, value);
-    frame.setLong(slot, result);
+    frame.setLong(slotIndex, result);
     return result;
   }
 
-  @Specialization(guards = "frame.isDouble(slot)",
+  @Specialization(guards = "frame.isDouble(slotIndex)",
       rewriteOn = {FrameSlotTypeException.class})
   public final double doDouble(final VirtualFrame frame, final double value)
       throws FrameSlotTypeException {
-    double current = frame.getDouble(slot);
+    double current = frame.getDouble(slotIndex);
     double result = current + value;
-    frame.setDouble(slot, result);
+    frame.setDouble(slotIndex, result);
     return result;
   }
 
-  @Specialization(guards = "frame.isObject(slot)",
+  @Specialization(guards = "frame.isObject(slotIndex)",
       rewriteOn = {FrameSlotTypeException.class})
   public final Object doString(final VirtualFrame frame, final String value)
       throws FrameSlotTypeException {
-    String current = (String) frame.getObject(slot);
+    String current = (String) frame.getObject(slotIndex);
     String result = concat(current, value);
-    frame.setObject(slot, result);
+    frame.setObject(slotIndex, result);
     return result;
   }
 

@@ -29,33 +29,35 @@ public abstract class IncNonLocalVariableNode extends NonLocalVariableNode {
 
   public abstract ExpressionNode getValue();
 
-  @Specialization(guards = "ctx.isLong(slot)", rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = "ctx.isLong(slotIndex)", rewriteOn = {FrameSlotTypeException.class})
   public final long doLong(final VirtualFrame frame, final long value,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
-    long current = ctx.getLong(slot);
+    long current = ctx.getLong(slotIndex);
     long result = Math.addExact(current, value);
-    ctx.setLong(slot, result);
+    ctx.setLong(slotIndex, result);
     return result;
   }
 
-  @Specialization(guards = "ctx.isDouble(slot)", rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = "ctx.isDouble(slotIndex)",
+      rewriteOn = {FrameSlotTypeException.class})
   public final double doDouble(final VirtualFrame frame, final double value,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
-    double current = ctx.getDouble(slot);
+    double current = ctx.getDouble(slotIndex);
     double result = current + value;
-    ctx.setDouble(slot, result);
+    ctx.setDouble(slotIndex, result);
     return result;
   }
 
-  @Specialization(guards = "ctx.isObject(slot)", rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = "ctx.isObject(slotIndex)",
+      rewriteOn = {FrameSlotTypeException.class})
   public final Object doString(final VirtualFrame frame, final String value,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
-    String current = (String) ctx.getObject(slot);
+    String current = (String) ctx.getObject(slotIndex);
     String result = concat(current, value);
-    ctx.setObject(slot, result);
+    ctx.setObject(slotIndex, result);
     return result;
   }
 
@@ -75,9 +77,9 @@ public abstract class IncNonLocalVariableNode extends NonLocalVariableNode {
 
     replace(local.getWriteNode(contextLevel, add, sourceCoord)).adoptChildren();
 
-    Object preIncValue = ctx.getValue(slot);
+    Object preIncValue = ctx.getValue(slotIndex);
     Object result = add.executeEvaluated(null, preIncValue, value);
-    ctx.setObject(slot, result);
+    ctx.setObject(slotIndex, result);
     return result;
   }
 

@@ -1,10 +1,8 @@
 package trufflesom.interpreter.supernodes;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreter;
-
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.MaterializedFrame;
@@ -19,60 +17,60 @@ import trufflesom.interpreter.nodes.NonLocalVariableNode;
 
 public abstract class NonLocalVariableReadSquareWriteNode extends NonLocalVariableNode {
 
-  protected final Local     readLocal;
-  protected final FrameSlot readSlot;
+  protected final Local readLocal;
+  protected final int   readIndex;
 
   public NonLocalVariableReadSquareWriteNode(final int contextLevel, final Local writeLocal,
       final Local readLocal) {
     super(contextLevel, writeLocal);
     this.readLocal = readLocal;
-    this.readSlot = readLocal.getSlot();
+    this.readIndex = readLocal.getIndex();
   }
 
-  @Specialization(guards = {"isLongKind(ctx)", "ctx.isLong(readSlot)"},
+  @Specialization(guards = {"isLongKind(ctx)", "ctx.isLong(readIndex)"},
       rewriteOn = {FrameSlotTypeException.class})
   public final long writeLong(final VirtualFrame frame,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
-    long current = ctx.getLong(readSlot);
+    long current = ctx.getLong(readIndex);
     long result = Math.multiplyExact(current, current);
 
-    ctx.setLong(slot, result);
+    ctx.setLong(slotIndex, result);
 
     return result;
   }
 
-  @Specialization(guards = {"isDoubleKind(ctx)", "ctx.isDouble(readSlot)"},
+  @Specialization(guards = {"isDoubleKind(ctx)", "ctx.isDouble(readIndex)"},
       rewriteOn = {FrameSlotTypeException.class})
   public final double writeDouble(final VirtualFrame frame,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
-    double current = ctx.getDouble(readSlot);
+    double current = ctx.getDouble(readIndex);
     double result = current * current;
 
-    ctx.setDouble(slot, result);
+    ctx.setDouble(slotIndex, result);
     return result;
   }
 
   protected final boolean isLongKind(final VirtualFrame frame) {
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Long) {
+    FrameDescriptor descriptor = local.getFrameDescriptor();
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Long) {
       return true;
     }
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-      transferToInterpreter("LocalVar.writeIntToUninit");
-      descriptor.setFrameSlotKind(slot, FrameSlotKind.Long);
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
+      descriptor.setSlotKind(slotIndex, FrameSlotKind.Long);
       return true;
     }
     return false;
   }
 
   protected final boolean isDoubleKind(final VirtualFrame frame) {
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Double) {
+    FrameDescriptor descriptor = local.getFrameDescriptor();
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Double) {
       return true;
     }
-    if (descriptor.getFrameSlotKind(slot) == FrameSlotKind.Illegal) {
-      transferToInterpreter("LocalVar.writeDoubleToUninit");
-      descriptor.setFrameSlotKind(slot, FrameSlotKind.Double);
+    if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
+      descriptor.setSlotKind(slotIndex, FrameSlotKind.Double);
       return true;
     }
     return false;

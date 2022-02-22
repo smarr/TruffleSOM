@@ -19,19 +19,21 @@ public abstract class NonLocalVariableSquareNode extends NonLocalVariableNode {
     super(contextLevel, local);
   }
 
-  @Specialization(guards = {"ctx.isLong(slot)"}, rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = {"ctx.isLong(slotIndex)"},
+      rewriteOn = {FrameSlotTypeException.class})
   public final long doLong(final VirtualFrame frame,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
-    long current = ctx.getLong(slot);
+    long current = ctx.getLong(slotIndex);
     return Math.multiplyExact(current, current);
   }
 
-  @Specialization(guards = {"ctx.isDouble(slot)"}, rewriteOn = {FrameSlotTypeException.class})
+  @Specialization(guards = {"ctx.isDouble(slotIndex)"},
+      rewriteOn = {FrameSlotTypeException.class})
   public final double doDouble(final VirtualFrame frame,
       @Bind("determineContext(frame)") final MaterializedFrame ctx)
       throws FrameSlotTypeException {
-    double current = ctx.getDouble(slot);
+    double current = ctx.getDouble(slotIndex);
     return current * current;
   }
 
