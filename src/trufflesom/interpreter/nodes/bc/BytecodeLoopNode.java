@@ -180,13 +180,18 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         maxStackDepth, frameOnStackMarkerIndex, inlinedLoopsField).initialize(sourceCoord);
   }
 
-  private LexicalScope getScope() {
-    Method m = (Method) getParent();
-    return m.getScope();
-  }
-
   public String getNameOfLocal(final int idx) {
-    Local l = getScope().getLocal(idx);
+    Node p = getParent();
+    if (!(p instanceof Method)) {
+      return "[unknown]";
+    }
+
+    Method m = (Method) p;
+    if (m == null || m.getScope() == null) {
+      return "[unknown]";
+    }
+
+    Local l = m.getScope().getLocal(idx);
 
     return l.name.getString();
   }
@@ -1151,7 +1156,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
       BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
 
       try {
-        inlineInto(mgenc, targetContextLevel);
+        inlineInto(mgenc, inliner, targetContextLevel);
       } catch (ParseError e) {
         throw new RuntimeException(e);
       }
@@ -1250,12 +1255,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     }
   }
 
-  private void inlineInto(final BytecodeMethodGenContext mgenc, final int targetContextLevel)
+  private void inlineInto(final BytecodeMethodGenContext mgenc,
+      final ScopeAdaptationVisitor inliner, final int targetContextLevel)
       throws ParseError {
     final byte[] bytecodes = bytecodesField;
     final Object[] literalsAndConstants = literalsAndConstantsField;
-
-    LexicalScope scope = getScope();
 
     PriorityQueue<Jump> jumps = new PriorityQueue<>();
     PriorityQueue<BackJump> loops = createBackwardJumpQueue();
@@ -1280,7 +1284,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           byte localIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
 
-          Local local = scope.getLocal(localIdx, contextIdx);
+          Local local = inliner.getAdaptedLocal(localIdx, contextIdx, true);
           local.emitPush(mgenc);
           break;
         }
@@ -1289,7 +1293,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case PUSH_LOCAL_1:
         case PUSH_LOCAL_2: {
           byte localIdx = (byte) (bytecode - PUSH_LOCAL_0);
-          Local local = scope.getLocal(localIdx);
+          Local local = inliner.getAdaptedLocal(localIdx, 0, true);
           local.emitPush(mgenc);
           break;
         }
@@ -1370,7 +1374,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case POP_LOCAL: {
           byte localIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          Local local = getScope().getLocal(localIdx, contextIdx);
+          Local local = inliner.getAdaptedLocal(localIdx, contextIdx, true);
           local.emitPop(mgenc);
           break;
         }
@@ -1379,7 +1383,8 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case POP_LOCAL_1:
         case POP_LOCAL_2: {
           byte localIdx = (byte) (bytecode - POP_LOCAL_0);
-          Local local = scope.getLocal(localIdx);
+          Local local = inliner.getAdaptedLocal(localIdx, 0, true);
+
           local.emitPop(mgenc);
           break;
         }
@@ -1519,7 +1524,20 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         }
 
         case PUSH_LOCAL: {
-          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          byte localIdx = bytecodes[i + 1];
+          byte contextLvl = bytecodes[i + 2];
+
+          Local l =
+              inliner.getAdaptedLocal(localIdx, contextLvl, requiresChangesToContextLevels);
+          if (localIdx != l.getIndex()) {
+            bytecodes[i + 1] = (byte) l.getIndex();
+          }
+
+          if (requiresChangesToContextLevels && contextLvl > inliner.contextLevel) {
+            byte ctx = (byte) (contextLvl - 1);
+            assert ctx >= 0;
+            bytecodes[i + 2] = ctx;
+          }
           break;
         }
 
@@ -1579,7 +1597,19 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         }
 
         case POP_LOCAL: {
-          adaptContextIdx(inliner, i, requiresChangesToContextLevels);
+          byte localIdx = bytecodes[i + 1];
+          byte contextLvl = bytecodes[i + 2];
+
+          Local l = inliner.getAdaptedLocal(
+              localIdx, contextLvl, requiresChangesToContextLevels);
+          if (localIdx != l.getIndex()) {
+            bytecodes[i + 1] = (byte) l.getIndex();
+          }
+          if (requiresChangesToContextLevels && contextLvl > inliner.contextLevel) {
+            byte ctx = (byte) (contextLvl - 1);
+            assert ctx >= 0;
+            bytecodes[i + 2] = ctx;
+          }
           break;
         }
 
