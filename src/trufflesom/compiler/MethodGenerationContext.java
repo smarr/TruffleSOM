@@ -38,8 +38,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
@@ -59,7 +57,6 @@ import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.primitives.Primitives;
-import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -86,7 +83,8 @@ public class MethodGenerationContext
   protected final LinkedHashMap<SSymbol, Argument> arguments;
   protected final LinkedHashMap<SSymbol, Local>    locals;
 
-  private Internal             frameOnStack;
+  private Internal frameOnStack;
+
   protected final LexicalScope currentScope;
 
   private final List<SMethod> embeddedBlockMethods;
@@ -117,7 +115,7 @@ public class MethodGenerationContext
     this.structuralProbe = structuralProbe;
 
     LexicalScope outer = (outerGenc != null) ? outerGenc.getCurrentLexicalScope() : null;
-    this.currentScope = new LexicalScope(new FrameDescriptor(Nil.nilObject), outer);
+    this.currentScope = new LexicalScope(outer);
 
     accessesVariablesOfOuterScope = false;
     throwsNonLocalReturn = false;
@@ -159,10 +157,9 @@ public class MethodGenerationContext
       assert needsToCatchNonLocalReturn;
       assert !locals.containsKey(symFrameOnStack);
 
-      frameOnStack = new Internal(symFrameOnStack, coord);
-      frameOnStack.init(
-          currentScope.getFrameDescriptor().addFrameSlot(frameOnStack, FrameSlotKind.Object),
-          currentScope.getFrameDescriptor());
+      int index = locals.size();
+      frameOnStack = new Internal(symFrameOnStack, coord, index);
+      locals.put(symFrameOnStack, frameOnStack);
       currentScope.addVariable(frameOnStack);
     }
     return frameOnStack;
@@ -203,6 +200,8 @@ public class MethodGenerationContext
   }
 
   public final SInvokable assemble(final ExpressionNode body, final long coord) {
+    currentScope.finalizeVariables(locals.size());
+
     if (primitive) {
       return Primitives.constructEmptyPrimitive(
           signature, holderGenc.getSource(), coord, structuralProbe);
@@ -235,9 +234,7 @@ public class MethodGenerationContext
   @Override
   public Variable[] getVariables() {
     int numVars = arguments.size() + locals.size();
-    if (frameOnStack != null) {
-      numVars += 1;
-    }
+
     Variable[] vars = new Variable[numVars];
     int i = 0;
     for (Argument a : arguments.values()) {
@@ -248,10 +245,6 @@ public class MethodGenerationContext
     for (Local l : locals.values()) {
       vars[i] = l;
       i += 1;
-    }
-
-    if (frameOnStack != null) {
-      vars[i] = frameOnStack;
     }
 
     return vars;
@@ -300,10 +293,8 @@ public class MethodGenerationContext
   }
 
   public Local addLocal(final SSymbol local, final long coord) {
-    Local l = new Local(local, coord);
-    l.init(
-        currentScope.getFrameDescriptor().addFrameSlot(l),
-        currentScope.getFrameDescriptor());
+    int index = locals.size();
+    Local l = new Local(local, coord, index);
     assert !locals.containsKey(local);
     locals.put(local, l);
 
@@ -447,7 +438,8 @@ public class MethodGenerationContext
 
   public void mergeIntoScope(final LexicalScope scope, final SMethod toBeInlined) {
     for (Variable v : scope.getVariables()) {
-      Local l = v.splitToMergeIntoOuterScope(currentScope.getFrameDescriptor());
+      int slotIndex = locals.size();
+      Local l = v.splitToMergeIntoOuterScope(slotIndex);
       if (l != null) { // can happen for instance for the block self, which we omit
         SSymbol name = l.getQualifiedName(holderGenc.getSource());
         addLocal(l, name);

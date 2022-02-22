@@ -33,7 +33,6 @@ import java.nio.file.Paths;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
@@ -132,9 +131,7 @@ public abstract class SInvokable extends SAbstractObject {
   @TruffleBoundary
   public final RootCallTarget getCallTarget() {
     RootCallTarget ct = invokable.getCallTarget();
-    if (ct == null) {
-      ct = Truffle.getRuntime().createCallTarget(invokable);
-    }
+    assert ct != null;
     return ct;
   }
 

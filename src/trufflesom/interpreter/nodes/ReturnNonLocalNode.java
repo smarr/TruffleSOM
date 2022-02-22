@@ -21,8 +21,6 @@
  */
 package trufflesom.interpreter.nodes;
 
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
@@ -41,7 +39,8 @@ public final class ReturnNonLocalNode extends ContextualNode {
   @Child private ExpressionNode expression;
   private final BranchProfile   blockEscaped;
   private final Internal        onStackMarkerVar;
-  private final FrameSlot       frameOnStackMarker;
+
+  private final int onStackMarkerIndex;
 
   public ReturnNonLocalNode(final ExpressionNode expression, final Internal onStackMarkerVar,
       final int outerSelfContextLevel) {
@@ -50,11 +49,10 @@ public final class ReturnNonLocalNode extends ContextualNode {
     this.expression = expression;
     this.blockEscaped = BranchProfile.create();
     this.onStackMarkerVar = onStackMarkerVar;
-    this.frameOnStackMarker = onStackMarkerVar.getSlot();
+    this.onStackMarkerIndex = onStackMarkerVar.getIndex();
   }
 
-  public ReturnNonLocalNode(final ReturnNonLocalNode node,
-      final FrameSlot inlinedFrameOnStack) {
+  public ReturnNonLocalNode(final ReturnNonLocalNode node) {
     this(node.expression, node.onStackMarkerVar, node.contextLevel);
   }
 
@@ -63,8 +61,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
     Object result = expression.executeGeneric(frame);
 
     MaterializedFrame ctx = determineContext(frame);
-    FrameOnStackMarker marker =
-        (FrameOnStackMarker) FrameUtil.getObjectSafe(ctx, frameOnStackMarker);
+    FrameOnStackMarker marker = (FrameOnStackMarker) ctx.getObject(onStackMarkerIndex);
 
     if (marker.isOnStack()) {
       throw new ReturnException(result, marker);
@@ -102,22 +99,21 @@ public final class ReturnNonLocalNode extends ContextualNode {
   public static final class ReturnLocalNode extends NoPreEvalExprNode {
     @Child private ExpressionNode expression;
 
-    private final Internal  onStackMarkerVar;
-    private final FrameSlot frameOnStackMarker;
+    private final Internal onStackMarkerVar;
+
+    private final int onStackMarkerIndex;
 
     private ReturnLocalNode(final ExpressionNode exp, final Internal onStackMarker) {
       this.expression = exp;
 
       this.onStackMarkerVar = onStackMarker;
-      this.frameOnStackMarker = onStackMarker.getSlot();
+      this.onStackMarkerIndex = onStackMarker.getIndex();
     }
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       Object result = expression.executeGeneric(frame);
-
-      FrameOnStackMarker marker = (FrameOnStackMarker) FrameUtil.getObjectSafe(
-          frame, frameOnStackMarker);
+      FrameOnStackMarker marker = (FrameOnStackMarker) frame.getObject(onStackMarkerIndex);
 
       // this ReturnLocalNode should only become part of an AST because of
       // inlining a literal block, and that block, should never be
@@ -125,15 +121,6 @@ public final class ReturnNonLocalNode extends ContextualNode {
       // do the inlining for blocks where we know this doesn't happen.
       assert marker.isOnStack();
       throw new ReturnException(result, marker);
-
-      // if (marker.isOnStack()) {
-      // } else {
-      // throw new RuntimeException("This should never happen");
-      // blockEscaped.enter();
-      // SBlock block = (SBlock) SArguments.rcvr(frame);
-      // Object self = SArguments.rcvr(ctx);
-      // return SAbstractObject.sendEscapedBlock(self, block);
-      // }
     }
 
     @Override
@@ -154,14 +141,15 @@ public final class ReturnNonLocalNode extends ContextualNode {
     private final BranchProfile doCatch;
     private final BranchProfile doPropagate;
     private final Internal      onStackMarkerVar;
-    private final FrameSlot     frameOnStackMarker;
+
+    private final int onStackMarkerIndex;
 
     public CatchNonLocalReturnNode(final ExpressionNode methodBody,
         final Internal onStackMarker) {
       this.methodBody = methodBody;
       this.nonLocalReturnHandler = BranchProfile.create();
       this.onStackMarkerVar = onStackMarker;
-      this.frameOnStackMarker = onStackMarker.getSlot();
+      this.onStackMarkerIndex = onStackMarker.getIndex();
 
       this.doCatch = BranchProfile.create();
       this.doPropagate = BranchProfile.create();
@@ -175,7 +163,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
       FrameOnStackMarker marker = new FrameOnStackMarker();
-      frame.setObject(frameOnStackMarker, marker);
+      frame.setObject(onStackMarkerIndex, marker);
 
       try {
         return methodBody.executeGeneric(frame);
