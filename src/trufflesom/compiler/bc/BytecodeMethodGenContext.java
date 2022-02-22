@@ -50,10 +50,7 @@ import static trufflesom.vm.SymbolTable.symSelf;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-
-import com.oracle.truffle.api.frame.FrameSlot;
 
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.ClassGenerationContext;
@@ -64,7 +61,6 @@ import trufflesom.compiler.ParserBc;
 import trufflesom.compiler.Symbol;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;
-import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.bc.Bytecodes;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -85,8 +81,7 @@ import trufflesom.vmobjects.SSymbol;
 
 public class BytecodeMethodGenContext extends MethodGenerationContext {
 
-  private final List<Object>                  literals;
-  private final LinkedHashMap<SSymbol, Local> localAndOuterVars;
+  private final List<Object> literals;
 
   private final ArrayList<BackJump> inlinedLoops;
 
@@ -121,7 +116,6 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     literals = new ArrayList<>();
     bytecode = new ArrayList<>();
     inlinedLoops = new ArrayList<>();
-    localAndOuterVars = new LinkedHashMap<>();
     last4Bytecodes = new byte[4];
   }
 
@@ -310,69 +304,18 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     literals.set(index, newVal);
   }
 
-  private byte getPositionIn(final Local local, final LinkedHashMap<SSymbol, Local> map) {
-    byte i = 0;
-    for (Local l : map.values()) {
-      if (l.equals(local)) {
-        return i;
-      }
-      i += 1;
-    }
-    return -1;
-  }
-
-  /**
-   * Record the access, and also manage the tracking of outer access.
-   */
-  public byte getLocalIndex(final Local local, final int contextLevel) {
-    byte pos = getPositionIn(local, localAndOuterVars);
-    if (pos >= 0) {
-      return pos;
-    }
-
-    // Don't have it yet, so, need to add it. Must be an outer,
-    int size = localAndOuterVars.size();
-    assert !localAndOuterVars.containsKey(local.getName());
-    localAndOuterVars.put(local.getName(), local);
-    assert getPositionIn(local, localAndOuterVars) == size;
-
-    return (byte) size;
-  }
-
-  @Override
-  public Local addLocal(final SSymbol local, final long coord) {
-    Local l = super.addLocal(local, coord);
-    localAndOuterVars.put(local, l);
-    return l;
-  }
-
-  @Override
-  public void addLocal(final Local l, final SSymbol name) {
-    super.addLocal(l, name);
-    assert !localAndOuterVars.containsKey(name);
-    localAndOuterVars.put(name, l);
-  }
-
   private BytecodeLoopNode constructBytecodeBody(final long coord) {
     byte[] bytecodes = getBytecodeArray();
 
     Object[] literalsArr = literals.toArray();
-    FrameSlot[] localsAndOuters = new FrameSlot[localAndOuterVars.size()];
 
-    int i = 0;
-    for (Local l : localAndOuterVars.values()) {
-      localsAndOuters[i] = l.getSlot();
-      i += 1;
-    }
-
-    FrameSlot frameOnStackMarker =
-        throwsNonLocalReturn ? getFrameOnStackMarker(coord).getSlot() : null;
+    int frameOnStackMarkerIndex =
+        throwsNonLocalReturn ? getFrameOnStackMarker(coord).getIndex() : -1;
 
     BackJump[] loops = inlinedLoops.toArray(new BackJump[0]);
 
-    return new BytecodeLoopNode(
-        bytecodes, locals.size(), localsAndOuters, literalsArr, maxStackDepth,
-        frameOnStackMarker, loops);
+    return new BytecodeLoopNode(bytecodes, locals.size(), literalsArr, maxStackDepth,
+        frameOnStackMarkerIndex, loops);
   }
 
   public byte[] getBytecodeArray() {

@@ -99,8 +99,9 @@ public final class Method extends Invokable {
       final boolean cloneAdaptedAsUninitialized,
       final boolean requiresChangesToContextLevels) {
     Scope<?, ?> scope = mgenc == null ? adaptedScope : mgenc;
-    ExpressionNode adaptedBody = ScopeAdaptationVisitor.adapt(uninitializedBody, scope,
-        appliesTo, requiresChangesToContextLevels, getLanguage(SomLanguage.class));
+    ExpressionNode adaptedBody =
+        ScopeAdaptationVisitor.adapt(uninitializedBody, scope, currentLexicalScope,
+            appliesTo, requiresChangesToContextLevels, getLanguage(SomLanguage.class));
 
     ExpressionNode uninit;
     if (cloneAdaptedAsUninitialized) {
@@ -133,7 +134,7 @@ public final class Method extends Invokable {
   public ExpressionNode inline(final MethodGenerationContext mgenc,
       final SMethod toBeInlined) {
     mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
-    return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc, 0, true,
+    return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc, currentLexicalScope, 0, true,
         getLanguage(SomLanguage.class));
   }
 

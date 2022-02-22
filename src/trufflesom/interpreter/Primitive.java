@@ -25,9 +25,8 @@ public final class Primitive extends Invokable {
   private final PreevaluatedExpression uninitialized;
 
   public Primitive(final String name, final Source source, final long sourceCoord,
-      final PreevaluatedExpression body, final FrameDescriptor frameDescriptor,
-      final PreevaluatedExpression uninitialized) {
-    super(name, source, sourceCoord, frameDescriptor);
+      final PreevaluatedExpression body, final PreevaluatedExpression uninitialized) {
+    super(name, source, sourceCoord, new FrameDescriptor());
     this.primitive = body;
     this.uninitialized = uninitialized;
   }
@@ -39,10 +38,7 @@ public final class Primitive extends Invokable {
 
   @Override
   public Node deepCopy() {
-    assert getFrameDescriptor().getSize() == 0 : "Make sure there are no slots to be taken care off";
-    return new Primitive(name, source, sourceCoord,
-        copyTrivialNode(),
-        getFrameDescriptor(), uninitialized);
+    return new Primitive(name, source, sourceCoord, copyTrivialNode(), uninitialized);
   }
 
   @Override

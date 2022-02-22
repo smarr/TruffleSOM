@@ -15,8 +15,6 @@ import java.util.Objects;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.source.Source;
 
 import bd.source.SourceCoordinate;
@@ -60,9 +58,9 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
   protected abstract void emitPush(BytecodeMethodGenContext mgenc);
 
-  public abstract Variable split(FrameDescriptor descriptor);
+  public abstract Variable split();
 
-  public abstract Local splitToMergeIntoOuterScope(FrameDescriptor descriptor);
+  public abstract Local splitToMergeIntoOuterScope(int slotIndex);
 
   @Override
   public boolean equals(final Object o) {
@@ -101,19 +99,17 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
-    public Variable split(final FrameDescriptor descriptor) {
+    public Variable split() {
       return this;
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final FrameDescriptor descriptor) {
+    public Local splitToMergeIntoOuterScope(final int slotIndex) {
       if (isSelf()) {
         return null;
       }
 
-      Local l = new Local(name, coord);
-      l.init(descriptor.addFrameSlot(l), descriptor);
-      return l;
+      return new Local(name, coord, slotIndex);
     }
 
     @Override
@@ -140,16 +136,24 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
   }
 
-  public static final class Local extends Variable {
-    @CompilationFinal private transient FrameSlot slot;
-    @CompilationFinal private FrameDescriptor     descriptor;
+  public static class Local extends Variable {
+    protected final int slotIndex;
 
-    Local(final SSymbol name, final long coord) {
+    @CompilationFinal private FrameDescriptor descriptor;
+
+    Local(final SSymbol name, final long coord, final int index) {
       super(name, coord);
+      this.slotIndex = index;
     }
 
-    public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
-      this.slot = slot;
+    Local(final SSymbol name, final long coord, final FrameDescriptor descriptor,
+        final int index) {
+      super(name, coord);
+      this.slotIndex = index;
+      this.descriptor = descriptor;
+    }
+
+    public void init(final FrameDescriptor descriptor) {
       this.descriptor = descriptor;
     }
 
@@ -162,20 +166,18 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       return LocalVariableReadNodeGen.create(this).initialize(coord);
     }
 
-    public FrameSlot getSlot() {
-      return slot;
+    public final int getIndex() {
+      return slotIndex;
     }
 
     @Override
-    public Local split(final FrameDescriptor descriptor) {
-      Local newLocal = new Local(name, coord);
-      newLocal.init(descriptor.addFrameSlot(newLocal), descriptor);
-      return newLocal;
+    public Local split() {
+      return new Local(name, coord, slotIndex);
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final FrameDescriptor descriptor) {
-      return split(descriptor);
+    public Local splitToMergeIntoOuterScope(final int slotIndex) {
+      return new Local(name, coord, slotIndex);
     }
 
     @Override
@@ -189,41 +191,32 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
       return LocalVariableWriteNodeGen.create(this, valueExpr).initialize(coord);
     }
 
-    public FrameDescriptor getFrameDescriptor() {
+    public final FrameDescriptor getFrameDescriptor() {
+      assert descriptor != null : "Locals need to be initialized with a frame descriptior. Call init(.) first!";
       return descriptor;
     }
 
     @Override
     public void emitPop(final BytecodeMethodGenContext mgenc) {
       int contextLevel = mgenc.getContextLevel(this);
-      emitPOPLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
+      emitPOPLOCAL(mgenc, (byte) slotIndex, (byte) contextLevel);
     }
 
     @Override
     public void emitPush(final BytecodeMethodGenContext mgenc) {
       int contextLevel = mgenc.getContextLevel(this);
-      emitPUSHLOCAL(mgenc, mgenc.getLocalIndex(this, contextLevel), (byte) contextLevel);
+      emitPUSHLOCAL(mgenc, (byte) slotIndex, (byte) contextLevel);
     }
   }
 
-  public static final class Internal extends Variable {
-    @CompilationFinal private FrameSlot       slot;
-    @CompilationFinal private FrameDescriptor descriptor;
-
-    public Internal(final SSymbol name, final long coord) {
-      super(name, coord);
+  public static final class Internal extends Local {
+    public Internal(final SSymbol name, final long coord, final int slotIndex) {
+      super(name, coord, slotIndex);
     }
 
-    public void init(final FrameSlot slot, final FrameDescriptor descriptor) {
-      assert this.slot == null && slot != null;
-
-      this.slot = slot;
-      this.descriptor = descriptor;
-    }
-
-    public FrameSlot getSlot() {
-      assert slot != null : "Should have been initialized with init(.)";
-      return slot;
+    public Internal(final SSymbol name, final long coord,
+        final FrameDescriptor descriptor, final int slotIndex) {
+      super(name, coord, descriptor, slotIndex);
     }
 
     @Override
@@ -234,18 +227,13 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     }
 
     @Override
-    public Variable split(final FrameDescriptor descriptor) {
-      Internal newInternal = new Internal(name, coord);
-
-      assert this.descriptor.getFrameSlotKind(
-          slot) == FrameSlotKind.Object : "We only have the on stack marker currently, so, we expect those not to specialize";
-      newInternal.init(descriptor.addFrameSlot(newInternal, FrameSlotKind.Object), descriptor);
-      return newInternal;
+    public Internal split() {
+      return new Internal(name, coord, slotIndex);
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final FrameDescriptor descriptor) {
-      throw new UnsupportedOperationException();
+    public Local splitToMergeIntoOuterScope(final int slotIndex) {
+      return null;
     }
 
     @Override

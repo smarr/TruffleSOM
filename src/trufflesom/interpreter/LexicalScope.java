@@ -5,32 +5,60 @@ import java.util.Arrays;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 
 import bd.inlining.Scope;
 import trufflesom.compiler.Variable;
+import trufflesom.compiler.Variable.Local;
+import trufflesom.vm.constants.Nil;
 
 
 public final class LexicalScope implements Scope<LexicalScope, Method> {
-  private final FrameDescriptor frameDescriptor;
-  private final LexicalScope    outerScope;
+
+  private final LexicalScope outerScope;
 
   @CompilationFinal private Method method;
+
+  @CompilationFinal private FrameDescriptor frameDescriptor;
 
   @CompilationFinal(dimensions = 1) private Variable[]     variables;
   @CompilationFinal(dimensions = 1) private LexicalScope[] embeddedScopes;
 
-  public LexicalScope(final FrameDescriptor frameDescriptor, final LexicalScope outerScope) {
-    this.frameDescriptor = frameDescriptor;
+  private int numberOfLocals;
+
+  public LexicalScope(final LexicalScope outerScope) {
     this.outerScope = outerScope;
+    this.numberOfLocals = -1;
   }
 
   public FrameDescriptor getFrameDescriptor() {
+    assert frameDescriptor != null : "Should not be accessed before initialized";
     return frameDescriptor;
   }
 
   @Override
   public LexicalScope getOuterScopeOrNull() {
     return outerScope;
+  }
+
+  public Local getLocal(final int slotIndex, final int contextIdx) {
+    if (contextIdx == 0) {
+      return getLocal(slotIndex);
+    } else {
+      return outerScope.getLocal(slotIndex, contextIdx - 1);
+    }
+  }
+
+  public Local getLocal(final int slotIndex) {
+    for (Variable v : variables) {
+      if (v instanceof Local) {
+        if (((Local) v).getIndex() == slotIndex) {
+          return (Local) v;
+        }
+      }
+    }
+    return null;
   }
 
   public boolean isBlock() {
@@ -40,6 +68,28 @@ public final class LexicalScope implements Scope<LexicalScope, Method> {
   public LexicalScope getOuterScope() {
     assert outerScope != null;
     return outerScope;
+  }
+
+  public void finalizeVariables(final int numLocals) {
+    Builder builder = FrameDescriptor.newBuilder(numLocals);
+    builder.defaultValue(Nil.nilObject);
+    builder.addSlots(numLocals, FrameSlotKind.Illegal);
+    frameDescriptor = builder.build();
+
+    assert frameDescriptor != null;
+
+    numberOfLocals = numLocals;
+
+    if (variables == null) {
+      return;
+    }
+
+    for (Variable v : variables) {
+      if (v instanceof Local) {
+        Local l = (Local) v;
+        l.init(frameDescriptor);
+      }
+    }
   }
 
   public void setVariables(final Variable[] variables) {
@@ -109,14 +159,12 @@ public final class LexicalScope implements Scope<LexicalScope, Method> {
   }
 
   private LexicalScope constructSplitScope(final LexicalScope newOuter) {
-    FrameDescriptor desc = new FrameDescriptor(frameDescriptor.getDefaultValue());
-
     Variable[] newVars = new Variable[variables.length];
     for (int i = 0; i < variables.length; i += 1) {
-      newVars[i] = variables[i].split(desc);
+      newVars[i] = variables[i].split();
     }
 
-    LexicalScope split = new LexicalScope(desc, newOuter);
+    LexicalScope split = new LexicalScope(newOuter);
 
     if (embeddedScopes != null) {
       for (LexicalScope s : embeddedScopes) {
@@ -125,6 +173,7 @@ public final class LexicalScope implements Scope<LexicalScope, Method> {
     }
     split.setVariables(newVars);
     split.setMethod(method);
+    split.finalizeVariables(numberOfLocals);
 
     return split;
   }

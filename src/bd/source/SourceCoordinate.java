@@ -86,6 +86,13 @@ public class SourceCoordinate {
 
     int startIndex = getStartIndex(coord);
     int length = getLength(coord);
+
+    // HACK: make sure source sections are valid
+    if (startIndex + length > source.getCharacters().length()) {
+      startIndex = 0;
+      length = 1;
+    }
+
     return source.createSection(startIndex, length);
   }
 }

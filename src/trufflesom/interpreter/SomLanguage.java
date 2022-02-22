@@ -11,7 +11,6 @@ import org.graalvm.options.OptionValues;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.Option;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
@@ -22,6 +21,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
 import tools.nodestats.Tags.AnyNode;
+import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.SomExit;
@@ -53,6 +53,8 @@ public class SomLanguage extends TruffleLanguage<SomLanguage> {
 
   @Override
   protected SomLanguage createContext(final Env env) {
+    StorageAnalyzer.initAccessors();
+
     OptionValues config = env.getOptions();
     args = env.getApplicationArguments();
     classPath = config.get(CLASS_PATH);
@@ -145,10 +147,6 @@ public class SomLanguage extends TruffleLanguage<SomLanguage> {
     StartInterpretation start = new StartInterpretation();
     CallTarget ct = start.getCallTarget();
 
-    if (ct == null) {
-      ct = Truffle.getRuntime().createCallTarget(start);
-    }
-
     assert ct != null : "Expect the StartInterpretation callTarget to be available";
     return ct;
   }
@@ -157,10 +155,6 @@ public class SomLanguage extends TruffleLanguage<SomLanguage> {
     InitializeContext init = new InitializeContext(this);
 
     CallTarget ct = init.getCallTarget();
-    if (ct == null) {
-      ct = Truffle.getRuntime().createCallTarget(init);
-    }
-
     assert ct != null : "Expect the InitializeContext callTarget to be available";
     return ct;
   }
