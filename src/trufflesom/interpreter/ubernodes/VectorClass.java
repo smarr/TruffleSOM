@@ -2,8 +2,8 @@ package trufflesom.interpreter.ubernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
+import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.source.Source;
@@ -231,19 +231,17 @@ public abstract class VectorClass {
 
     private final SMethod doIndexesBlock;
 
-    private final FrameSlot newStorageSlot;
+    private static final int newStorageSlot = 0;
 
     public static VectorAppend create(final Source source, final long sourceCoord) {
-      FrameDescriptor fd = new FrameDescriptor();
-      FrameSlot newStorageSlot = fd.addFrameSlot("newStorage");
-      return new VectorAppend(source, sourceCoord, fd, newStorageSlot);
+      Builder b = FrameDescriptor.newBuilder(1);
+      b.addSlot(FrameSlotKind.Object, "newStorage", null);
+      return new VectorAppend(source, sourceCoord, b.build());
     }
 
-    private VectorAppend(final Source source, final long sourceCoord, final FrameDescriptor fd,
-        final FrameSlot newStorageSlot) {
+    private VectorAppend(final Source source, final long sourceCoord,
+        final FrameDescriptor fd) {
       super(fd, source, sourceCoord);
-      this.newStorageSlot = newStorageSlot;
-
       atPutPrim = AtPutPrimFactory.create(null, null, null);
 
       lengthPrim = LengthPrimFactory.create(null);
@@ -257,7 +255,7 @@ public abstract class VectorClass {
       writeStorage = FieldAccessorNode.createWrite(2);
 
       doIndexesBlock = new SMethod(SymbolTable.symbolFor("value:"),
-          new VectorAppendDoIndexesBlock(source, sourceCoord, newStorageSlot),
+          new VectorAppendDoIndexesBlock(source, sourceCoord),
           new SMethod[0]);
     }
 
@@ -316,18 +314,13 @@ public abstract class VectorClass {
    * </pre>
    */
   private static final class VectorAppendDoIndexesBlock extends AbstractInvokable {
-    private final FrameSlot newStorageSlot;
-
     @Child private AtPrim    atPrim;
     @Child private AtPutPrim atPutPrim;
 
     @Child private AbstractReadFieldNode readStorage;
 
-    private VectorAppendDoIndexesBlock(final Source source, final long sourceCoord,
-        final FrameSlot newStorage) {
+    private VectorAppendDoIndexesBlock(final Source source, final long sourceCoord) {
       super(new FrameDescriptor(), source, sourceCoord);
-      this.newStorageSlot = newStorage;
-
       atPrim = AtPrimFactory.create(null, null);
       atPutPrim = AtPutPrimFactory.create(null, null, null);
 
@@ -341,7 +334,7 @@ public abstract class VectorClass {
       long i = (Long) args[1];
       SObject rcvr = (SObject) block.getOuterSelf();
 
-      SArray newStorage = (SArray) FrameUtil.getObjectSafe(block.getContext(), newStorageSlot);
+      SArray newStorage = (SArray) block.getContext().getObject(VectorAppend.newStorageSlot);
 
       Object storage = readStorage.read(rcvr);
       Object value = atPrim.executeEvaluated(frame, storage, i);

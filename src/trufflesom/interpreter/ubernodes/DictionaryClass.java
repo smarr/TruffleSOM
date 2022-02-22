@@ -3,8 +3,8 @@ package trufflesom.interpreter.ubernodes;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
+import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.Source;
@@ -36,10 +36,10 @@ public abstract class DictionaryClass {
     @Child private AbstractDispatchNode dispatchValue;
     @Child private AbstractDispatchNode dispatchEquals;
 
-    private final FrameSlot onStackMarker;
+    private final int onStackMarker;
 
     private DictAtBlock(final Source source, final long sourceCoord,
-        final FrameSlot onStackMarker) {
+        final int onStackMarker) {
       super(new FrameDescriptor(), source, sourceCoord);
       dispatchKey = new UninitializedDispatchNode(SymbolTable.symbolFor("key"));
       dispatchValue = new UninitializedDispatchNode(SymbolTable.symbolFor("value"));
@@ -60,8 +60,7 @@ public abstract class DictionaryClass {
       if ((Boolean) dispatchEquals.executeDispatch(frame, new Object[] {pairKey, aKey})) {
         Object value = dispatchValue.executeDispatch(frame, new Object[] {p});
 
-        FrameOnStackMarker marker =
-            (FrameOnStackMarker) FrameUtil.getObjectSafe(ctx, onStackMarker);
+        FrameOnStackMarker marker = (FrameOnStackMarker) ctx.getObject(onStackMarker);
         if (marker.isOnStack()) {
           throw new ReturnException(value, marker);
         } else {
@@ -84,14 +83,13 @@ public abstract class DictionaryClass {
     @Child private AbstractDispatchNode dispatchKey;
     @Child private AbstractDispatchNode dispatchEquals;
 
-    private final FrameSlot onStackMarker;
+    private static final int onStackMarker = 0;
 
     private DictContainsKeyBlock(final Source source, final long sourceCoord,
-        final FrameSlot onStackMarker) {
+        final int onStackMarker) {
       super(new FrameDescriptor(), source, sourceCoord);
       dispatchKey = new UninitializedDispatchNode(SymbolTable.symbolFor("key"));
       dispatchEquals = new UninitializedDispatchNode(SymbolTable.symbolFor("="));
-      this.onStackMarker = onStackMarker;
     }
 
     @Override
@@ -105,8 +103,7 @@ public abstract class DictionaryClass {
 
       Object pairKey = dispatchKey.executeDispatch(frame, new Object[] {p});
       if ((Boolean) dispatchEquals.executeDispatch(frame, new Object[] {pairKey, aKey})) {
-        FrameOnStackMarker marker =
-            (FrameOnStackMarker) FrameUtil.getObjectSafe(ctx, onStackMarker);
+        FrameOnStackMarker marker = (FrameOnStackMarker) ctx.getObject(onStackMarker);
         if (marker.isOnStack()) {
           throw new ReturnException(true, marker);
         } else {
@@ -131,23 +128,21 @@ public abstract class DictionaryClass {
 
     @Child private AbstractDispatchNode dispatchDo;
 
-    private final FrameSlot onStackMarker;
-    private final SMethod   doBlock;
+    private static final int onStackMarker = 0;
+    private final SMethod    doBlock;
 
     @CompilationFinal private boolean rethrows;
 
     public static DictAt create(final Source source, final long sourceCoord) {
-      FrameDescriptor fd = new FrameDescriptor();
-      FrameSlot onStackMarker = fd.addFrameSlot("#onStackMarker");
-      return new DictAt(source, sourceCoord, onStackMarker, fd);
+      Builder b = FrameDescriptor.newBuilder(1);
+      b.addSlot(FrameSlotKind.Object, "#onStackMarker", null);
+      return new DictAt(source, sourceCoord, b.build());
     }
 
-    private DictAt(final Source source, final long sourceCoord, final FrameSlot onStackMarker,
-        final FrameDescriptor fd) {
+    private DictAt(final Source source, final long sourceCoord, final FrameDescriptor fd) {
       super(fd, source, sourceCoord);
       dispatchDo = new UninitializedDispatchNode(SymbolTable.symbolFor("do:"));
       readPairs = FieldAccessorNode.createRead(0);
-      this.onStackMarker = onStackMarker;
 
       doBlock = new SMethod(SymbolTable.symbolFor("value:"),
           new DictAtBlock(source, sourceCoord, onStackMarker),
@@ -198,24 +193,23 @@ public abstract class DictionaryClass {
 
     @Child private AbstractDispatchNode dispatchDo;
 
-    private final FrameSlot onStackMarker;
-    private final SMethod   doBlock;
+    private final int     onStackMarker;
+    private final SMethod doBlock;
 
     @CompilationFinal private boolean rethrows;
 
     public static DictContainsKey create(final Source source, final long sourceCoord) {
-      FrameDescriptor fd = new FrameDescriptor();
-      FrameSlot onStackMarker = fd.addFrameSlot("#onStackMarker");
-      return new DictContainsKey(source, sourceCoord, onStackMarker, fd);
+      Builder b = FrameDescriptor.newBuilder(1);
+      b.addSlot(FrameSlotKind.Object, "#onStackMarker", null);
+      return new DictContainsKey(source, sourceCoord, b.build());
     }
 
     private DictContainsKey(final Source source, final long sourceCoord,
-        final FrameSlot onStackMarker,
         final FrameDescriptor fd) {
       super(fd, source, sourceCoord);
       dispatchDo = new UninitializedDispatchNode(SymbolTable.symbolFor("do:"));
       readPairs = FieldAccessorNode.createRead(0);
-      this.onStackMarker = onStackMarker;
+      this.onStackMarker = 0;
 
       doBlock = new SMethod(SymbolTable.symbolFor("value:"),
           new DictContainsKeyBlock(source, sourceCoord, onStackMarker),

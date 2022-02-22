@@ -3,8 +3,8 @@ package trufflesom.interpreter.ubernodes;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
+import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.source.Source;
@@ -54,7 +54,7 @@ public abstract class MandelbrotBenchmark {
         innerIterations = 500 ifTrue: [ ^ result = 191 ].
         innerIterations = 750 ifTrue: [ ^ result = 50  ].
         innerIterations = 1   ifTrue: [ ^ result = 128 ].
-  
+
         ('No verification result for ' + innerIterations + ' found') println.
         ('Result is: ' + result asString) println.
         ^ false
@@ -124,41 +124,41 @@ public abstract class MandelbrotBenchmark {
       sum     := 0.
       byteAcc := 0.
       bitNum  := 0.
-
-      y := 0.
   
+      y := 0.
+
       [y < size] whileTrue: [
           | ci x |
           ci := (2.0 * y // size) - 1.0.
           x  := 0.
-  
+
           [x < size] whileTrue: [
               | zr zrzr zi zizi cr escape z notDone |
               zrzr := zr := 0.0.
               zizi := zi := 0.0.
               cr   := (2.0 * x // size) - 1.5.
-  
+
               z := 0.
               notDone := true.
               escape := 0.
               [notDone and: [z < 50]] whileTrue: [
                   zr := zrzr - zizi + cr.
                   zi := 2.0 * zr * zi + ci.
-  
+
                   "preserve recalculation"
                   zrzr := zr * zr.
                   zizi := zi * zi.
-  
+
                   (zrzr + zizi > 4.0) ifTrue: [
                       notDone := false.
                       escape  := 1.
                   ].
                   z := z + 1.
               ].
-
+  
               byteAcc := (byteAcc << 1) + escape.
               bitNum  := bitNum + 1.
-
+  
               " Code is very similar for these cases, but using separate blocks
                 ensures we skip the shifting when it's unnecessary,
                 which is most cases. "
@@ -177,77 +177,53 @@ public abstract class MandelbrotBenchmark {
           ].
           y := y + 1.
       ].
-  
+
       ^ sum
   )
    * </pre>
    */
   public static final class MandelbrotMandelbrot extends AbstractInvokable {
-    private final FrameSlot notDoneSlot;
-    private final FrameSlot escapeSlot;
-    private final FrameSlot crSlot;
-    private final FrameSlot zSlot;
+    private static final int notDoneSlot = 0;
+    private static final int escapeSlot  = 1;
+    private static final int crSlot      = 2;
+    private static final int zSlot       = 3;
 
-    private final FrameSlot ziSlot;
-    private final FrameSlot ziziSlot;
-    private final FrameSlot zrzrSlot;
+    private static final int ziSlot   = 4;
+    private static final int ziziSlot = 5;
+    private static final int zrzrSlot = 6;
 
-    private final FrameSlot ciSlot;
+    private static final int ciSlot = 7;
 
-    private final FrameSlot xSlot;
-    private final FrameSlot byteAccSlot;
-    private final FrameSlot bitNumSlot;
-    private final FrameSlot sumSlot;
+    private static final int xSlot       = 8;
+    private static final int byteAccSlot = 9;
+    private static final int bitNumSlot  = 10;
+    private static final int sumSlot     = 11;
 
-    private final FrameSlot ySlot;
+    private static final int ySlot = 12;
 
     private MandelbrotMandelbrot(final Source source, final long sourceCoord,
-        final FrameDescriptor fd, final FrameSlot notDone, final FrameSlot escape,
-        final FrameSlot cr, final FrameSlot z, final FrameSlot zi, final FrameSlot zizi,
-        final FrameSlot zrzr, final FrameSlot ci, final FrameSlot x, final FrameSlot byteAcc,
-        final FrameSlot bitNum, final FrameSlot sum, final FrameSlot y) {
+        final FrameDescriptor fd) {
       super(fd, source, sourceCoord);
-      this.notDoneSlot = notDone;
-      this.escapeSlot = escape;
-      this.crSlot = cr;
-      this.zSlot = z;
-
-      this.ziSlot = zi;
-      this.ziziSlot = zizi;
-      this.zrzrSlot = zrzr;
-
-      this.ciSlot = ci;
-
-      this.xSlot = x;
-      this.byteAccSlot = byteAcc;
-      this.bitNumSlot = bitNum;
-      this.sumSlot = sum;
-
-      this.ySlot = y;
     }
 
     public static MandelbrotMandelbrot create(final Source source, final long sourceCoord) {
-      FrameDescriptor fd = new FrameDescriptor();
-      FrameSlot notDoneSlot = fd.addFrameSlot("notDone");
-      FrameSlot escapeSlot = fd.addFrameSlot("escape");
-      FrameSlot crSlot = fd.addFrameSlot("cr");
-      FrameSlot z = fd.addFrameSlot("z");
+      Builder b = FrameDescriptor.newBuilder(1);
+      b.addSlot(FrameSlotKind.Boolean, "notDone", null);
+      b.addSlot(FrameSlotKind.Long, "escape", null);
+      b.addSlot(FrameSlotKind.Double, "cr", null);
+      b.addSlot(FrameSlotKind.Double, "z", null);
+      b.addSlot(FrameSlotKind.Double, "zi", null);
+      b.addSlot(FrameSlotKind.Double, "zizi", null);
+      b.addSlot(FrameSlotKind.Double, "zrzr", null);
+      b.addSlot(FrameSlotKind.Double, "ci", null);
+      b.addSlot(FrameSlotKind.Long, "x", null);
+      b.addSlot(FrameSlotKind.Long, "byteAcc", null);
+      b.addSlot(FrameSlotKind.Long, "bitNum", null);
+      b.addSlot(FrameSlotKind.Long, "sum", null);
+      b.addSlot(FrameSlotKind.Long, "y", null);
 
-      FrameSlot zi = fd.addFrameSlot("zi");
-      FrameSlot zizi = fd.addFrameSlot("zizi");
-      FrameSlot zrzr = fd.addFrameSlot("zrzr");
-
-      FrameSlot ci = fd.addFrameSlot("ci");
-
-      FrameSlot x = fd.addFrameSlot("x");
-      FrameSlot byteAcc = fd.addFrameSlot("byteAcc");
-      FrameSlot bitNum = fd.addFrameSlot("bitNum");
-      FrameSlot sum = fd.addFrameSlot("sum");
-
-      FrameSlot y = fd.addFrameSlot("y");
-
-      return new MandelbrotMandelbrot(source, sourceCoord, fd, notDoneSlot, escapeSlot,
-          crSlot, z, zi, zizi, zrzr, ci, x, byteAcc, bitNum, sum, y);
+      FrameDescriptor fd = b.build();
+      return new MandelbrotMandelbrot(source, sourceCoord, fd);
     }
 
     @Override
@@ -262,7 +238,7 @@ public abstract class MandelbrotBenchmark {
 
       while (true) {
         final long size = (Long) args[1];
-        final long y = FrameUtil.getLongSafe(frame, ySlot);
+        final long y = frame.getLong(ySlot);
         if (!(y < size)) {
           break;
         }
@@ -281,22 +257,22 @@ public abstract class MandelbrotBenchmark {
       final long size = (Long) args[1];
       LoopNode.reportLoopCount(this, (int) size);
 
-      return FrameUtil.getLongSafe(frame, sumSlot);
+      return frame.getLong(sumSlot);
     }
 
     public void zLoop(final VirtualFrame frame) {
       while (true) {
-        final boolean notDone = FrameUtil.getBooleanSafe(frame, notDoneSlot);
-        final long z = FrameUtil.getLongSafe(frame, zSlot);
+        final boolean notDone = frame.getBoolean(notDoneSlot);
+        final long z = frame.getLong(zSlot);
         if (!(notDone && z < 50)) {
           break;
         }
 
-        double zr = FrameUtil.getDoubleSafe(frame, zrzrSlot)
-            - FrameUtil.getDoubleSafe(frame, ziziSlot)
-            + FrameUtil.getDoubleSafe(frame, crSlot);
-        final double zi = 2.0 * zr * FrameUtil.getDoubleSafe(frame, ziSlot)
-            + FrameUtil.getDoubleSafe(frame, ciSlot);
+        double zr = frame.getDouble(zrzrSlot)
+            - frame.getDouble(ziziSlot)
+            + frame.getDouble(crSlot);
+        final double zi = 2.0 * zr * frame.getDouble(ziSlot)
+            + frame.getDouble(ciSlot);
         frame.setDouble(ziSlot, zi);
 
         // preserve recalulation
@@ -307,7 +283,7 @@ public abstract class MandelbrotBenchmark {
 
         if (zrzr + zizi > 4.0) {
           frame.setBoolean(notDoneSlot, false);
-          frame.setLong(escapeSlot, 1);
+          frame.setLong(escapeSlot, 1L);
         }
 
         try {
@@ -326,15 +302,15 @@ public abstract class MandelbrotBenchmark {
 
       while (true) {
         final long size = (Long) frame.getArguments()[1];
-        final long x = FrameUtil.getLongSafe(frame, xSlot);
+        final long x = frame.getLong(xSlot);
 
         if (!(x < size)) {
           break;
         }
 
-        long byteAcc = FrameUtil.getLongSafe(frame, byteAccSlot);
-        long bitNum = FrameUtil.getLongSafe(frame, bitNumSlot);
-        long sum = FrameUtil.getLongSafe(frame, sumSlot);
+        long byteAcc = frame.getLong(byteAccSlot);
+        long bitNum = frame.getLong(bitNumSlot);
+        long sum = frame.getLong(sumSlot);
 
         frame.setDouble(zrzrSlot, 0.0);
         frame.setDouble(ziziSlot, 0.0);
@@ -354,7 +330,7 @@ public abstract class MandelbrotBenchmark {
         }
 
         try {
-          byteAcc = Math.addExact(byteAcc << 1, FrameUtil.getLongSafe(frame, escapeSlot));
+          byteAcc = Math.addExact(byteAcc << 1, frame.getLong(escapeSlot));
         } catch (ArithmeticException e) {
           CompilerDirectives.transferToInterpreterAndInvalidate();
           throw new NotYetImplementedException();

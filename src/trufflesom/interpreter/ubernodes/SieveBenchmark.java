@@ -2,8 +2,8 @@ package trufflesom.interpreter.ubernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
+import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.Source;
 
@@ -38,25 +38,22 @@ public abstract class SieveBenchmark {
    * </pre>
    */
   public static final class SieveSieve extends AbstractInvokable {
-    private final FrameSlot primeCount;
-    private final FrameSlot k;
+    private static final int primeCount = 0;
+    private static final int k          = 1;
 
     @Child private PutAllNode putAll;
     @Child private AtPrim     atPrim;
     @Child private AtPutPrim  atPutPrim;
 
     public static SieveSieve create(final Source source, final long sourceCoord) {
-      FrameDescriptor fd = new FrameDescriptor();
-      FrameSlot primeCount = fd.addFrameSlot("primeCount");
-      FrameSlot k = fd.addFrameSlot("k");
-      return new SieveSieve(source, sourceCoord, fd, primeCount, k);
+      Builder b = FrameDescriptor.newBuilder(2);
+      b.addSlot(FrameSlotKind.Long, "primeCount", null);
+      b.addSlot(FrameSlotKind.Long, "k", null);
+      return new SieveSieve(source, sourceCoord, b.build());
     }
 
-    private SieveSieve(final Source source, final long sourceCoord, final FrameDescriptor fd,
-        final FrameSlot primeCount, final FrameSlot k) {
+    private SieveSieve(final Source source, final long sourceCoord, final FrameDescriptor fd) {
       super(fd, source, sourceCoord);
-      this.primeCount = primeCount;
-      this.k = k;
       putAll = PutAllNodeFactory.create(null, null, LengthPrimFactory.create(null));
       atPrim = AtPrimFactory.create(null, null);
       atPutPrim = AtPutPrimFactory.create(null, null, null);
@@ -82,7 +79,7 @@ public abstract class SieveBenchmark {
           final long pc1;
           try {
             // count + 1.
-            pc1 = Math.addExact(FrameUtil.getLongSafe(frame, primeCount), 1L);
+            pc1 = Math.addExact(frame.getLong(primeCount), 1L);
           } catch (ArithmeticException e) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             throw new UnsupportedOperationException();
@@ -103,12 +100,12 @@ public abstract class SieveBenchmark {
           frame.setLong(k, ii);
 
           // [ k <= size ] whileTrue: [
-          while (FrameUtil.getLongSafe(frame, k) <= size) {
+          while (frame.getLong(k) <= size) {
             // flags at: k - 1 put: false.
             long km1;
             try {
               // k - 1
-              km1 = Math.subtractExact(FrameUtil.getLongSafe(frame, k), 1L);
+              km1 = Math.subtractExact(frame.getLong(k), 1L);
             } catch (ArithmeticException e) {
               CompilerDirectives.transferToInterpreterAndInvalidate();
               throw new UnsupportedOperationException();
@@ -120,7 +117,7 @@ public abstract class SieveBenchmark {
             final long ki;
             try {
               // k + i.
-              ki = Math.addExact(FrameUtil.getLongSafe(frame, k), i);
+              ki = Math.addExact(frame.getLong(k), i);
             } catch (ArithmeticException e) {
               CompilerDirectives.transferToInterpreterAndInvalidate();
               throw new UnsupportedOperationException();
@@ -131,7 +128,7 @@ public abstract class SieveBenchmark {
       }
 
       // ^primeCount
-      return FrameUtil.getLongSafe(frame, primeCount);
+      return frame.getLong(primeCount);
     }
   }
 }
