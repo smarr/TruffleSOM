@@ -10,7 +10,6 @@ import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Test;
 
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.source.Source;
 
 import bd.basic.ProgramDefinitionError;
@@ -514,8 +513,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
   private SPrimitive constructDummyNewPrim(final Source s) {
     ExpressionNode newPrim = NewObjectPrimFactory.create(null);
     SSymbol symNew = symbolFor("new");
-    Primitive primMethodNode = new Primitive(
-        "new", s, 1, newPrim, new FrameDescriptor(), newPrim);
+    Primitive primMethodNode = new Primitive("new", s, 1, newPrim, newPrim);
     return new SPrimitive(symNew, primMethodNode);
   }
 }

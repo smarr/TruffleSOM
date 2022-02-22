@@ -68,7 +68,6 @@ import trufflesom.compiler.SourcecodeCompiler;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.TruffleCompiler;
-import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -133,8 +132,6 @@ public final class Universe {
   }
 
   public static Value eval(final String[] arguments) {
-    StorageAnalyzer.initAccessors();
-
     Builder builder = createContextBuilder();
     builder.arguments(SomLanguage.LANG_ID, arguments);
     builder.logHandler(System.err);

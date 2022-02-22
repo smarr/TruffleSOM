@@ -34,7 +34,6 @@ import java.util.Map.Entry;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.NodeFactory;
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
@@ -43,7 +42,6 @@ import bd.primitives.PrimitiveLoader;
 import bd.primitives.Specializer;
 import bd.tools.structure.StructuralProbe;
 import trufflesom.compiler.Field;
-import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Primitive;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
@@ -146,13 +144,11 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
       final Source source, final long coord,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation();
-    MethodGenerationContext mgen = new MethodGenerationContext(probe);
 
     ExpressionNode primNode = EmptyPrim.create(new LocalArgumentReadNode(true, 0), signature)
                                        .initialize(coord);
     Primitive primMethodNode =
         new Primitive(signature.getString(), source, coord, primNode,
-            mgen.getCurrentLexicalScope().getFrameDescriptor(),
             (ExpressionNode) primNode.deepCopy());
     SPrimitive prim = new SPrimitive(signature, primMethodNode);
 
@@ -231,7 +227,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
     ExpressionNode primNode = specializer.create(null, args, coord);
 
     Primitive primMethodNode = new Primitive(signature.getString(), source, coord, primNode,
-        new FrameDescriptor(), (ExpressionNode) primNode.deepCopy());
+        (ExpressionNode) primNode.deepCopy());
     return new SPrimitive(signature, primMethodNode);
   }
 

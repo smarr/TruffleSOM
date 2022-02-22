@@ -7,7 +7,6 @@ import java.util.List;
 import com.oracle.truffle.api.dsl.NodeFactory;
 
 import bd.basic.IdProvider;
-import bd.settings.VmSettings;
 
 
 /**
@@ -70,9 +69,11 @@ public abstract class PrimitiveLoader<ExprT, Id> {
     for (Specializer<ExprT, Id> s : specializers) {
       // TODO: figure out whether we really want it like this with a VmSetting, or whether
       // there should be something on the context
-      if (s.getPrimitive().disabled() && VmSettings.DYNAMIC_METRICS) {
-        continue;
-      }
+      // TODO: with the setting for Dynamic Metrics gone, we don't consider the disabled flag
+      // anymore, but we probably should at the point when we support dynamic metrics again
+      // if (s.getPrimitive().disabled()) {
+      // continue;
+      // }
 
       registerPrimitive(s);
 
