@@ -12,6 +12,7 @@ import bdt.inlining.Inline.False;
 import bdt.inlining.Inline.True;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
+import trufflesom.primitives.reflection.ObjectPrims.IsNilNode;
 import trufflesom.vm.constants.Nil;
 
 
@@ -55,5 +56,13 @@ public final class IfInlinedLiteralNode extends NoPreEvalExprNode {
     } else {
       return Nil.nilObject;
     }
+  }
+
+  public ExpressionNode asIsNilIfTrueIfPossible() {
+    if (conditionNode instanceof IsNilNode && expectedBool) {
+      return new IsNilIfTrue(((IsNilNode) conditionNode).getReceiver(), bodyNode).initialize(
+          sourceCoord);
+    }
+    return this;
   }
 }
