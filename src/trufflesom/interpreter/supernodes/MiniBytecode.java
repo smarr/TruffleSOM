@@ -1,7 +1,9 @@
 package trufflesom.interpreter.supernodes;
 
+import com.oracle.truffle.api.HostCompilerDirectives.BytecodeInterpreterSwitch;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
@@ -24,20 +26,21 @@ public class MiniBytecode extends NoPreEvalExprNode {
    * <pre>
    * isShorter: x than: y = (
         | xTail yTail |
-  
+
         xTail := x. yTail := y.
         [ yTail isNil ]
             whileFalse: [
                 xTail isNil ifTrue: [ ^true ].
                 xTail := xTail next.
                 yTail := yTail next ].
-  
+
         ^false
     )
    * </pre>
    */
   @Override
-  @ExplodeLoop
+  @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
+  @BytecodeInterpreterSwitch
   public Object executeGeneric(final VirtualFrame frame) {
 
     Object local1 = Nil.nilObject;
