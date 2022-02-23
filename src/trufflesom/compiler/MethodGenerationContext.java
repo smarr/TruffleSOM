@@ -52,11 +52,16 @@ import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
+import trufflesom.interpreter.nodes.UninitializedMessageSendNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.LocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
+import trufflesom.interpreter.supernodes.NonLocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
@@ -421,6 +426,18 @@ public class MethodGenerationContext
         throw new NotYetImplementedException(
             "a missing read/square/write combination, used in a benchmark?");
       }
+
+      if (valExpr instanceof UninitializedMessageSendNode) {
+        UninitializedMessageSendNode val = (UninitializedMessageSendNode) valExpr;
+        ExpressionNode[] args = val.getArguments();
+        if (args.length == 1 && args[0] instanceof LocalVariableReadNode) {
+          LocalVariableReadNode var = (LocalVariableReadNode) args[0];
+          if (var.getLocal() == variable) {
+            return new LocalVarReadUnaryMsgWriteNode((Local) variable,
+                val.getInvocationIdentifier());
+          }
+        }
+      }
     } else {
       if (valExpr instanceof NonLocalVariableSquareNode) {
         return variable.getReadSquareWriteNode(ctxLevel, coord,
@@ -430,6 +447,18 @@ public class MethodGenerationContext
       if (valExpr instanceof LocalVariableSquareNode) {
         return variable.getReadSquareWriteNode(ctxLevel, coord,
             ((LocalVariableSquareNode) valExpr).getLocal());
+      }
+
+      if (valExpr instanceof UninitializedMessageSendNode) {
+        UninitializedMessageSendNode val = (UninitializedMessageSendNode) valExpr;
+        ExpressionNode[] args = val.getArguments();
+        if (args.length == 1 && args[0] instanceof NonLocalVariableReadNode) {
+          NonLocalVariableReadNode var = (NonLocalVariableReadNode) args[0];
+          if (var.getLocal() == variable) {
+            return new NonLocalVarReadUnaryMsgWriteNode(ctxLevel, (Local) variable,
+                val.getInvocationIdentifier());
+          }
+        }
       }
     }
     return variable.getWriteNode(ctxLevel, valExpr, coord);
