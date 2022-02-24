@@ -57,6 +57,7 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.UninitializedMessageSendNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
+import trufflesom.interpreter.supernodes.ComputeBytecode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.supernodes.LocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
@@ -249,6 +250,12 @@ public class MethodGenerationContext
         if (methodName.equals("isShorter:than:")) {
           body = new MiniBytecode(new byte[] {0, 1, 2, 13, 3, 4, 6, 7, 5, 6, 8, 9, 2, 10},
               SymbolTable.symbolFor("next")).initialize(coord);
+        }
+      }
+
+      if (className.equals("Random") || className.equals("SomRandom")) {
+        if (!holderGenc.isClassSide() && methodName.equals("next")) {
+          body = new ComputeBytecode(1309, 13849, 65535, new byte[] {0, 1, 2, 3, 4, 5, 6}, 0);
         }
       }
     }

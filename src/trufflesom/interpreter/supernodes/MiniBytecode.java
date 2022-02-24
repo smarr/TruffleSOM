@@ -8,7 +8,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 
-import bd.inlining.nodes.WithSource;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
@@ -16,7 +15,7 @@ import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class MiniBytecode extends NoPreEvalExprNode implements WithSource {
+public final class MiniBytecode extends NoPreEvalExprNode {
 
   @Child private AbstractDispatchNode dispatch;
 
@@ -37,14 +36,14 @@ public final class MiniBytecode extends NoPreEvalExprNode implements WithSource 
    * <pre>
    * isShorter: x than: y = (
         | xTail yTail |
-
+  
         xTail := x. yTail := y.
         [ yTail isNil ]
             whileFalse: [
                 xTail isNil ifTrue: [ ^true ].
                 xTail := xTail next.
                 yTail := yTail next ].
-
+  
         ^false
     )
    * </pre>
