@@ -39,7 +39,8 @@ public final class LocalVarReadUnaryMsgWriteNode extends LocalVariableNode {
 
     assert se.contextLevel == 0;
     if (se.var != local) {
-      Node node = new LocalVarReadUnaryMsgWriteNode((Local) se.var, selector);
+      Node node =
+          new LocalVarReadUnaryMsgWriteNode((Local) se.var, selector).initialize(sourceCoord);
       replace(node);
     } else {
       assert 0 == se.contextLevel;

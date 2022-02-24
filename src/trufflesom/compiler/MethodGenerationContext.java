@@ -452,7 +452,7 @@ public class MethodGenerationContext
           LocalVariableReadNode var = (LocalVariableReadNode) args[0];
           if (var.getLocal() == variable) {
             return new LocalVarReadUnaryMsgWriteNode((Local) variable,
-                val.getInvocationIdentifier());
+                val.getInvocationIdentifier()).initialize(coord);
           }
         }
       }
@@ -474,7 +474,7 @@ public class MethodGenerationContext
           NonLocalVariableReadNode var = (NonLocalVariableReadNode) args[0];
           if (var.getLocal() == variable) {
             return new NonLocalVarReadUnaryMsgWriteNode(ctxLevel, (Local) variable,
-                val.getInvocationIdentifier());
+                val.getInvocationIdentifier()).initialize(coord);
           }
         }
       }

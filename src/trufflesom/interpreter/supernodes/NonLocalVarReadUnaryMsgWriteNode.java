@@ -7,6 +7,7 @@ import com.oracle.truffle.api.nodes.Node;
 import bdt.inlining.ScopeAdaptationVisitor;
 import bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
@@ -41,13 +42,14 @@ public final class NonLocalVarReadUnaryMsgWriteNode extends NonLocalVariableNode
     ScopeElement<? extends Node> se = inliner.getAdaptedVar(local);
 
     if (se.var != local || se.contextLevel < contextLevel) {
-      Node node;
+      ExpressionNode node;
       if (se.contextLevel > 0) {
         node = new NonLocalVarReadUnaryMsgWriteNode(se.contextLevel, (Local) se.var, selector);
       } else {
         assert se.contextLevel == 0;
         node = new LocalVarReadUnaryMsgWriteNode((Local) se.var, selector);
       }
+      node.initialize(sourceCoord);
 
       replace(node);
     } else {
