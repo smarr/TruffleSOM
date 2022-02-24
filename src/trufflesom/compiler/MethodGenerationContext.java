@@ -58,6 +58,7 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.UninitializedMessageSendNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.supernodes.ComputeBytecode;
+import trufflesom.interpreter.supernodes.DoubleBytecode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.supernodes.LocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
@@ -256,6 +257,18 @@ public class MethodGenerationContext
       if (className.equals("Random") || className.equals("SomRandom")) {
         if (!holderGenc.isClassSide() && methodName.equals("next")) {
           body = new ComputeBytecode(1309, 13849, 65535, new byte[] {0, 1, 2, 3, 4, 5, 6}, 0);
+        }
+      }
+
+      if (className.equals("Vector2D")) {
+        if (methodName.equals("compare:and:")) {
+          body = new DoubleBytecode(
+              new byte[] {
+                  0, 1, 2, 9, 6 /* target 1 */,
+                  6, /* target 1 */ 3, 9, 10, 7,
+                  /* target 2 */ 4, 9, 14, 8, /* target 3 */ 5,
+                  9, 18, 8, 7},
+              0L, -1L, 1L);
         }
       }
     }

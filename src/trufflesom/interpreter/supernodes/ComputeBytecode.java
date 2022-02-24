@@ -68,6 +68,7 @@ public final class ComputeBytecode extends NoPreEvalExprNode {
 
     CompilerAsserts.partialEvaluationConstant(bytecodes);
     CompilerAsserts.compilationConstant(bytecodes);
+    CompilerDirectives.ensureVirtualized(state);
 
     LongStorageLocation storage = null;
 
