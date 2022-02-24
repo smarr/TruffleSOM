@@ -1,5 +1,6 @@
 package trufflesom.interpreter.supernodes;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.HostCompilerDirectives.BytecodeInterpreterSwitch;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -15,7 +16,8 @@ import trufflesom.vmobjects.SSymbol;
 public class MiniBytecode extends NoPreEvalExprNode {
 
   @Child private AbstractDispatchNode dispatchNext;
-  private final byte[]                bytecodes;
+
+  @CompilationFinal(dimensions = 1) private final byte[] bytecodes;
 
   public MiniBytecode(final byte[] bytecodes, final SSymbol next) {
     dispatchNext = new UninitializedDispatchNode(next);
@@ -55,6 +57,10 @@ public class MiniBytecode extends NoPreEvalExprNode {
     // 4: push-local-1
     // 5: push-local-2
     // 6: dispatch next
+    // 7: pop-local-1
+    // 8: pop-local-2
+    // 9: jump (+ address)
+    // 10: return false
 
     byte[] bytecodes = this.bytecodes;
     Object[] args = frame.getArguments();
