@@ -1,6 +1,7 @@
 package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.HostCompilerDirectives.BytecodeInterpreterSwitch;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -26,18 +27,24 @@ public final class MiniBytecode extends NoPreEvalExprNode implements WithSource 
     this.bytecodes = bytecodes;
   }
 
+  private static class State {
+    Object local1 = Nil.nilObject;
+    Object local2 = Nil.nilObject;
+    Object top    = null;
+  }
+
   /**
    * <pre>
    * isShorter: x than: y = (
         | xTail yTail |
-  
+
         xTail := x. yTail := y.
         [ yTail isNil ]
             whileFalse: [
                 xTail isNil ifTrue: [ ^true ].
                 xTail := xTail next.
                 yTail := yTail next ].
-  
+
         ^false
     )
    * </pre>
@@ -46,10 +53,8 @@ public final class MiniBytecode extends NoPreEvalExprNode implements WithSource 
   @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
   @BytecodeInterpreterSwitch
   public Object executeGeneric(final VirtualFrame frame) {
-
-    Object local1 = Nil.nilObject;
-    Object local2 = Nil.nilObject;
-    Object top = null;
+    final State state = new State();
+    CompilerDirectives.ensureVirtualized(state);
 
     // bytecodes:
     // 0: read-arg-1, store-local-1
@@ -64,7 +69,7 @@ public final class MiniBytecode extends NoPreEvalExprNode implements WithSource 
     // 9: jump (+ address)
     // 10: return false
 
-    byte[] bytecodes = this.bytecodes;
+    final byte[] bytecodes = this.bytecodes;
     Object[] args = frame.getArguments();
 
     CompilerAsserts.partialEvaluationConstant(bytecodes);
@@ -80,45 +85,45 @@ public final class MiniBytecode extends NoPreEvalExprNode implements WithSource 
 
       switch (b) {
         case 0:
-          local1 = args[1];
+          state.local1 = args[1];
           i += 1;
           break;
         case 1:
-          local2 = args[2];
+          state.local2 = args[2];
           i += 1;
           break;
         case 2:
-          if (local2 == Nil.nilObject) {
+          if (state.local2 == Nil.nilObject) {
             i = bytecodes[i + 1];
           } else {
             i += 2;
           }
           break;
         case 3:
-          if (local1 == Nil.nilObject) {
+          if (state.local1 == Nil.nilObject) {
             return true;
           } else {
             i += 1;
           }
           break;
         case 4:
-          top = local1;
+          state.top = state.local1;
           i += 1;
           break;
         case 5:
-          top = local2;
+          state.top = state.local2;
           i += 1;
           break;
         case 6:
-          top = dispatch.executeDispatch(frame, new Object[] {top});
+          state.top = dispatch.executeDispatch(frame, new Object[] {state.top});
           i += 1;
           break;
         case 7:
-          local1 = top;
+          state.local1 = state.top;
           i += 1;
           break;
         case 8:
-          local2 = top;
+          state.local2 = state.top;
           i += 1;
           break;
         case 9:
