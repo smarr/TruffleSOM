@@ -236,9 +236,13 @@ public class MethodGenerationContext
   }
 
   protected SMethod assembleMethod(ExpressionNode body, final long coord) {
+    if (needsToCatchNonLocalReturn()) {
+      body = new CatchNonLocalReturnNode(
+          body, getFrameOnStackMarker(coord)).initialize(body.getSourceCoordinate());
+    }
+
     String className = holderGenc.getName().getString();
     String methodName = signature.getString();
-    Source source = holderGenc.getSource();
 
     if (VmSettings.UseAstInterp) {
       if (className.equals("List")) {
@@ -247,11 +251,6 @@ public class MethodGenerationContext
               SymbolTable.symbolFor("next")).initialize(coord);
         }
       }
-    }
-
-    if (needsToCatchNonLocalReturn()) {
-      body = new CatchNonLocalReturnNode(
-          body, getFrameOnStackMarker(coord)).initialize(body.getSourceCoordinate());
     }
 
     Method truffleMethod =

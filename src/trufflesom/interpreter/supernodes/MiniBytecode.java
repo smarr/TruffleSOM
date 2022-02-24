@@ -1,11 +1,13 @@
 package trufflesom.interpreter.supernodes;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.HostCompilerDirectives.BytecodeInterpreterSwitch;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 
+import bd.inlining.nodes.WithSource;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
@@ -13,14 +15,14 @@ import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SSymbol;
 
 
-public class MiniBytecode extends NoPreEvalExprNode {
+public final class MiniBytecode extends NoPreEvalExprNode implements WithSource {
 
-  @Child private AbstractDispatchNode dispatchNext;
+  @Child private AbstractDispatchNode dispatch;
 
   @CompilationFinal(dimensions = 1) private final byte[] bytecodes;
 
-  public MiniBytecode(final byte[] bytecodes, final SSymbol next) {
-    dispatchNext = new UninitializedDispatchNode(next);
+  public MiniBytecode(final byte[] bytecodes, final SSymbol selector) {
+    dispatch = new UninitializedDispatchNode(selector);
     this.bytecodes = bytecodes;
   }
 
@@ -28,14 +30,14 @@ public class MiniBytecode extends NoPreEvalExprNode {
    * <pre>
    * isShorter: x than: y = (
         | xTail yTail |
-
+  
         xTail := x. yTail := y.
         [ yTail isNil ]
             whileFalse: [
                 xTail isNil ifTrue: [ ^true ].
                 xTail := xTail next.
                 yTail := yTail next ].
-
+  
         ^false
     )
    * </pre>
@@ -56,7 +58,7 @@ public class MiniBytecode extends NoPreEvalExprNode {
     // 3: if-local1-isNil-return-true
     // 4: push-local-1
     // 5: push-local-2
-    // 6: dispatch next
+    // 6: dispatch unary selector
     // 7: pop-local-1
     // 8: pop-local-2
     // 9: jump (+ address)
@@ -65,10 +67,16 @@ public class MiniBytecode extends NoPreEvalExprNode {
     byte[] bytecodes = this.bytecodes;
     Object[] args = frame.getArguments();
 
+    CompilerAsserts.partialEvaluationConstant(bytecodes);
+    CompilerAsserts.compilationConstant(bytecodes);
+
     int i = 0;
 
-    while (true) {
+    for (;;) {
       byte b = bytecodes[i];
+      CompilerAsserts.partialEvaluationConstant(b);
+      CompilerAsserts.compilationConstant(b);
+      CompilerAsserts.partialEvaluationConstant(i);
 
       switch (b) {
         case 0:
@@ -102,7 +110,7 @@ public class MiniBytecode extends NoPreEvalExprNode {
           i += 1;
           break;
         case 6:
-          top = dispatchNext.executeDispatch(frame, new Object[] {top});
+          top = dispatch.executeDispatch(frame, new Object[] {top});
           i += 1;
           break;
         case 7:
@@ -115,11 +123,11 @@ public class MiniBytecode extends NoPreEvalExprNode {
           break;
         case 9:
           i = bytecodes[i + 1];
+          CompilerAsserts.partialEvaluationConstant(i);
           break;
         case 10:
           return false;
       }
     }
   }
-
 }
