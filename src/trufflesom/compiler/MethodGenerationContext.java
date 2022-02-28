@@ -59,6 +59,7 @@ import trufflesom.interpreter.nodes.UninitializedMessageSendNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.minibytecodes.ComputeBytecode;
 import trufflesom.interpreter.nodes.minibytecodes.DoubleBytecode;
+import trufflesom.interpreter.nodes.minibytecodes.InitMethodBytecodes;
 import trufflesom.interpreter.nodes.minibytecodes.LoopBytecode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.supernodes.LocalVarReadUnaryMsgWriteNode;
@@ -256,7 +257,8 @@ public class MethodGenerationContext
 
       if (className.equals("Random") || className.equals("SomRandom")) {
         if (!holderGenc.isClassSide() && methodName.equals("next")) {
-          body = new ComputeBytecode(1309, 13849, 65535, new byte[] {0, 1, 2, 3, 4, 5, 6}, 0);
+          body = new ComputeBytecode(1309, 13849, 65535, new byte[] {0, 1, 2, 3, 4, 5, 6},
+              0).initialize(coord);
         }
       }
 
@@ -268,7 +270,10 @@ public class MethodGenerationContext
                   6, /* target 1 */ 3, 9, 10, 7,
                   /* target 2 */ 4, 9, 14, 8, /* target 3 */ 5,
                   9, 18, 8, 7},
-              0L, -1L, 1L);
+              0L, -1L, 1L).initialize(coord);
+        } else if (methodName.equals("initX:y:")) {
+          body = new InitMethodBytecodes(
+              new byte[] {0, 1}, 0, 1).initialize(coord);
         }
       }
     }
