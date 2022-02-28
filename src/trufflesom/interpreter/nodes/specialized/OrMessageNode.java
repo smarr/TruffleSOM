@@ -29,17 +29,13 @@ public abstract class OrMessageNode extends BinaryMsgExprNode {
     }
   }
 
-  private final SInvokable      blockMethod;
+  protected final SInvokable    blockMethod;
   @Child private DirectCallNode blockValueSend;
 
   public OrMessageNode(final SMethod blockMethod) {
     this.blockMethod = blockMethod;
     blockValueSend = Truffle.getRuntime().createDirectCallNode(
         blockMethod.getCallTarget());
-  }
-
-  protected final boolean isSameBlock(final SBlock argument) {
-    return argument.getMethod() == blockMethod;
   }
 
   @Override
@@ -50,7 +46,7 @@ public abstract class OrMessageNode extends BinaryMsgExprNode {
     return SymbolTable.symbolFor("or:");
   }
 
-  @Specialization(guards = "isSameBlock(argument)")
+  @Specialization(guards = "argument.getMethod() == blockMethod")
   public final boolean doOr(final boolean receiver, final SBlock argument) {
     if (receiver) {
       return true;
