@@ -1,4 +1,4 @@
-package trufflesom.interpreter.supernodes;
+package trufflesom.interpreter.nodes.minibytecodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;

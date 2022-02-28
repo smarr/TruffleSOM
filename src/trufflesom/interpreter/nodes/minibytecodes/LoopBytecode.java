@@ -1,4 +1,4 @@
-package trufflesom.interpreter.supernodes;
+package trufflesom.interpreter.nodes.minibytecodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -15,13 +15,13 @@ import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class MiniBytecode extends NoPreEvalExprNode {
+public final class LoopBytecode extends NoPreEvalExprNode {
 
   @Child private AbstractDispatchNode dispatch;
 
   @CompilationFinal(dimensions = 1) private final byte[] bytecodes;
 
-  public MiniBytecode(final byte[] bytecodes, final SSymbol selector) {
+  public LoopBytecode(final byte[] bytecodes, final SSymbol selector) {
     dispatch = new UninitializedDispatchNode(selector);
     this.bytecodes = bytecodes;
   }

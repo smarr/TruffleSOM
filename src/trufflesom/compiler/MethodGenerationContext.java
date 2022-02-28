@@ -57,12 +57,12 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.UninitializedMessageSendNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.supernodes.ComputeBytecode;
-import trufflesom.interpreter.supernodes.DoubleBytecode;
+import trufflesom.interpreter.nodes.minibytecodes.ComputeBytecode;
+import trufflesom.interpreter.nodes.minibytecodes.DoubleBytecode;
+import trufflesom.interpreter.nodes.minibytecodes.LoopBytecode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.supernodes.LocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
-import trufflesom.interpreter.supernodes.MiniBytecode;
 import trufflesom.interpreter.supernodes.NonLocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNode;
 import trufflesom.interpreter.supernodes.UninitIncFieldNode;
@@ -249,7 +249,7 @@ public class MethodGenerationContext
     if (VmSettings.UseAstInterp) {
       if (className.equals("List")) {
         if (methodName.equals("isShorter:than:")) {
-          body = new MiniBytecode(new byte[] {0, 1, 2, 13, 3, 4, 6, 7, 5, 6, 8, 9, 2, 10},
+          body = new LoopBytecode(new byte[] {0, 1, 2, 13, 3, 4, 6, 7, 5, 6, 8, 9, 2, 10},
               SymbolTable.symbolFor("next")).initialize(coord);
         }
       }
