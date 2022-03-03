@@ -411,6 +411,7 @@ Native Image Targets
               <arg line="--gc=G1" unless:true="@{is-ce}" if:blank="${home.ext}" />
               <arg line="-H:-DeleteLocalSymbols" />
               <arg line="-Dsom.interp=@{type}" />
+              <!-- <arg line="-H:+PrintAnalysisCallTree" /> -->
               <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
               <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
 
