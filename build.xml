@@ -73,33 +73,44 @@
        </and>
     </condition>
 
-    <target name="clean" description="Remove build directories and generated code">
+    <target name="clean-som" description="Remove build directories and generated code">
         <delete dir="${build.dir}"/>
         <delete dir="${src_gen.dir}"/>
     </target>
-
-    <target name="clean-truffle" if="truffle.and.jvmci.present">
-        <exec executable="${mx.cmd}" dir="${svm.dir}">
-          <arg value="--dynamicimports"/>
-          <arg value="../truffle,../tools,../compiler,../sdk"/>
-          <arg value="clean"/>
-          <env key="JAVA_HOME" value="${jvmci.home}" />
-        </exec>
+    
+    <target name="clean-jvmci" description="Remove the JVMCI library">
+        <delete dir="${lib.dir}/jvmci"/>
+        <delete file="${lib.dir}/jvmci.tar.gz"/>
     </target>
-
-    <target name="clobber" description="Do clean, and also clean truffle build" depends="clean,clean-truffle">
+    
+    <target name="clean-ide" description="Remove Eclipse Projects">
         <exec executable="${mx.cmd}" dir="${truffle.dir}">
           <arg value="--dynamicimports"/>
           <arg value="../sdk"/>
           <arg value="ideclean"/>
         </exec>
+    </target>
+    
+    <target name="clean" depends="clean-som">
+    </target>
 
-        <exec executable="${mx.cmd}" dir="${compiler.dir}">
+    <target name="clean-truffle" if="truffle.and.jvmci.present">
+        <exec executable="${mx.cmd}" dir="${vm.dir}">
           <arg value="--dynamicimports"/>
-          <arg value="../sdk"/>
+          <arg value="../substratevm,../tools,../truffle,../sdk,../compiler"/>
           <arg value="clean"/>
           <env key="JAVA_HOME" value="${jvmci.home}" />
         </exec>
+    </target>
+    
+    <target name="clobber-truffle" >
+      <exec executable="git" dir="${lib.dir}/truffle">
+        <arg line="clean -f -f -d -x" />
+      </exec>
+    </target>
+
+    <target name="clobber" description="Do clean, and also clean truffle build"
+        depends="clean-som,clobber-truffle,clean-jvmci">
     </target>
 
     <target name="check-core-lib-available">
