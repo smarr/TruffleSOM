@@ -80,6 +80,28 @@ public abstract class IntegerPrims {
     }
   }
 
+  @GenerateNodeFactory
+  @Primitive(className = "Double", primitive = "negated")
+  @Primitive(className = "Integer", primitive = "negated")
+  @Primitive(selector = "negated")
+  public abstract static class NegatedValue extends UnaryExpressionNode {
+    @Specialization
+    public final long doLong(final long receiver) {
+      return -receiver;
+    }
+
+    @Specialization
+    public final double doDouble(final double receiver) {
+      return -receiver;
+    }
+
+    @Specialization
+    @TruffleBoundary
+    public final BigInteger doBig(final BigInteger receiver) {
+      return receiver.negate();
+    }
+  }
+
   @ImportStatic(Classes.class)
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "fromString:", classSide = true)
