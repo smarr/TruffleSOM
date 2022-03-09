@@ -5,7 +5,6 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.TypesGen;
 import trufflesom.interpreter.nodes.SOMNode;
 import trufflesom.interpreter.objectstorage.StorageLocation.AbstractObjectStorageLocation;
@@ -69,7 +68,7 @@ public abstract class FieldAccessorNode extends Node {
 
     protected final AbstractReadFieldNode specialize(final SObject obj,
         final String reason, final AbstractReadFieldNode next) {
-      TruffleCompiler.transferToInterpreterAndInvalidate(reason);
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       obj.updateLayoutToMatchClass();
 
       final ObjectLayout layout = obj.getObjectLayout();
@@ -246,7 +245,7 @@ public abstract class FieldAccessorNode extends Node {
 
     protected final void writeAndRespecialize(final SObject obj, final Object value,
         final String reason, final AbstractWriteFieldNode next) {
-      TruffleCompiler.transferToInterpreterAndInvalidate(reason);
+      CompilerDirectives.transferToInterpreterAndInvalidate();
 
       obj.setField(fieldIndex, value);
 
