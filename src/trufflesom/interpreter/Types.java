@@ -30,6 +30,7 @@ import static trufflesom.vm.Classes.trueClass;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
 import trufflesom.vmobjects.SAbstractObject;
@@ -63,7 +64,7 @@ public class Types {
       return doubleClass;
     }
 
-    TruffleCompiler.transferToInterpreter("Should not be reachable");
+    CompilerDirectives.transferToInterpreter();
     throw new RuntimeException(
         "We got an object that should be covered by the above check: " + obj.toString());
   }

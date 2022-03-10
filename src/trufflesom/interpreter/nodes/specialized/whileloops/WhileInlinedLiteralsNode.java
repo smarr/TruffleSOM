@@ -43,6 +43,7 @@ public final class WhileInlinedLiteralsNode extends NoPreEvalExprNode {
     try {
       return conditionNode.executeBoolean(frame);
     } catch (UnexpectedResultException e) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       // TODO: should rewrite to a node that does a proper message send...
       throw new UnsupportedSpecializationException(this,
           new Node[] {conditionNode}, e.getResult());

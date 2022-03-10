@@ -56,6 +56,7 @@ import org.graalvm.polyglot.Context.Builder;
 import org.graalvm.polyglot.Value;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
@@ -67,7 +68,6 @@ import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.SomLanguage;
-import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -167,12 +167,12 @@ public final class Universe {
   }
 
   public static void exit(final int errorCode) {
-    TruffleCompiler.transferToInterpreter("exit");
+    CompilerDirectives.transferToInterpreter();
     throw new SomExit(errorCode);
   }
 
   public static void errorExit(final String message) {
-    TruffleCompiler.transferToInterpreter("errorExit");
+    CompilerDirectives.transferToInterpreter();
     errorPrintln("Runtime Error: " + message);
     throw new SomExit(1);
   }
