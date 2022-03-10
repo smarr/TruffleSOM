@@ -1,5 +1,5 @@
-TruffleSOM - The Simple Object Machine Smalltalk implemented using Oracle's Truffle Framework
-=============================================================================================
+TruffleSOM - The Simple Object Machine Smalltalk implemented using the Truffle Framework
+=========================================================================================
 
 Introduction
 ------------
@@ -67,6 +67,10 @@ Afterwards, we can run a benchmark, and observe that the initial iterations
 take much longer, but after a while we reach magnitudes faster execution speeds:
 
     ./som -cp Smalltalk Examples/Benchmarks/BenchmarkHarness.som Mandelbrot 100 500
+
+For more documentation on building TruffleSOM, run:
+
+    ant help
 
 Information on previous authors are included in the AUTHORS file. This code is
 distributed under the MIT License. Please see the LICENSE file for details.
