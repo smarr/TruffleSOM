@@ -1,12 +1,17 @@
 package trufflesom.primitives.basics;
 
 import java.io.IOException;
+import java.lang.management.CompilationMXBean;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
@@ -27,6 +32,7 @@ import trufflesom.vm.Globals;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
+import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
@@ -234,6 +240,70 @@ public final class SystemPrims {
     @Specialization
     public final long doSObject(final SObject receiver) {
       return System.nanoTime() / 1000L - startMicroTime;
+    }
+  }
+
+  @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "gcStats")
+  public abstract static class GcStatsPrim extends UnaryExpressionNode {
+    @CompilationFinal private static List<GarbageCollectorMXBean> beans;
+
+    private static long prevTime;
+    private static long prevCount;
+
+    @Specialization
+    public final SArray doSObject(final Object receiver) {
+      if (beans == null) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        beans = ManagementFactory.getGarbageCollectorMXBeans();
+      }
+
+      SArray arr = createStatsArray();
+      return arr;
+    }
+
+    @TruffleBoundary
+    private SArray createStatsArray() {
+      long counts = 0;
+      long time = 0;
+
+      for (GarbageCollectorMXBean b : beans) {
+        long c = b.getCollectionCount();
+        if (c != -1) {
+          counts += c;
+        }
+
+        long t = b.getCollectionTime();
+        if (t != -1) {
+          time += t;
+        }
+      }
+
+      SArray arr = new SArray(new long[] {counts - prevCount, time - prevTime});
+      prevCount = counts;
+      prevTime = time;
+      return arr;
+    }
+  }
+
+  @GenerateNodeFactory
+  @Primitive(className = "System", primitive = "compilerTime")
+  public abstract static class CompilerStatsPrim extends UnaryExpressionNode {
+    @CompilationFinal private static CompilationMXBean bean;
+
+    private static long prevTime;
+
+    @Specialization
+    public final long doSObject(final Object receiver) {
+      if (bean == null) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        bean = ManagementFactory.getCompilationMXBean();
+      }
+
+      long time = bean.getTotalCompilationTime();
+      long result = time - prevTime;
+      prevTime = time;
+      return result;
     }
   }
 
