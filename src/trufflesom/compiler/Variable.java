@@ -197,7 +197,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @Override
     public ExpressionNode getIncNode(final int contextLevel, final long incValue,
         final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return IntIncNonLocalVariableNodeGen.create(contextLevel, this, incValue)
                                             .initialize(coord);
@@ -207,7 +207,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public ExpressionNode getSquareNode(final int contextLevel, final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableSquareNodeGen.create(contextLevel, this).initialize(coord);
       }
