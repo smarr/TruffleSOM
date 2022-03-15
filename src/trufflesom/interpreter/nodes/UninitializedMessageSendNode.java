@@ -5,7 +5,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Specializer;
 import bd.primitives.nodes.PreevaluatedExpression;
-import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vmobjects.SSymbol;
