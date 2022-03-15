@@ -11,10 +11,16 @@ import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
+import trufflesom.primitives.basics.SystemPrims.CompilerStatsPrim;
+import trufflesom.primitives.basics.SystemPrims.GcStatsPrim;
+import trufflesom.primitives.basics.SystemPrimsFactory.CompilerStatsPrimFactory;
+import trufflesom.primitives.basics.SystemPrimsFactory.GcStatsPrimFactory;
 import trufflesom.vm.Globals;
 import trufflesom.vm.Globals.Association;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.SymbolTable;
+import trufflesom.vm.Universe;
+import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SObject;
 
 
@@ -53,10 +59,14 @@ public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
   @Child private AbstractReadFieldNode readDoGC;
 
   @Child private AbstractDispatchNode dispatchTicks;
+  @Child private AbstractDispatchNode dispatchName;
   @Child private AbstractDispatchNode dispatchInnerBenchmarkLoop;
   @Child private AbstractDispatchNode dispatchError;
   @Child private AbstractDispatchNode dispatchPrintRun;
   @Child private AbstractDispatchNode dispatchFullGC;
+
+  @Child private GcStatsPrim       gcStatsPrim = GcStatsPrimFactory.create(null);
+  @Child private CompilerStatsPrim compStats   = CompilerStatsPrimFactory.create(null);
 
   public BenchmarkHarnessDoRuns(final Source source, final long sourceCoord) {
     super(new FrameDescriptor(), source, sourceCoord);
@@ -67,6 +77,7 @@ public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
     readDoGC = FieldAccessorNode.createRead(5);
 
     dispatchTicks = new UninitializedDispatchNode(SymbolTable.symbolFor("ticks"));
+    dispatchName = new UninitializedDispatchNode(SymbolTable.symbolFor("name"));
     dispatchInnerBenchmarkLoop =
         new UninitializedDispatchNode(SymbolTable.symbolFor("innerBenchmarkLoop:"));
     dispatchError = new UninitializedDispatchNode(SymbolTable.symbolFor("error:"));
@@ -102,6 +113,14 @@ public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
       long endTime;
       long runTime;
 
+      SArray startGC;
+      SArray endGC;
+      long startComp;
+      long endComp;
+
+      startGC = gcStatsPrim.doSObject(null);
+      startComp = compStats.doSObject(null);
+
       startTime =
           (Long) dispatchTicks.executeDispatch(frame, new Object[] {system.getValue()});
 
@@ -121,6 +140,10 @@ public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
       }
 
       endTime = (Long) dispatchTicks.executeDispatch(frame, new Object[] {system.getValue()});
+
+      endGC = gcStatsPrim.doSObject(null);
+      endComp = compStats.doSObject(null);
+
       try {
         runTime = Math.subtractExact(endTime, startTime);
       } catch (ArithmeticException e) {
@@ -130,6 +153,14 @@ public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
 
       boolean printAll = (Boolean) readPrintAll.read(rcvr);
       if (printAll) {
+        String name = (String) dispatchName.executeDispatch(frame, new Object[] {bench});
+
+        Universe.println(name + ": GC count:     "
+            + (endGC.getLongStorage()[0] - startGC.getLongStorage()[0]) + "n");
+        Universe.println(name + ": GC time:      "
+            + (endGC.getLongStorage()[1] - startGC.getLongStorage()[1]) + "ms");
+        Universe.println(name + ": Compile time: " + (endComp - startComp) + "ms");
+
         dispatchPrintRun.executeDispatch(frame, new Object[] {rcvr, bench, runTime});
       }
 
