@@ -24,7 +24,7 @@
 
 package trufflesom.vmobjects;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,7 +86,7 @@ public final class SClass extends SObject {
   }
 
   public void setSuperClass(final SClass value) {
-    transferToInterpreterAndInvalidate("SClass.setSuperClass");
+    transferToInterpreterAndInvalidate();
     superclass = value;
   }
 
@@ -99,7 +99,7 @@ public final class SClass extends SObject {
   }
 
   public void setName(final SSymbol value) {
-    transferToInterpreterAndInvalidate("SClass.setName");
+    transferToInterpreterAndInvalidate();
     name = value;
   }
 
@@ -161,7 +161,7 @@ public final class SClass extends SObject {
       final boolean hasPrimitives) {
     this.hasPrimitives = hasPrimitives;
 
-    transferToInterpreterAndInvalidate("SClass.setInstanceInvokables");
+    transferToInterpreterAndInvalidate();
     if (value == null || value.isEmpty()) {
       assert invokablesTable == null;
       return;

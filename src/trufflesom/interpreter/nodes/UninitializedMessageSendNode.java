@@ -5,8 +5,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bd.primitives.Specializer;
 import bd.primitives.nodes.PreevaluatedExpression;
-import trufflesom.interpreter.TruffleCompiler;
-import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vmobjects.SSymbol;
@@ -33,7 +32,7 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
   }
 
   private PreevaluatedExpression specialize(final Object[] arguments) {
-    TruffleCompiler.transferToInterpreterAndInvalidate("Specialize Message Node");
+    CompilerDirectives.transferToInterpreterAndInvalidate();
 
     // We treat super sends separately for simplicity, might not be the
     // optimal solution, especially in cases were the knowledge of the

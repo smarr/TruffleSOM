@@ -1,12 +1,12 @@
 package trufflesom.compiler;
 
+import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHLOCAL;
 import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
 import static trufflesom.interpreter.SNodeFactory.createArgumentWrite;
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
@@ -125,7 +125,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      transferToInterpreterAndInvalidate();
       return createArgumentRead(this, contextLevel, coord);
     }
 
@@ -149,7 +149,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getWriteNode");
+      transferToInterpreterAndInvalidate();
       return createArgumentWrite(this, contextLevel, valueExpr, coord);
     }
 
@@ -187,7 +187,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
 
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(coord);
       }
@@ -241,8 +241,7 @@ public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
-      transferToInterpreterAndInvalidate("Variable.getWriteNode");
-
+      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         if (valueExpr instanceof AdditionPrim) {
           AdditionPrim add = (AdditionPrim) valueExpr;

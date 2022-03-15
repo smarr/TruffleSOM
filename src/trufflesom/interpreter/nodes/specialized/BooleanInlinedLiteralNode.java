@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.specialized;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
@@ -30,6 +31,7 @@ public abstract class BooleanInlinedLiteralNode extends NoPreEvalExprNode {
     try {
       return receiverNode.executeBoolean(frame);
     } catch (UnexpectedResultException e) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       // TODO: should rewrite to a node that does a proper message send...
       throw new UnsupportedSpecializationException(this,
           new Node[] {receiverNode}, e.getResult());
@@ -40,6 +42,7 @@ public abstract class BooleanInlinedLiteralNode extends NoPreEvalExprNode {
     try {
       return argumentNode.executeBoolean(frame);
     } catch (UnexpectedResultException e) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       // TODO: should rewrite to a node that does a proper message send...
       throw new UnsupportedSpecializationException(this,
           new Node[] {argumentNode}, e.getResult());

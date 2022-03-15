@@ -24,7 +24,7 @@
 
 package trufflesom.vmobjects;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 
 import java.util.Arrays;
 
@@ -112,7 +112,7 @@ public class SObject extends SAbstractObject {
   }
 
   public final void setClass(final SClass value) {
-    transferToInterpreterAndInvalidate("SObject.setClass");
+    transferToInterpreterAndInvalidate();
     assert value != null;
 
     // Set the class of this object by writing to the field with class index

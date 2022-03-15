@@ -21,6 +21,7 @@
  */
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode;
@@ -82,6 +83,7 @@ public abstract class ExpressionNode extends SOMNode
     if (value instanceof Boolean) {
       return (boolean) value;
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new UnexpectedResultException(value);
   }
 
@@ -90,6 +92,7 @@ public abstract class ExpressionNode extends SOMNode
     if (value instanceof Long) {
       return (long) value;
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new UnexpectedResultException(value);
   }
 
@@ -98,6 +101,7 @@ public abstract class ExpressionNode extends SOMNode
     if (value instanceof Double) {
       return (double) value;
     }
+    CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new UnexpectedResultException(value);
   }
 

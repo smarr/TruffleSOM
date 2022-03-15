@@ -21,12 +21,13 @@
  */
 package trufflesom.interpreter.nodes.literals;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
+import com.oracle.truffle.api.source.Source;
 
 import bd.inlining.nodes.Inlinable;
 import bd.primitives.nodes.PreevaluatedExpression;
-import com.oracle.truffle.api.source.Source;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
@@ -44,6 +45,7 @@ public abstract class LiteralNode extends ExpressionNode
     implements PreevaluatedExpression, Inlinable<MethodGenerationContext> {
   public static ExpressionNode create(final Object literal) {
     if (literal instanceof SBlock) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       throw new IllegalArgumentException(
           "SBlock isn't supported here, BlockNodes need to be constructed directly.");
     }
@@ -89,6 +91,7 @@ public abstract class LiteralNode extends ExpressionNode
   @Override
   public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
       final AbstractDispatchNode next) {
-    return new CachedLiteralNode(DispatchGuard.create(rcvr), source, executeGeneric(null), next);
+    return new CachedLiteralNode(DispatchGuard.create(rcvr), source, executeGeneric(null),
+        next);
   }
 }
