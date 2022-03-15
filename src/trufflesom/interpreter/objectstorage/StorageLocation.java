@@ -347,7 +347,7 @@ public abstract class StorageLocation {
       if (isSet(obj)) {
         return unsafe.getLong(obj, fieldMemoryOffset);
       } else {
-        TruffleCompiler.transferToInterpreter("unstabelized read node");
+        CompilerDirectives.transferToInterpreter();
         throw new UnsupportedOperationException();
       }
     }
@@ -432,7 +432,7 @@ public abstract class StorageLocation {
         // perhaps we should use the unsafe operations as for doubles
         return obj.getExtendedPrimFields()[extensionIndex];
       } else {
-        TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
+        CompilerDirectives.transferToInterpreter();
         throw new UnsupportedOperationException();
       }
     }
