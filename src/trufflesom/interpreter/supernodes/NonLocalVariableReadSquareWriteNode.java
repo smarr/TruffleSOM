@@ -1,7 +1,5 @@
 package trufflesom.interpreter.supernodes;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreter;
-
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -60,7 +58,6 @@ public abstract class NonLocalVariableReadSquareWriteNode extends NonLocalVariab
       return true;
     }
     if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
-      transferToInterpreter("LocalVar.writeIntToUninit");
       descriptor.setSlotKind(slotIndex, FrameSlotKind.Long);
       return true;
     }
@@ -73,7 +70,6 @@ public abstract class NonLocalVariableReadSquareWriteNode extends NonLocalVariab
       return true;
     }
     if (descriptor.getSlotKind(slotIndex) == FrameSlotKind.Illegal) {
-      transferToInterpreter("LocalVar.writeDoubleToUninit");
       descriptor.setSlotKind(slotIndex, FrameSlotKind.Double);
       return true;
     }
