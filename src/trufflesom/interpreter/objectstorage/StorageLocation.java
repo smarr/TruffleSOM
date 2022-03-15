@@ -7,7 +7,6 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import sun.misc.Unsafe;
-import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.ReadDoubleFieldNode;
@@ -273,7 +272,7 @@ public abstract class StorageLocation {
       if (isSet(obj)) {
         return unsafe.getDouble(obj, fieldMemoryOffset);
       } else {
-        TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
+        CompilerDirectives.transferToInterpreterAndInvalidate();
         throw new UnexpectedResultException(Nil.nilObject);
       }
     }
@@ -285,7 +284,7 @@ public abstract class StorageLocation {
         writeDouble(obj, (double) value);
       } else {
         assert value != Nil.nilObject;
-        TruffleCompiler.transferToInterpreter("unstabelized read node");
+        CompilerDirectives.transferToInterpreter();
         obj.setFieldAndGeneralize(fieldIndex, value);
       }
     }
@@ -338,7 +337,7 @@ public abstract class StorageLocation {
       if (isSet(obj)) {
         return unsafe.getLong(obj, fieldMemoryOffset);
       } else {
-        TruffleCompiler.transferToInterpreter("unstabelized read node");
+        CompilerDirectives.transferToInterpreter();
         throw new UnexpectedResultException(Nil.nilObject);
       }
     }
@@ -359,7 +358,7 @@ public abstract class StorageLocation {
       if (value instanceof Long) {
         writeLong(obj, (long) value);
       } else {
-        TruffleCompiler.transferToInterpreter("unstabelized write node");
+        CompilerDirectives.transferToInterpreter();
         obj.setFieldAndGeneralize(fieldIndex, value);
       }
     }
@@ -422,7 +421,7 @@ public abstract class StorageLocation {
         // perhaps we should use the unsafe operations as for doubles
         return obj.getExtendedPrimFields()[extensionIndex];
       } else {
-        TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
+        CompilerDirectives.transferToInterpreterAndInvalidate();
         throw new UnexpectedResultException(Nil.nilObject);
       }
     }
@@ -445,7 +444,7 @@ public abstract class StorageLocation {
         writeLong(obj, (long) value);
       } else {
         assert value != Nil.nilObject;
-        TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized write node");
+        CompilerDirectives.transferToInterpreterAndInvalidate();
         obj.setFieldAndGeneralize(fieldIndex, value);
       }
     }
@@ -500,7 +499,7 @@ public abstract class StorageLocation {
             (long) Unsafe.ARRAY_DOUBLE_BASE_OFFSET
                 + Unsafe.ARRAY_DOUBLE_INDEX_SCALE * extensionIndex);
       } else {
-        TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized read node");
+        CompilerDirectives.transferToInterpreterAndInvalidate();
         throw new UnexpectedResultException(Nil.nilObject);
       }
     }
@@ -512,7 +511,7 @@ public abstract class StorageLocation {
         writeDouble(obj, (double) value);
       } else {
         assert value != Nil.nilObject;
-        TruffleCompiler.transferToInterpreterAndInvalidate("unstabelized write node");
+        CompilerDirectives.transferToInterpreterAndInvalidate();
         obj.setUninitializedField(fieldIndex, value);
       }
     }

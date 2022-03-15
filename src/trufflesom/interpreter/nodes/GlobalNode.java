@@ -43,7 +43,6 @@ import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
-import trufflesom.interpreter.TruffleCompiler;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedLiteralNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchGuard;
@@ -146,7 +145,7 @@ public abstract class GlobalNode extends ExpressionNode
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      TruffleCompiler.transferToInterpreterAndInvalidate("Uninitialized Global Node");
+      CompilerDirectives.transferToInterpreterAndInvalidate();
 
       // Get the global from the universe
       Association assoc = getGlobalsAssociation(globalName);

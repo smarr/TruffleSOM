@@ -42,19 +42,18 @@ public abstract class IfTrueIfFalseInlinedLiteralsNode extends NoPreEvalExprNode
     this.falseActualNode = originalFalseNode;
   }
 
-  private boolean evaluateCondition(final VirtualFrame frame) {
+  @Override
+  public Object executeGeneric(final VirtualFrame frame) {
+    boolean cond;
     try {
-      return condProf.profile(conditionNode.executeBoolean(frame));
+      cond = condProf.profile(conditionNode.executeBoolean(frame));
     } catch (UnexpectedResultException e) {
       // TODO: should rewrite to a node that does a proper message send...
       throw new UnsupportedSpecializationException(this,
           new Node[] {conditionNode}, e.getResult());
     }
-  }
 
-  @Override
-  public Object executeGeneric(final VirtualFrame frame) {
-    if (evaluateCondition(frame)) {
+    if (cond) {
       return trueNode.executeGeneric(frame);
     } else {
       return falseNode.executeGeneric(frame);

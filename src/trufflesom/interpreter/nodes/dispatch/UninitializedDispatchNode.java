@@ -1,6 +1,6 @@
 package trufflesom.interpreter.nodes.dispatch;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -88,7 +88,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
 
   @Override
   public Object executeDispatch(final VirtualFrame frame, final Object[] arguments) {
-    transferToInterpreterAndInvalidate("Initialize a dispatch node.");
+    transferToInterpreterAndInvalidate();
     return specialize(arguments).executeDispatch(frame, arguments);
   }
 

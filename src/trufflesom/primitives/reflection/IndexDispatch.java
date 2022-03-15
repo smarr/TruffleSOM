@@ -1,6 +1,6 @@
 package trufflesom.primitives.reflection;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -46,7 +46,7 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @TruffleBoundary
     private IndexDispatch specialize(final SClass clazz, final int index, final boolean read) {
-      transferToInterpreterAndInvalidate("Initialize a dispatch node.");
+      transferToInterpreterAndInvalidate();
 
       if (depth < INLINE_CACHE_SIZE) {
         IndexDispatch uninit = new UninitializedDispatchNode(depth + 1);

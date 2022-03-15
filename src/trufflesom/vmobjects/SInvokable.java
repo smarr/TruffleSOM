@@ -25,7 +25,7 @@
 
 package trufflesom.vmobjects;
 
-import static trufflesom.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -149,7 +149,7 @@ public abstract class SInvokable extends SAbstractObject {
   }
 
   public void setHolder(final SClass value) {
-    transferToInterpreterAndInvalidate("SMethod.setHolder");
+    transferToInterpreterAndInvalidate();
     holder = value;
     invokable.setHolder(value);
   }

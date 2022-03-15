@@ -13,11 +13,9 @@
         <os family="mac"/>
     </condition>
 
-    <echo>
-        ant.java.version: ${ant.java.version}
-        java.version:     ${java.version}
-        kernel:           ${kernel}
-    </echo>
+    <echo>ant.java.version: ${ant.java.version}
+java.version:     ${java.version}
+kernel:           ${kernel}</echo>
 
     <property name="src.dir"     location="src"/>
     <property name="src_gen.dir" location="src_gen"/>
@@ -72,6 +70,21 @@
         <available file="${jvmci.home}" />
        </and>
     </condition>
+    
+    <target name="help" description="Prints out help message, documenting the usage">
+        <echo>Usage
+=====
+
+-p            print all supported commands/targets
+-Dskip.libs   prevent jvmci-libs target from running, thus, a JVMCI-enabled JDK is not downloaded
+
+Native Image Targets
+====================
+
+-Dno.jit      compile a native image with JIT compilation disabled
+-Ddump.method=MethodFilter  dump compiler graphs for the selected methods
+  for MethodFilter syntax see https://github.com/oracle/graal/blob/master/compiler/src/org.graalvm.compiler.debug/src/org/graalvm/compiler/debug/doc-files/MethodFilterHelp.txt</echo>
+    </target>
 
     <target name="clean-som" description="Remove build directories and generated code">
         <delete dir="${build.dir}"/>
@@ -387,10 +400,18 @@
             <exec executable="@{exe}" dir="@{dir}" failonerror="true">
               <env key="JAVA_HOME" value="@{java-home}" />
               <arg line="native-image" if:true="@{is-ce}" />
-              <arg line="--macro:truffle --no-fallback --initialize-at-build-time='bd,tools,trufflesom' --allow-incomplete-classpath -H:+ReportExceptionStackTraces" />
+              <arg line="--macro:truffle --no-fallback" />
+              
+              <arg line="--initialize-at-build-time='bd,tools,trufflesom,org.graalvm.graphio'" if:set="dump.method" />
+              <arg line="--initialize-at-build-time='bd,tools,trufflesom'"                 unless:set="dump.method" />
+              <arg line="-H:Dump= -H:PrintGraph=Network -H:MethodFilter=${dump.method}"        if:set="dump.method" />
+              
+              <arg line="--allow-incomplete-classpath -H:+ReportExceptionStackTraces" />
+              
               <arg line="--gc=G1" unless:true="@{is-ce}" if:blank="${home.ext}" />
               <arg line="-H:-DeleteLocalSymbols" />
               <arg line="-Dsom.interp=@{type}" />
+              <!-- <arg line="-H:+PrintAnalysisCallTree" /> -->
               <arg line="-Dsom.jitCompiler=false" if:true="${no.jit}" />
               <!-- <arg line="-Dbd.settings=som.vm.VmSettings" /> -->
 

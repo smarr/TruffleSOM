@@ -65,7 +65,7 @@ public abstract class AndMessageNode extends BinaryMsgExprNode {
     }
   }
 
-  private final SInvokable      blockMethod;
+  protected final SInvokable    blockMethod;
   @Child private DirectCallNode blockValueSend;
 
   public AndMessageNode(final SMethod blockMethod) {
@@ -74,11 +74,7 @@ public abstract class AndMessageNode extends BinaryMsgExprNode {
         blockMethod.getCallTarget());
   }
 
-  protected final boolean isSameBlock(final SBlock argument) {
-    return argument.getMethod() == blockMethod;
-  }
-
-  @Specialization(guards = "isSameBlock(argument)")
+  @Specialization(guards = "argument.getMethod() == blockMethod")
   public final boolean doAnd(final boolean receiver, final SBlock argument) {
     if (receiver == false) {
       return false;
