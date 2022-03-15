@@ -248,9 +248,6 @@ public final class SystemPrims {
   public abstract static class GcStatsPrim extends UnaryExpressionNode {
     @CompilationFinal private static List<GarbageCollectorMXBean> beans;
 
-    private static long prevTime;
-    private static long prevCount;
-
     @Specialization
     public final SArray doSObject(final Object receiver) {
       if (beans == null) {
@@ -279,19 +276,14 @@ public final class SystemPrims {
         }
       }
 
-      SArray arr = new SArray(new long[] {counts - prevCount, time - prevTime});
-      prevCount = counts;
-      prevTime = time;
-      return arr;
+      return new SArray(new long[] {counts, time});
     }
   }
 
   @GenerateNodeFactory
-  @Primitive(className = "System", primitive = "compilerTime")
+  @Primitive(className = "System", primitive = "totalCompilationTime")
   public abstract static class CompilerStatsPrim extends UnaryExpressionNode {
     @CompilationFinal private static CompilationMXBean bean;
-
-    private static long prevTime;
 
     @Specialization
     public final long doSObject(final Object receiver) {
@@ -300,10 +292,7 @@ public final class SystemPrims {
         bean = ManagementFactory.getCompilationMXBean();
       }
 
-      long time = bean.getTotalCompilationTime();
-      long result = time - prevTime;
-      prevTime = time;
-      return result;
+      return bean.getTotalCompilationTime();
     }
   }
 
