@@ -256,24 +256,98 @@ public class MethodGenerationContext
       }
 
       if (className.equals("Random") || className.equals("SomRandom")) {
-        if (!holderGenc.isClassSide() && methodName.equals("next")) {
-          body = new ComputeBytecode(1309, 13849, 65535, new byte[] {0, 1, 2, 3, 4, 5, 6},
-              0).initialize(coord);
+        if (!holderGenc.isClassSide()) {
+          if (methodName.equals("next")) {
+            body = new ComputeBytecode(1309, 13849, 65535, new byte[] {0, 1, 2, 3, 4, 5, 6},
+                0).initialize(coord);
+          } else if (methodName.equals("initialize")) {
+            body = new InitMethodBytecodes(
+                new byte[] {10}, new int[] {0}, 74755L).initialize(coord);
+          }
         }
       }
 
-      if (className.equals("Vector2D")) {
-        if (methodName.equals("compare:and:")) {
-          body = new DoubleBytecode(
-              new byte[] {
-                  0, 1, 2, 9, 6 /* target 1 */,
-                  6, /* target 1 */ 3, 9, 10, 7,
-                  /* target 2 */ 4, 9, 14, 8, /* target 3 */ 5,
-                  9, 18, 8, 7},
-              0L, -1L, 1L).initialize(coord);
-        } else if (methodName.equals("initX:y:")) {
-          body = new InitMethodBytecodes(
-              new byte[] {0, 1}, 0, 1).initialize(coord);
+      if (!holderGenc.isClassSide()) {
+        if (className.equals("BenchmarkHarness")) {
+          if (methodName.equals("initialize")) {
+            // | total benchmarkClass numIterations innerIterations printAll doGC |
+            body = new InitMethodBytecodes(
+                new byte[] {5, 6, 6, 7, 8}, new int[] {0, 2, 3, 4, 5}, null).initialize(
+                    coord);
+          }
+        } else if (className.equals("Planner")) {
+          if (methodName.equals("initialize")) {
+            body = new InitMethodBytecodes(
+                new byte[] {6}, new int[] {0}, null).initialize(coord);
+          }
+        } else if (className.equals("JsonParser")) {
+          if (methodName.equals("initializeWith:")) {
+            // | input index line column current captureBuffer captureStart exceptionBlock |
+            body = new InitMethodBytecodes(
+                new byte[] {0, 5, 6, 5, 9, 11}, new int[] {0, 1, 2, 3, 4, 5}, "").initialize(
+                    coord);
+          }
+        } else if (className.equals("ParseException")) {
+          if (methodName.equals("initializeWith:at:line:column:")) {
+            // initializeWith: message at: anOffset line: aLine column: aColumn
+            // | offset line column msg |
+            body = new InitMethodBytecodes(
+                new byte[] {0, 1, 2, 3}, new int[] {3, 0, 1, 2}, null).initialize(
+                    coord);
+          }
+        } else if (className.equals("Edge")) {
+          if (methodName.equals("initializeWith:and:")) {
+            // initializeWith: destination and: w = (
+            // | dest weight |
+            body = new InitMethodBytecodes(
+                new byte[] {0, 1}, new int[] {0, 1}, null).initialize(coord);
+          }
+        } else if (className.equals("Lexer")) {
+          if (methodName.equals("initialize:")) {
+            // | fileContent state stateAfterPeek peekDone
+            // index sym text nextSym nextText |
+            body = new InitMethodBytecodes(
+                new byte[] {0, 8, 6}, new int[] {0, 3, 4}, null).initialize(coord);
+          }
+        } else if (className.equals("SBlock")) {
+          if (methodName.equals("initialize:in:with:")) {
+            // #initialize: aSMethod in: aContext with: aBlockClass = (
+            // | method context blockClass |
+            body = new InitMethodBytecodes(
+                new byte[] {0, 1, 2}, new int[] {0, 1, 2}, null).initialize(coord);
+          }
+        } else if (className.equals("SMethod")) {
+          if (methodName.equals("initializeWith:bc:literals:numLocals:maxStack:")) {
+            // #initializeWith: aSSymbol bc: bcArray literals: literalsArray numLocals:
+            // numLocals maxStack: maxStack = (
+            // | signature holder bytecodes literals
+            // numberOfLocals maximumNumberOfStackElements |
+            body = new InitMethodBytecodes(
+                new byte[] {0, 1, 2, 3, 4}, new int[] {0, 2, 3, 4, 5}, null).initialize(coord);
+          }
+        } else if (className.equals("SPrimitive")) {
+          if (methodName.equals("initialize:with:")) {
+            // #initialize: aSSymbol with: aBlock = (
+            // numLocals maxStack: maxStack = (
+            // | signature holder isEmpty operation |
+            body = new InitMethodBytecodes(
+                new byte[] {0, 8, 1}, new int[] {0, 2, 3}, null).initialize(coord);
+          }
+        }
+
+        else if (className.equals("Vector2D")) {
+          if (methodName.equals("compare:and:")) {
+            body = new DoubleBytecode(
+                new byte[] {
+                    0, 1, 2, 9, 6 /* target 1 */,
+                    6, /* target 1 */ 3, 9, 10, 7,
+                    /* target 2 */ 4, 9, 14, 8, /* target 3 */ 5,
+                    9, 18, 8, 7},
+                0L, -1L, 1L).initialize(coord);
+          } else if (methodName.equals("initX:y:")) {
+            body = new InitMethodBytecodes(
+                new byte[] {0, 1}, new int[] {0, 1}, null).initialize(coord);
+          }
         }
       }
     }
