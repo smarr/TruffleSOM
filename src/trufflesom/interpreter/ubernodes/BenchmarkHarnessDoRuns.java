@@ -1,6 +1,7 @@
 package trufflesom.interpreter.ubernodes;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
@@ -154,13 +155,7 @@ public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
       boolean printAll = (Boolean) readPrintAll.read(rcvr);
       if (printAll) {
         String name = (String) dispatchName.executeDispatch(frame, new Object[] {bench});
-
-        Universe.println(name + ": GC count:     "
-            + (endGC.getLongStorage()[0] - startGC.getLongStorage()[0]) + "n");
-        Universe.println(name + ": GC time:      "
-            + (endGC.getLongStorage()[1] - startGC.getLongStorage()[1]) + "ms");
-        Universe.println(name + ": Compile time: " + (endComp - startComp) + "ms");
-
+        printStats(startGC, endGC, startComp, endComp, name);
         dispatchPrintRun.executeDispatch(frame, new Object[] {rcvr, bench, runTime});
       }
 
@@ -185,6 +180,16 @@ public final class BenchmarkHarnessDoRuns extends AbstractInvokable {
     }
 
     return total;
+  }
+
+  @TruffleBoundary
+  private void printStats(final SArray startGC, final SArray endGC, final long startComp,
+      final long endComp, final String name) {
+    Universe.println(name + ": GC count:     "
+        + (endGC.getLongStorage()[0] - startGC.getLongStorage()[0]) + "n");
+    Universe.println(name + ": GC time:      "
+        + (endGC.getLongStorage()[1] - startGC.getLongStorage()[1]) + "ms");
+    Universe.println(name + ": Compile time: " + (endComp - startComp) + "ms");
   }
 
   @Override
