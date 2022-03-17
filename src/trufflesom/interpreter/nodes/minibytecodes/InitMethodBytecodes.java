@@ -7,14 +7,15 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 
+import bd.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
-import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 
 
-public final class InitMethodBytecodes extends NoPreEvalExprNode {
+public final class InitMethodBytecodes extends ExpressionNode {
 
   @Children private FieldWriteNode[] writeField;
 
@@ -33,6 +34,22 @@ public final class InitMethodBytecodes extends NoPreEvalExprNode {
 
     this.bytecodes = bytecodes;
     this.constant = constant;
+  }
+
+  @Override
+  public boolean isTrivial() {
+    return true;
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNode() {
+    int[] fieldIndexes = new int[writeField.length];
+
+    for (int i = 0; i < writeField.length; i += 1) {
+      fieldIndexes[i] = writeField[i].getFieldIndex();
+    }
+
+    return new InitMethodBytecodes(bytecodes, fieldIndexes, constant);
   }
 
   /**
@@ -142,10 +159,15 @@ public final class InitMethodBytecodes extends NoPreEvalExprNode {
    * </pre>
    */
   @Override
-  @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
-  @BytecodeInterpreterSwitch
   public Object executeGeneric(final VirtualFrame frame) {
     final Object[] args = frame.getArguments();
+    return doPreEvaluated(frame, args);
+  }
+
+  @Override
+  @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
+  @BytecodeInterpreterSwitch
+  public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
     final SObject rcvr = (SObject) args[0];
 
     final byte[] bytecodes = this.bytecodes;
