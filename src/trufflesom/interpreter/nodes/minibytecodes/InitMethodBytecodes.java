@@ -7,7 +7,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 
-import bd.primitives.nodes.PreevaluatedExpression;
+import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldWriteNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
@@ -17,6 +17,17 @@ import trufflesom.vmobjects.SObject;
 
 public final class InitMethodBytecodes extends ExpressionNode {
 
+  /*
+   * TODO: is there any way to avoid the use of the full FieldWriteNode and FieldAccessorNodes?
+   * we need to support inheritance, i.e., we can possibly see different layout objects.
+   * But, we would want to use a single layout object for each class, instead of having each
+   * field write
+   * using a separate check.
+   * Ideally, we just have a layout "chain" and a location array.
+   * Not sure how to do proper specializations for arguments and the constant though.
+   * The constant is somewhat simpler, but arguments need full specialziation logic for
+   * correctness.
+   */
   @Children private FieldWriteNode[] writeField;
 
   @CompilationFinal(dimensions = 1) private final byte[] bytecodes;
