@@ -172,7 +172,7 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] arguments) {
-      return executeEvaluated(frame, (SObject) arguments[0], arguments[1]);
+      return write.write((SObject) arguments[0], arguments[1]);
     }
 
     @Specialization
@@ -190,7 +190,7 @@ public abstract class FieldNode extends ExpressionNode {
     @Specialization
     public Object doObject(final VirtualFrame frame, final SObject self,
         final Object value) {
-      return executeEvaluated(frame, self, value);
+      return write.write(self, value);
     }
 
     public static ExpressionNode createForMethod(final int fieldIdx, final Argument self,
