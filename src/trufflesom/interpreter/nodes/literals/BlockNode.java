@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
-
-import bd.inlining.ScopeAdaptationVisitor;
-import bd.primitives.nodes.PreevaluatedExpression;
 import com.oracle.truffle.api.source.Source;
+
+import bdt.inlining.ScopeAdaptationVisitor;
+import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;

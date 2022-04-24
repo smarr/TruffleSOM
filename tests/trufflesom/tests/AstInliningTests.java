@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
+import bdt.basic.ProgramDefinitionError;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.ParserAst;

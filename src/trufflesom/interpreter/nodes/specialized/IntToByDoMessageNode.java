@@ -8,7 +8,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
-import bd.primitives.Primitive;
+import bdt.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.QuaternaryMsgExprNode;
 import trufflesom.vm.SymbolTable;

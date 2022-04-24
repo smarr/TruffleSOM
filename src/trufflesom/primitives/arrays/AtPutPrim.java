@@ -5,7 +5,7 @@ import java.util.Arrays;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
-import bd.primitives.Primitive;
+import bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;

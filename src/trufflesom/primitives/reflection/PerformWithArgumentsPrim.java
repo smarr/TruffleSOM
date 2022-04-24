@@ -5,7 +5,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 
-import bd.primitives.Primitive;
+import bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SSymbol;

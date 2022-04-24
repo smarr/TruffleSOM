@@ -22,8 +22,8 @@ import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.primitives.Primitive;
-import bd.source.SourceCoordinate;
+import bdt.primitives.Primitive;
+import bdt.source.SourceCoordinate;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;

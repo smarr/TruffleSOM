@@ -36,9 +36,9 @@ import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.source.Source;
 
-import bd.inlining.ScopeAdaptationVisitor;
-import bd.primitives.nodes.PreevaluatedExpression;
-import bd.tools.nodes.Invocation;
+import bdt.inlining.ScopeAdaptationVisitor;
+import bdt.primitives.nodes.PreevaluatedExpression;
+import bdt.tools.nodes.Invocation;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.bc.BytecodeGenerator;

@@ -12,9 +12,9 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
-import bd.primitives.nodes.PreevaluatedExpression;
-import bd.source.SourceCoordinate;
+import bdt.basic.ProgramDefinitionError;
+import bdt.primitives.nodes.PreevaluatedExpression;
+import bdt.source.SourceCoordinate;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Parser.ParseError;

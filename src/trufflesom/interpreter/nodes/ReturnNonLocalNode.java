@@ -25,8 +25,8 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
-import bd.inlining.ScopeAdaptationVisitor;
-import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
+import bdt.inlining.ScopeAdaptationVisitor;
+import bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.ReturnException;

@@ -30,8 +30,8 @@ import java.io.IOException;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
-import bd.tools.structure.StructuralProbe;
+import bdt.basic.ProgramDefinitionError;
+import bdt.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
