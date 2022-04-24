@@ -3,8 +3,6 @@ package bdt.inlining;
 import com.oracle.truffle.api.source.Source;
 
 import bdt.basic.ProgramDefinitionError;
-import bdt.inlining.ScopeBuilder;
-import bdt.inlining.Variable;
 import bdt.inlining.nodes.Inlinable;
 
 

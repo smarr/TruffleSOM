@@ -3,12 +3,10 @@ package bdt.primitives;
 import java.util.ArrayList;
 import java.util.List;
 
-import bd.testsetup.AbsNodeFactory;
-import bd.testsetup.AddAbsNodeFactory;
-import bd.testsetup.AddNodeFactory;
-import bd.testsetup.AddWithSpecializerNodeFactory;
-import bdt.primitives.PrimitiveLoader;
-import bdt.primitives.Specializer;
+import bdt.testsetup.AbsNodeFactory;
+import bdt.testsetup.AddAbsNodeFactory;
+import bdt.testsetup.AddNodeFactory;
+import bdt.testsetup.AddWithSpecializerNodeFactory;
 import bdt.testsetup.ExprNode;
 import bdt.testsetup.StringId;
 

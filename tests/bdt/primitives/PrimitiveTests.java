@@ -12,11 +12,9 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.nodes.Node;
 
-import bd.testsetup.AddNodeFactory;
-import bdt.primitives.Primitive;
-import bdt.primitives.Specializer;
 import bdt.testsetup.AbsNode;
 import bdt.testsetup.AddAbsNode;
+import bdt.testsetup.AddNodeFactory;
 import bdt.testsetup.ExprNode;
 
 

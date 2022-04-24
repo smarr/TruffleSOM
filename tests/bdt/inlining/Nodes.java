@@ -6,9 +6,9 @@ import java.util.List;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
 
-import bd.testsetup.IfNodeFactory;
-import bd.testsetup.ValueSpecializedNodeFactory;
+import bdt.testsetup.IfNodeFactory;
 import bdt.testsetup.ValueNode;
+import bdt.testsetup.ValueSpecializedNodeFactory;
 
 
 class Nodes {

@@ -9,10 +9,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import bd.testsetup.AddNodeFactory;
 import bdt.basic.ProgramDefinitionError;
-import bdt.inlining.InlinableNodes;
 import bdt.source.SourceCoordinate;
+import bdt.testsetup.AddNodeFactory;
 import bdt.testsetup.ExprNode;
 import bdt.testsetup.LambdaNode;
 import bdt.testsetup.StringId;

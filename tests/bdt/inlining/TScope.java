@@ -1,8 +1,5 @@
 package bdt.inlining;
 
-import bdt.inlining.Scope;
-import bdt.inlining.Variable;
-
 public class TScope implements Scope<TScope, Void> {
 
   @Override
