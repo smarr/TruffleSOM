@@ -34,8 +34,8 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.source.SourceCoordinate;
-import bd.tools.structure.StructuralProbe;
+import bdt.source.SourceCoordinate;
+import bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.vm.Classes;
 import trufflesom.vmobjects.SClass;

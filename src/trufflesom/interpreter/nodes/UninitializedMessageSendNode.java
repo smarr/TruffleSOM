@@ -3,8 +3,8 @@ package trufflesom.interpreter.nodes;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import bd.primitives.Specializer;
-import bd.primitives.nodes.PreevaluatedExpression;
+import bdt.primitives.Specializer;
+import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;

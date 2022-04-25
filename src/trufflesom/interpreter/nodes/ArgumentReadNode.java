@@ -2,8 +2,8 @@ package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import bd.inlining.ScopeAdaptationVisitor;
-import bd.tools.nodes.Invocation;
+import bdt.inlining.ScopeAdaptationVisitor;
+import bdt.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.vmobjects.SSymbol;
 

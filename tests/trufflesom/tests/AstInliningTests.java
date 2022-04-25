@@ -9,6 +9,11 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.nodes.Node;
 
+import bdt.basic.ProgramDefinitionError;
+import trufflesom.compiler.ClassGenerationContext;
+import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.ParserAst;
+import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;

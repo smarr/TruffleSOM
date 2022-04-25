@@ -7,7 +7,7 @@ import org.junit.Ignore;
 
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
+import bdt.basic.ProgramDefinitionError;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.ParserAst;

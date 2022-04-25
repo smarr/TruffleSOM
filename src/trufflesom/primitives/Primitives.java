@@ -37,10 +37,10 @@ import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
-import bd.inlining.InlinableNodes;
-import bd.primitives.PrimitiveLoader;
-import bd.primitives.Specializer;
-import bd.tools.structure.StructuralProbe;
+import bdt.inlining.InlinableNodes;
+import bdt.primitives.PrimitiveLoader;
+import bdt.primitives.Specializer;
+import bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.Primitive;

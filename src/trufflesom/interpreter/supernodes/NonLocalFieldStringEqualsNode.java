@@ -6,8 +6,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-import bd.inlining.ScopeAdaptationVisitor;
-import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
+import bdt.inlining.ScopeAdaptationVisitor;
+import bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
