@@ -1,6 +1,6 @@
 package trufflesom.interpreter.nodes.nary;
 
-import bd.primitives.nodes.PreevaluatedExpression;
+import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.ExpressionNode;
 
 

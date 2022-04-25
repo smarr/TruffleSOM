@@ -11,8 +11,8 @@ import org.junit.Ignore;
 
 import com.oracle.truffle.api.nodes.Node;
 
-import bd.source.SourceCoordinate;
-import bd.tools.structure.StructuralProbe;
+import bdt.source.SourceCoordinate;
+import bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.Variable;

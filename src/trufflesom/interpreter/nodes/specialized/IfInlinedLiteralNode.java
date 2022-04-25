@@ -7,9 +7,9 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
-import bd.inlining.Inline;
-import bd.inlining.Inline.False;
-import bd.inlining.Inline.True;
+import bdt.inlining.Inline;
+import bdt.inlining.Inline.False;
+import bdt.inlining.Inline.True;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;

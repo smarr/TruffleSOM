@@ -3,10 +3,10 @@ package trufflesom.primitives.basics;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-
-import bd.primitives.Primitive;
-import bd.primitives.nodes.PreevaluatedExpression;
 import com.oracle.truffle.api.source.Source;
+
+import bdt.primitives.Primitive;
+import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedNewObject;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
