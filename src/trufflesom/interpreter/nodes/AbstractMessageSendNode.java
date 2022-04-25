@@ -5,6 +5,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 import bdt.primitives.nodes.PreevaluatedExpression;
 import bdt.tools.nodes.Invocation;
+import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.vmobjects.SSymbol;
 
 

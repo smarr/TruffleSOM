@@ -344,7 +344,8 @@ public class AstInliningTests extends AstTestSetup {
     assertEquals("b", readB.getInvocationIdentifier().getString());
     assertEquals(1, readB.argumentIndex);
 
-    IntUninitIncFieldNode incNode = read(blockBIfTrue, "bodyNode", IntUninitIncFieldNode.class);
+    IntUninitIncFieldNode incNode =
+        read(blockBIfTrue, "bodyNode", IntUninitIncFieldNode.class);
     NonLocalArgumentReadNode selfNode = (NonLocalArgumentReadNode) incNode.getSelf();
     assertEquals(2, selfNode.getContextLevel());
     assertEquals(0, (int) read(incNode, "fieldIndex", Integer.class));
