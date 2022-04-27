@@ -220,9 +220,13 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     this.structuralProbe = structuralProbe;
 
     sym = NONE;
-    lexer = new Lexer(content);
+    lexer = createLexer(content);
     nextSym = NONE;
     getSymbolFromLexer();
+  }
+
+  protected Lexer createLexer(final String content) {
+    return new Lexer(content);
   }
 
   public Source getSource() {
@@ -237,14 +241,9 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe);
 
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
-    cgenc.setName(symbolFor(text));
     int coord = getStartIndex();
-    if ("Object".equals(text)) {
-      Universe.selfCoord = getCoordWithLength(coord);
-      Universe.selfSource = source;
-    }
 
-    expect(Identifier);
+    className(cgenc, coord);
     expect(Equal);
 
     superclass(cgenc);
@@ -275,6 +274,18 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     }
     expect(EndTerm);
     cgenc.setSourceCoord(getCoordWithLength(coord));
+  }
+
+  protected void className(final ClassGenerationContext cgenc, final int coord)
+      throws ParseError {
+    cgenc.setName(symbolFor(text));
+
+    if ("Object".equals(text)) {
+      Universe.selfCoord = getCoordWithLength(coord);
+      Universe.selfSource = source;
+    }
+
+    expect(Identifier);
   }
 
   private void superclass(final ClassGenerationContext cgenc) throws ParseError {
@@ -393,7 +404,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return methodBody;
   }
 
-  private void primitiveBlock() throws ParseError {
+  protected void primitiveBlock() throws ParseError {
     expect(Primitive);
     lastMethodsCoord = getCoordWithLength(lastStartIndex);
   }
@@ -493,7 +504,11 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return s;
   }
 
-  private SSymbol argument() throws ProgramDefinitionError {
+  protected SSymbol argument() throws ProgramDefinitionError {
+    return variable();
+  }
+
+  protected SSymbol local() throws ProgramDefinitionError {
     return variable();
   }
 
@@ -635,7 +650,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return symb;
   }
 
-  private String string() throws ParseError {
+  protected String string() throws ParseError {
     String s = new String(text);
     expect(STString);
     return s;

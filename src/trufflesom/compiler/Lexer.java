@@ -24,12 +24,12 @@
 
 package trufflesom.compiler;
 
-public final class Lexer {
+public class Lexer {
 
   private static final String SEPARATOR = "----";
   private static final String PRIMITIVE = "primitive";
 
-  private static class LexerState {
+  protected static class LexerState {
     LexerState() {}
 
     LexerState(final LexerState old) {
@@ -57,14 +57,14 @@ public final class Lexer {
       this.text = new StringBuilder();
     }
 
-    private int lineNumber;
+    public int lineNumber;
 
     /** All characters read, excluding the current line, incl. line break. */
-    private int lastLineEnd;
+    public int lastLineEnd;
 
     private int lastNonWhiteCharIdx;
 
-    private int ptr;
+    public int ptr;
 
     private Symbol        sym;
     private char          symc;
@@ -73,7 +73,7 @@ public final class Lexer {
     private int startPtr;
     private int startLastNonWhiteCharIdx;
 
-    int incPtr() {
+    public int incPtr() {
       return incPtr(1);
     }
 
@@ -87,8 +87,10 @@ public final class Lexer {
 
   private final String content;
 
-  private boolean    peekDone;
-  private LexerState state;
+  private boolean peekDone;
+
+  protected LexerState state;
+
   private LexerState stateAfterPeek;
 
   protected Lexer(final String content) {
@@ -400,7 +402,7 @@ public final class Lexer {
     }
   }
 
-  private void skipComment() {
+  protected void skipComment() {
     if (currentChar() == '"') {
       do {
         if (currentChar() == '\n') {
@@ -413,7 +415,7 @@ public final class Lexer {
     }
   }
 
-  private char currentChar() {
+  protected final char currentChar() {
     return bufchar(state.ptr);
   }
 
