@@ -347,12 +347,16 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
         "%(expected)s, but found %(found)s", ss, this);
   }
 
+  protected SSymbol field() throws ParseError {
+    return identifier();
+  }
+
   private void instanceFields(final ClassGenerationContext cgenc)
       throws ProgramDefinitionError {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
         int coord = getStartIndex();
-        SSymbol var = variable();
+        SSymbol var = field();
         cgenc.addInstanceField(var, getCoordWithLength(coord));
       }
       expect(Or);
@@ -363,7 +367,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
         int coord = getStartIndex();
-        SSymbol var = variable();
+        SSymbol var = field();
         cgenc.addClassField(var, getCoordWithLength(coord));
       }
       expect(Or);
