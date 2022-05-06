@@ -27,7 +27,6 @@ kernel:           ${kernel}</echo>
     <property name="svm.dir"     location="${lib.dir}/truffle/substratevm" />
     <property name="vm.dir"        location="${lib.dir}/truffle/vm" />
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
-    <property name="compiler.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
 
