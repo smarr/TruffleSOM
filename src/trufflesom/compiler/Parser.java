@@ -481,6 +481,10 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return identifier();
   }
 
+  protected SSymbol unarySendSelector() throws ParseError {
+    return identifier();
+  }
+
   protected SSymbol binarySelector() throws ParseError {
     String s = new String(text);
 
@@ -497,6 +501,10 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return symbolFor(s);
   }
 
+  protected SSymbol binarySendSelector() throws ParseError {
+    return binarySelector();
+  }
+
   private SSymbol identifier() throws ParseError {
     String s = new String(text);
     boolean isPrimitive = accept(Primitive);
@@ -511,6 +519,10 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     expect(Keyword);
 
     return s;
+  }
+
+  protected String keywordInSend() throws ParseError {
+    return keyword();
   }
 
   protected SSymbol argument() throws ProgramDefinitionError {

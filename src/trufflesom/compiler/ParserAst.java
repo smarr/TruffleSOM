@@ -222,7 +222,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     superSend = false;
 
     int coord = getStartIndex();
-    SSymbol selector = unarySelector();
+    SSymbol selector = unarySendSelector();
 
     ExpressionNode[] args = new ExpressionNode[] {receiver};
     long coordWithL = getCoordWithLength(coord);
@@ -239,7 +239,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     boolean isSuperSend = superSend;
     superSend = false;
     int coord = getStartIndex();
-    SSymbol msg = binarySelector();
+    SSymbol msg = binarySendSelector();
     ExpressionNode operand = binaryOperand(mgenc);
 
     long coordWithL = getCoordWithLength(coord);
@@ -278,7 +278,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     arguments.add(receiver);
 
     do {
-      kw.append(keyword());
+      kw.append(keywordInSend());
       arguments.add(formula(mgenc));
     } while (sym == Keyword);
 
