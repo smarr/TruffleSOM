@@ -15,12 +15,15 @@ import bdt.source.SourceCoordinate;
 import bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.Field;
+import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
+import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.vm.Universe;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
@@ -43,6 +46,12 @@ public class TruffleTestSetup {
 
   private static void initTruffle() {
     StorageAnalyzer.initAccessors();
+
+    if (VmSettings.UseAstInterp) {
+      Universe.setSourceCompiler(new AstCompiler());
+    } else {
+      Universe.setSourceCompiler(new BcCompiler());
+    }
 
     Builder builder = Universe.createContextBuilder();
     builder.logHandler(System.err);
