@@ -131,6 +131,19 @@ public class MethodGenerationContext
     return holderGenc.getSource();
   }
 
+  /** Includes self, at idx == 0. */
+  public Argument getArgument(final int idx) {
+    int i = 0;
+    for (Argument a : arguments.values()) {
+      if (i == idx) {
+        return a;
+      }
+      i += 1;
+    }
+    throw new IllegalArgumentException(
+        "Tried to access argument " + idx + " but there are only " + arguments.size());
+  }
+
   public void markAccessingOuterScopes() {
     MethodGenerationContext context = this;
     while (context != null) {
