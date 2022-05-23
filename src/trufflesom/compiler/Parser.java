@@ -260,6 +260,13 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       cgenc.addInstanceMethod(mgenc.assemble(methodBody, lastMethodsCoord), this);
     }
 
+    classSide(cgenc);
+    expect(EndTerm);
+    cgenc.setSourceCoord(getCoordWithLength(coord));
+  }
+
+  protected void classSide(final ClassGenerationContext cgenc)
+      throws ProgramDefinitionError, ParseError {
     if (accept(Separator)) {
       cgenc.switchToClassSide();
       classFields(cgenc);
@@ -272,8 +279,6 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
         cgenc.addClassMethod(mgenc.assemble(methodBody, lastMethodsCoord), this);
       }
     }
-    expect(EndTerm);
-    cgenc.setSourceCoord(getCoordWithLength(coord));
   }
 
   protected void className(final ClassGenerationContext cgenc, final int coord)
