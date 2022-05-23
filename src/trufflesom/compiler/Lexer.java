@@ -409,9 +409,9 @@ public class Lexer {
           state.lineNumber += 1;
           state.lastLineEnd = state.ptr;
         }
-        state.incPtr();
+        state.ptr++;
       } while (currentChar() != '"');
-      state.incPtr();
+      state.ptr++;
     }
   }
 
