@@ -81,6 +81,10 @@ public final class ClassGenerationContext {
     return source;
   }
 
+  public long getSourceCoord() {
+    return sourceCoord;
+  }
+
   public void setSourceCoord(final long sourceCoord) {
     this.sourceCoord = sourceCoord;
   }
