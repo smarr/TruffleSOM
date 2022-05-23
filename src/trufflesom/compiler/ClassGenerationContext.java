@@ -148,6 +148,9 @@ public final class ClassGenerationContext {
   }
 
   public void addInstanceField(final SSymbol name, final long coord) {
+    int length = SourceCoordinate.getLength(coord);
+    assert name.getString().length() == length;
+
     Field f = new Field(instanceFields.size(), name, coord);
     instanceFields.add(f);
     if (structuralProbe != null) {
@@ -156,6 +159,9 @@ public final class ClassGenerationContext {
   }
 
   public void addClassField(final SSymbol name, final long coord) {
+    int length = SourceCoordinate.getLength(coord);
+    assert name.getString().length() == length;
+
     Field f = new Field(classFields.size(), name, coord);
     classFields.add(f);
     if (structuralProbe != null) {
