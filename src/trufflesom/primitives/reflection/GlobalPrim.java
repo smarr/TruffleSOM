@@ -6,7 +6,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
-import bd.primitives.Primitive;
+import bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.UninitializedGlobalReadWithoutErrorNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;

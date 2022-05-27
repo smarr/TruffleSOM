@@ -6,7 +6,7 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
-import bd.primitives.nodes.PreevaluatedExpression;
+import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.vmobjects.SClass;

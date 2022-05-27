@@ -9,8 +9,8 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.inlining.nodes.WithSource;
-import bd.source.SourceCoordinate;
+import bdt.inlining.nodes.WithSource;
+import bdt.source.SourceCoordinate;
 import tools.nodestats.Tags.AnyNode;
 import trufflesom.vm.VmSettings;
 

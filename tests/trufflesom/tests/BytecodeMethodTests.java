@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
-import bd.source.SourceCoordinate;
+import bdt.basic.ProgramDefinitionError;
+import bdt.source.SourceCoordinate;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.ParserBc;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;

@@ -61,8 +61,8 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
-import bd.tools.structure.StructuralProbe;
+import bdt.basic.ProgramDefinitionError;
+import bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.Disassembler;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;

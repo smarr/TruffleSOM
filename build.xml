@@ -161,10 +161,10 @@ Native Image Targets
     </target>
 
     <target name="ideinit" depends="core-lib">
-        <exec executable="${mx.cmd}" dir="${compiler.dir}">
+        <exec executable="${mx.cmd}" dir="${svm.dir}">
           <env key="JAVA_HOME" value="${jvmci.home}" />
           <arg value="--dynamicimports"/>
-          <arg value="../sdk"/>
+          <arg value="../sdk,../tools,../substratevm,../truffle,../compiler"/>
           <arg value="eclipseinit"/>
         </exec>
     </target>

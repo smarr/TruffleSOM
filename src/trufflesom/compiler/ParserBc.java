@@ -36,8 +36,8 @@ import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
-import bd.tools.structure.StructuralProbe;
+import bdt.basic.ProgramDefinitionError;
+import bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.constants.Nil;

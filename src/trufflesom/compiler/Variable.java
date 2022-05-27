@@ -17,7 +17,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.source.Source;
 
-import bd.source.SourceCoordinate;
+import bdt.source.SourceCoordinate;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
@@ -28,7 +28,7 @@ import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class Variable implements bd.inlining.Variable<ExpressionNode> {
+public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> {
   public final SSymbol name;
   public final long    coord;
 

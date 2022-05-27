@@ -10,9 +10,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
-import bd.inlining.Inline;
-import bd.inlining.ScopeAdaptationVisitor;
-import bd.inlining.ScopeAdaptationVisitor.ScopeElement;
+import bdt.inlining.Inline;
+import bdt.inlining.ScopeAdaptationVisitor;
+import bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.ExpressionNode;

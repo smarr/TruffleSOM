@@ -68,9 +68,9 @@ import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
 
-import bd.basic.ProgramDefinitionError;
-import bd.source.SourceCoordinate;
-import bd.tools.structure.StructuralProbe;
+import bdt.basic.ProgramDefinitionError;
+import bdt.source.SourceCoordinate;
+import bdt.tools.structure.StructuralProbe;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.GlobalNode;
@@ -82,8 +82,8 @@ import trufflesom.vmobjects.SSymbol;
 
 public abstract class Parser<MGenC extends MethodGenerationContext> {
 
-  protected final Lexer lexer;
-  private final Source  source;
+  protected final Lexer  lexer;
+  protected final Source source;
 
   protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
 

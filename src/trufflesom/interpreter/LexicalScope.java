@@ -6,9 +6,11 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameDescriptor.Builder;
+
+import bdt.inlining.Scope;
+
 import com.oracle.truffle.api.frame.FrameSlotKind;
 
-import bd.inlining.Scope;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.vm.constants.Nil;

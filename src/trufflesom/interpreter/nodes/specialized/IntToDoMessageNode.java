@@ -12,7 +12,7 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
-import bd.primitives.Primitive;
+import bdt.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.TernaryMsgExprNode;
 import trufflesom.vm.SymbolTable;

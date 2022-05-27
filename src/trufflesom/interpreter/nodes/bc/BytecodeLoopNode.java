@@ -94,10 +94,10 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
-import bd.inlining.ScopeAdaptationVisitor;
-import bd.inlining.nodes.ScopeReference;
-import bd.primitives.Specializer;
-import bd.primitives.nodes.PreevaluatedExpression;
+import bdt.inlining.ScopeAdaptationVisitor;
+import bdt.inlining.nodes.ScopeReference;
+import bdt.primitives.Specializer;
+import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;

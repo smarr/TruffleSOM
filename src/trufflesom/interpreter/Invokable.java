@@ -3,6 +3,9 @@ package trufflesom.interpreter;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.source.Source;
 
+import bdt.inlining.nodes.WithSource;
+import bdt.primitives.nodes.PreevaluatedExpression;
+import bdt.source.SourceCoordinate;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vmobjects.SClass;

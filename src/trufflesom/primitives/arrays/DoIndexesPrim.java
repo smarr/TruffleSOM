@@ -7,7 +7,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
-import bd.primitives.Primitive;
+import bdt.primitives.Primitive;
 import trufflesom.interpreter.AbstractInvokable;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;

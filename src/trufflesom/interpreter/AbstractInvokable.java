@@ -7,9 +7,9 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bd.inlining.nodes.WithSource;
-import bd.primitives.nodes.PreevaluatedExpression;
-import bd.source.SourceCoordinate;
+import bdt.inlining.nodes.WithSource;
+import bdt.primitives.nodes.PreevaluatedExpression;
+import bdt.source.SourceCoordinate;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
