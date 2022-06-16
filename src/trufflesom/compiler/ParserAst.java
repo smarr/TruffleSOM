@@ -153,7 +153,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   }
 
   private ExpressionNode variableWrite(final MethodGenerationContext mgenc,
-      final SSymbol variableName, final ExpressionNode exp, final long coord) {
+      final SSymbol variableName, final ExpressionNode exp, final long coord)
+      throws ParseError {
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
       return mgenc.getLocalWriteNode(variable, exp, coord);
@@ -164,8 +165,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (fieldWrite != null) {
       return fieldWrite;
     } else {
-      throw new RuntimeException("Neither a variable nor a field found "
-          + "in current scope that is named " + variableName + ". Arguments are read-only.");
+      throw new ParseError("Neither a variable nor a field found "
+          + "in current scope that is named " + variableName + ". Arguments are read-only.",
+          Symbol.NONE, this);
     }
   }
 
