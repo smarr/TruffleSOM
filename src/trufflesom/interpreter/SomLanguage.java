@@ -21,10 +21,13 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
 import tools.nodestats.Tags.AnyNode;
+import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
+import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.SomExit;
+import trufflesom.vm.VmSettings;
 
 
 @TruffleLanguage.Registration(id = "som", name = "som", version = "0.1.0",
@@ -67,6 +70,12 @@ public class SomLanguage extends TruffleLanguage<SomLanguage> {
   @Override
   protected void initializeContext(final SomLanguage lang) throws Exception {
     current = this;
+
+    if (VmSettings.UseAstInterp) {
+      Universe.setSourceCompiler(new AstCompiler());
+    } else {
+      Universe.setSourceCompiler(new BcCompiler());
+    }
   }
 
   @Override

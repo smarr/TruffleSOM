@@ -3,8 +3,7 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="jvmci.version" value="jvmci-22.0-b05" />
-    <property name="jdk.version"   value="17.0.2+8" />
+    <property name="labs-jdk" value="labsjdk-ce-17" />
 
     <condition property="kernel" value="darwin-amd64" else="linux-amd64">
         <os family="mac"/>
@@ -27,7 +26,6 @@ kernel:           ${kernel}</echo>
     <property name="svm.dir"     location="${lib.dir}/truffle/substratevm" />
     <property name="vm.dir"        location="${lib.dir}/truffle/vm" />
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
-    <property name="compiler.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="junit.version" value="4.12" />
 
@@ -35,7 +33,7 @@ kernel:           ${kernel}</echo>
 
     <property name="jvmci.home"  location="${lib.dir}/jvmci${home.ext}" />
 
-    <property name="mx.cmd" value="../../mx/mx" />
+    <property name="mx.cmd" location="${lib.dir}/mx/mx" />
 
     <property name="build.dir"   value="build"/>
     <property name="classes.dir" value="${build.dir}/classes"/>
@@ -138,7 +136,7 @@ Native Image Targets
       </exec>
     </target>
 
-    <target name="truffle-libs" depends="jvmci-libs,core-lib">
+    <target name="truffle-libs" depends="jvmci-libs">
         <exec executable="${mx.cmd}" dir="${compiler.dir}" failonerror="true">
             <env key="DYNAMIC_IMPORTS" value="/tools" />
             <env key="EXCLUDE_COMPONENTS" value="svmag,nju,nic,ni,nil,ins,dap,lsp,insight,insightheap,vvm" />
@@ -148,7 +146,7 @@ Native Image Targets
         </exec>
     </target>
     
-    <target name="libgraal-jdk" depends="jvmci-libs,core-lib">
+    <target name="libgraal-jdk" depends="jvmci-libs">
         <exec executable="${mx.cmd}" dir="${vm.dir}" failonerror="true">
             <env key="JAVA_HOME" value="${jvmci.home}" />
             <!-- REM: This needs to match ./som -->
@@ -177,13 +175,9 @@ Native Image Targets
         </exec>
     </target>
 
-    <target name="jvmci-libs" unless="skip.libs">
-        <get src="https://github.com/graalvm/labs-openjdk-17/releases/download/${jvmci.version}/labsjdk-ce-${jdk.version}-${jvmci.version}-${kernel}.tar.gz"
-             usetimestamp="true"
-             dest="${lib.dir}/jvmci.tar.gz" />
-        <mkdir dir="${lib.dir}/jvmci" />
-        <exec executable="tar" dir="${basedir}" failonerror="true">
-          <arg line="-C ${lib.dir}/jvmci -xzf ${lib.dir}/jvmci.tar.gz --strip 1"/>
+    <target name="jvmci-libs" unless="skip.libs" depends="core-lib">
+        <exec executable="${mx.cmd}" dir="${compiler.dir}">
+            <arg line="fetch-jdk --jdk-id ${labs-jdk} --alias ${lib.dir}/jvmci" />
         </exec>
     </target>
 

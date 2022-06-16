@@ -131,6 +131,19 @@ public class MethodGenerationContext
     return holderGenc.getSource();
   }
 
+  /** Includes self, at idx == 0. */
+  public Argument getArgument(final int idx) {
+    int i = 0;
+    for (Argument a : arguments.values()) {
+      if (i == idx) {
+        return a;
+      }
+      i += 1;
+    }
+    throw new IllegalArgumentException(
+        "Tried to access argument " + idx + " but there are only " + arguments.size());
+  }
+
   public void markAccessingOuterScopes() {
     MethodGenerationContext context = this;
     while (context != null) {
@@ -262,7 +275,7 @@ public class MethodGenerationContext
     signature = sig;
   }
 
-  private void addArgument(final SSymbol arg, final long coord) {
+  private Argument addArgument(final SSymbol arg, final long coord) {
     if ((symSelf == arg || symBlockSelf == arg) && arguments.size() > 0) {
       throw new IllegalStateException(
           "The self argument always has to be the first argument of a method");
@@ -274,14 +287,15 @@ public class MethodGenerationContext
     if (structuralProbe != null) {
       structuralProbe.recordNewVariable(argument);
     }
+    return argument;
   }
 
-  public void addArgumentIfAbsent(final SSymbol arg, final long coord) {
+  public Argument addArgumentIfAbsent(final SSymbol arg, final long coord) {
     if (arguments.containsKey(arg)) {
-      return;
+      return arguments.get(arg);
     }
 
-    addArgument(arg, coord);
+    return addArgument(arg, coord);
   }
 
   public boolean hasLocal(final SSymbol local) {

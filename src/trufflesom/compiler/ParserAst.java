@@ -153,7 +153,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   }
 
   private ExpressionNode variableWrite(final MethodGenerationContext mgenc,
-      final SSymbol variableName, final ExpressionNode exp, final long coord) {
+      final SSymbol variableName, final ExpressionNode exp, final long coord)
+      throws ParseError {
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
       return mgenc.getLocalWriteNode(variable, exp, coord);
@@ -164,8 +165,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     if (fieldWrite != null) {
       return fieldWrite;
     } else {
-      throw new RuntimeException("Neither a variable nor a field found "
-          + "in current scope that is named " + variableName + ". Arguments are read-only.");
+      throw new ParseError("Neither a variable nor a field found "
+          + "in current scope that is named " + variableName + ". Arguments are read-only.",
+          Symbol.NONE, this);
     }
   }
 
@@ -222,7 +224,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     superSend = false;
 
     int coord = getStartIndex();
-    SSymbol selector = unarySelector();
+    SSymbol selector = unarySendSelector();
 
     ExpressionNode[] args = new ExpressionNode[] {receiver};
     long coordWithL = getCoordWithLength(coord);
@@ -239,7 +241,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     boolean isSuperSend = superSend;
     superSend = false;
     int coord = getStartIndex();
-    SSymbol msg = binarySelector();
+    SSymbol msg = binarySendSelector();
     ExpressionNode operand = binaryOperand(mgenc);
 
     long coordWithL = getCoordWithLength(coord);
@@ -278,7 +280,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     arguments.add(receiver);
 
     do {
-      kw.append(keyword());
+      kw.append(keywordInSend());
       arguments.add(formula(mgenc));
     } while (sym == Keyword);
 
