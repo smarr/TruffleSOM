@@ -71,6 +71,8 @@ import com.oracle.truffle.api.source.Source;
 import bdt.basic.ProgramDefinitionError;
 import bdt.source.SourceCoordinate;
 import bdt.tools.structure.StructuralProbe;
+import trufflesom.compiler.Variable.Argument;
+import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.GlobalNode;
@@ -363,23 +365,31 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       throws ProgramDefinitionError {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
-        int coord = getStartIndex();
-        SSymbol var = field();
-        cgenc.addInstanceField(var, getCoordWithLength(coord));
+        instanceField(cgenc);
       }
       expect(Or);
     }
   }
 
+  protected Field instanceField(final ClassGenerationContext cgenc) throws ParseError {
+    int coord = getStartIndex();
+    SSymbol var = field();
+    return cgenc.addInstanceField(var, getCoordWithLength(coord));
+  }
+
   private void classFields(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     if (accept(Or)) {
       while (isIdentifier(sym)) {
-        int coord = getStartIndex();
-        SSymbol var = field();
-        cgenc.addClassField(var, getCoordWithLength(coord));
+        classField(cgenc);
       }
       expect(Or);
     }
+  }
+
+  protected Field classField(final ClassGenerationContext cgenc) throws ParseError {
+    int coord = getStartIndex();
+    SSymbol var = field();
+    return cgenc.addClassField(var, getCoordWithLength(coord));
   }
 
   protected long getEmptyCoord() {
@@ -465,16 +475,14 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected void binaryPattern(final MGenC mgenc) throws ProgramDefinitionError {
     mgenc.setSignature(binarySelector());
-    int coord = getStartIndex();
-    mgenc.addArgumentIfAbsent(argument(), getCoordWithLength(coord));
+    argument(mgenc);
   }
 
   protected void keywordPattern(final MGenC mgenc) throws ProgramDefinitionError {
     StringBuilder kw = new StringBuilder();
     do {
       kw.append(keyword());
-      int coord = getStartIndex();
-      mgenc.addArgumentIfAbsent(argument(), getCoordWithLength(coord));
+      argument(mgenc);
     } while (sym == Keyword);
 
     mgenc.setSignature(symbolFor(kw.toString()));
@@ -532,12 +540,19 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return keyword();
   }
 
-  protected SSymbol argument() throws ProgramDefinitionError {
-    return variable();
+  protected Argument argument(final MGenC mgenc) throws ProgramDefinitionError {
+    int coord = getStartIndex();
+    return mgenc.addArgumentIfAbsent(variable(), getCoordWithLength(coord));
   }
 
-  protected SSymbol local() throws ProgramDefinitionError {
-    return variable();
+  protected Local local(final MGenC mgenc) throws ProgramDefinitionError {
+    int coord = getStartIndex();
+    SSymbol var = variable();
+    if (mgenc.hasLocal(var)) {
+      throw new ParseError("Declared the variable " + var.getString() + " multiple times.",
+          null, this);
+    }
+    return mgenc.addLocal(var, getCoordWithLength(coord));
   }
 
   protected ExpressionNode blockContents(final MGenC mgenc)
@@ -552,13 +567,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   private void locals(final MGenC mgenc) throws ProgramDefinitionError {
     while (isIdentifier(sym)) {
-      int coord = getStartIndex();
-      SSymbol var = variable();
-      if (mgenc.hasLocal(var)) {
-        throw new ParseError("Declared the variable " + var.getString() + " multiple times.",
-            null, this);
-      }
-      mgenc.addLocal(var, getCoordWithLength(coord));
+      local(mgenc);
     }
   }
 
@@ -692,8 +701,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   private void blockArguments(final MGenC mgenc) throws ProgramDefinitionError {
     do {
       expect(Colon);
-      int coord = getStartIndex();
-      mgenc.addArgumentIfAbsent(argument(), getCoordWithLength(coord));
+      argument(mgenc);
     } while (sym == Colon);
   }
 
