@@ -66,8 +66,6 @@ import bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.Disassembler;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;
-import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
-import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.primitives.Primitives;
@@ -140,12 +138,6 @@ public final class Universe {
   }
 
   public static Value eval(final String[] arguments) {
-    if (VmSettings.UseAstInterp) {
-      sourceCompiler = new AstCompiler();
-    } else {
-      sourceCompiler = new BcCompiler();
-    }
-
     Builder builder = createContextBuilder();
     builder.arguments(SomLanguage.LANG_ID, arguments);
     builder.logHandler(System.err);
