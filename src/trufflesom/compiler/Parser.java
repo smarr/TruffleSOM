@@ -296,7 +296,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     expect(Identifier);
   }
 
-  private void superclass(final ClassGenerationContext cgenc) throws ParseError {
+  protected void superclass(final ClassGenerationContext cgenc) throws ParseError {
     SSymbol superName;
     if (sym == Identifier) {
       superName = symbolFor(text);
@@ -488,7 +488,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return identifier();
   }
 
-  protected SSymbol binarySelector() throws ParseError {
+  private SSymbol binarySelectorImpl() throws ParseError {
     String s = new String(text);
 
     // Checkstyle: stop @formatter:off
@@ -504,8 +504,12 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return symbolFor(s);
   }
 
+  protected SSymbol binarySelector() throws ParseError {
+    return binarySelectorImpl();
+  }
+
   protected SSymbol binarySendSelector() throws ParseError {
-    return binarySelector();
+    return binarySelectorImpl();
   }
 
   private SSymbol identifier() throws ParseError {
