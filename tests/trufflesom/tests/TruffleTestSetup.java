@@ -75,7 +75,7 @@ public class TruffleTestSetup {
     int i = 2;
     for (String fieldName : fieldNames) {
       cgenc.addInstanceField(symbolFor(fieldName),
-          SourceCoordinate.create(i, 1));
+          SourceCoordinate.create(i, fieldName.length()));
       i += 1;
     }
     fieldNames.clear();
