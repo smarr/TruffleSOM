@@ -275,7 +275,7 @@ public class MethodGenerationContext
     signature = sig;
   }
 
-  private void addArgument(final SSymbol arg, final long coord) {
+  private Argument addArgument(final SSymbol arg, final long coord) {
     if ((symSelf == arg || symBlockSelf == arg) && arguments.size() > 0) {
       throw new IllegalStateException(
           "The self argument always has to be the first argument of a method");
@@ -287,14 +287,15 @@ public class MethodGenerationContext
     if (structuralProbe != null) {
       structuralProbe.recordNewVariable(argument);
     }
+    return argument;
   }
 
-  public void addArgumentIfAbsent(final SSymbol arg, final long coord) {
+  public Argument addArgumentIfAbsent(final SSymbol arg, final long coord) {
     if (arguments.containsKey(arg)) {
-      return;
+      return arguments.get(arg);
     }
 
-    addArgument(arg, coord);
+    return addArgument(arg, coord);
   }
 
   public boolean hasLocal(final SSymbol local) {
