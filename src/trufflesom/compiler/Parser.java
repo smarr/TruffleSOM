@@ -243,26 +243,29 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     int coord = getStartIndex();
 
-    className(cgenc, coord);
-    expect(Equal);
+    try {
+      className(cgenc, coord);
+      expect(Equal);
 
-    superclass(cgenc);
+      superclass(cgenc);
 
-    expect(NewTerm);
-    instanceFields(cgenc);
+      expect(NewTerm);
+      instanceFields(cgenc);
 
-    while (isIdentifier(sym) || sym == Keyword || sym == OperatorSequence
-        || symIn(binaryOpSyms)) {
-      MGenC mgenc = createMGenC(cgenc, structuralProbe);
+      while (isIdentifier(sym) || sym == Keyword || sym == OperatorSequence
+          || symIn(binaryOpSyms)) {
+        MGenC mgenc = createMGenC(cgenc, structuralProbe);
 
-      ExpressionNode methodBody = method(mgenc);
+        ExpressionNode methodBody = method(mgenc);
 
-      cgenc.addInstanceMethod(mgenc.assemble(methodBody, lastMethodsCoord), this);
+        cgenc.addInstanceMethod(mgenc.assemble(methodBody, lastMethodsCoord), this);
+      }
+
+      classSide(cgenc);
+      expect(EndTerm);
+    } finally {
+      cgenc.setSourceCoord(getCoordWithLength(coord));
     }
-
-    classSide(cgenc);
-    expect(EndTerm);
-    cgenc.setSourceCoord(getCoordWithLength(coord));
   }
 
   protected void classSide(final ClassGenerationContext cgenc)
