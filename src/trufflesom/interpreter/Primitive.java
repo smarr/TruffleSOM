@@ -84,7 +84,6 @@ public final class Primitive extends Invokable {
     CompilerAsserts.neverPartOfCompilation("Primitive.pLC(.)");
 
     // we need to skip the primitive and get to the method that called the primitive
-
     RootCallTarget ct = (RootCallTarget) getCallerCallTarget();
     Invokable m = (Invokable) ct.getRootNode();
 
