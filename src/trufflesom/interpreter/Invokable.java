@@ -70,6 +70,16 @@ public abstract class Invokable extends RootNode implements WithSource {
     return true;
   }
 
+  @Override
+  protected boolean isCloneUninitializedSupported() {
+    return true;
+  }
+
+  @Override
+  protected RootNode cloneUninitialized() {
+    return (RootNode) deepCopy();
+  }
+
   public abstract void propagateLoopCountThroughoutLexicalScope(long count);
 
   public SClass getHolder() {
