@@ -33,18 +33,20 @@ import com.oracle.truffle.api.source.Source;
 import bdt.basic.ProgramDefinitionError;
 import bdt.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
-import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
 
 
-public final class SourcecodeCompiler {
+public abstract class SourcecodeCompiler {
 
-  private SourcecodeCompiler() {}
+  protected SourcecodeCompiler() {}
+
+  public abstract Parser<?> createParser(String code, Source source,
+      StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe);
 
   @TruffleBoundary
-  public static SClass compileClass(final String path, final String file,
+  public SClass compileClass(final String path, final String file,
       final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws IOException, ProgramDefinitionError {
@@ -52,13 +54,7 @@ public final class SourcecodeCompiler {
     File f = new File(fname);
     Source source = SomLanguage.getSource(f);
 
-    Parser<?> parser;
-    if (VmSettings.UseAstInterp) {
-      parser = new ParserAst(source.getCharacters().toString(), source, probe);
-    } else {
-      parser = new ParserBc(source.getCharacters().toString(), source, probe);
-    }
-
+    Parser<?> parser = createParser(source.getCharacters().toString(), source, probe);
     SClass result = compile(parser, systemClass);
 
     SSymbol cname = result.getName();
@@ -73,16 +69,10 @@ public final class SourcecodeCompiler {
   }
 
   @TruffleBoundary
-  public static SClass compileClass(final String stmt, final SClass systemClass,
+  public SClass compileClass(final String stmt, final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws ProgramDefinitionError {
-    Parser<?> parser;
-    if (VmSettings.UseAstInterp) {
-      parser = new ParserAst(stmt, null, probe);
-    } else {
-      parser = new ParserBc(stmt, null, probe);
-    }
-
+    Parser<?> parser = createParser(stmt, null, probe);
     SClass result = compile(parser, systemClass);
     return result;
   }
@@ -102,5 +92,21 @@ public final class SourcecodeCompiler {
     }
 
     return result;
+  }
+
+  public static class AstCompiler extends SourcecodeCompiler {
+    @Override
+    public Parser<?> createParser(final String code, final Source source,
+        final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+      return new ParserAst(code, source, probe);
+    }
+  }
+
+  public static class BcCompiler extends SourcecodeCompiler {
+    @Override
+    public Parser<?> createParser(final String code, final Source source,
+        final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+      return new ParserBc(code, source, probe);
+    }
   }
 }

@@ -81,6 +81,10 @@ public final class ClassGenerationContext {
     return source;
   }
 
+  public long getSourceCoord() {
+    return sourceCoord;
+  }
+
   public void setSourceCoord(final long sourceCoord) {
     this.sourceCoord = sourceCoord;
   }
@@ -143,20 +147,28 @@ public final class ClassGenerationContext {
     }
   }
 
-  public void addInstanceField(final SSymbol name, final long coord) {
+  public Field addInstanceField(final SSymbol name, final long coord) {
+    int length = SourceCoordinate.getLength(coord);
+    assert name.getString().length() == length;
+
     Field f = new Field(instanceFields.size(), name, coord);
     instanceFields.add(f);
     if (structuralProbe != null) {
       structuralProbe.recordNewSlot(f);
     }
+    return f;
   }
 
-  public void addClassField(final SSymbol name, final long coord) {
+  public Field addClassField(final SSymbol name, final long coord) {
+    int length = SourceCoordinate.getLength(coord);
+    assert name.getString().length() == length;
+
     Field f = new Field(classFields.size(), name, coord);
     classFields.add(f);
     if (structuralProbe != null) {
       structuralProbe.recordNewSlot(f);
     }
+    return f;
   }
 
   public boolean hasField(final SSymbol fieldName) {

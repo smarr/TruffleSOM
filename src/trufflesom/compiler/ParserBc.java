@@ -227,7 +227,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     boolean isSuperSend = superSend;
     superSend = false;
 
-    SSymbol msg = unarySelector();
+    SSymbol msg = unarySendSelector();
     if (isSuperSend) {
       emitSUPERSEND(mgenc, msg, this);
     } else {
@@ -240,7 +240,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     boolean isSuperSend = superSend;
     superSend = false;
 
-    SSymbol msg = binarySelector();
+    SSymbol msg = binarySendSelector();
 
     binaryOperand(mgenc);
 
@@ -262,7 +262,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
     StringBuilder kw = new StringBuilder();
     do {
-      kw.append(keyword());
+      kw.append(keywordInSend());
       formula(mgenc);
     } while (sym == Keyword);
 

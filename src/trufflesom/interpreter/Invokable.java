@@ -1,6 +1,7 @@
 package trufflesom.interpreter;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
 import bdt.inlining.nodes.WithSource;
@@ -37,6 +38,18 @@ public abstract class Invokable extends AbstractInvokable {
   public final boolean isCloningAllowed() {
     return true;
   }
+
+  @Override
+  protected boolean isCloneUninitializedSupported() {
+    return true;
+  }
+
+  @Override
+  protected RootNode cloneUninitialized() {
+    return (RootNode) deepCopy();
+  }
+
+  public abstract void propagateLoopCountThroughoutLexicalScope(long count);
 
   public SClass getHolder() {
     return holder;

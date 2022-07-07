@@ -12,9 +12,8 @@ public abstract class ArgumentReadNode {
 
   public static class LocalArgumentReadNode extends NoPreEvalExprNode
       implements Invocation<SSymbol> {
-    public final int argumentIndex;
-
-    protected final Argument arg;
+    public final int      argumentIndex;
+    public final Argument arg;
 
     public LocalArgumentReadNode(final Argument arg) {
       assert arg.index >= 0;
@@ -62,8 +61,8 @@ public abstract class ArgumentReadNode {
   }
 
   public static class LocalArgumentWriteNode extends NoPreEvalExprNode {
-    protected final int      argumentIndex;
-    protected final Argument arg;
+    protected final int   argumentIndex;
+    public final Argument arg;
 
     @Child protected ExpressionNode valueNode;
 
@@ -99,8 +98,8 @@ public abstract class ArgumentReadNode {
 
   public static class NonLocalArgumentReadNode extends ContextualNode
       implements Invocation<SSymbol> {
-    protected final int      argumentIndex;
-    protected final Argument arg;
+    protected final int   argumentIndex;
+    public final Argument arg;
 
     public NonLocalArgumentReadNode(final Argument arg, final int contextLevel) {
       super(contextLevel);
@@ -137,8 +136,8 @@ public abstract class ArgumentReadNode {
   }
 
   public static class NonLocalArgumentWriteNode extends ContextualNode {
-    protected final int      argumentIndex;
-    protected final Argument arg;
+    protected final int   argumentIndex;
+    public final Argument arg;
 
     @Child protected ExpressionNode valueNode;
 
