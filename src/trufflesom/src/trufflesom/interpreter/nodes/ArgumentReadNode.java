@@ -5,6 +5,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Argument;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -53,6 +54,11 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.emitLoadArgument(argumentIndex);
+    }
+
+    @Override
     public String toString() {
       String argId;
       if (arg == null) {
@@ -98,6 +104,14 @@ public abstract class ArgumentReadNode {
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateWrite(arg, this, valueNode, 0);
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginWriteArgument();
+      valueNode.accept(opBuilder);
+      opBuilder.dsl.emitLoadConstant(argumentIndex);
+      opBuilder.dsl.endWriteArgument();
+    }
   }
 
   public static class NonLocalArgumentReadNode extends ContextualNode
@@ -129,6 +143,14 @@ public abstract class ArgumentReadNode {
     @Override
     public String getInvocationIdentifier() {
       return arg.name;
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginNonLocalArgumentReadOp();
+      opBuilder.dsl.emitLoadConstant(argumentIndex);
+      opBuilder.dsl.emitLoadConstant(contextLevel);
+      opBuilder.dsl.endNonLocalArgumentReadOp();
     }
 
     @Override

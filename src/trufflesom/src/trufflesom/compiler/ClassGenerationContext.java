@@ -37,6 +37,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import trufflesom.bdt.source.SourceCoordinate;
 import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.Parser.ParseError;
+import trufflesom.interpreter.operations.SomOperationsGen;
 import trufflesom.vm.Classes;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -252,6 +253,18 @@ public final class ClassGenerationContext {
 
     if (structuralProbe != null) {
       structuralProbe.recordNewClass(superMClass);
+    }
+  }
+
+  public void convertMethods(final SomOperationsGen.Builder opBuilder) {
+    for (var e : instanceMethods.entrySet()) {
+      SInvokable i = e.getValue();
+      i.convertMethod(opBuilder, null);
+    }
+
+    for (var e : classMethods.entrySet()) {
+      SInvokable i = e.getValue();
+      i.convertMethod(opBuilder, null);
     }
   }
 

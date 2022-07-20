@@ -13,6 +13,7 @@ import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.Method;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vm.Classes;
@@ -110,6 +111,14 @@ public class BlockNode extends LiteralNode {
     }
   }
 
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginPushBlockWithoutContextOp();
+    assert blockMethod.isConverted();
+    opBuilder.dsl.emitLoadConstant(blockMethod);
+    opBuilder.dsl.endPushBlockWithoutContextOp();
+  }
+
   protected BlockNode createNode(final SMethod adapted) {
     return new BlockNode(adapted, reliesOnOuterFrameDescriptors).initialize(sourceCoord);
   }
@@ -148,6 +157,14 @@ public class BlockNode extends LiteralNode {
     protected BlockNode createNode(final SMethod adapted) {
       return new BlockNodeWithContext(
           adapted, reliesOnOuterFrameDescriptors).initialize(sourceCoord);
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginPushBlockWithContextOp();
+      assert blockMethod.isConverted();
+      opBuilder.dsl.emitLoadConstant(blockMethod);
+      opBuilder.dsl.endPushBlockWithContextOp();
     }
   }
 }

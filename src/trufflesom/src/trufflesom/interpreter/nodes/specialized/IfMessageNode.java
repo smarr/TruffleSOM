@@ -11,6 +11,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.InlinedCountingConditionProfile;
 
 import trufflesom.bdt.primitives.Primitive;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
@@ -86,7 +87,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     }
   }
 
-  protected static final boolean notABlock(final Object arg) {
+  public static final boolean notABlock(final Object arg) {
     return !(arg instanceof SBlock);
   }
 
@@ -99,5 +100,14 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     } else {
       return Nil.nilObject;
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginIfMessageOp();
+    getReceiver().accept(opBuilder);
+    getArgument().accept(opBuilder);
+    opBuilder.dsl.emitLoadConstant(expected);
+    opBuilder.dsl.endIfMessageOp();
   }
 }

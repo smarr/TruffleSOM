@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 
 import mx
 
-INTERP_TYPES = ["AST", "BC"]
+INTERP_TYPES = ["AST", "BC", "OP"]
 
 suite = mx.suite("trufflesom")
 

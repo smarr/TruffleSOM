@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotKind;
@@ -9,6 +10,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
@@ -89,6 +91,11 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateRead(local, this, 0);
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.emitLoadLocal(opBuilder.getLocal(local));
+    }
   }
 
   @NodeChild(value = "exp", type = ExpressionNode.class)
@@ -168,6 +175,19 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       inliner.updateWrite(local, this, getExp(), 0);
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      BytecodeLocal l = opBuilder.getLocal(this.local);
+      opBuilder.dsl.beginBlock();
+
+      opBuilder.dsl.beginStoreLocal(l);
+      getExp().accept(opBuilder);
+      opBuilder.dsl.endStoreLocal();
+      opBuilder.dsl.emitLoadLocal(l);
+
+      opBuilder.dsl.endBlock();
     }
   }
 }
