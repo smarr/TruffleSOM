@@ -22,6 +22,7 @@ import com.oracle.truffle.api.source.Source;
 
 import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
 import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
+import trufflesom.compiler.SourcecodeCompiler.OpCompiler;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.tools.nodestats.Tags.AnyNode;
 import trufflesom.vm.NotYetImplementedException;
@@ -73,8 +74,10 @@ public class SomLanguage extends TruffleLanguage<SomLanguage> {
 
     if (VmSettings.UseAstInterp) {
       Universe.setSourceCompiler(new AstCompiler(), false);
-    } else {
+    } else if (VmSettings.UseBcInterp) {
       Universe.setSourceCompiler(new BcCompiler(), false);
+    } else {
+      Universe.setSourceCompiler(new OpCompiler(), false);
     }
   }
 

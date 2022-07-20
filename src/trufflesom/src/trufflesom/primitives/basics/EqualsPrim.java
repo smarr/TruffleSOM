@@ -7,6 +7,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import trufflesom.bdt.primitives.Primitive;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SObject;
@@ -20,7 +21,7 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateNodeFactory
 public abstract class EqualsPrim extends BinaryMsgExprNode {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("=");
   }
 
@@ -139,5 +140,13 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   @SuppressWarnings("unused")
   public static final boolean doSSymbol(final SSymbol receiver, final SObject argument) {
     return false;
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginEqualsOp();
+    getReceiver().accept(opBuilder);
+    getArgument().accept(opBuilder);
+    opBuilder.dsl.endEqualsOp();
   }
 }

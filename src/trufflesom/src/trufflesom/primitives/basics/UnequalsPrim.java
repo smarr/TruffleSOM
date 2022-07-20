@@ -3,16 +3,19 @@ package trufflesom.primitives.basics;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import trufflesom.bdt.primitives.Primitive;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
+@Proxyable
 @Primitive(className = "Integer", primitive = "<>")
 @Primitive(className = "Double", primitive = "<>")
 @Primitive(selector = "<>")
@@ -122,5 +125,13 @@ public abstract class UnequalsPrim extends BinaryMsgExprNode {
   @SuppressWarnings("unused")
   public static final boolean doSSymbol(final SSymbol receiver, final SObject argument) {
     return true;
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginUnequalsPrim();
+    getReceiver().accept(opBuilder);
+    getArgument().accept(opBuilder);
+    opBuilder.dsl.endUnequalsPrim();
   }
 }

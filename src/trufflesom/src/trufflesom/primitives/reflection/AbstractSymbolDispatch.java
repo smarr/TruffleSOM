@@ -47,7 +47,7 @@ public abstract class AbstractSymbolDispatch extends Node
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Node> T initialize(final long coord) {
+  public <T extends Node> T initialize(final long srcCoord) {
     throw new UnsupportedOperationException();
   }
 
@@ -106,8 +106,9 @@ public abstract class AbstractSymbolDispatch extends Node
       guards = {"selector == cachedSelector", "argsArr == null"})
   @SuppressWarnings("unused")
   public Object doCachedWithoutArgArr(final VirtualFrame frame,
-      final Object receiver, final SSymbol selector, final Object argsArr,
-      @Cached("selector") final SSymbol cachedSelector,
+      final Object receiver, @SuppressWarnings("unused") final SSymbol selector,
+      @SuppressWarnings("unused") final Object argsArr,
+      @SuppressWarnings("unused") @Cached("selector") final SSymbol cachedSelector,
       @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend) {
     Object[] arguments = {receiver};
 
@@ -118,8 +119,9 @@ public abstract class AbstractSymbolDispatch extends Node
   @Specialization(limit = "INLINE_CACHE_SIZE", guards = "selector == cachedSelector")
   @SuppressWarnings("unused")
   public Object doCached(final VirtualFrame frame,
-      final Object receiver, final SSymbol selector, final SArray argsArr,
-      @Cached("selector") final SSymbol cachedSelector,
+      final Object receiver, @SuppressWarnings("unused") final SSymbol selector,
+      final SArray argsArr,
+      @SuppressWarnings("unused") @Cached("selector") final SSymbol cachedSelector,
       @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend,
       @Shared("arg") @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
     Object[] arguments = toArgArray.executedEvaluated(frame, argsArr, receiver);

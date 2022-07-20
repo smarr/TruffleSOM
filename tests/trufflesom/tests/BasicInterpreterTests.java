@@ -38,6 +38,7 @@ import org.junit.runners.Parameterized.Parameters;
 import trufflesom.Launcher;
 import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
 import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
+import trufflesom.compiler.SourcecodeCompiler.OpCompiler;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.vm.Classes;
@@ -203,8 +204,11 @@ public class BasicInterpreterTests {
 
     if (VmSettings.UseAstInterp) {
       Universe.setSourceCompiler(new AstCompiler(), true);
-    } else {
+    } else if (VmSettings.UseBcInterp) {
       Universe.setSourceCompiler(new BcCompiler(), true);
+    } else {
+      assert VmSettings.UseOpInterp;
+      Universe.setSourceCompiler(new OpCompiler(), true);
     }
 
     Builder builder = Launcher.createContextBuilder();
