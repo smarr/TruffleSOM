@@ -1,13 +1,16 @@
 package trufflesom.interpreter.supernodes;
 
+import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 
 
+@Proxyable
 @NodeChild(value = "rcvr", type = ExpressionNode.class)
 public abstract class IntIncrementNode extends ExpressionNode {
   @Specialization(rewriteOn = ArithmeticException.class)
@@ -37,5 +40,12 @@ public abstract class IntIncrementNode extends ExpressionNode {
     }
 
     return false;
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginIntIncrement();
+    getRcvr().accept(opBuilder);
+    opBuilder.dsl.endIntIncrement();
   }
 }

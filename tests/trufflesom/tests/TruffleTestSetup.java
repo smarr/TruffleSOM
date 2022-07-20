@@ -18,6 +18,7 @@ import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
 import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
+import trufflesom.compiler.SourcecodeCompiler.OpCompiler;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -52,8 +53,11 @@ public class TruffleTestSetup {
 
     if (VmSettings.UseAstInterp) {
       Universe.setSourceCompiler(new AstCompiler(), true);
-    } else {
+    } else if (VmSettings.UseBcInterp) {
       Universe.setSourceCompiler(new BcCompiler(), true);
+    } else {
+      assert VmSettings.UseOpInterp;
+      Universe.setSourceCompiler(new OpCompiler(), true);
     }
 
     Builder builder = Launcher.createContextBuilder();

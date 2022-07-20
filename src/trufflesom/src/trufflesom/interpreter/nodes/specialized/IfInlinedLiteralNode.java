@@ -10,6 +10,7 @@ import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import trufflesom.bdt.inlining.Inline;
 import trufflesom.bdt.inlining.Inline.False;
 import trufflesom.bdt.inlining.Inline.True;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
@@ -55,5 +56,27 @@ public final class IfInlinedLiteralNode extends NoPreEvalExprNode {
     } else {
       return Nil.nilObject;
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginConditional();
+    conditionNode.accept(opBuilder);
+
+    if (expectedBool) {
+      // then branch
+      bodyNode.accept(opBuilder);
+
+      // else branch
+      opBuilder.dsl.emitLoadConstant(Nil.nilObject);
+    } else {
+      // then branch
+      opBuilder.dsl.emitLoadConstant(Nil.nilObject);
+
+      // else branch
+      bodyNode.accept(opBuilder);
+    }
+
+    opBuilder.dsl.endConditional();
   }
 }

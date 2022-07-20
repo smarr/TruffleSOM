@@ -33,6 +33,7 @@ import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
@@ -153,6 +154,14 @@ public abstract class FieldNode extends ExpressionNode {
         BytecodeGenerator.emitPUSHFIELD(mgenc, (byte) read.getFieldIndex(), (byte) 0);
       }
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginReadField();
+      getSelf().accept(opBuilder);
+      opBuilder.dsl.emitLoadConstant(getFieldIndex());
+      opBuilder.dsl.endReadField();
+    }
   }
 
   @NodeChild(value = "self", type = ExpressionNode.class)
@@ -244,6 +253,15 @@ public abstract class FieldNode extends ExpressionNode {
           new LocalArgumentReadNode(val));
       return new WriteAndReturnSelf(node);
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginWriteField();
+      getSelf().accept(opBuilder);
+      getValue().accept(opBuilder);
+      opBuilder.dsl.emitLoadConstant(write.getFieldIndex());
+      opBuilder.dsl.endWriteField();
+    }
   }
 
   public static final class UninitFieldIncNode extends FieldNode {
@@ -297,6 +315,14 @@ public abstract class FieldNode extends ExpressionNode {
       node.notifyAsInserted();
 
       return longVal;
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginIncField();
+      getSelf().accept(opBuilder);
+      opBuilder.dsl.emitLoadConstant(fieldIndex);
+      opBuilder.dsl.endIncField();
     }
   }
 
@@ -370,6 +396,18 @@ public abstract class FieldNode extends ExpressionNode {
       StorageLocation storage =
           layout.getStorageLocation(((FieldWriteNode) write).getFieldIndex());
       return new CachedFieldWriteAndSelf(rcvr.getClass(), layout, source, storage, next);
+    }
+
+    @Override
+    public void beginConstructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginWriteFieldAndReturnSelf();
+    }
+
+    @Override
+    public void endConstructOperation(final OpBuilder opBuilder) {
+      FieldWriteNode n = (FieldWriteNode) write;
+      opBuilder.dsl.emitLoadConstant(n.getFieldIndex());
+      opBuilder.dsl.endWriteFieldAndReturnSelf();
     }
   }
 }
