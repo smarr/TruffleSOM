@@ -3,6 +3,7 @@ package trufflesom.interpreter.objectstorage;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.HostCompilerDirectives.InliningCutoff;
+import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
@@ -23,16 +24,19 @@ public abstract class FieldAccessorNode extends Node {
   protected final int fieldIndex;
 
   @InliningCutoff
+  @NeverDefault
   public static AbstractReadFieldNode createRead(final int fieldIndex) {
     return new UninitializedReadFieldNode(fieldIndex, 0);
   }
 
   @InliningCutoff
+  @NeverDefault
   public static AbstractWriteFieldNode createWrite(final int fieldIndex) {
     return new UninitializedWriteFieldNode(fieldIndex, 0);
   }
 
   @InliningCutoff
+  @NeverDefault
   public static IncrementLongFieldNode createIncrement(final int fieldIndex,
       final SObject obj) {
     final ObjectLayout layout = obj.getObjectLayout();

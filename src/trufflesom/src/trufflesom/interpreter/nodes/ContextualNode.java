@@ -61,4 +61,20 @@ public abstract class ContextualNode extends NoPreEvalExprNode {
     // so, we record explicitly a class profile
     return frameType.profile(self.getContext());
   }
+
+  @ExplodeLoop
+  public static final MaterializedFrame determineContext(final VirtualFrame frame,
+      final int contextLevel) {
+    SBlock self = (SBlock) frame.getArguments()[0];
+    int i = contextLevel - 1;
+
+    while (i > 0) {
+      self = (SBlock) self.getOuterSelf();
+      i--;
+    }
+
+    // Graal needs help here to see that this is always a MaterializedFrame
+    // so, we record explicitly a class profile
+    return frameType.profile(self.getContext());
+  }
 }
