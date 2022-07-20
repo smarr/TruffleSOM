@@ -21,6 +21,7 @@ import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserAst;
 import trufflesom.compiler.ParserBc;
+import trufflesom.compiler.ParserOp;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.Primitive;
@@ -48,6 +49,7 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.objectstorage.ObjectLayout;
 import trufflesom.primitives.Primitives;
 import trufflesom.primitives.basics.NewObjectPrimFactory;
+import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
@@ -70,9 +72,9 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     cgenc.setName(symbolFor("Test"));
     addAllFields();
 
-    if (VmSettings.UseAstInterp) {
+    if (VmSettings.UseAstInterp || VmSettings.UseOpInterp) {
       mgenc = new MethodGenerationContext(cgenc, probe);
-    } else {
+    } else if (VmSettings.UseBcInterp) {
       mgenc = new BytecodeMethodGenContext(cgenc, probe);
     }
     mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
@@ -84,10 +86,14 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
         ParserAst parser = new ParserAst(source, s, null);
         ExpressionNode body = parser.method(mgenc);
         return mgenc.assemble(body, coord);
-      } else {
+      } else if (VmSettings.UseBcInterp) {
         ParserBc parser = new ParserBc(source, s, probe);
         parser.method((BytecodeMethodGenContext) mgenc);
         return mgenc.assemble(null, coord);
+      } else {
+        ParserOp parser = new ParserOp(source, s, probe);
+        ExpressionNode body = parser.method(mgenc);
+        return mgenc.assemble(body, coord);
       }
     } catch (ProgramDefinitionError e) {
       throw new RuntimeException(e);
@@ -131,9 +137,9 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
 
     mgenc.setSignature(symbolFor("outer"));
     mgenc.setVarsOnMethodScope();
-    if (VmSettings.UseAstInterp) {
+    if (VmSettings.UseAstInterp || VmSettings.UseOpInterp) {
       bgenc = new MethodGenerationContext(cgenc, mgenc);
-    } else {
+    } else if (VmSettings.UseBcInterp) {
       bgenc = new BytecodeMethodGenContext(cgenc, mgenc);
     }
 
@@ -144,10 +150,12 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
         ParserAst parser = new ParserAst(source, s, null);
         ExpressionNode body = parser.nestedBlock(bgenc);
         ivkbl = bgenc.assemble(body, coord);
-      } else {
+      } else if (VmSettings.UseBcInterp) {
         ParserBc parser = new ParserBc(source, s, probe);
         parser.nestedBlock((BytecodeMethodGenContext) bgenc);
         ivkbl = bgenc.assemble(null, coord);
+      } else {
+        throw new NotYetImplementedException();
       }
       return (Method) ivkbl.getInvokable();
     } catch (ProgramDefinitionError e) {

@@ -31,6 +31,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 
@@ -116,5 +117,14 @@ public final class SequenceNode extends NoPreEvalExprNode {
       return false;
     }
     return super.hasTag(tag);
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginBlock();
+    for (var e : expressions) {
+      e.accept(opBuilder);
+    }
+    opBuilder.dsl.endBlock();
   }
 }

@@ -63,6 +63,11 @@ public abstract class BlockPrims {
       return ValueNonePrimFactory.create(null);
     }
 
+    @NeverDefault
+    public static ValueNonePrim create() {
+      return ValueNonePrimFactory.create(null);
+    }
+
     public abstract Object executeEvaluated(VirtualFrame frame, SBlock receiver);
 
     @Specialization(
