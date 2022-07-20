@@ -6,6 +6,7 @@ import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
+import trufflesom.interpreter.Method.OpBuilder;
 
 
 public final class DoubleLiteralNode extends LiteralNode {
@@ -42,5 +43,10 @@ public final class DoubleLiteralNode extends LiteralNode {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.emitLoadConstant(value);
   }
 }

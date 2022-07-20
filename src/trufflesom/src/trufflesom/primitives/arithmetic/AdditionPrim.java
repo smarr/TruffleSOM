@@ -7,6 +7,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import trufflesom.bdt.primitives.Primitive;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
@@ -114,5 +115,13 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   @TruffleBoundary
   public static final SSymbol doSSymbol(final SSymbol left, final String right) {
     return SymbolTable.symbolFor(left.getString() + right);
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginAdditionOp();
+    getReceiver().accept(opBuilder);
+    getArgument().accept(opBuilder);
+    opBuilder.dsl.endAdditionOp();
   }
 }

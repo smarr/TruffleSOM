@@ -80,6 +80,11 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     return new MethodGenerationContext(cgenc, structProbe);
   }
 
+  protected MethodGenerationContext createMGenC(final ClassGenerationContext holder,
+      final MethodGenerationContext mgenc) {
+    return new MethodGenerationContext(holder, mgenc);
+  }
+
   @Override
   protected ExpressionNode blockBody(final MethodGenerationContext mgenc,
       final boolean seenPeriod) throws ProgramDefinitionError {
@@ -505,7 +510,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       }
       case NewBlock: {
         int coord = getStartIndex();
-        MethodGenerationContext bgenc = new MethodGenerationContext(mgenc.getHolder(), mgenc);
+        MethodGenerationContext bgenc = createMGenC(mgenc.getHolder(), mgenc);
 
         ExpressionNode blockBody = nestedBlock(bgenc);
 
