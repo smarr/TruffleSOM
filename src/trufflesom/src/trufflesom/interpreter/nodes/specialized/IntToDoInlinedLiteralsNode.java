@@ -2,6 +2,7 @@ package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -15,6 +16,7 @@ import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 
@@ -144,4 +146,53 @@ public abstract class IntToDoInlinedLiteralsNode extends NoPreEvalExprNode {
     node.initialize(sourceCoord);
     replace(node);
   }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    BytecodeLocal idx = opBuilder.getLocal(loopIdxVar);
+    BytecodeLocal from = opBuilder.dsl.createLocal();
+    BytecodeLocal to = opBuilder.dsl.createLocal();
+
+    opBuilder.dsl.beginBlock(); // start the expression
+
+    // eval rcvr
+    opBuilder.dsl.beginStoreLocal(from);
+    getFrom().accept(opBuilder);
+    opBuilder.dsl.endStoreLocal();
+
+    // eval argument
+    opBuilder.dsl.beginStoreLocal(to);
+    getTo().accept(opBuilder);
+    opBuilder.dsl.endStoreLocal();
+
+    // idx := from
+    opBuilder.dsl.beginStoreLocal(idx);
+    opBuilder.dsl.emitLoadLocal(from);
+    opBuilder.dsl.endStoreLocal();
+
+    opBuilder.dsl.beginWhile();
+    // condition: idx <= to
+    opBuilder.dsl.beginLoopBoundLessOrEqual();
+    opBuilder.dsl.emitLoadLocal(idx);
+    opBuilder.dsl.emitLoadLocal(to);
+    opBuilder.dsl.endLoopBoundLessOrEqual();
+
+    opBuilder.dsl.beginBlock(); // begin loop body
+
+    // do body of loop
+    body.accept(opBuilder);
+
+    // idx := idx + 1
+    opBuilder.dsl.beginUnsafeLoopIncrement(idx);
+    opBuilder.dsl.emitLoadLocal(idx);
+    opBuilder.dsl.endUnsafeLoopIncrement();
+
+    opBuilder.dsl.endBlock(); // end loop body
+    opBuilder.dsl.endWhile();
+
+    // return the receiver at the end
+    opBuilder.dsl.emitLoadLocal(from);
+    opBuilder.dsl.endBlock(); // end the expression
+  }
+
 }

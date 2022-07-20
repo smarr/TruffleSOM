@@ -12,6 +12,7 @@ import trufflesom.bdt.inlining.Inline;
 import trufflesom.bdt.inlining.Inline.False;
 import trufflesom.bdt.inlining.Inline.True;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
@@ -83,5 +84,28 @@ public final class WhileInlinedLiteralsNode extends NoPreEvalExprNode {
     if (current != null) {
       ((Invokable) current).propagateLoopCountThroughoutLexicalScope(count);
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginBlock();
+
+    opBuilder.dsl.beginWhile();
+    if (expectedBool == false) {
+      // in case this is a whileFalse: we need to negate the condition for the while construct
+      opBuilder.dsl.beginNotMessage();
+    }
+    conditionNode.accept(opBuilder);
+    if (expectedBool == false) {
+      opBuilder.dsl.endNotMessage();
+    }
+
+    bodyNode.accept(opBuilder);
+
+    opBuilder.dsl.endWhile();
+
+    opBuilder.dsl.emitLoadConstant(Nil.nilObject);
+
+    opBuilder.dsl.endBlock();
   }
 }

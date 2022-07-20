@@ -3,6 +3,7 @@ package trufflesom.primitives.basics;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
@@ -12,6 +13,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.InlinedBranchProfile;
 
 import trufflesom.bdt.primitives.Primitive;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -35,6 +37,7 @@ public abstract class IntegerPrims {
     }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitSignedValue")
   @Primitive(selector = "as32BitSignedValue")
@@ -49,8 +52,16 @@ public abstract class IntegerPrims {
     public static final long doBig(final BigInteger receiver) {
       return receiver.intValue();
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginAs32BitSignedValue();
+      getReceiver().accept(opBuilder);
+      opBuilder.dsl.endAs32BitSignedValue();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "as32BitUnsignedValue")
   @Primitive(selector = "as32BitUnsignedValue")
@@ -65,8 +76,16 @@ public abstract class IntegerPrims {
     public static final long doBig(final BigInteger receiver) {
       return Integer.toUnsignedLong(receiver.intValue());
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginAs32BitUnsignedValue();
+      getReceiver().accept(opBuilder);
+      opBuilder.dsl.endAs32BitUnsignedValue();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "asDouble")
   @Primitive(selector = "asDouble")
@@ -81,8 +100,16 @@ public abstract class IntegerPrims {
     public static final double doBig(final BigInteger receiver) {
       return receiver.doubleValue();
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginAsDoubleValue();
+      getReceiver().accept(opBuilder);
+      opBuilder.dsl.endAsDoubleValue();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Double", primitive = "negated")
   @Primitive(className = "Integer", primitive = "negated")
@@ -102,6 +129,13 @@ public abstract class IntegerPrims {
     @TruffleBoundary
     public static final BigInteger doBig(final BigInteger receiver) {
       return receiver.negate();
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginNegatedValue();
+      getReceiver().accept(opBuilder);
+      opBuilder.dsl.endNegatedValue();
     }
   }
 
@@ -127,6 +161,7 @@ public abstract class IntegerPrims {
     }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "<<", selector = "<<")
   public abstract static class LeftShiftPrim extends ArithmeticPrim {
@@ -165,8 +200,17 @@ public abstract class IntegerPrims {
 
       return receiver.shiftLeft((int) right);
     }
+      
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginLeftShiftPrim();
+      getReceiver().accept(opBuilder);
+      getArgument().accept(opBuilder);
+      opBuilder.dsl.endLeftShiftPrim();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = ">>>", selector = ">>>")
   public abstract static class UnsignedRightShiftPrim extends ArithmeticPrim {
@@ -179,8 +223,17 @@ public abstract class IntegerPrims {
     public static final long doLong(final long receiver, final long right) {
       return receiver >>> right;
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginUnsignedRightShiftPrim();
+      getReceiver().accept(opBuilder);
+      getArgument().accept(opBuilder);
+      opBuilder.dsl.endUnsignedRightShiftPrim();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "min:")
   @Primitive(selector = "min:")
@@ -212,8 +265,17 @@ public abstract class IntegerPrims {
     public static BigInteger doBig(final BigInteger left, final BigInteger right) {
       return left.min(right);
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginMinIntPrim();
+      getReceiver().accept(opBuilder);
+      getArgument().accept(opBuilder);
+      opBuilder.dsl.endMinIntPrim();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "max:")
   @Primitive(selector = "max:")
@@ -245,8 +307,17 @@ public abstract class IntegerPrims {
     public static BigInteger doBig(final BigInteger left, final BigInteger right) {
       return left.max(right);
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginMaxIntPrim();
+      getReceiver().accept(opBuilder);
+      getArgument().accept(opBuilder);
+      opBuilder.dsl.endMaxIntPrim();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "to:", selector = "to:",
       receiverType = Long.class, disabled = true)
@@ -265,8 +336,17 @@ public abstract class IntegerPrims {
       }
       return SArray.create(arr);
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginToPrim();
+      getReceiver().accept(opBuilder);
+      getArgument().accept(opBuilder);
+      opBuilder.dsl.endToPrim();
+    }
   }
 
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "abs", selector = "abs",
       receiverType = {Long.class, BigInteger.class})
@@ -305,6 +385,13 @@ public abstract class IntegerPrims {
     @Override
     public final SSymbol getSelector() {
       return SymbolTable.symbolFor("abs");
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginAbsPrim();
+      getReceiver().accept(opBuilder);
+      opBuilder.dsl.endAbsPrim();
     }
   }
 }
