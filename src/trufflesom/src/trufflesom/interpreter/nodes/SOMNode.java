@@ -34,7 +34,9 @@ import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.nodes.ScopeReference;
 import trufflesom.bdt.inlining.nodes.WithSource;
 import trufflesom.bdt.source.SourceCoordinate;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.Types;
+import trufflesom.vm.NotYetImplementedException;
 
 
 @TypeSystemReference(Types.class)
@@ -121,5 +123,17 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
       return (N) ((WrapperNode) node).getDelegateNode();
     }
     return node;
+  }
+
+  public void constructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder) {
+    throw new NotYetImplementedException("Class not yet supported: " + getClass().getName());
+  }
+
+  public void beginConstructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder) {
+    throw new NotYetImplementedException("Class not yet supported: " + getClass().getName());
+  }
+
+  public void endConstructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder) {
+    throw new NotYetImplementedException("Class not yet supported: " + getClass().getName());
   }
 }

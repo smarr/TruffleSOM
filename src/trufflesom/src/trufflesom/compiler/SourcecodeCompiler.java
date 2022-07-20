@@ -33,6 +33,7 @@ import com.oracle.truffle.api.source.Source;
 import trufflesom.bdt.basic.ProgramDefinitionError;
 import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SSymbol;
@@ -95,6 +96,12 @@ public abstract class SourcecodeCompiler {
   }
 
   public static class AstCompiler extends SourcecodeCompiler {
+
+    public AstCompiler() {
+      super();
+      assert VmSettings.UseAstInterp;
+    }
+
     @Override
     public Parser<?> createParser(final String code, final Source source,
         final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
@@ -103,10 +110,30 @@ public abstract class SourcecodeCompiler {
   }
 
   public static class BcCompiler extends SourcecodeCompiler {
+
+    public BcCompiler() {
+      super();
+      assert VmSettings.UseBcInterp;
+    }
+
     @Override
     public Parser<?> createParser(final String code, final Source source,
         final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
       return new ParserBc(code, source, probe);
+    }
+  }
+
+  public static class OpCompiler extends SourcecodeCompiler {
+
+    public OpCompiler() {
+      super();
+      assert VmSettings.UseOpInterp;
+    }
+
+    @Override
+    public Parser<?> createParser(final String code, final Source source,
+        final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+      return new ParserOp(code, source, probe);
     }
   }
 }
