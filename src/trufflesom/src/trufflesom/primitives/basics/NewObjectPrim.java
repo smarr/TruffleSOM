@@ -1,5 +1,6 @@
 package trufflesom.primitives.basics;
 
+import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -7,6 +8,7 @@ import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.primitives.Primitive;
 import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedNewObject;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -16,6 +18,7 @@ import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 
 
+@Proxyable
 @GenerateNodeFactory
 @Primitive(className = "Class", primitive = "new")
 public abstract class NewObjectPrim extends UnaryExpressionNode {
@@ -50,5 +53,22 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
     ObjectLayout layout = clazz.getLayoutForInstances();
     return new CachedNewObject(clazz.getObjectLayout(), layout.getAssumption(), layout, source,
         next);
+  }
+
+  @Override
+  public void beginConstructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginNewObjectPrim();
+  }
+
+  @Override
+  public void endConstructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.endNewObjectPrim();
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginNewObjectPrim();
+    getReceiver().accept(opBuilder);
+    opBuilder.dsl.endNewObjectPrim();
   }
 }

@@ -7,6 +7,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import trufflesom.bdt.primitives.Primitive;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SSymbol;
 
@@ -77,5 +78,13 @@ public abstract class SubtractionPrim extends ArithmeticPrim {
   @TruffleBoundary
   public static final Object doDouble(final double left, final BigInteger right) {
     return left - right.doubleValue();
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginSubtractionOp();
+    getReceiver().accept(opBuilder);
+    getArgument().accept(opBuilder);
+    opBuilder.dsl.endSubtractionOp();
   }
 }

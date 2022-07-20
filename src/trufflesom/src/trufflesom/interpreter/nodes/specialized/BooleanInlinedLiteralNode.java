@@ -7,6 +7,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import trufflesom.bdt.inlining.Inline;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 
@@ -71,6 +72,15 @@ public abstract class BooleanInlinedLiteralNode extends NoPreEvalExprNode {
         return false;
       }
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginConditional();
+      receiverNode.accept(opBuilder);
+      argumentNode.accept(opBuilder);
+      opBuilder.dsl.emitLoadConstant(false);
+      opBuilder.dsl.endConditional();
+    }
   }
 
   @Inline(selector = "or:", inlineableArgIdx = 1)
@@ -94,6 +104,15 @@ public abstract class BooleanInlinedLiteralNode extends NoPreEvalExprNode {
       } else {
         return evaluateArgument(frame);
       }
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginConditional();
+      receiverNode.accept(opBuilder);
+      opBuilder.dsl.emitLoadConstant(true);
+      argumentNode.accept(opBuilder);
+      opBuilder.dsl.endConditional();
     }
   }
 

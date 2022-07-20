@@ -29,7 +29,9 @@ import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.interpreter.FrameOnStackMarker;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.ReturnException;
+import trufflesom.interpreter.operations.OpBody;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
 
@@ -89,6 +91,15 @@ public final class ReturnNonLocalNode extends ContextualNode {
     }
   }
 
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginReturnNonLocal();
+    expression.accept(opBuilder);
+    opBuilder.dsl.emitLoadConstant(onStackMarkerIndex);
+    opBuilder.dsl.emitLoadConstant(contextLevel);
+    opBuilder.dsl.endReturnNonLocal();
+  }
+
   /**
    * Normally, there are no local returns in SOM. However, after
    * inlining/embedding of blocks, we need this ReturnLocalNode to replace
@@ -132,6 +143,17 @@ public final class ReturnNonLocalNode extends ContextualNode {
         replace(node);
       }
     }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginBlock();
+      opBuilder.dsl.beginReturn();
+      expression.constructOperation(opBuilder);
+      opBuilder.dsl.endReturn();
+      opBuilder.dsl.emitLoadConstant(
+          "Hack to avoid Op DSL issue with returns in `Conditional`");
+      opBuilder.dsl.endBlock();
+    }
   }
 
   public static final class CatchNonLocalReturnNode extends NoPreEvalExprNode {
@@ -151,6 +173,15 @@ public final class ReturnNonLocalNode extends ContextualNode {
       this.onStackMarkerVar = onStackMarker;
       this.onStackMarkerIndex = onStackMarker.getIndex();
 
+      this.doCatch = BranchProfile.create();
+      this.doPropagate = BranchProfile.create();
+    }
+
+    public CatchNonLocalReturnNode(final OpBody body, final CatchNonLocalReturnNode oldNode) {
+      this.methodBody = body;
+      this.nonLocalReturnHandler = BranchProfile.create();
+      this.onStackMarkerVar = oldNode.onStackMarkerVar;
+      this.onStackMarkerIndex = oldNode.onStackMarkerIndex;
       this.doCatch = BranchProfile.create();
       this.doPropagate = BranchProfile.create();
     }

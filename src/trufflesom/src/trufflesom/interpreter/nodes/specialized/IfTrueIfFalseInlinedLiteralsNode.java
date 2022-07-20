@@ -7,6 +7,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 
 import trufflesom.bdt.inlining.Inline;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 
@@ -78,5 +79,17 @@ public abstract class IfTrueIfFalseInlinedLiteralsNode extends NoPreEvalExprNode
       super(conditionNode, originalFalseNode, originalTrueNode, inlinedFalseNode,
           inlinedTrueNode);
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginConditional();
+    conditionNode.accept(opBuilder);
+
+    trueNode.accept(opBuilder);
+
+    falseNode.accept(opBuilder);
+
+    opBuilder.dsl.endConditional();
   }
 }

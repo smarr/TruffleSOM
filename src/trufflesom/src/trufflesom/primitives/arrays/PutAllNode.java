@@ -13,6 +13,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.primitives.basics.BlockPrims.ValueNonePrim;
 import trufflesom.primitives.basics.LengthPrim;
@@ -174,5 +175,13 @@ public abstract class PutAllNode extends BinaryExpressionNode {
       final Object value, @SuppressWarnings("unused") final Object length) {
     return makeGenericSend(SymbolTable.symbolFor("putAll:")).doPreEvaluated(frame,
         new Object[] {rcvr, value});
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginArrayPutAllOp();
+    getReceiver().accept(opBuilder);
+    getArgument().accept(opBuilder);
+    opBuilder.dsl.endArrayPutAllOp();
   }
 }

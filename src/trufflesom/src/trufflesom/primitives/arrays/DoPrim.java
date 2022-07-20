@@ -10,6 +10,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.primitives.basics.BlockPrims.ValueOnePrim;
 import trufflesom.primitives.basics.BlockPrimsFactory.ValueOnePrimFactory;
@@ -164,5 +165,13 @@ public abstract class DoPrim extends BinaryMsgExprNode {
     if (current != null) {
       ((Invokable) current).propagateLoopCountThroughoutLexicalScope(count);
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginArrayDoOp();
+    getReceiver().accept(opBuilder);
+    getArgument().accept(opBuilder);
+    opBuilder.dsl.endArrayDoOp();
   }
 }

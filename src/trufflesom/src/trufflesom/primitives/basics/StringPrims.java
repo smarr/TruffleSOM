@@ -5,10 +5,12 @@ import static trufflesom.vm.SymbolTable.symbolFor;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
 import trufflesom.bdt.primitives.Primitive;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -18,7 +20,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public class StringPrims {
-
+  @Proxyable
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "concatenate:")
   public abstract static class ConcatPrim extends BinaryMsgExprNode {
@@ -49,6 +51,24 @@ public class StringPrims {
     @TruffleBoundary
     public static final String doSSymbol(final SSymbol receiver, final SSymbol argument) {
       return receiver.getString() + argument.getString();
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginConcatPrim();
+      getReceiver().accept(opBuilder);
+      getArgument().accept(opBuilder);
+      opBuilder.dsl.endConcatPrim();
+    }
+
+    @Override
+    public void beginConstructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginConcatPrim();
+    }
+
+    @Override
+    public void endConstructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.endConcatPrim();
     }
   }
 
@@ -95,6 +115,14 @@ public class StringPrims {
         branchTaken = true;
       }
       return "Error - index out of bounds";
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginCharAtOp();
+      getReceiver().accept(opBuilder);
+      getArgument().accept(opBuilder);
+      opBuilder.dsl.endCharAtOp();
     }
   }
 

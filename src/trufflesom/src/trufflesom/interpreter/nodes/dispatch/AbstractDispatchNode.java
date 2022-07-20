@@ -43,12 +43,26 @@ public abstract class AbstractDispatchNode extends Node
 
   @Override
   public long getSourceCoordinate() {
-    return getSendNode().getSourceCoordinate();
+    Node node = getSendNode();
+    if (node instanceof AbstractMessageSendNode send) {
+      return send.getSourceCoordinate();
+    } else {
+      return 0;
+    }
   }
 
   @Override
   public Source getSource() {
-    return getSendNode().getSource();
+    Node node = getSendNode();
+    if (node instanceof AbstractMessageSendNode send) {
+      return send.getSource();
+    } else {
+      SourceSection ss = node.getSourceSection();
+      if (ss == null) {
+        return null;
+      }
+      return ss.getSource();
+    }
   }
 
   @Override
@@ -77,15 +91,19 @@ public abstract class AbstractDispatchNode extends Node
 
   @Override
   public SourceSection getSourceSection() {
-    AbstractMessageSendNode send = getSendNode();
-    return SourceCoordinate.createSourceSection(send, send.getSourceCoordinate());
+    Node node = getSendNode();
+    if (node instanceof AbstractMessageSendNode send) {
+      return SourceCoordinate.createSourceSection(send, send.getSourceCoordinate());
+    } else {
+      return node.getSourceSection();
+    }
   }
 
-  protected AbstractMessageSendNode getSendNode() {
+  protected Node getSendNode() {
     Node i = this;
     while (i.getParent() instanceof AbstractDispatchNode) {
       i = i.getParent();
     }
-    return (AbstractMessageSendNode) i.getParent();
+    return i.getParent();
   }
 }

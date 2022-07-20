@@ -6,7 +6,9 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 
 import trufflesom.bdt.primitives.Specializer;
 import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
+import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SClass;
@@ -84,6 +86,18 @@ public final class MessageSendNode {
     }
 
     @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      opBuilder.dsl.beginSuperSendOp();
+
+      opBuilder.dsl.emitLoadConstant(cachedSuperMethod);
+      for (var arg : argumentNodes) {
+        arg.accept(opBuilder);
+      }
+
+      opBuilder.dsl.endSuperSendOp();
+    }
+
+    @Override
     public String toString() {
       return "SuperSend(" + selector.getString() + ")";
     }
@@ -115,6 +129,20 @@ public final class MessageSendNode {
     @Override
     public String toString() {
       return "SendExpr(" + selector.getString() + ")";
+    }
+
+    @Override
+    public void constructOperation(final OpBuilder opBuilder) {
+      if (expr instanceof LiteralNode) {
+        expr.accept(opBuilder);
+        return;
+      }
+
+      expr.beginConstructOperation(opBuilder);
+      for (var arg : argumentNodes) {
+        arg.accept(opBuilder);
+      }
+      expr.endConstructOperation(opBuilder);
     }
   }
 }

@@ -1,12 +1,11 @@
 package trufflesom.interpreter.nodes.specialized.whileloops;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
-import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
+import trufflesom.interpreter.operations.copied.ArrayDoOp;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SObject;
@@ -14,12 +13,6 @@ import trufflesom.vmobjects.SObject;
 
 public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
   public static final int INLINE_CACHE_SIZE = 6;
-
-  private final boolean predicateBool;
-
-  protected WhilePrimitiveNode(final boolean predicateBool) {
-    this.predicateBool = predicateBool;
-  }
 
   private static boolean obj2bool(final Object o) {
     if (o instanceof Boolean) {
@@ -30,9 +23,9 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
     }
   }
 
-  protected final SObject doWhileCached(final SBlock loopCondition,
+  protected static final SObject doWhileCached(final SBlock loopCondition,
       final SBlock loopBody, final DirectCallNode conditionNode,
-      final DirectCallNode bodyNode) {
+      final DirectCallNode bodyNode, final boolean predicateBool, final Node self) {
     long iterationCount = 0;
 
     boolean loopConditionResult =
@@ -50,14 +43,14 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
-        reportLoopCount(iterationCount);
+        ArrayDoOp.reportLoopCount(self, iterationCount);
       }
     }
     return Nil.nilObject;
   }
 
-  protected final SObject doWhileUncachedAndUncounted(final SBlock loopCondition,
-      final SBlock loopBody) {
+  protected static final SObject doWhileUncachedAndUncounted(final SBlock loopCondition,
+      final SBlock loopBody, final boolean predicateBool) {
     Object conditionResult = loopCondition.getMethod().invoke(new Object[] {loopCondition});
 
     // TODO: this is a simplification, we don't cover the case receiver isn't a boolean
@@ -70,13 +63,5 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
       loopConditionResult = obj2bool(conditionResult);
     }
     return Nil.nilObject;
-  }
-
-  protected final void reportLoopCount(final long count) {
-    CompilerAsserts.neverPartOfCompilation("reportLoopCount");
-    Node current = getRootNode();
-    if (current != null) {
-      ((Invokable) current).propagateLoopCountThroughoutLexicalScope(count);
-    }
   }
 }

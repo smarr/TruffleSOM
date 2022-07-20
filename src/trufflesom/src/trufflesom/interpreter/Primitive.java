@@ -1,9 +1,12 @@
 package trufflesom.interpreter;
 
+import java.util.HashMap;
+
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
@@ -14,8 +17,11 @@ import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.operations.SomOperations.LexicalScopeForOp;
+import trufflesom.interpreter.operations.SomOperationsGen;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
@@ -112,5 +118,21 @@ public final class Primitive extends Invokable {
   public AbstractDispatchNode asDispatchNode(final Object rcvr,
       final AbstractDispatchNode next) {
     return ((ExpressionNode) primitive).asDispatchNode(rcvr, source, next);
+  }
+
+  @Override
+  public Invokable convertMethod(final SomOperationsGen.Builder opBuilder,
+      final LexicalScopeForOp scope) {
+    throw new IllegalStateException(
+        "Should never be reached. SPrimitive already should prevent this,"
+            + " and does not convert its invokables.");
+  }
+
+  @Override
+  public HashMap<Local, BytecodeLocal> createLocals(
+      final SomOperationsGen.Builder opBuilder) {
+    throw new IllegalStateException(
+        "Should never be reached. SPrimitive already should prevent this,"
+            + " and does not convert its invokables.");
   }
 }

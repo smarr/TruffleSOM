@@ -42,6 +42,8 @@ import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.operations.SomOperations.LexicalScopeForOp;
+import trufflesom.interpreter.operations.SomOperationsGen;
 import trufflesom.vm.Classes;
 
 
@@ -51,12 +53,21 @@ public abstract class SInvokable extends SAbstractObject {
   protected final SSymbol               signature;
   protected final int                   numArguments;
 
+  protected boolean isConverted = false;
+
   @CompilationFinal protected SClass holder;
 
   public SInvokable(final SSymbol signature, final Invokable invokable) {
     this.signature = signature;
     this.invokable = invokable;
     this.numArguments = signature.getNumberOfSignatureArguments();
+  }
+
+  public abstract void convertMethod(SomOperationsGen.Builder opBuilder,
+      LexicalScopeForOp outer);
+
+  public boolean isConverted() {
+    return isConverted;
   }
 
   public static final class SMethod extends SInvokable {
@@ -101,6 +112,19 @@ public abstract class SInvokable extends SAbstractObject {
       }
     }
 
+    @Override
+    public void convertMethod(final SomOperationsGen.Builder opBuilder,
+        final LexicalScopeForOp outer) {
+      LexicalScopeForOp scope =
+          new LexicalScopeForOp(invokable.createLocals(opBuilder), outer);
+
+      isConverted = true;
+      for (var b : embeddedBlocks) {
+        b.convertMethod(opBuilder, scope);
+      }
+      invokable = invokable.convertMethod(opBuilder, scope);
+    }
+
     public void updateAfterScopeChange(final Method updated) {
       invokable = updated;
     }
@@ -128,6 +152,12 @@ public abstract class SInvokable extends SAbstractObject {
       } else {
         return signature.toString();
       }
+    }
+
+    @Override
+    public void convertMethod(final SomOperationsGen.Builder opBuilder,
+        final LexicalScopeForOp outer) {
+      /* NO OP */
     }
   }
 
