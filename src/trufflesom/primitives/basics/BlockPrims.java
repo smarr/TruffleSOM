@@ -62,7 +62,7 @@ public abstract class BlockPrims {
     @Specialization(
         guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
-    public final Object doSBlock(final SBlock receiver,
+    public static final Object doSBlock(final SBlock receiver,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver);
@@ -71,7 +71,7 @@ public abstract class BlockPrims {
     @Specialization(
         guards = {"receiver.getMethod() == method", "method.isTrivial()"},
         limit = "InlineCacheSize")
-    public final Object doTrivial(final SBlock receiver,
+    public static final Object doTrivial(final SBlock receiver,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
       return expr.doPreEvaluated(null, new Object[] {receiver});
@@ -79,12 +79,12 @@ public abstract class BlockPrims {
 
     @Specialization
     @Megamorphic
-    public final Object generic(final SBlock receiver) {
+    public static final Object generic(final SBlock receiver) {
       return receiver.getMethod().invoke(new Object[] {receiver});
     }
 
     @Specialization
-    public final boolean doBoolean(final boolean receiver) {
+    public static final boolean doBoolean(final boolean receiver) {
       return receiver;
     }
 
@@ -107,7 +107,7 @@ public abstract class BlockPrims {
     @Specialization(
         guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
-    public final Object doSBlock(final SBlock receiver, final Object arg,
+    public static final Object doSBlock(final SBlock receiver, final Object arg,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver, arg);
@@ -116,7 +116,7 @@ public abstract class BlockPrims {
     @Specialization(
         guards = {"receiver.getMethod() == method", "method.isTrivial()"},
         limit = "InlineCacheSize")
-    public final Object doTrivial(final SBlock receiver, final Object arg,
+    public static final Object doTrivial(final SBlock receiver, final Object arg,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
       return expr.doPreEvaluated(null, new Object[] {receiver, arg});
@@ -124,7 +124,7 @@ public abstract class BlockPrims {
 
     @Specialization
     @Megamorphic
-    public final Object generic(final SBlock receiver, final Object arg) {
+    public static final Object generic(final SBlock receiver, final Object arg) {
       return receiver.getMethod().invoke(new Object[] {receiver, arg});
     }
 
@@ -152,7 +152,8 @@ public abstract class BlockPrims {
     @Specialization(
         guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
-    public final Object doSBlock(final SBlock receiver, final Object arg1, final Object arg2,
+    public static final Object doSBlock(final SBlock receiver, final Object arg1,
+        final Object arg2,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver, arg1, arg2);
@@ -161,7 +162,8 @@ public abstract class BlockPrims {
     @Specialization(
         guards = {"receiver.getMethod() == method", "method.isTrivial()"},
         limit = "InlineCacheSize")
-    public final Object doTrivial(final SBlock receiver, final Object arg1, final Object arg2,
+    public static final Object doTrivial(final SBlock receiver, final Object arg1,
+        final Object arg2,
         @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
       return expr.doPreEvaluated(null, new Object[] {receiver, arg1, arg2});
@@ -169,7 +171,8 @@ public abstract class BlockPrims {
 
     @Specialization
     @Megamorphic
-    public final Object generic(final SBlock receiver, final Object arg1, final Object arg2) {
+    public static final Object generic(final SBlock receiver, final Object arg1,
+        final Object arg2) {
       return receiver.getMethod().invoke(new Object[] {receiver, arg1, arg2});
     }
   }
@@ -178,7 +181,7 @@ public abstract class BlockPrims {
   @Primitive(className = "Block4", primitive = "value:with:with:")
   public abstract static class ValueMorePrim extends QuaternaryExpressionNode {
     @Specialization
-    public final Object doSBlock(final VirtualFrame frame,
+    public static final Object doSBlock(final VirtualFrame frame,
         final SBlock receiver, final Object firstArg, final Object secondArg,
         final Object thirdArg) {
       CompilerDirectives.transferToInterpreter();

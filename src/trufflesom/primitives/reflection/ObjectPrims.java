@@ -97,7 +97,7 @@ public final class ObjectPrims {
 
     @Specialization
     @TruffleBoundary
-    public final Object doSObject(final SObject receiver, final SSymbol fieldName) {
+    public static final Object doSObject(final SObject receiver, final SSymbol fieldName) {
       CompilerAsserts.neverPartOfCompilation();
       return receiver.getField(receiver.getFieldIndex(fieldName));
     }
@@ -107,7 +107,7 @@ public final class ObjectPrims {
   @Primitive(className = "Object", primitive = "halt")
   public abstract static class HaltPrim extends UnaryExpressionNode {
     @Specialization
-    public final Object doSAbstractObject(final Object receiver) {
+    public static final Object doSAbstractObject(final Object receiver) {
       Universe.errorPrintln("BREAKPOINT");
       return receiver;
     }
@@ -120,63 +120,63 @@ public final class ObjectPrims {
     public abstract SClass executeEvaluated(Object rcvr);
 
     @Specialization
-    public final SClass getSomClass(final SArray receiver) {
+    public static final SClass getSomClass(final SArray receiver) {
       return arrayClass;
     }
 
     @Specialization
-    public final SClass getSomClass(final SBlock receiver) {
+    public static final SClass getSomClass(final SBlock receiver) {
       return receiver.getSOMClass();
     }
 
     @Specialization
-    public final SClass getSomClass(final SObject receiver) {
+    public static final SClass getSomClass(final SObject receiver) {
       return receiver.getSOMClass();
     }
 
     @Specialization
-    public final SClass getSomClass(final SMethod receiver) {
+    public static final SClass getSomClass(final SMethod receiver) {
       return methodClass;
     }
 
     @Specialization
-    public final SClass getSomClass(final SPrimitive receiver) {
+    public static final SClass getSomClass(final SPrimitive receiver) {
       return primitiveClass;
     }
 
     @Specialization
-    public final SClass getSomClass(final SSymbol receiver) {
+    public static final SClass getSomClass(final SSymbol receiver) {
       return symbolClass;
     }
 
     @Specialization(guards = "receiver")
-    public final SClass getTrueClass(final boolean receiver) {
+    public static final SClass getTrueClass(final boolean receiver) {
       return trueClass;
     }
 
     @Specialization(guards = "!receiver")
-    public final SClass getFalseClass(final boolean receiver) {
+    public static final SClass getFalseClass(final boolean receiver) {
       return falseClass;
     }
 
     @Specialization
-    public final SClass getSomClass(final long receiver) {
+    public static final SClass getSomClass(final long receiver) {
       return integerClass;
     }
 
     @Specialization
-    public final SClass getSomClass(final BigInteger receiver) {
+    public static final SClass getSomClass(final BigInteger receiver) {
       return integerClass;
     }
 
     @Specialization
-    public final SClass getSomClass(final String receiver) {
+    public static final SClass getSomClass(final String receiver) {
       return stringClass;
     }
 
     @TruffleBoundary
     @Specialization
-    public final SClass getSomClass(final double receiver) {
+    public static final SClass getSomClass(final double receiver) {
       return doubleClass;
     }
   }
@@ -185,7 +185,7 @@ public final class ObjectPrims {
   @Primitive(selector = "isNil")
   public abstract static class IsNilNode extends UnaryExpressionNode {
     @Specialization
-    public final boolean isNil(final Object receiver) {
+    public static final boolean isNil(final Object receiver) {
       return receiver == Nil.nilObject;
     }
   }
@@ -194,7 +194,7 @@ public final class ObjectPrims {
   @Primitive(selector = "notNil")
   public abstract static class NotNilNode extends UnaryExpressionNode {
     @Specialization
-    public final boolean notNil(final Object receiver) {
+    public static final boolean notNil(final Object receiver) {
       return receiver != Nil.nilObject;
     }
   }

@@ -14,7 +14,7 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 @Primitive(selector = "not", receiverType = Boolean.class)
 public abstract class NotMessageNode extends UnaryExpressionNode {
   @Specialization
-  public final boolean doNot(final VirtualFrame frame, final boolean receiver) {
+  public static final boolean doNot(final VirtualFrame frame, final boolean receiver) {
     return !receiver;
   }
 }
