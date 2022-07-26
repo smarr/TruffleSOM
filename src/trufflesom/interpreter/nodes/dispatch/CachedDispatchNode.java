@@ -29,7 +29,7 @@ public final class CachedDispatchNode extends AbstractCachedDispatchNode {
         return nextInCache.executeDispatch(frame, arguments);
       }
     } catch (InvalidAssumptionException e) {
-      CompilerDirectives.transferToInterpreter();
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       return replace(SOMNode.unwrapIfNeeded(
           nextInCache)).executeDispatch(frame, arguments);
     }
