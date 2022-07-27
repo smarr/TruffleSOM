@@ -21,44 +21,44 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class LengthPrim extends UnaryExpressionNode {
 
   @Specialization(guards = "receiver.isEmptyType()")
-  public final long doEmptySArray(final SArray receiver) {
+  public static final long doEmptySArray(final SArray receiver) {
     return receiver.getEmptyStorage();
   }
 
   @Specialization(guards = "receiver.isPartiallyEmptyType()")
-  public final long doPartialEmptySArray(final SArray receiver) {
+  public static final long doPartialEmptySArray(final SArray receiver) {
     return receiver.getPartiallyEmptyStorage().getLength();
   }
 
   @Specialization(guards = "receiver.isObjectType()")
-  public final long doObjectSArray(final SArray receiver) {
+  public static final long doObjectSArray(final SArray receiver) {
     return receiver.getObjectStorage().length;
   }
 
   @Specialization(guards = "receiver.isLongType()")
-  public final long doLongSArray(final SArray receiver) {
+  public static final long doLongSArray(final SArray receiver) {
     return receiver.getLongStorage().length;
   }
 
   @Specialization(guards = "receiver.isDoubleType()")
-  public final long doDoubleSArray(final SArray receiver) {
+  public static final long doDoubleSArray(final SArray receiver) {
     return receiver.getDoubleStorage().length;
   }
 
   @Specialization(guards = "receiver.isBooleanType()")
-  public final long doBooleanSArray(final SArray receiver) {
+  public static final long doBooleanSArray(final SArray receiver) {
     return receiver.getBooleanStorage().length;
   }
 
   public abstract long executeEvaluated(VirtualFrame frame, SArray receiver);
 
   @Specialization
-  public final long doString(final String receiver) {
+  public static final long doString(final String receiver) {
     return receiver.length();
   }
 
   @Specialization
-  public final long doSSymbol(final SSymbol receiver) {
+  public static final long doSSymbol(final SSymbol receiver) {
     return receiver.getString().length();
   }
 

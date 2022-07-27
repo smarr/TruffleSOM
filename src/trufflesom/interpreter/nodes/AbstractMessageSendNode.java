@@ -13,9 +13,11 @@ public abstract class AbstractMessageSendNode extends ExpressionNode
     implements PreevaluatedExpression, Invocation<SSymbol> {
 
   @Children protected final ExpressionNode[] argumentNodes;
+  private final int                          numArguments;
 
-  protected AbstractMessageSendNode(final ExpressionNode[] arguments) {
+  protected AbstractMessageSendNode(final int numArguments, final ExpressionNode[] arguments) {
     this.argumentNodes = arguments;
+    this.numArguments = numArguments;
   }
 
   @Override
@@ -34,7 +36,9 @@ public abstract class AbstractMessageSendNode extends ExpressionNode
     return arguments;
   }
 
-  public abstract int getNumberOfArguments();
+        public final int getNumberOfArguments() {
+            return numArguments;
+        }
 
   public abstract void replaceDispatchListHead(GenericDispatchNode replacement);
 

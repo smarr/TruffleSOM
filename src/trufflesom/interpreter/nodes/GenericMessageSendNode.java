@@ -15,26 +15,22 @@ import trufflesom.vmobjects.SSymbol;
 public class GenericMessageSendNode extends AbstractMessageSendNode {
 
   private final SSymbol selector;
-  private final int     numberOfSignatureArguments;
 
   @Child private AbstractDispatchNode dispatchNode;
 
   GenericMessageSendNode(final SSymbol selector, final ExpressionNode[] arguments,
       final AbstractDispatchNode dispatchNode) {
-    super(arguments);
+    super(selector.getNumberOfSignatureArguments(), arguments);
     this.selector = selector;
     this.dispatchNode = dispatchNode;
-    this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
-    assert numberOfSignatureArguments != 0;
   }
 
   /**
    * Only used for GenericMessageSendNodeWrapper.
    */
   protected GenericMessageSendNode() {
-    super(null);
+    super(0, null);
     selector = null;
-    numberOfSignatureArguments = 0;
   }
 
   @Override
@@ -63,11 +59,6 @@ public class GenericMessageSendNode extends AbstractMessageSendNode {
   @Override
   public SSymbol getInvocationIdentifier() {
     return selector;
-  }
-
-  @Override
-  public int getNumberOfArguments() {
-    return numberOfSignatureArguments;
   }
 
   public void notifyDispatchInserted() {

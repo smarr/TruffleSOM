@@ -16,7 +16,7 @@ public final class UnaryArgSendNode extends AbstractMessageSendNode {
 
   public UnaryArgSendNode(final int argIdx, final SSymbol selector,
       final AbstractDispatchNode dispatchNode) {
-    super(null);
+    super(1, null);
     this.argIdx = argIdx;
     this.selector = selector;
     this.dispatchNode = dispatchNode;
@@ -37,11 +37,6 @@ public final class UnaryArgSendNode extends AbstractMessageSendNode {
   @Override
   public SSymbol getInvocationIdentifier() {
     return selector;
-  }
-
-  @Override
-  public int getNumberOfArguments() {
-    return 1;
   }
 
   @Override

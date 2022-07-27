@@ -45,9 +45,16 @@ import trufflesom.vm.Classes;
 
 public abstract class SInvokable extends SAbstractObject {
 
+  protected final Invokable invokable;
+  protected final SSymbol   signature;
+  protected final int       numArguments;
+
+  @CompilationFinal protected SClass holder;
+
   public SInvokable(final SSymbol signature, final Invokable invokable) {
     this.signature = signature;
     this.invokable = invokable;
+    this.numArguments = signature.getNumberOfSignatureArguments();
   }
 
   public static final class SMethod extends SInvokable {
@@ -154,7 +161,7 @@ public abstract class SInvokable extends SAbstractObject {
   }
 
   public final int getNumberOfArguments() {
-    return getSignature().getNumberOfSignatureArguments();
+    return numArguments;
   }
 
   public final Object invoke(final Object[] arguments) {
@@ -169,19 +176,14 @@ public abstract class SInvokable extends SAbstractObject {
   public final String toString() {
     // TODO: fixme: remove special case if possible, I think it indicates a bug
     if (holder == null) {
-      return "Method(nil>>" + getSignature().toString() + ")";
+      return "Method(nil>>" + signature.toString() + ")";
     }
 
-    return "Method(" + getHolder().getName().getString() + ">>" + getSignature().toString()
+    return "Method(" + getHolder().getName().getString() + ">>" + signature.toString()
         + ")";
   }
 
   public abstract String getIdentifier();
-
-  protected final Invokable invokable;
-  protected final SSymbol   signature;
-
-  @CompilationFinal protected SClass holder;
 
   public boolean isTrivial() {
     return invokable.isTrivial();

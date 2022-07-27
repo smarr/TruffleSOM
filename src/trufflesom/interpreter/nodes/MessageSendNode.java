@@ -123,16 +123,14 @@ public final class MessageSendNode {
 
   public static final class SuperSendNode extends AbstractMessageSendNode {
     private final SSymbol selector;
-    private final int     numberOfSignatureArguments;
 
     @Child private DirectCallNode cachedSuperMethod;
 
     private SuperSendNode(final SSymbol selector, final ExpressionNode[] arguments,
         final DirectCallNode superMethod) {
-      super(arguments);
+      super(selector.getNumberOfSignatureArguments(), arguments);
       this.selector = selector;
       this.cachedSuperMethod = superMethod;
-      this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
     }
 
     @Override
@@ -152,11 +150,6 @@ public final class MessageSendNode {
     }
 
     @Override
-    public int getNumberOfArguments() {
-      return numberOfSignatureArguments;
-    }
-
-    @Override
     public void replaceDispatchListHead(final GenericDispatchNode replacement) {
       CompilerDirectives.transferToInterpreter();
       throw new UnsupportedOperationException();
@@ -170,16 +163,14 @@ public final class MessageSendNode {
 
   private static final class SuperExprNode extends AbstractMessageSendNode {
     private final SSymbol selector;
-    private final int     numberOfSignatureArguments;
 
     @Child private ExpressionNode expr;
 
     private SuperExprNode(final SSymbol selector, final ExpressionNode[] arguments,
         final PreevaluatedExpression expr) {
-      super(arguments);
+      super(selector.getNumberOfSignatureArguments(), arguments);
       this.selector = selector;
       this.expr = (ExpressionNode) expr;
-      this.numberOfSignatureArguments = selector.getNumberOfSignatureArguments();
     }
 
     @Override
@@ -196,11 +187,6 @@ public final class MessageSendNode {
     @Override
     public String toString() {
       return "SendExpr(" + selector.getString() + ")";
-    }
-
-    @Override
-    public int getNumberOfArguments() {
-      return numberOfSignatureArguments;
     }
 
     @Override

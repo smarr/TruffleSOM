@@ -18,7 +18,7 @@ public class BinaryArgSendNode extends AbstractMessageSendNode {
 
   public BinaryArgSendNode(final int argIdx, final ExpressionNode arg1, final SSymbol selector,
       final AbstractDispatchNode dispatchNode) {
-    super(null);
+    super(2, null);
     this.argIdx = argIdx;
     this.selector = selector;
     this.dispatchNode = dispatchNode;
@@ -42,11 +42,6 @@ public class BinaryArgSendNode extends AbstractMessageSendNode {
   @Override
   public SSymbol getInvocationIdentifier() {
     return selector;
-  }
-
-  @Override
-  public int getNumberOfArguments() {
-    return 2;
   }
 
   @Override

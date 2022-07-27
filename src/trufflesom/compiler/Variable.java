@@ -5,8 +5,6 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHLOCAL;
-import static trufflesom.interpreter.SNodeFactory.createArgumentRead;
-import static trufflesom.interpreter.SNodeFactory.createArgumentWrite;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
@@ -19,6 +17,10 @@ import com.oracle.truffle.api.source.Source;
 
 import bdt.source.SourceCoordinate;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
@@ -126,7 +128,12 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final long coord) {
       transferToInterpreterAndInvalidate();
-      return createArgumentRead(this, contextLevel, coord);
+
+      if (contextLevel == 0) {
+        return new LocalArgumentReadNode(this).initialize(coord);
+      } else {
+        return new NonLocalArgumentReadNode(this, contextLevel).initialize(coord);
+      }
     }
 
     @Override
@@ -150,7 +157,12 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
       transferToInterpreterAndInvalidate();
-      return createArgumentWrite(this, contextLevel, valueExpr, coord);
+
+      if (contextLevel == 0) {
+        return new LocalArgumentWriteNode(this, valueExpr).initialize(coord);
+      } else {
+        return new NonLocalArgumentWriteNode(this, contextLevel, valueExpr).initialize(coord);
+      }
     }
 
     @Override

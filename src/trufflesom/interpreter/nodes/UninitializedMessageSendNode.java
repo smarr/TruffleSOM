@@ -17,7 +17,7 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
 
   protected UninitializedMessageSendNode(final SSymbol selector,
       final ExpressionNode[] arguments) {
-    super(arguments);
+    super(selector.getNumberOfSignatureArguments(), arguments);
     this.selector = selector;
   }
 
@@ -81,11 +81,6 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
   @Override
   public SSymbol getInvocationIdentifier() {
     return selector;
-  }
-
-  @Override
-  public int getNumberOfArguments() {
-    return selector.getNumberOfSignatureArguments();
   }
 
   @Override

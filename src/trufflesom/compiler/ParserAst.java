@@ -13,7 +13,6 @@ import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
 import static trufflesom.compiler.Symbol.Pound;
-import static trufflesom.interpreter.SNodeFactory.createSequence;
 import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symSuper;
@@ -38,6 +37,7 @@ import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
+import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
@@ -117,7 +117,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     } else if (expressions.size() == 1) {
       return expressions.get(0);
     }
-    return createSequence(expressions, getCoordWithLength(coord));
+
+    return new SequenceNode(expressions.toArray(new ExpressionNode[0])).initialize(
+        getCoordWithLength(coord));
   }
 
   @Override

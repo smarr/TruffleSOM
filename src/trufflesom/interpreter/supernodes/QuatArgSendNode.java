@@ -22,7 +22,7 @@ public class QuatArgSendNode extends AbstractMessageSendNode {
       final ExpressionNode arg2,
       final ExpressionNode arg3, final SSymbol selector,
       final AbstractDispatchNode dispatchNode) {
-    super(null);
+    super(4, null);
     this.argIdx = argIdx;
     this.selector = selector;
     this.dispatchNode = dispatchNode;
@@ -50,11 +50,6 @@ public class QuatArgSendNode extends AbstractMessageSendNode {
   @Override
   public SSymbol getInvocationIdentifier() {
     return selector;
-  }
-
-  @Override
-  public int getNumberOfArguments() {
-    return 4;
   }
 
   @Override

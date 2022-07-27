@@ -25,10 +25,6 @@
 
 package trufflesom.compiler;
 
-import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
-import static trufflesom.interpreter.SNodeFactory.createFieldRead;
-import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
-import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symFrameOnStack;
 import static trufflesom.vm.SymbolTable.symSelf;
@@ -54,14 +50,17 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNode;
+import trufflesom.interpreter.supernodes.UninitIncFieldNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.primitives.arithmetic.AdditionPrim;
 import trufflesom.vm.NotYetImplementedException;
-import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -230,7 +229,8 @@ public class MethodGenerationContext
 
   protected SMethod assembleMethod(ExpressionNode body, final long coord) {
     if (needsToCatchNonLocalReturn()) {
-      body = createCatchNonLocalReturn(body, getFrameOnStackMarker(coord));
+      body = new CatchNonLocalReturnNode(
+          body, getFrameOnStackMarker(coord)).initialize(body.getSourceCoordinate());
     }
 
     Method truffleMethod =
@@ -449,8 +449,8 @@ public class MethodGenerationContext
   public ReturnNonLocalNode getNonLocalReturn(final ExpressionNode expr,
       final long coord) {
     makeOuterCatchNonLocalReturn();
-    return createNonLocalReturn(expr, getFrameOnStackMarker(coord),
-        getOuterSelfContextLevel(), coord);
+    return new ReturnNonLocalNode(expr, getFrameOnStackMarker(coord),
+        getOuterSelfContextLevel()).initialize(coord);
   }
 
   private ExpressionNode getSelfRead(final long coord) {
@@ -462,8 +462,9 @@ public class MethodGenerationContext
     if (!holderGenc.hasField(fieldName)) {
       return null;
     }
-    return createFieldRead(getSelfRead(coord),
-        holderGenc.getFieldIndex(fieldName), coord);
+
+    return new FieldReadNode(getSelfRead(coord),
+        holderGenc.getFieldIndex(fieldName)).initialize(coord);
   }
 
   public FieldNode getObjectFieldWrite(final SSymbol fieldName, final ExpressionNode exp,
@@ -472,8 +473,29 @@ public class MethodGenerationContext
       return null;
     }
 
-    return createFieldWrite(getSelfRead(coord), exp,
-        holderGenc.getFieldIndex(fieldName), coord);
+    int fieldIndex = holderGenc.getFieldIndex(fieldName);
+    ExpressionNode self = getSelfRead(coord);
+    if (exp instanceof IntIncrementNode
+        && ((IntIncrementNode) exp).doesAccessField(fieldIndex)) {
+      return ((IntIncrementNode) exp).createFieldIncNode(self, fieldIndex, coord);
+    }
+
+    if (exp instanceof AdditionPrim) {
+      AdditionPrim add = (AdditionPrim) exp;
+      ExpressionNode rcvr = add.getReceiver();
+      ExpressionNode arg = add.getArgument();
+
+      if (rcvr instanceof FieldReadNode
+          && fieldIndex == ((FieldReadNode) rcvr).getFieldIndex()) {
+        return new UninitIncFieldNode(self, arg, true, fieldIndex, coord);
+      }
+      if (arg instanceof FieldReadNode
+          && fieldIndex == ((FieldReadNode) arg).getFieldIndex()) {
+        return new UninitIncFieldNode(self, rcvr, false, fieldIndex, coord);
+      }
+    }
+
+    return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);
   }
 
   protected void addLocal(final Local l, final SSymbol name) {

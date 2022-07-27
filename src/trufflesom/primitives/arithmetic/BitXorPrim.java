@@ -12,7 +12,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(className = "Integer", primitive = "bitXor:", selector = "bitXor:")
 public abstract class BitXorPrim extends ArithmeticPrim {
   @Specialization
-  public final long doLong(final long receiver, final long right) {
+  public static final long doLong(final long receiver, final long right) {
     return receiver ^ right;
   }
 
