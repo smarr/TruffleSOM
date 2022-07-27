@@ -29,7 +29,7 @@ public final class MethodPrims {
   @Primitive(className = "Primitive", primitive = "signature")
   public abstract static class SignaturePrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doSMethod(final SInvokable receiver) {
+    public static final SAbstractObject doSMethod(final SInvokable receiver) {
       return receiver.getSignature();
     }
   }
@@ -39,7 +39,7 @@ public final class MethodPrims {
   @Primitive(className = "Primitive", primitive = "holder")
   public abstract static class HolderPrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doSMethod(final SInvokable receiver) {
+    public static final SAbstractObject doSMethod(final SInvokable receiver) {
       return receiver.getHolder();
     }
   }
@@ -76,7 +76,7 @@ public final class MethodPrims {
 
     @Specialization(guards = "receiver == cachedReceiver",
         limit = "" + AbstractDispatchNode.INLINE_CACHE_SIZE)
-    public final Object doCached(
+    public static final Object doCached(
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr,
         @Cached("receiver") final SInvokable cachedReceiver,
@@ -85,7 +85,7 @@ public final class MethodPrims {
     }
 
     @Specialization(replaces = "doCached")
-    public final Object doUncached(
+    public static final Object doUncached(
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr,
         @Cached("createIndirect()") final IndirectCallNode callNode) {

@@ -25,28 +25,28 @@ public abstract class DoubleDivPrim extends ArithmeticPrim {
   }
 
   @Specialization
-  public final double doDouble(final double left, final double right) {
+  public static final double doDouble(final double left, final double right) {
     return left / right;
   }
 
   @Specialization
-  public final double doDouble(final double left, final long right) {
+  public static final double doDouble(final double left, final long right) {
     return doDouble(left, (double) right);
   }
 
   @Specialization
-  public final double doLong(final long left, final long right) {
+  public static final double doLong(final long left, final long right) {
     return ((double) left) / right;
   }
 
   @Specialization
-  public final double doLong(final long left, final double right) {
+  public static final double doLong(final long left, final double right) {
     return left / right;
   }
 
   @Specialization
   @TruffleBoundary
-  public final SAbstractObject doLong(final long left, final BigInteger right) {
+  public static final SAbstractObject doLong(final long left, final BigInteger right) {
     CompilerAsserts.neverPartOfCompilation("DoubleDiv100");
     // TODO: need to implement the "/" case here directly... :
     // return resendAsBigInteger("/", left, (SBigInteger) rightObj, frame.pack());

@@ -25,10 +25,6 @@
 
 package trufflesom.compiler;
 
-import static trufflesom.interpreter.SNodeFactory.createCatchNonLocalReturn;
-import static trufflesom.interpreter.SNodeFactory.createFieldRead;
-import static trufflesom.interpreter.SNodeFactory.createFieldWrite;
-import static trufflesom.interpreter.SNodeFactory.createNonLocalReturn;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symFrameOnStack;
 import static trufflesom.vm.SymbolTable.symSelf;
@@ -55,8 +51,10 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
+import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.ubernodes.BenchmarkHarnessDoRuns;
@@ -715,7 +713,8 @@ public class MethodGenerationContext
     }
 
     if (needsToCatchNonLocalReturn()) {
-      body = createCatchNonLocalReturn(body, getFrameOnStackMarker(coord));
+      body = new CatchNonLocalReturnNode(
+          body, getFrameOnStackMarker(coord)).initialize(body.getSourceCoordinate());
     }
 
     Method truffleMethod =
@@ -907,8 +906,8 @@ public class MethodGenerationContext
   public ReturnNonLocalNode getNonLocalReturn(final ExpressionNode expr,
       final long coord) {
     makeOuterCatchNonLocalReturn();
-    return createNonLocalReturn(expr, getFrameOnStackMarker(coord),
-        getOuterSelfContextLevel(), coord);
+    return new ReturnNonLocalNode(expr, getFrameOnStackMarker(coord),
+        getOuterSelfContextLevel()).initialize(coord);
   }
 
   private ExpressionNode getSelfRead(final long coord) {
@@ -920,8 +919,9 @@ public class MethodGenerationContext
     if (!holderGenc.hasField(fieldName)) {
       return null;
     }
-    return createFieldRead(getSelfRead(coord),
-        holderGenc.getFieldIndex(fieldName), coord);
+
+    return new FieldReadNode(getSelfRead(coord),
+        holderGenc.getFieldIndex(fieldName)).initialize(coord);
   }
 
   public FieldNode getObjectFieldWrite(final SSymbol fieldName, final ExpressionNode exp,
@@ -930,8 +930,9 @@ public class MethodGenerationContext
       return null;
     }
 
-    return createFieldWrite(getSelfRead(coord), exp,
-        holderGenc.getFieldIndex(fieldName), coord);
+    int fieldIndex = holderGenc.getFieldIndex(fieldName);
+    ExpressionNode self = getSelfRead(coord);
+    return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);
   }
 
   protected void addLocal(final Local l, final SSymbol name) {

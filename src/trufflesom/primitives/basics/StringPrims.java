@@ -32,25 +32,25 @@ public class StringPrims {
 
     @Specialization
     @TruffleBoundary
-    public final String doString(final String receiver, final String argument) {
+    public static final String doString(final String receiver, final String argument) {
       return receiver + argument;
     }
 
     @Specialization
     @TruffleBoundary
-    public final String doString(final String receiver, final SSymbol argument) {
+    public static final String doString(final String receiver, final SSymbol argument) {
       return receiver + argument.getString();
     }
 
     @Specialization
     @TruffleBoundary
-    public final String doSSymbol(final SSymbol receiver, final String argument) {
+    public static final String doSSymbol(final SSymbol receiver, final String argument) {
       return receiver.getString() + argument;
     }
 
     @Specialization
     @TruffleBoundary
-    public final String doSSymbol(final SSymbol receiver, final SSymbol argument) {
+    public static final String doSSymbol(final SSymbol receiver, final SSymbol argument) {
       return receiver.getString() + argument.getString();
     }
   }
@@ -105,7 +105,7 @@ public class StringPrims {
     }
 
     @Specialization
-    public final SAbstractObject doSSymbol(final SSymbol receiver) {
+    public static final SAbstractObject doSSymbol(final SSymbol receiver) {
       return receiver;
     }
   }
@@ -115,7 +115,7 @@ public class StringPrims {
       selector = "primSubstringFrom:to:")
   public abstract static class SubstringPrim extends TernaryExpressionNode {
     @Specialization
-    public final String doString(final String receiver, final long start,
+    public static final String doString(final String receiver, final long start,
         final long end) {
       try {
         return receiver.substring((int) start - 1, (int) end);
@@ -125,7 +125,7 @@ public class StringPrims {
     }
 
     @Specialization
-    public final String doSSymbol(final SSymbol receiver, final long start,
+    public static final String doSSymbol(final SSymbol receiver, final long start,
         final long end) {
       return doString(receiver.getString(), start, end);
     }
@@ -186,18 +186,18 @@ public class StringPrims {
   public abstract static class IsWhiteSpacePrim extends UnaryExpressionNode {
     @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
-    public final boolean doChar(final String receiver) {
+    public static final boolean doChar(final String receiver) {
       return Character.isWhitespace(receiver.charAt(0));
     }
 
     @Specialization(guards = "receiver.getString().length() == 1")
-    public final boolean doChar(final SSymbol receiver) {
+    public static final boolean doChar(final SSymbol receiver) {
       return doChar(receiver.getString());
     }
 
     @TruffleBoundary
     @Specialization(guards = "receiver.length() != 1")
-    public final boolean doString(final String receiver) {
+    public static final boolean doString(final String receiver) {
       for (int i = 0; i < receiver.length(); i++) {
         if (!Character.isWhitespace(receiver.charAt(i))) {
           return false;
@@ -212,7 +212,7 @@ public class StringPrims {
     }
 
     @Specialization(guards = "receiver.getString().length() != 1")
-    public final boolean doSSymbol(final SSymbol receiver) {
+    public static final boolean doSSymbol(final SSymbol receiver) {
       return doString(receiver.getString());
     }
   }
@@ -222,18 +222,18 @@ public class StringPrims {
   public abstract static class IsLettersPrim extends UnaryExpressionNode {
     @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
-    public final boolean doChar(final String receiver) {
+    public static final boolean doChar(final String receiver) {
       return Character.isLetter(receiver.charAt(0));
     }
 
     @Specialization(guards = "receiver.getString().length() == 1")
-    public final boolean doChar(final SSymbol receiver) {
+    public static final boolean doChar(final SSymbol receiver) {
       return doChar(receiver.getString());
     }
 
     @TruffleBoundary
     @Specialization(guards = "receiver.length() != 1")
-    public final boolean doString(final String receiver) {
+    public static final boolean doString(final String receiver) {
       for (int i = 0; i < receiver.length(); i++) {
         if (!Character.isLetter(receiver.charAt(i))) {
           return false;
@@ -248,7 +248,7 @@ public class StringPrims {
     }
 
     @Specialization(guards = "receiver.getString().length() != 1")
-    public final boolean doSSymbol(final SSymbol receiver) {
+    public static final boolean doSSymbol(final SSymbol receiver) {
       return doString(receiver.getString());
     }
   }
@@ -258,18 +258,18 @@ public class StringPrims {
   public abstract static class IsDigitsPrim extends UnaryExpressionNode {
     @TruffleBoundary
     @Specialization(guards = "receiver.length() == 1")
-    public final boolean doChar(final String receiver) {
+    public static final boolean doChar(final String receiver) {
       return Character.isDigit(receiver.charAt(0));
     }
 
     @Specialization(guards = "receiver.getString().length() == 1")
-    public final boolean doChar(final SSymbol receiver) {
+    public static final boolean doChar(final SSymbol receiver) {
       return doChar(receiver.getString());
     }
 
     @TruffleBoundary
     @Specialization(guards = "receiver.length() != 1")
-    public final boolean doString(final String receiver) {
+    public static final boolean doString(final String receiver) {
       for (int i = 0; i < receiver.length(); i++) {
         if (!Character.isDigit(receiver.charAt(i))) {
           return false;
@@ -284,7 +284,7 @@ public class StringPrims {
     }
 
     @Specialization(guards = "receiver.getString().length() != 1")
-    public final boolean doSSymbol(final SSymbol receiver) {
+    public static final boolean doSSymbol(final SSymbol receiver) {
       return doString(receiver.getString());
     }
   }

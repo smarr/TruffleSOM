@@ -27,7 +27,7 @@ public abstract class IntegerPrims {
   @Primitive(className = "Integer", primitive = "atRandom")
   public abstract static class RandomPrim extends UnaryExpressionNode {
     @Specialization
-    public final long doLong(final long receiver) {
+    public static final long doLong(final long receiver) {
       return (long) (receiver * Math.random());
     }
   }
@@ -37,13 +37,13 @@ public abstract class IntegerPrims {
   @Primitive(selector = "as32BitSignedValue")
   public abstract static class As32BitSignedValue extends UnaryExpressionNode {
     @Specialization
-    public final long doLong(final long receiver) {
+    public static final long doLong(final long receiver) {
       return (int) receiver;
     }
 
     @Specialization
     @TruffleBoundary
-    public final long doBig(final BigInteger receiver) {
+    public static final long doBig(final BigInteger receiver) {
       return receiver.intValue();
     }
   }
@@ -53,13 +53,13 @@ public abstract class IntegerPrims {
   @Primitive(selector = "as32BitUnsignedValue")
   public abstract static class As32BitUnsignedValue extends UnaryExpressionNode {
     @Specialization
-    public final long doLong(final long receiver) {
+    public static final long doLong(final long receiver) {
       return Integer.toUnsignedLong((int) receiver);
     }
 
     @Specialization
     @TruffleBoundary
-    public final long doBig(final BigInteger receiver) {
+    public static final long doBig(final BigInteger receiver) {
       return Integer.toUnsignedLong(receiver.intValue());
     }
   }
@@ -69,13 +69,13 @@ public abstract class IntegerPrims {
   @Primitive(selector = "asDouble")
   public abstract static class AsDoubleValue extends UnaryExpressionNode {
     @Specialization
-    public final double doLong(final long receiver) {
+    public static final double doLong(final long receiver) {
       return receiver;
     }
 
     @Specialization
     @TruffleBoundary
-    public final double doBig(final BigInteger receiver) {
+    public static final double doBig(final BigInteger receiver) {
       return receiver.doubleValue();
     }
   }
@@ -86,18 +86,18 @@ public abstract class IntegerPrims {
   @Primitive(selector = "negated")
   public abstract static class NegatedValue extends UnaryExpressionNode {
     @Specialization
-    public final long doLong(final long receiver) {
+    public static final long doLong(final long receiver) {
       return -receiver;
     }
 
     @Specialization
-    public final double doDouble(final double receiver) {
+    public static final double doDouble(final double receiver) {
       return -receiver;
     }
 
     @Specialization
     @TruffleBoundary
-    public final BigInteger doBig(final BigInteger receiver) {
+    public static final BigInteger doBig(final BigInteger receiver) {
       return receiver.negate();
     }
   }
@@ -109,7 +109,7 @@ public abstract class IntegerPrims {
 
     @TruffleBoundary
     @Specialization(guards = "receiver == integerClass")
-    public final Object doString(final SClass receiver, final String argument) {
+    public static final Object doString(final SClass receiver, final String argument) {
       try {
         return Long.parseLong(argument);
       } catch (NumberFormatException e) {
@@ -118,7 +118,7 @@ public abstract class IntegerPrims {
     }
 
     @Specialization(guards = "receiver == integerClass")
-    public final Object doSymbol(final SClass receiver, final SSymbol argument) {
+    public static final Object doSymbol(final SClass receiver, final SSymbol argument) {
       return doString(receiver, argument.getString());
     }
   }
@@ -146,7 +146,7 @@ public abstract class IntegerPrims {
 
     @Specialization
     @TruffleBoundary
-    public final BigInteger doLongWithOverflow(final long receiver, final long right) {
+    public static final BigInteger doLongWithOverflow(final long receiver, final long right) {
       assert right >= 0; // currently not defined for negative values of right
       assert right <= Integer.MAX_VALUE;
 
@@ -163,7 +163,7 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
-    public final long doLong(final long receiver, final long right) {
+    public static final long doLong(final long receiver, final long right) {
       return receiver >>> right;
     }
   }
@@ -178,25 +178,25 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
-    public final long doLong(final long receiver, final long right) {
+    public static final long doLong(final long receiver, final long right) {
       return Math.min(receiver, right);
     }
 
     @Specialization
     @TruffleBoundary
-    public BigInteger doLongBig(final long left, final BigInteger right) {
+    public static BigInteger doLongBig(final long left, final BigInteger right) {
       return BigInteger.valueOf(left).min(right);
     }
 
     @Specialization
     @TruffleBoundary
-    public BigInteger doBigLong(final BigInteger left, final long right) {
+    public static BigInteger doBigLong(final BigInteger left, final long right) {
       return left.min(BigInteger.valueOf(right));
     }
 
     @Specialization
     @TruffleBoundary
-    public BigInteger doBig(final BigInteger left, final BigInteger right) {
+    public static BigInteger doBig(final BigInteger left, final BigInteger right) {
       return left.min(right);
     }
   }
@@ -211,25 +211,25 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
-    public final long doLong(final long receiver, final long right) {
+    public static final long doLong(final long receiver, final long right) {
       return Math.max(receiver, right);
     }
 
     @Specialization
     @TruffleBoundary
-    public BigInteger doLongBig(final long left, final BigInteger right) {
+    public static BigInteger doLongBig(final long left, final BigInteger right) {
       return BigInteger.valueOf(left).max(right);
     }
 
     @Specialization
     @TruffleBoundary
-    public BigInteger doBigLong(final BigInteger left, final long right) {
+    public static BigInteger doBigLong(final BigInteger left, final long right) {
       return left.max(BigInteger.valueOf(right));
     }
 
     @Specialization
     @TruffleBoundary
-    public BigInteger doBig(final BigInteger left, final BigInteger right) {
+    public static BigInteger doBig(final BigInteger left, final BigInteger right) {
       return left.max(right);
     }
   }
@@ -244,7 +244,7 @@ public abstract class IntegerPrims {
     }
 
     @Specialization
-    public final SArray doLong(final long receiver, final long right) {
+    public static final SArray doLong(final long receiver, final long right) {
       int cnt = (int) right - (int) receiver + 1;
       long[] arr = new long[cnt];
       for (int i = 0; i < cnt; i++) {
@@ -266,19 +266,19 @@ public abstract class IntegerPrims {
      * Math.abs(MIN_VALUE) == MIN_VALUE, which is wrong.
      */
     @Specialization(guards = "!minLong(receiver)")
-    public final long doLong(final long receiver) {
+    public static final long doLong(final long receiver) {
       return Math.abs(receiver);
     }
 
     @Specialization(guards = "minLong(receiver)")
     @TruffleBoundary
-    public final BigInteger doLongMinValue(final long receiver) {
+    public static final BigInteger doLongMinValue(final long receiver) {
       return BigInteger.valueOf(Long.MIN_VALUE).abs();
     }
 
     @Specialization
     @TruffleBoundary
-    public final BigInteger doBig(final BigInteger receiver) {
+    public static final BigInteger doBig(final BigInteger receiver) {
       return receiver.abs();
     }
 
