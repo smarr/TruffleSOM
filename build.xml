@@ -89,11 +89,6 @@ Native Image Targets
         <delete dir="${src_gen.dir}"/>
     </target>
     
-    <target name="clean-jvmci" description="Remove the JVMCI library">
-        <delete dir="${lib.dir}/jvmci"/>
-        <delete file="${lib.dir}/jvmci.tar.gz"/>
-    </target>
-    
     <target name="clean-ide" description="Remove Eclipse Projects">
         <exec executable="${mx.cmd}" dir="${truffle.dir}">
           <arg value="--dynamicimports"/>
@@ -121,7 +116,7 @@ Native Image Targets
     </target>
 
     <target name="clobber" description="Do clean, and also clean truffle build"
-        depends="clean-som,clobber-truffle,clean-jvmci">
+        depends="clean-som,clobber-truffle">
     </target>
 
     <target name="check-core-lib-available">
