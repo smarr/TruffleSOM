@@ -10,6 +10,7 @@ import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
@@ -393,6 +394,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     assertThat(e, instanceOf(cls));
   }
 
+  @Ignore("Not yet supported with OpDSL")
   @Test
   public void testLiteralBlock() {
     literalBlock("0", "0", IntegerLiteralNode.class);
@@ -408,6 +410,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     literalBlock("nil", "nil", NilGlobalNode.class);
   }
 
+  @Ignore("Not yet supported with OpDSL")
   @Test
   public void testUnknownGlobalInBlock() {
     Method m = parseBlock("[ UnknownGlobalSSSS ]");
