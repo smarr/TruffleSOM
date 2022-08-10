@@ -257,6 +257,7 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "abs", selector = "abs",
       receiverType = {Long.class, BigInteger.class})
+  @Primitive(className = "Double", primitive = "abs", receiverType = {Double.class})
   public abstract static class AbsPrim extends UnaryMsgExprNode {
     public static final boolean minLong(final long receiver) {
       return receiver == Long.MIN_VALUE;
@@ -280,6 +281,11 @@ public abstract class IntegerPrims {
     @TruffleBoundary
     public static final BigInteger doBig(final BigInteger receiver) {
       return receiver.abs();
+    }
+
+    @Specialization
+    public static final double doDouble(final double receiver) {
+      return Math.abs(receiver);
     }
 
     @Override
