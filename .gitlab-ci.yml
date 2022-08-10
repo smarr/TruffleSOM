@@ -111,19 +111,21 @@ build:native-interp-op:
 
 .commands:
   - &DOWNLOAD_BINARIES |
-    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op.lz4
-    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op-ee.lz4
+    echo NOOP
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op-ee.lz4
   - &UNPACK_BINARIES |
-    lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    lz4 -d som-native-interp-op.lz4  som-native-interp-op
-    lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
-    lz4 -d som-native-interp-op-ee.lz4  som-native-interp-op-ee
+    echo NOOP
+    # lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
+    # lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+    # lz4 -d som-native-interp-op.lz4  som-native-interp-op
+    # lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
+    # lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    # lz4 -d som-native-interp-op-ee.lz4  som-native-interp-op-ee
 
 benchmark-y1:
   stage: benchmark
