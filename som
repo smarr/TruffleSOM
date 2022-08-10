@@ -192,14 +192,18 @@ else:
 ##
 ## Defining Necessary Parameter Bits
 ##
+TRUFFLE_API_JAR = TRUFFLE_DIR + '/truffle/mxbuild/jdk17/dists/jdk17/truffle-api.jar'
+GRAAL_SDK_JAR   = TRUFFLE_DIR + '/sdk/mxbuild/jdk17/dists/jdk11/graal-sdk.jar'
+LIBGRAAL_JAR    = TRUFFLE_DIR + '/compiler/mxbuild/jdk17/dists/jdk11/graal-truffle-compiler-libgraal.jar'
+COVERAGE_JAR    = TRUFFLE_DIR + '/tools/mxbuild/jdk17/dists/jdk11/truffle-coverage.jar'
+PROFILER_JAR    = TRUFFLE_DIR + '/tools/mxbuild/jdk17/dists/jdk11/truffle-profiler.jar'
 
 classpath = (BASE_DIR + '/build/classes:'
            + BASE_DIR + '/libs/black-diamonds/build/classes:'
-           + TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar:'
-           + TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar')
+           + GRAAL_SDK_JAR + ':'
+           + TRUFFLE_API_JAR)
 
-TRUFFLE_API_CLASSPATH = (
-    TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar')
+TRUFFLE_API_CLASSPATH = (TRUFFLE_API_JAR)
 
 if args.use_libgraal:
   GRAAL_JVMCI_FLAGS = ['-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:+UseJVMCICompiler', '-XX:+UseJVMCINativeLibrary']
@@ -208,9 +212,8 @@ else:
 
 
 GRAAL_TRUFFLE_FLAGS = [
-  '--module-path=' + TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar:' +
-      TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar',
-  '--upgrade-module-path=' + TRUFFLE_DIR + '/compiler/mxbuild/dists/graal-truffle-compiler-libgraal.jar'
+  '--module-path=' + GRAAL_SDK_JAR + ':' + TRUFFLE_API_JAR,
+  '--upgrade-module-path=' + LIBGRAAL_JAR
 ]
 
 ADD_OPEN_FLAGS = [
@@ -308,7 +311,7 @@ if args.nodestats:
     flags += ['-Dpolyglot.nodestats.OutputFile=' + args.nodestats, '-Dpolyglot.nodestats=true']
 
 if args.coverage != False:
-    classpath += ':' + TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-coverage.jar'
+    classpath += ':' + COVERAGE_JAR
     flags += ['-Dpolyglot.coverage=true',
               '-Dpolyglot.coverage.Count=true',
               '-Dpolyglot.coverage.StrictLines=false',
@@ -317,7 +320,7 @@ if args.coverage != False:
       flags += ['-Dpolyglot.coverage.OutputFile=' + args.coverage]
 
 if args.cpusampler != False:
-    classpath += ':' + TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-profiler.jar'
+    classpath += ':' + PROFILER_JAR
     flags += ['-Dpolyglot.cpusampler=true', '-Dpolyglot.cpusampler.Output=' + args.cpusampler]
     
 
