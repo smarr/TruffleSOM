@@ -1,13 +1,11 @@
 package trufflesom.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.nodes.NodeCost;
 
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
-import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
@@ -37,12 +35,6 @@ public class GenericMessageSendNode extends AbstractMessageSendNode {
   public Object doPreEvaluated(final VirtualFrame frame,
       final Object[] arguments) {
     return dispatchNode.executeDispatch(frame, arguments);
-  }
-
-  public void replaceDispatchListHead(
-      final GenericDispatchNode replacement) {
-    CompilerAsserts.neverPartOfCompilation();
-    dispatchNode.replace(replacement);
   }
 
   @Override
