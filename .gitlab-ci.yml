@@ -196,7 +196,7 @@ benchmark-y1:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria
+    # - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf t:yuria
   after_script:
@@ -216,7 +216,7 @@ benchmark-y2:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria2
+    # - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria2
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf t:yuria2
   after_script:
@@ -236,7 +236,7 @@ benchmark-y3:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria3
+    # - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria3
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf t:yuria3
   after_script:
@@ -256,7 +256,7 @@ benchmark-y4:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria4 || true
+    # - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling t:yuria4 || true
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf t:yuria4
   after_script:
