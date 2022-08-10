@@ -13,8 +13,10 @@ variables:
   download-binaries: &DOWNLOAD_BINARIES |
     download_and_decompress som-native-interp-ast
     download_and_decompress som-native-interp-bc
+    download_and_decompress som-native-interp-op
     download_and_decompress som-native-interp-ast-ee || true
     download_and_decompress som-native-interp-bc-ee  || true
+    download_and_decompress som-native-interp-op-ee  || true
 
 before_script:
   - source .github/ci.sh
@@ -91,6 +93,28 @@ build:native-interp-bc:
       fi
       exit $EE_FAILED
 
+build:native-interp-op:
+  stage: build-and-test
+  tags: [yuria]
+  script:
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
+    - mx build
+    - mx build-native -J -t OP -bn
+    - ./som-native-interp-op -cp Smalltalk TestSuite/TestHarness.som
+
+    - mx build-native -J -t OP -g ${GRAALEE_HOME}
+    - ./som-native-interp-op-ee -cp Smalltalk TestSuite/TestHarness.som
+
+    - lz4 som-native-interp-op som-native-interp-op.lz4
+    - lz4 som-native-interp-op-ee som-native-interp-op-ee.lz4
+    - |
+      sftp tmp-artifacts << EOF
+        -mkdir incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-op.lz4 incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-op-ee.lz4 incoming/${CI_PIPELINE_ID}/
+      EOF
+
 build:aarch64-test-and-rebench:
   stage: build-and-test
   tags: [kent-zullie1]
@@ -140,7 +164,13 @@ build:aarch64-test-and-rebench:
 
 benchmark-y1:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
+
   tags: [kent-yuria]
   script:
     - build_with_libgraal
@@ -155,7 +185,12 @@ benchmark-y1:
 
 benchmark-y2:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [kent-yuria2]
   script:
     - build_with_libgraal
@@ -170,7 +205,12 @@ benchmark-y2:
 
 benchmark-y3:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [kent-yuria3]
   script:
     - build_with_libgraal
@@ -185,7 +225,12 @@ benchmark-y3:
 
 benchmark-y4:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [kent-yuria4]
   script:
     - build_with_libgraal
