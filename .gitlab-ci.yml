@@ -13,17 +13,27 @@ variables:
   download-binaries: &DOWNLOAD_BINARIES |
     sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op.lz4
     sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
     sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op-ee.lz4
     lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+    lz4 -d som-native-interp-op.lz4  som-native-interp-op
     lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
     lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    lz4 -d som-native-interp-op-ee.lz4  som-native-interp-op-ee
 
   build-graal-locally: &BUILD_GRAAL_LOCALLY |
     ./som --setup labsjdk
     mx sforceimport
     mx --env libgraal build
+
+  ensure_labsjdk: &ENSURE_LABSJDK_AND_GRAAL_VERSION |
+    ./som --setup labsjdk
+    mx sforceimport
+    rm libs/jvmci || true
+    ./som --setup labsjdk
 
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
@@ -52,10 +62,8 @@ test:
   stage: build-and-test
   tags: [yuria4]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
     - mx build
     - mx tests-junit
     - mx tests-som
@@ -73,10 +81,8 @@ build:native-interp-ast:
   stage: build-and-test
   tags: [yuria2]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
     - mx build
     - mx build-native --no-jit -t AST -bn
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
@@ -98,10 +104,8 @@ build:native-interp-bc:
   stage: build-and-test
   tags: [yuria3]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
     - mx build
     - mx build-native --no-jit -t BC -bn
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
@@ -118,6 +122,28 @@ build:native-interp-bc:
         put som-native-interp-bc-ee.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
 
+build:native-interp-op:
+  stage: build-and-test
+  tags: [yuria]
+  script:
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
+    - mx build
+    - mx build-native -J -t OP -bn
+    - ./som-native-interp-op -cp Smalltalk TestSuite/TestHarness.som
+
+    - mx build-native -J -t OP -g ${GRAALEE_HOME}
+    - ./som-native-interp-op-ee -cp Smalltalk TestSuite/TestHarness.som
+
+    - lz4 som-native-interp-op som-native-interp-op.lz4
+    - lz4 som-native-interp-op-ee som-native-interp-op-ee.lz4
+    - |
+      sftp tmp-artifacts << EOF
+        -mkdir incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-op.lz4 incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-op-ee.lz4 incoming/${CI_PIPELINE_ID}/
+      EOF
+
 build:aarch64-test-and-rebench:
   stage: build-and-test
   tags: [zullie1]
@@ -125,10 +151,7 @@ build:aarch64-test-and-rebench:
     - pmset -g live
     - pmset -g systemstate
 
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
 
     - mx build
     - mx --env libgraal build
@@ -160,7 +183,13 @@ build:aarch64-test-and-rebench:
 
 benchmark-y1:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
+
   tags: [yuria]
   script:
     - *BUILD_GRAAL_LOCALLY
@@ -175,7 +204,12 @@ benchmark-y1:
 
 benchmark-y2:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [yuria2]
   script:
     - *BUILD_GRAAL_LOCALLY
@@ -190,7 +224,12 @@ benchmark-y2:
 
 benchmark-y3:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [yuria3]
   script:
     - *BUILD_GRAAL_LOCALLY
@@ -205,7 +244,12 @@ benchmark-y3:
 
 benchmark-y4:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs:
+    [
+      "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [yuria4]
   script:
     - *BUILD_GRAAL_LOCALLY
