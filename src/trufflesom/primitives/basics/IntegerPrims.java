@@ -258,7 +258,7 @@ public abstract class IntegerPrims {
   @Primitive(className = "Integer", primitive = "abs", selector = "abs",
       receiverType = {Long.class, BigInteger.class})
   public abstract static class AbsPrim extends UnaryMsgExprNode {
-    protected static final boolean minLong(final long receiver) {
+    public static final boolean minLong(final long receiver) {
       return receiver == Long.MIN_VALUE;
     }
 
