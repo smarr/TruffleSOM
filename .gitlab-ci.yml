@@ -100,6 +100,44 @@ build:native-interp-bc:
         put som-native-interp-bc-ee.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
 
+build:native-interp-op:
+  stage: build-and-test
+  tags: [yuria]
+  script:
+    - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
+    - ./som --setup labsjdk
+    - mx sforceimport
+    - mx build
+    - mx build-native -J -t OP -bn
+    - ./som-native-interp-op -cp Smalltalk TestSuite/TestHarness.som
+
+    # - mx build-native -J -t OP -g ${GRAALEE_HOME}
+    # - ./som-native-interp-op-ee -cp Smalltalk TestSuite/TestHarness.som
+
+    - lz4 som-native-interp-op som-native-interp-op.lz4
+    # - lz4 som-native-interp-op-ee som-native-interp-op-ee.lz4
+    - |
+      sftp tmp-artifacts << EOF
+        -mkdir incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-op.lz4 incoming/${CI_PIPELINE_ID}/
+      EOF
+#         put som-native-interp-op-ee.lz4 incoming/${CI_PIPELINE_ID}/
+.commands:
+  - &DOWNLOAD_BINARIES |
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    # sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-op-ee.lz4
+  - &UNPACK_BINARIES |
+    lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+    lz4 -d som-native-interp-op.lz4  som-native-interp-op
+    # lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
+    # lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
+    # lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    # lz4 -d som-native-interp-op-ee.lz4  som-native-interp-op-ee
+
 build:aarch64-test-and-rebench:
   stage: build-and-test
   tags: [zullie1]
@@ -142,21 +180,19 @@ build:aarch64-test-and-rebench:
 
 benchmark-y1:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs: [
+      # "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
+
   tags: [yuria]
   script:
     - ./som --setup labsjdk
     - mx sforceimport
     - mx --env libgraal build
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-
-    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - *DOWNLOAD_BINARIES
+    - *UNPACK_BINARIES
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
@@ -167,21 +203,18 @@ benchmark-y1:
 
 benchmark-y2:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs: [
+      # "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [yuria2]
   script:
     - ./som --setup labsjdk
     - mx sforceimport
     - mx --env libgraal build
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-
-    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - *DOWNLOAD_BINARIES
+    - *UNPACK_BINARIES
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
@@ -192,21 +225,18 @@ benchmark-y2:
 
 benchmark-y3:
   stage: benchmark
-  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  needs: [
+      # "build:native-interp-ast",
+      "build:native-interp-bc",
+      "build:native-interp-op",
+    ]
   tags: [yuria3]
   script:
     - ./som --setup labsjdk
     - mx sforceimport
     - mx --env libgraal build
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-
-    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - *DOWNLOAD_BINARIES
+    - *UNPACK_BINARIES
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
