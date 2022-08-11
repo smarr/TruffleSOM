@@ -92,7 +92,8 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-@GenerateBytecode(languageClass = SomLanguage.class)
+@GenerateOperations(languageClass = SomLanguage.class, decisionsFile = "decisions.json",
+    boxingEliminationTypes = {long.class, boolean.class, double.class})
 @TypeSystemReference(Types.class)
 @OperationProxy(SubtractionOp.class)
 @OperationProxy(AdditionOp.class)
