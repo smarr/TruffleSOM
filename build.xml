@@ -21,12 +21,12 @@ kernel:           ${kernel}</echo>
     <property name="lib.dir"     location="libs" />
     <property name="unit.dir"    location="tests"/>
     <property name="sdk.dir"     location="${lib.dir}/truffle/sdk" />
-    <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
     <property name="truffle.dir" location="${lib.dir}/truffle/truffle" />
     <property name="svm.dir"     location="${lib.dir}/truffle/substratevm" />
     <property name="vm.dir"        location="${lib.dir}/truffle/vm" />
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
-    <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
+    <property name="truffle.build" location="${truffle.dir}/mxbuild/jdk17/dists" />
+    <property name="sdk.build"   location="${sdk.dir}/mxbuild/jdk17/dists" />
     <property name="junit.version" value="4.12" />
 
     <property name="checkstyle.version" value="8.36" />
@@ -41,8 +41,8 @@ kernel:           ${kernel}</echo>
     <property environment="env"/>
 
     <path id="boot.cp">
-        <pathelement location="${sdk.build}/graal-sdk.jar" />
-        <pathelement location="${truffle.build}/truffle-api.jar" />
+        <pathelement location="${sdk.build}/jdk11/graal-sdk.jar" />
+        <pathelement location="${truffle.build}/jdk17/truffle-api.jar" />
     </path>
     
     <path id="common.cp">
@@ -57,7 +57,7 @@ kernel:           ${kernel}</echo>
         <pathelement location="${lib.dir}/junit-${junit.version}.jar" />
         <pathelement location="${lib.dir}/hamcrest-core-1.3.jar" />
 
-        <pathelement location="${truffle.build}/truffle-dsl-processor.jar" />
+        <pathelement location="${truffle.build}/jdk11/truffle-dsl-processor.jar" />
     </path>
 
     <available file="${jvmci.home}"  type="dir" property="jvmci.home.present" />
@@ -89,11 +89,6 @@ Native Image Targets
         <delete dir="${src_gen.dir}"/>
     </target>
     
-    <target name="clean-jvmci" description="Remove the JVMCI library">
-        <delete dir="${lib.dir}/jvmci"/>
-        <delete file="${lib.dir}/jvmci.tar.gz"/>
-    </target>
-    
     <target name="clean-ide" description="Remove Eclipse Projects">
         <exec executable="${mx.cmd}" dir="${truffle.dir}">
           <arg value="--dynamicimports"/>
@@ -121,7 +116,7 @@ Native Image Targets
     </target>
 
     <target name="clobber" description="Do clean, and also clean truffle build"
-        depends="clean-som,clobber-truffle,clean-jvmci">
+        depends="clean-som,clobber-truffle">
     </target>
 
     <target name="check-core-lib-available">

@@ -11,12 +11,12 @@ import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 @NodeChild(value = "rcvr", type = ExpressionNode.class)
 public abstract class IntIncrementNode extends ExpressionNode {
   @Specialization(rewriteOn = ArithmeticException.class)
-  public long doInc(final long rcvr) {
+  public static long doInc(final long rcvr) {
     return Math.addExact(rcvr, 1);
   }
 
   @Specialization
-  public double doInc(final double rcvr) {
+  public static double doInc(final double rcvr) {
     return rcvr + 1;
   }
 
