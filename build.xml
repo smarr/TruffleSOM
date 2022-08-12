@@ -150,6 +150,7 @@ Native Image Targets
             <env key="DISABLE_LIBPOLYGLOT" value="true" />
             <env key="EXCLUDE_COMPONENTS" value="svmag,nju,nic,ni,nil,ins,dap,lsp,insight,insightheap,vvm" />
             <env key="GRAALVM_SKIP_ARCHIVE" value="true" />
+            <env key="MX_IDE_ECLIPSE_ASYNC_DISTRIBUTIONS" value="true" />
             <arg line="build"/>
         </exec>
     </target>
@@ -157,6 +158,7 @@ Native Image Targets
     <target name="ideinit" depends="core-lib">
         <exec executable="${mx.cmd}" dir="${svm.dir}">
           <env key="JAVA_HOME" value="${jvmci.home}" />
+          <env key="MX_IDE_ECLIPSE_ASYNC_DISTRIBUTIONS" value="true" />
           <arg value="--dynamicimports"/>
           <arg value="../sdk,../tools,../substratevm,../truffle,../compiler"/>
           <arg value="eclipseinit"/>

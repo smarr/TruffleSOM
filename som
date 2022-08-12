@@ -166,7 +166,8 @@ if args.use_embedded_graal is True:
         'FORCE_BASH_LAUNCHERS': 'true',
         'DISABLE_LIBPOLYGLOT':  'true',
         'EXCLUDE_COMPONENTS':   'svmag,nju,nic,ni,nil,ins,dap,lsp,insight,insightheap,vvm',
-        'GRAALVM_SKIP_ARCHIVE': 'true'
+        'GRAALVM_SKIP_ARCHIVE': 'true',
+        'MX_IDE_ECLIPSE_ASYNC_DISTRIBUTIONS': 'true'
       })
     java_bin = libgraal_jdk_home.strip() + '/bin/java'
   except CalledProcessError as e:
