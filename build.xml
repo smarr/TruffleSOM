@@ -79,9 +79,10 @@ kernel:           ${kernel}</echo>
 Native Image Targets
 ====================
 
--Dno.jit      compile a native image with JIT compilation disabled
+-Dno.jit=true compile a native image with JIT compilation disabled
 -Ddump.method=MethodFilter  dump compiler graphs for the selected methods
-  for MethodFilter syntax see https://github.com/oracle/graal/blob/master/compiler/src/org.graalvm.compiler.debug/src/org/graalvm/compiler/debug/doc-files/MethodFilterHelp.txt</echo>
+  for MethodFilter syntax see https://github.com/oracle/graal/blob/master/compiler/src/org.graalvm.compiler.debug/src/org/graalvm/compiler/debug/doc-files/MethodFilterHelp.txt
+-Ddbg=true    when building a native image, wait for debugger to attach</echo>
     </target>
 
     <target name="clean-som" description="Remove build directories and generated code">
@@ -409,6 +410,7 @@ Native Image Targets
             <exec executable="@{exe}" dir="@{dir}" failonerror="true">
               <env key="JAVA_HOME" value="@{java-home}" />
               <arg line="native-image" if:true="@{is-ce}" />
+              <arg line="-J-Xdebug -J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" if:true="${dbg}" />
               <arg line="--macro:truffle --no-fallback" />
               
               <arg line="--initialize-at-build-time='bd,tools,trufflesom,org.graalvm.graphio'" if:set="dump.method" />
