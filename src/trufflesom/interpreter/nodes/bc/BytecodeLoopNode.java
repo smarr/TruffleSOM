@@ -254,8 +254,10 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     final byte[] bytecodes = bytecodesField;
     final Node[] quickened = quickenedField;
     final Object[] literalsAndConstants = literalsAndConstantsField;
+    final Object[] arguments = frame.getArguments();
 
-    if (bytecodes == null || quickened == null || literalsAndConstants == null) {
+    if (bytecodes == null || quickened == null || literalsAndConstants == null || frame == null
+        || arguments == null) {
       return throwIllegaleState();
     }
 
@@ -338,19 +340,19 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
         case PUSH_SELF: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[0];
+          stack[stackPointer] = arguments[0];
           bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case PUSH_ARG1: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[1];
+          stack[stackPointer] = arguments[1];
           bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case PUSH_ARG2: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[2];
+          stack[stackPointer] = arguments[2];
           bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
@@ -386,7 +388,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           stackPointer += 1;
           stack[stackPointer] =
-              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+              ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
           bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
@@ -400,7 +402,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           stackPointer += 1;
           stack[stackPointer] =
-              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+              ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
           bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
@@ -576,7 +578,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(0));
           }
 
-          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+          ((AbstractWriteFieldNode) node).write((SObject) arguments[0],
               stack[stackPointer]);
 
           stackPointer -= 1;
@@ -590,7 +592,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(1));
           }
 
-          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+          ((AbstractWriteFieldNode) node).write((SObject) arguments[0],
               stack[stackPointer]);
 
           stackPointer -= 1;
@@ -688,7 +690,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
         case RETURN_SELF: {
           LoopNode.reportLoopCount(this, backBranchesTaken);
-          return frame.getArguments()[0];
+          return arguments[0];
         }
 
         case RETURN_FIELD_0: {
@@ -698,7 +700,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
         }
         case RETURN_FIELD_1: {
           Node node = quickened[bytecodeIndex];
@@ -707,7 +709,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
         }
         case RETURN_FIELD_2: {
           Node node = quickened[bytecodeIndex];
@@ -716,7 +718,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(2));
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
         }
 
         case INC: {
