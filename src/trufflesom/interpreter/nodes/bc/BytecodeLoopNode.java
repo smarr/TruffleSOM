@@ -303,6 +303,13 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     return longVal;
   }
 
+  @InliningCutoff
+  private void missingBytecode(final byte bytecode) {
+    CompilerDirectives.transferToInterpreter();
+    throw new NotYetImplementedException("The bytecode " + bytecode + " ("
+        + Bytecodes.getBytecodeName(bytecode) + ") is not yet implemented.");
+  }
+
   @Override
   @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
   @BytecodeInterpreterSwitch
@@ -1105,9 +1112,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         }
 
         default:
-          CompilerDirectives.transferToInterpreter();
-          throw new NotYetImplementedException("The bytecode " + bytecode + " ("
-              + Bytecodes.getBytecodeName(bytecode) + ") is not yet implemented.");
+          missingBytecode(bytecode);
       }
     }
   }
