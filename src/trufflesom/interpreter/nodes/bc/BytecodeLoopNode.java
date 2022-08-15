@@ -89,6 +89,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.HostCompilerDirectives.BytecodeInterpreterSwitch;
+import com.oracle.truffle.api.HostCompilerDirectives.InliningCutoff;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -239,6 +240,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     quickenedField[bytecodeIndex] = insert(node);
   }
 
+  @InliningCutoff
+  private Object throwIllegaleState() {
+    throw new IllegalStateException("Not all required fields initialized in bytecode loop.");
+  }
+
   @Override
   @ExplodeLoop(kind = LoopExplosionKind.MERGE_EXPLODE)
   @BytecodeInterpreterSwitch
@@ -248,6 +254,10 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     final byte[] bytecodes = bytecodesField;
     final Node[] quickened = quickenedField;
     final Object[] literalsAndConstants = literalsAndConstantsField;
+
+    if (bytecodes == null || quickened == null || literalsAndConstants == null) {
+      return throwIllegaleState();
+    }
 
     int stackPointer = -1;
     int bytecodeIndex = 0;
