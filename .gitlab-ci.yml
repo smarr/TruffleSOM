@@ -87,6 +87,8 @@ benchmark-y1:
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
+  after_script:
+    - sudo reown-project.sh
 
 benchmark-y2:
   stage: benchmark
@@ -108,6 +110,8 @@ benchmark-y2:
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
+  after_script:
+    - sudo reown-project.sh
 
 benchmark-y3:
   stage: benchmark
@@ -129,6 +133,8 @@ benchmark-y3:
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
+  after_script:
+    - sudo reown-project.sh
 
 report-completion:
   stage: benchmark-completion
