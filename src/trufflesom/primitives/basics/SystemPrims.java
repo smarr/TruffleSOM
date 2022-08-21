@@ -21,6 +21,7 @@ import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
+import com.sun.management.ThreadMXBean;
 
 import bdt.primitives.Primitive;
 import bdt.source.SourceCoordinate;
@@ -246,13 +247,16 @@ public final class SystemPrims {
   @GenerateNodeFactory
   @Primitive(className = "System", primitive = "gcStats")
   public abstract static class GcStatsPrim extends UnaryExpressionNode {
-    @CompilationFinal private static List<GarbageCollectorMXBean> beans;
+    @CompilationFinal private static List<GarbageCollectorMXBean> gcBeans;
+    @CompilationFinal private static ThreadMXBean                 threadBean;
 
     @Specialization
     public final SArray doSObject(final Object receiver) {
-      if (beans == null) {
+      if (gcBeans == null) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
-        beans = ManagementFactory.getGarbageCollectorMXBeans();
+        gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
+        threadBean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
+        threadBean.setThreadAllocatedMemoryEnabled(true);
       }
 
       SArray arr = createStatsArray();
@@ -261,10 +265,11 @@ public final class SystemPrims {
 
     @TruffleBoundary
     private SArray createStatsArray() {
+      long allocatedBytes = threadBean.getCurrentThreadAllocatedBytes();
       long counts = 0;
       long time = 0;
 
-      for (GarbageCollectorMXBean b : beans) {
+      for (GarbageCollectorMXBean b : gcBeans) {
         long c = b.getCollectionCount();
         if (c != -1) {
           counts += c;
@@ -276,7 +281,7 @@ public final class SystemPrims {
         }
       }
 
-      return new SArray(new long[] {counts, time});
+      return new SArray(new long[] {counts, time, allocatedBytes});
     }
   }
 
