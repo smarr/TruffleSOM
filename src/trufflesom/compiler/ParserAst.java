@@ -44,6 +44,7 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
@@ -389,6 +390,9 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     ExpressionNode inlined = inlinableNodes.inline(msg, args, mgenc, coodWithL);
     if (inlined != null) {
       assert !isSuperSend;
+      if (args.length == 2 && inlined instanceof IfInlinedLiteralNode) {
+        return ((IfInlinedLiteralNode) inlined).asIsNilIfTrueIfPossible();
+      }
       return inlined;
     }
 
