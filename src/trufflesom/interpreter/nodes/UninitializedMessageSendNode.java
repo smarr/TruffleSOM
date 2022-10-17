@@ -5,7 +5,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import bdt.primitives.Specializer;
 import bdt.primitives.nodes.PreevaluatedExpression;
-import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vmobjects.SSymbol;
@@ -81,12 +80,6 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
   @Override
   public SSymbol getInvocationIdentifier() {
     return selector;
-  }
-
-  @Override
-  public void replaceDispatchListHead(final GenericDispatchNode replacement) {
-    CompilerDirectives.transferToInterpreter();
-    throw new UnsupportedOperationException();
   }
 
   @Override

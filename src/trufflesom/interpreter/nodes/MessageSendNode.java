@@ -1,6 +1,5 @@
 package trufflesom.interpreter.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -8,7 +7,6 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import bdt.primitives.Specializer;
 import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
-import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.interpreter.supernodes.BinaryArgSendNode;
 import trufflesom.interpreter.supernodes.QuatArgSendNode;
@@ -150,12 +148,6 @@ public final class MessageSendNode {
     }
 
     @Override
-    public void replaceDispatchListHead(final GenericDispatchNode replacement) {
-      CompilerDirectives.transferToInterpreter();
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void notifyDispatchInserted() {
       throw new UnsupportedOperationException();
     }
@@ -187,12 +179,6 @@ public final class MessageSendNode {
     @Override
     public String toString() {
       return "SendExpr(" + selector.getString() + ")";
-    }
-
-    @Override
-    public void replaceDispatchListHead(final GenericDispatchNode replacement) {
-      CompilerDirectives.transferToInterpreter();
-      throw new UnsupportedOperationException();
     }
 
     @Override

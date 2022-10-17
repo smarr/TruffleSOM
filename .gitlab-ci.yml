@@ -21,8 +21,9 @@ test:
   script:
     - (cd libs/truffle/compiler/mxbuild && sudo reown-project.sh) || true
     - ${ANT} tests native-obj-storage-test native-tests
-    #- ${ANT} nodestats-test coverage-test
     - ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives core-lib/SomSom/tests/SomSomTests.som
+    # - ${ANT} nodestats-test || true
+    # - ${ANT} coverage-test || true
 
 build:native-interp-ast:
   stage: build-and-test
@@ -86,6 +87,8 @@ benchmark-y1:
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
+  after_script:
+    - sudo reown-project.sh
 
 benchmark-y2:
   stage: benchmark
@@ -107,6 +110,8 @@ benchmark-y2:
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
+  after_script:
+    - sudo reown-project.sh
 
 benchmark-y3:
   stage: benchmark
@@ -128,6 +133,8 @@ benchmark-y3:
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
+  after_script:
+    - sudo reown-project.sh
 
 report-completion:
   stage: benchmark-completion

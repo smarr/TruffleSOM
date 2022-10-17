@@ -89,6 +89,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.HostCompilerDirectives.BytecodeInterpreterSwitch;
+import com.oracle.truffle.api.HostCompilerDirectives.InliningCutoff;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -108,7 +109,6 @@ import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.EscapedBlockException;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
-import trufflesom.interpreter.LexicalScope;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.Types;
@@ -219,6 +219,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
   }
 
   @ExplodeLoop
+  @InliningCutoff
   private MaterializedFrame determineContext(final VirtualFrame frame,
       final int contextLevel) {
     SBlock self = (SBlock) frame.getArguments()[0];
@@ -234,9 +235,78 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     return frameType.profile(self.getContext());
   }
 
-  public void requicken(final int bytecodeIndex, final byte bytecode, final Node node) {
-    bytecodesField[bytecodeIndex] = bytecode;
-    quickenedField[bytecodeIndex] = insert(node);
+  @InliningCutoff
+  private AbstractReadFieldNode createRead(final int bytecodeIndex, final int fieldIndex) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+
+    AbstractReadFieldNode result = FieldAccessorNode.createRead(fieldIndex);
+    quickenedField[bytecodeIndex] = insert(result);
+    return result;
+  }
+
+  @InliningCutoff
+  private AbstractWriteFieldNode createWrite(final int bytecodeIndex, final int fieldIndex) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+
+    AbstractWriteFieldNode result = FieldAccessorNode.createWrite(fieldIndex);
+    quickenedField[bytecodeIndex] = insert(result);
+    return result;
+  }
+
+  @InliningCutoff
+  private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,
+      final Node quickenedNode) {
+    quickenedField[bytecodeIndex] = insert(quickenedNode);
+    bytecodesField[bytecodeIndex] = quickenedBytecode;
+  }
+
+  @InliningCutoff
+  private Object throwIllegaleState() {
+    throw new IllegalStateException("Not all required fields initialized in bytecode loop.");
+  }
+
+  @InliningCutoff
+  private Object quickenAndExecuteGlobal(final VirtualFrame frame, final int bytecodeIndex) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+
+    byte literalIdx = bytecodesField[bytecodeIndex + 1];
+    SSymbol globalName = (SSymbol) literalsAndConstantsField[literalIdx];
+
+    GlobalNode quick =
+        GlobalNode.create(globalName, null).initialize(sourceCoord);
+    quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quick);
+
+    return quick.executeGeneric(frame);
+  }
+
+  @InliningCutoff
+  private long createAndDoIncrement(final int bytecodeIndex, final int fieldIdx,
+      final SObject obj) {
+    CompilerDirectives.transferToInterpreterAndInvalidate();
+    Object val = obj.getField(fieldIdx);
+    if (!(val instanceof Long)) {
+      throw new NotYetImplementedException();
+    }
+
+    long longVal;
+    try {
+      longVal = Math.addExact((Long) val, 1);
+      obj.setField(fieldIdx, longVal);
+    } catch (ArithmeticException e) {
+      throw new NotYetImplementedException();
+    }
+
+    quickenedField[bytecodeIndex] =
+        insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+
+    return longVal;
+  }
+
+  @InliningCutoff
+  private void missingBytecode(final byte bytecode) {
+    CompilerDirectives.transferToInterpreter();
+    throw new NotYetImplementedException("The bytecode " + bytecode + " ("
+        + Bytecodes.getBytecodeName(bytecode) + ") is not yet implemented.");
   }
 
   @Override
@@ -248,6 +318,12 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     final byte[] bytecodes = bytecodesField;
     final Node[] quickened = quickenedField;
     final Object[] literalsAndConstants = literalsAndConstantsField;
+    final Object[] arguments = frame.getArguments();
+
+    if (bytecodes == null || quickened == null || literalsAndConstants == null || frame == null
+        || arguments == null) {
+      return throwIllegaleState();
+    }
 
     int stackPointer = -1;
     int bytecodeIndex = 0;
@@ -256,8 +332,6 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
     while (true) {
       byte bytecode = bytecodes[bytecodeIndex];
-      final int bytecodeLength = getBytecodeLength(bytecode);
-      int nextBytecodeIndex = bytecodeIndex + bytecodeLength;
 
       CompilerAsserts.partialEvaluationConstant(bytecodeIndex);
       CompilerAsserts.partialEvaluationConstant(bytecode);
@@ -272,6 +346,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object top = stack[stackPointer];
           stackPointer += 1;
           stack[stackPointer] = top;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -287,22 +362,26 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object value = currentOrContext.getObject(localIdx);
           stackPointer += 1;
           stack[stackPointer] = value;
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           break;
         }
 
         case PUSH_LOCAL_0: {
           stackPointer += 1;
           stack[stackPointer] = frame.getObject(0);
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case PUSH_LOCAL_1: {
           stackPointer += 1;
           stack[stackPointer] = frame.getObject(1);
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case PUSH_LOCAL_2: {
           stackPointer += 1;
           stack[stackPointer] = frame.getObject(2);
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -319,48 +398,26 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object value = currentOrContext.getArguments()[argIdx];
           stackPointer += 1;
           stack[stackPointer] = value;
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           break;
         }
 
         case PUSH_SELF: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[0];
+          stack[stackPointer] = arguments[0];
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case PUSH_ARG1: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[1];
+          stack[stackPointer] = arguments[1];
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case PUSH_ARG2: {
           stackPointer += 1;
-          stack[stackPointer] = frame.getArguments()[2];
-          break;
-        }
-
-        case PUSH_FIELD_0: {
-          Node node = quickened[bytecodeIndex];
-          if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
-          }
-
-          stackPointer += 1;
-          stack[stackPointer] =
-              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
-          break;
-        }
-
-        case PUSH_FIELD_1: {
-          Node node = quickened[bytecodeIndex];
-          if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
-          }
-
-          stackPointer += 1;
-          stack[stackPointer] =
-              ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          stack[stackPointer] = arguments[2];
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -375,13 +432,39 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(fieldIdx));
+            node = createRead(bytecodeIndex, fieldIdx);
           }
 
           stackPointer += 1;
           stack[stackPointer] = ((AbstractReadFieldNode) node).read(
               (SObject) currentOrContext.getArguments()[0]);
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
+          break;
+        }
+
+        case PUSH_FIELD_0: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            node = createRead(bytecodeIndex, 0);
+          }
+
+          stackPointer += 1;
+          stack[stackPointer] =
+              ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
+          break;
+        }
+
+        case PUSH_FIELD_1: {
+          Node node = quickened[bytecodeIndex];
+          if (node == null) {
+            node = createRead(bytecodeIndex, 1);
+          }
+
+          stackPointer += 1;
+          stack[stackPointer] =
+              ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -391,6 +474,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           stackPointer += 1;
           stack[stackPointer] = new SBlock(blockMethod,
               Classes.getBlockClass(blockMethod.getNumberOfArguments()), frame.materialize());
+          bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           break;
         }
 
@@ -400,68 +484,69 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           stackPointer += 1;
           stack[stackPointer] = new SBlock(blockMethod,
               Classes.getBlockClass(blockMethod.getNumberOfArguments()), null);
+          bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           break;
         }
 
         case PUSH_CONSTANT: {
           stackPointer += 1;
           stack[stackPointer] = literalsAndConstants[bytecodes[bytecodeIndex + 1]];
+          bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           break;
         }
 
         case PUSH_CONSTANT_0: {
           stackPointer += 1;
           stack[stackPointer] = literalsAndConstants[0];
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
         case PUSH_CONSTANT_1: {
           stackPointer += 1;
           stack[stackPointer] = literalsAndConstants[1];
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
         case PUSH_CONSTANT_2: {
           stackPointer += 1;
           stack[stackPointer] = literalsAndConstants[2];
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
         case PUSH_0: {
           stackPointer += 1;
           stack[stackPointer] = 0L;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
         case PUSH_1: {
           stackPointer += 1;
           stack[stackPointer] = 1L;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
         case PUSH_NIL: {
           stackPointer += 1;
           stack[stackPointer] = Nil.nilObject;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
         case PUSH_GLOBAL: {
-          CompilerDirectives.transferToInterpreterAndInvalidate();
-
-          byte literalIdx = bytecodes[bytecodeIndex + 1];
-          SSymbol globalName = (SSymbol) literalsAndConstants[literalIdx];
-
-          GlobalNode quick =
-              GlobalNode.create(globalName, null).initialize(sourceCoord);
-          quickenBytecode(bytecodeIndex, Q_PUSH_GLOBAL, quick);
-
           stackPointer += 1;
-          stack[stackPointer] = quick.executeGeneric(frame);
+          stack[stackPointer] = quickenAndExecuteGlobal(frame, bytecodeIndex);
+          bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           break;
         }
 
         case POP: {
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -478,22 +563,26 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           stackPointer -= 1;
 
           currentOrContext.setObject(localIdx, value);
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           break;
         }
 
         case POP_LOCAL_0: {
           frame.setObject(0, stack[stackPointer]);
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case POP_LOCAL_1: {
           frame.setObject(1, stack[stackPointer]);
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case POP_LOCAL_2: {
           frame.setObject(2, stack[stackPointer]);
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -508,6 +597,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           currentOrContext.getArguments()[argIdx] = stack[stackPointer];
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           break;
         }
 
@@ -522,46 +612,46 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(fieldIdx));
+            node = createWrite(bytecodeIndex, fieldIdx);
           }
 
           ((AbstractWriteFieldNode) node).write((SObject) currentOrContext.getArguments()[0],
               stack[stackPointer]);
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           break;
         }
 
         case POP_FIELD_0: {
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(0));
+            node = createWrite(bytecodeIndex, 0);
           }
 
-          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+          ((AbstractWriteFieldNode) node).write((SObject) arguments[0],
               stack[stackPointer]);
 
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
         case POP_FIELD_1: {
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            quickened[bytecodeIndex] = node = insert(FieldAccessorNode.createWrite(1));
+            node = createWrite(bytecodeIndex, 1);
           }
 
-          ((AbstractWriteFieldNode) node).write((SObject) frame.getArguments()[0],
+          ((AbstractWriteFieldNode) node).write((SObject) arguments[0],
               stack[stackPointer]);
 
           stackPointer -= 1;
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
         case SEND: {
-          CompilerDirectives.transferToInterpreterAndInvalidate();
           try {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
             byte literalIdx = bytecodes[bytecodeIndex + 1];
             SSymbol signature = (SSymbol) literalsAndConstants[literalIdx];
             int numberOfArguments = signature.getNumberOfSignatureArguments();
@@ -576,8 +666,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
             stackPointer += 1;
             stack[stackPointer] = result;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RestartLoopException e) {
-            nextBytecodeIndex = 0;
+            bytecodeIndex = 0;
             stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
@@ -588,6 +679,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
             stackPointer += 1;
             stack[stackPointer] = result;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           }
           break;
         }
@@ -612,8 +704,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
             stackPointer += 1;
             stack[stackPointer] = result;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RestartLoopException e) {
-            nextBytecodeIndex = 0;
+            bytecodeIndex = 0;
             stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
@@ -625,6 +718,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
             stackPointer += 1;
             stack[stackPointer] = result;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           }
           break;
         }
@@ -640,40 +734,37 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object result = stack[stackPointer];
           // stackPointer -= 1;
           doReturnNonLocal(frame, bytecodeIndex, result);
-          break;
+          return Nil.nilObject;
         }
 
         case RETURN_SELF: {
           LoopNode.reportLoopCount(this, backBranchesTaken);
-          return frame.getArguments()[0];
+          return arguments[0];
         }
 
         case RETURN_FIELD_0: {
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(0));
+            node = createRead(bytecodeIndex, 0);
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
         }
         case RETURN_FIELD_1: {
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(1));
+            node = createRead(bytecodeIndex, 1);
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
         }
         case RETURN_FIELD_2: {
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            node = quickened[bytecodeIndex] = insert(FieldAccessorNode.createRead(2));
+            node = createRead(bytecodeIndex, 2);
           }
 
-          return ((AbstractReadFieldNode) node).read((SObject) frame.getArguments()[0]);
+          return ((AbstractReadFieldNode) node).read((SObject) arguments[0]);
         }
 
         case INC: {
@@ -693,6 +784,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
               throw new NotYetImplementedException();
             }
           }
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -708,6 +800,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
               throw new NotYetImplementedException();
             }
           }
+          bytecodeIndex += Bytecodes.LEN_NO_ARG;
           break;
         }
 
@@ -724,25 +817,13 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            Object val = obj.getField(fieldIdx);
-            if (!(val instanceof Long)) {
-              throw new NotYetImplementedException();
-            }
-
-            try {
-              long longVal = Math.addExact((Long) val, 1);
-              obj.setField(fieldIdx, longVal);
-            } catch (ArithmeticException e) {
-              throw new NotYetImplementedException();
-            }
-
-            node = quickened[bytecodeIndex] =
-                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            createAndDoIncrement(bytecodeIndex, fieldIdx, obj);
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
             break;
           }
 
           ((IncrementLongFieldNode) node).increment(obj, 1);
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           break;
         }
 
@@ -759,35 +840,22 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           Node node = quickened[bytecodeIndex];
           if (node == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            Object val = obj.getField(fieldIdx);
-            if (!(val instanceof Long)) {
-              throw new NotYetImplementedException();
-            }
-
-            try {
-              long longVal = Math.addExact((Long) val, 1);
-              obj.setField(fieldIdx, longVal);
-              stackPointer += 1;
-              stack[stackPointer] = longVal;
-            } catch (ArithmeticException e) {
-              throw new NotYetImplementedException();
-            }
-
-            node = quickened[bytecodeIndex] =
-                insert(FieldAccessorNode.createIncrement(fieldIdx, obj));
+            stackPointer += 1;
+            stack[stackPointer] = createAndDoIncrement(bytecodeIndex, fieldIdx, obj);
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
             break;
           }
 
           long value = ((IncrementLongFieldNode) node).increment(obj, 1);
           stackPointer += 1;
           stack[stackPointer] = value;
+          bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           break;
         }
 
         case JUMP: {
           int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
-          nextBytecodeIndex = bytecodeIndex + offset;
+          bytecodeIndex += offset;
           break;
         }
 
@@ -795,10 +863,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object val = stack[stackPointer];
           if (val == Boolean.TRUE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
             stack[stackPointer] = Nil.nilObject;
           } else {
             stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           break;
         }
@@ -807,10 +876,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object val = stack[stackPointer];
           if (val == Boolean.FALSE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
             stack[stackPointer] = Nil.nilObject;
           } else {
             stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           break;
         }
@@ -819,7 +889,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object val = stack[stackPointer];
           if (val == Boolean.TRUE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           stackPointer -= 1;
           break;
@@ -829,7 +901,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Object val = stack[stackPointer];
           if (val == Boolean.FALSE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           stackPointer -= 1;
           break;
@@ -837,14 +911,14 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
         case JUMP_BACKWARDS: {
           int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
-          nextBytecodeIndex = bytecodeIndex - offset;
+          bytecodeIndex -= offset;
           break;
         }
 
         case JUMP2: {
           int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
               + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
-          nextBytecodeIndex = bytecodeIndex + offset;
+          bytecodeIndex += offset;
 
           if (CompilerDirectives.inInterpreter()) {
             backBranchesTaken += 1;
@@ -857,10 +931,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           if (val == Boolean.TRUE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
                 + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
             stack[stackPointer] = Nil.nilObject;
           } else {
             stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           break;
         }
@@ -870,10 +945,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           if (val == Boolean.FALSE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
                 + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
             stack[stackPointer] = Nil.nilObject;
           } else {
             stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           break;
         }
@@ -883,7 +959,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           if (val == Boolean.TRUE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
                 + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           stackPointer -= 1;
           break;
@@ -894,7 +972,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           if (val == Boolean.FALSE) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
                 + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
-            nextBytecodeIndex = bytecodeIndex + offset;
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_THREE_ARGS;
           }
           stackPointer -= 1;
           break;
@@ -903,7 +983,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case JUMP2_BACKWARDS: {
           int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
               + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
-          nextBytecodeIndex = bytecodeIndex - offset;
+          bytecodeIndex -= offset;
 
           if (CompilerDirectives.inInterpreter()) {
             backBranchesTaken += 1;
@@ -914,6 +994,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case Q_PUSH_GLOBAL: {
           stackPointer += 1;
           stack[stackPointer] = ((GlobalNode) quickened[bytecodeIndex]).executeGeneric(frame);
+          bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           break;
         }
 
@@ -927,8 +1008,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           try {
             stack[stackPointer] = node.doPreEvaluated(frame, callArgs);
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RestartLoopException e) {
-            nextBytecodeIndex = 0;
+            bytecodeIndex = 0;
             stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
@@ -936,7 +1018,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           }
+
           break;
         }
 
@@ -946,8 +1030,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           try {
             UnaryExpressionNode node = (UnaryExpressionNode) quickened[bytecodeIndex];
             stack[stackPointer] = node.executeEvaluated(frame, rcvr);
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RestartLoopException e) {
-            nextBytecodeIndex = 0;
+            bytecodeIndex = 0;
             stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
@@ -955,10 +1040,12 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RespecializeException r) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickenBytecode(bytecodeIndex, Q_SEND, r.send);
             stack[stackPointer] = r.send.doPreEvaluated(frame, new Object[] {rcvr});
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           }
           break;
         }
@@ -972,8 +1059,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           try {
             BinaryExpressionNode node = (BinaryExpressionNode) quickened[bytecodeIndex];
             stack[stackPointer] = node.executeEvaluated(frame, rcvr, arg);
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RestartLoopException e) {
-            nextBytecodeIndex = 0;
+            bytecodeIndex = 0;
             stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
@@ -981,10 +1069,12 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RespecializeException r) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickenBytecode(bytecodeIndex, Q_SEND, r.send);
             stack[stackPointer] = r.send.doPreEvaluated(frame, new Object[] {rcvr, arg});
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           }
           break;
         }
@@ -999,8 +1089,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           try {
             TernaryExpressionNode node = (TernaryExpressionNode) quickened[bytecodeIndex];
             stack[stackPointer] = node.executeEvaluated(frame, rcvr, arg1, arg2);
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RestartLoopException e) {
-            nextBytecodeIndex = 0;
+            bytecodeIndex = 0;
             stackPointer = -1;
           } catch (EscapedBlockException e) {
             CompilerDirectives.transferToInterpreter();
@@ -1008,25 +1099,24 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
             stack[stackPointer] =
                 SAbstractObject.sendEscapedBlock(sendOfBlockValueMsg, e.getBlock());
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           } catch (RespecializeException r) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             quickenBytecode(bytecodeIndex, Q_SEND, r.send);
             stack[stackPointer] =
                 r.send.doPreEvaluated(frame, new Object[] {rcvr, arg1, arg2});
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           }
           break;
         }
 
         default:
-          CompilerDirectives.transferToInterpreter();
-          throw new NotYetImplementedException("The bytecode " + bytecode + " ("
-              + Bytecodes.getBytecodeName(bytecode) + ") is not yet implemented.");
+          missingBytecode(bytecode);
       }
-
-      bytecodeIndex = nextBytecodeIndex;
     }
   }
 
+  @InliningCutoff
   public Object specializeSendBytecode(final VirtualFrame frame, final int bytecodeIndex,
       final SSymbol signature, final int numberOfArguments, final Object[] callArgs) {
     Object result = null;
@@ -1085,16 +1175,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     return result;
   }
 
-  private void quickenBytecode(final int bytecodeIndex, final byte quickenedBytecode,
-      final Node quickenedNode) {
-    quickenedField[bytecodeIndex] = insert(quickenedNode);
-    bytecodesField[bytecodeIndex] = quickenedBytecode;
-  }
-
   private SClass getHolder() {
     return ((Invokable) getRootNode()).getHolder();
   }
 
+  @InliningCutoff
   private void doReturnNonLocal(final VirtualFrame frame, final int bytecodeIndex,
       final Object result) {
     byte contextIdx = bytecodesField[bytecodeIndex + 1];
@@ -1576,10 +1661,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Method adapted =
               blockIvk.cloneAndAdaptAfterScopeChange(null, inliner.getScope(blockIvk),
                   inliner.contextLevel + 1, true, requiresChangesToContextLevels);
-          SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
-              blockMethod.getEmbeddedBlocks());
-          newMethod.setHolder(blockMethod.getHolder());
-          literalsAndConstants[literalIdx] = newMethod;
+          blockMethod.updateAfterScopeChange(adapted);
           break;
         }
 

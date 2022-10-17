@@ -12,7 +12,7 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateNodeFactory
 public abstract class AndBoolMessageNode extends BinaryMsgExprNode {
   @Specialization
-  public final boolean doAnd(final VirtualFrame frame, final boolean receiver,
+  public static final boolean doAnd(final VirtualFrame frame, final boolean receiver,
       final boolean argument) {
     return receiver && argument;
   }

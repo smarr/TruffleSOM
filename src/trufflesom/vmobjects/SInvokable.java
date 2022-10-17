@@ -39,15 +39,16 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Invokable;
+import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vm.Classes;
 
 
 public abstract class SInvokable extends SAbstractObject {
 
-  protected final Invokable invokable;
-  protected final SSymbol   signature;
-  protected final int       numArguments;
+  @CompilationFinal protected Invokable invokable;
+  protected final SSymbol               signature;
+  protected final int                   numArguments;
 
   @CompilationFinal protected SClass holder;
 
@@ -95,6 +96,10 @@ public abstract class SInvokable extends SAbstractObject {
       } else {
         return signature.toString();
       }
+    }
+
+    public void updateAfterScopeChange(final Method updated) {
+      invokable = updated;
     }
   }
 

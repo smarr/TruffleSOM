@@ -8,7 +8,6 @@ import com.oracle.truffle.api.nodes.Node;
 
 import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
-import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SObject;
@@ -55,8 +54,7 @@ public final class UninitializedDispatchNode extends AbstractDispatchNode {
     // the chain is longer than the maximum defined by INLINE_CACHE_SIZE and
     // thus, this callsite is considered to be megaprophic, and we generalize it.
     GenericDispatchNode genericReplacement = new GenericDispatchNode(selector);
-    AbstractMessageSendNode sendNode = (AbstractMessageSendNode) first.getParent();
-    sendNode.replaceDispatchListHead(genericReplacement);
+    first.replace(genericReplacement);
     return genericReplacement;
   }
 

@@ -1,6 +1,7 @@
 package trufflesom.interpreter.objectstorage;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.HostCompilerDirectives.InliningCutoff;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
@@ -18,14 +19,17 @@ import trufflesom.vmobjects.SObject;
 public abstract class FieldAccessorNode extends Node {
   protected final int fieldIndex;
 
+  @InliningCutoff
   public static AbstractReadFieldNode createRead(final int fieldIndex) {
     return new UninitializedReadFieldNode(fieldIndex);
   }
 
+  @InliningCutoff
   public static AbstractWriteFieldNode createWrite(final int fieldIndex) {
     return new UninitializedWriteFieldNode(fieldIndex);
   }
 
+  @InliningCutoff
   public static IncrementLongFieldNode createIncrement(final int fieldIndex,
       final SObject obj) {
     final ObjectLayout layout = obj.getObjectLayout();
@@ -66,6 +70,7 @@ public abstract class FieldAccessorNode extends Node {
       return specialize(obj, reason, next).read(obj);
     }
 
+    @InliningCutoff
     protected final AbstractReadFieldNode specialize(final SObject obj,
         final String reason, final AbstractReadFieldNode next) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -86,6 +91,7 @@ public abstract class FieldAccessorNode extends Node {
     }
 
     @Override
+    @InliningCutoff
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
       return specializeAndRead(obj, "uninitalized node",
@@ -134,8 +140,14 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).read(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        return dropAndReadNext(obj);
       }
+    }
+
+    @InliningCutoff
+    private Object dropAndReadNext(final SObject obj) {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
     }
   }
 
@@ -157,8 +169,14 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).readLong(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(SOMNode.unwrapIfNeeded(nextInCache)).readLong(obj);
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        return dropAndReadNext(obj);
       }
+    }
+
+    @InliningCutoff
+    private long dropAndReadNext(final SObject obj) throws UnexpectedResultException {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).readLong(obj);
     }
 
     @Override
@@ -189,8 +207,14 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).readDouble(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(SOMNode.unwrapIfNeeded(nextInCache)).readDouble(obj);
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        return dropAndReadNext(obj);
       }
+    }
+
+    @InliningCutoff
+    private double dropAndReadNext(final SObject obj) throws UnexpectedResultException {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).readDouble(obj);
     }
 
     @Override
@@ -221,8 +245,14 @@ public abstract class FieldAccessorNode extends Node {
           return respecializedNodeOrNext(obj).read(obj);
         }
       } catch (InvalidAssumptionException e) {
-        return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        return dropAndReadNext(obj);
       }
+    }
+
+    @InliningCutoff
+    private Object dropAndReadNext(final SObject obj) {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
     }
   }
 
@@ -243,6 +273,7 @@ public abstract class FieldAccessorNode extends Node {
       return value;
     }
 
+    @InliningCutoff
     protected final void writeAndRespecialize(final SObject obj, final Object value,
         final String reason, final AbstractWriteFieldNode next) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -262,6 +293,7 @@ public abstract class FieldAccessorNode extends Node {
     }
 
     @Override
+    @InliningCutoff
     public Object write(final SObject obj, final Object value) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
       writeAndRespecialize(obj, value, "initialize write field node",
@@ -316,12 +348,18 @@ public abstract class FieldAccessorNode extends Node {
           return nextInCache.increment(obj, incValue);
         }
       } catch (InvalidAssumptionException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
         ensureNext(obj);
-        return replace(SOMNode.unwrapIfNeeded(nextInCache)).increment(
-            obj, incValue);
+        return dropAndIncrementNext(obj, incValue);
       }
     }
 
+    @InliningCutoff
+    private long dropAndIncrementNext(final SObject obj, final long incValue) {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).increment(obj, incValue);
+    }
+
+    @InliningCutoff
     private void ensureNext(final SObject obj) {
       if (nextInCache == null) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -352,9 +390,15 @@ public abstract class FieldAccessorNode extends Node {
           }
         }
       } catch (InvalidAssumptionException e) {
-        replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        dropAndWriteNext(obj, value);
       }
       return value;
+    }
+
+    @InliningCutoff
+    private void dropAndWriteNext(final SObject obj, final long value) {
+      replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
     }
 
     @Override
@@ -394,9 +438,15 @@ public abstract class FieldAccessorNode extends Node {
           }
         }
       } catch (InvalidAssumptionException e) {
-        replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        dropAndWriteNext(obj, value);
       }
       return value;
+    }
+
+    @InliningCutoff
+    private void dropAndWriteNext(final SObject obj, final double value) {
+      replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
     }
 
     @Override
@@ -436,9 +486,15 @@ public abstract class FieldAccessorNode extends Node {
           }
         }
       } catch (InvalidAssumptionException e) {
-        replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        dropAndWriteNext(obj, value);
       }
       return value;
+    }
+
+    @InliningCutoff
+    private void dropAndWriteNext(final SObject obj, final Object value) {
+      replace(SOMNode.unwrapIfNeeded(nextInCache)).write(obj, value);
     }
   }
 }
