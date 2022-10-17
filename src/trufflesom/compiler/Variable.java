@@ -62,7 +62,7 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
 
   public abstract Variable split();
 
-  public abstract Local splitToMergeIntoOuterScope(int slotIndex);
+  public abstract Local splitToMergeIntoOuterScope(int newSlotIndex);
 
   @Override
   public boolean equals(final Object o) {
@@ -106,12 +106,12 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final int slotIndex) {
+    public Local splitToMergeIntoOuterScope(final int newSlotIndex) {
       if (isSelf()) {
         return null;
       }
 
-      return new Local(name, coord, slotIndex);
+      return new Local(name, coord, newSlotIndex);
     }
 
     @Override
@@ -188,8 +188,8 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final int slotIndex) {
-      return new Local(name, coord, slotIndex);
+    public Local splitToMergeIntoOuterScope(final int newSlotIndex) {
+      return new Local(name, coord, newSlotIndex);
     }
 
     @Override
@@ -244,7 +244,7 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     }
 
     @Override
-    public Local splitToMergeIntoOuterScope(final int slotIndex) {
+    public Local splitToMergeIntoOuterScope(final int newSlotIndex) {
       return null;
     }
 
