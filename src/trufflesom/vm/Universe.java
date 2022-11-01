@@ -103,8 +103,15 @@ public final class Universe {
   @CompilationFinal private static SObject systemObject;
   @CompilationFinal private static SClass  systemClass;
 
-  public static void setSourceCompiler(final SourcecodeCompiler compiler) {
-    sourceCompiler = compiler;
+  public static void setSourceCompiler(final SourcecodeCompiler compiler,
+      final boolean needsToSucceed) {
+    // this will cause headaches when we need to debug this
+    // I do this because I don't want SomLanguage.initializeContext to override things
+    if (sourceCompiler == null) {
+      sourceCompiler = compiler;
+    } else if (needsToSucceed) {
+      sourceCompiler = compiler;
+    }
   }
 
   public static void reset() {

@@ -48,9 +48,9 @@ public class TruffleTestSetup {
     StorageAnalyzer.initAccessors();
 
     if (VmSettings.UseAstInterp) {
-      Universe.setSourceCompiler(new AstCompiler());
+      Universe.setSourceCompiler(new AstCompiler(), true);
     } else {
-      Universe.setSourceCompiler(new BcCompiler());
+      Universe.setSourceCompiler(new BcCompiler(), true);
     }
 
     Builder builder = Universe.createContextBuilder();
