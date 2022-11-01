@@ -154,7 +154,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     return variableWrite(mgenc, variable, value, getCoordWithLength(coord));
   }
 
-  private ExpressionNode variableWrite(final MethodGenerationContext mgenc,
+  protected ExpressionNode variableWrite(final MethodGenerationContext mgenc,
       final SSymbol variableName, final ExpressionNode exp, final long coord)
       throws ParseError {
     Variable variable = mgenc.getVariable(variableName);
