@@ -218,6 +218,10 @@ public abstract class FieldNode extends ExpressionNode {
       this.sourceCoord = coord;
     }
 
+    public int getFieldIndex() {
+      return fieldIndex;
+    }
+
     @Override
     public ExpressionNode getSelf() {
       return self;
