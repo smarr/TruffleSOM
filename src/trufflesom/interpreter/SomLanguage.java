@@ -72,9 +72,9 @@ public class SomLanguage extends TruffleLanguage<SomLanguage> {
     current = this;
 
     if (VmSettings.UseAstInterp) {
-      Universe.setSourceCompiler(new AstCompiler());
+      Universe.setSourceCompiler(new AstCompiler(), false);
     } else {
-      Universe.setSourceCompiler(new BcCompiler());
+      Universe.setSourceCompiler(new BcCompiler(), false);
     }
   }
 
