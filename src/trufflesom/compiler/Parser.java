@@ -105,7 +105,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   static {
     for (Symbol s : new Symbol[] {Not, And, Or, Star, Div, Mod, Plus, Equal,
-        More, Less, Comma, At, Per}) {
+        More, Less, Comma, At, Minus, Per}) {
       singleOpSyms.add(s);
     }
     for (Symbol s : new Symbol[] {Or, Comma, Minus, Equal, Not, And, Or, Star,
@@ -500,11 +500,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     String s = new String(text);
 
     // Checkstyle: stop @formatter:off
-    if (accept(Or)) {
-    } else if (accept(Comma)) {
-    } else if (accept(Minus)) {
-    } else if (accept(Equal)) {
-    } else if (acceptOneOf(singleOpSyms)) {
+    if (acceptOneOf(singleOpSyms)) {
     } else if (accept(OperatorSequence)) {
     } else { expect(NONE); }
     // Checkstyle: resume @formatter:on
