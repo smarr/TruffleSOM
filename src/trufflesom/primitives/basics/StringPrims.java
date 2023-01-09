@@ -52,6 +52,11 @@ public class StringPrims {
     }
   }
 
+  @TruffleBoundary
+  private static String substring(final String str, final int start, final int end) {
+    return str.substring(start, end);
+  }
+
   @GenerateNodeFactory
   @Primitive(className = "String", primitive = "charAt:", selector = "charAt:")
   public abstract static class CharAtPrim extends BinaryMsgExprNode {
@@ -67,7 +72,7 @@ public class StringPrims {
     public final String doString(final String receiver, final long idx) {
       int index = (int) idx;
       if (0 < index && index <= receiver.length()) {
-        return receiver.substring(index - 1, index);
+        return substring(receiver, index - 1, index);
       }
 
       if (!branchTaken) {
@@ -82,7 +87,7 @@ public class StringPrims {
       int index = (int) idx;
       String s = receiver.getString();
       if (0 < index && index <= s.length()) {
-        return s.substring(index - 1, index);
+        return substring(s, index - 1, index);
       }
 
       if (!branchTaken) {
@@ -114,7 +119,7 @@ public class StringPrims {
     public static final String doString(final String receiver, final long start,
         final long end) {
       try {
-        return receiver.substring((int) start - 1, (int) end);
+        return substring(receiver, (int) start - 1, (int) end);
       } catch (StringIndexOutOfBoundsException e) {
         return "Error - index out of bounds";
       }
