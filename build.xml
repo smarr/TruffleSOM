@@ -3,7 +3,7 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="labs-jdk" value="labsjdk-ce-17" />
+    <property name="labs-jdk" value="labsjdk-ce-19" />
 
     <condition property="kernel" value="darwin-amd64" else="linux-amd64">
         <os family="mac"/>
@@ -25,8 +25,8 @@ kernel:           ${kernel}</echo>
     <property name="svm.dir"     location="${lib.dir}/truffle/substratevm" />
     <property name="vm.dir"        location="${lib.dir}/truffle/vm" />
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
-    <property name="truffle.build" location="${truffle.dir}/mxbuild/jdk17/dists" />
-    <property name="sdk.build"   location="${sdk.dir}/mxbuild/jdk17/dists" />
+    <property name="truffle.build" location="${truffle.dir}/mxbuild/jdk19/dists" />
+    <property name="sdk.build"   location="${sdk.dir}/mxbuild/jdk19/dists" />
     <property name="junit.version" value="4.12" />
 
     <property name="checkstyle.version" value="8.36" />
@@ -42,7 +42,7 @@ kernel:           ${kernel}</echo>
 
     <path id="boot.cp">
         <pathelement location="${sdk.build}/jdk11/graal-sdk.jar" />
-        <pathelement location="${truffle.build}/jdk17/truffle-api.jar" />
+        <pathelement location="${truffle.build}/jdk19/truffle-api.jar" />
     </path>
     
     <path id="common.cp">

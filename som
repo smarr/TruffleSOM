@@ -194,11 +194,11 @@ else:
 ##
 ## Defining Necessary Parameter Bits
 ##
-TRUFFLE_API_JAR = TRUFFLE_DIR + '/truffle/mxbuild/jdk17/dists/jdk17/truffle-api.jar'
-GRAAL_SDK_JAR   = TRUFFLE_DIR + '/sdk/mxbuild/jdk17/dists/jdk11/graal-sdk.jar'
-LIBGRAAL_JAR    = TRUFFLE_DIR + '/compiler/mxbuild/jdk17/dists/jdk11/graal-truffle-compiler-libgraal.jar'
-COVERAGE_JAR    = TRUFFLE_DIR + '/tools/mxbuild/jdk17/dists/jdk11/truffle-coverage.jar'
-PROFILER_JAR    = TRUFFLE_DIR + '/tools/mxbuild/jdk17/dists/jdk11/truffle-profiler.jar'
+TRUFFLE_API_JAR = TRUFFLE_DIR + '/truffle/mxbuild/jdk19/dists/jdk19/truffle-api.jar'
+GRAAL_SDK_JAR   = TRUFFLE_DIR + '/sdk/mxbuild/jdk19/dists/jdk11/graal-sdk.jar'
+LIBGRAAL_JAR    = TRUFFLE_DIR + '/compiler/mxbuild/jdk19/dists/jdk11/graal-truffle-compiler-libgraal.jar'
+COVERAGE_JAR    = TRUFFLE_DIR + '/tools/mxbuild/jdk19/dists/jdk11/truffle-coverage.jar'
+PROFILER_JAR    = TRUFFLE_DIR + '/tools/mxbuild/jdk19/dists/jdk11/truffle-profiler.jar'
 
 classpath = (BASE_DIR + '/build/classes:'
            + BASE_DIR + '/libs/black-diamonds/build/classes:'
