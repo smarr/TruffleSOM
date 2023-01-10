@@ -27,8 +27,8 @@ import com.oracle.truffle.api.nodes.ControlFlowException;
 public final class ReturnException extends ControlFlowException {
   private static final long serialVersionUID = 8003954137724716L;
 
-  private final Object             result;
-  private final FrameOnStackMarker target;
+  private final transient Object             result;
+  private final transient FrameOnStackMarker target;
 
   public ReturnException(final Object result, final FrameOnStackMarker target) {
     this.result = result;

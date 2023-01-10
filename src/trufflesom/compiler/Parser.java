@@ -84,7 +84,8 @@ import trufflesom.vmobjects.SSymbol;
 
 public abstract class Parser<MGenC extends MethodGenerationContext> {
 
-  protected final Lexer  lexer;
+  protected final Lexer lexer;
+
   protected final Source source;
 
   protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe;
@@ -129,7 +130,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
     private final int startIndex;
 
-    private final Source source;
+    private final transient Source source;
+
     private final String text;
     private final String rawBuffer;
     private final String fileName;
@@ -193,8 +195,8 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   public static class ParseErrorWithSymbolList extends ParseError {
-    private static final long  serialVersionUID = 561313162441723955L;
-    private final List<Symbol> expectedSymbols;
+    private static final long            serialVersionUID = 561313162441723955L;
+    private final transient List<Symbol> expectedSymbols;
 
     ParseErrorWithSymbolList(final String message, final List<Symbol> expected,
         final Parser<?> parser) {
