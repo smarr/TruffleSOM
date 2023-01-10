@@ -3,10 +3,13 @@ package trufflesom.primitives.basics;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.profiles.InlinedBranchProfile;
 
 import bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -126,7 +129,6 @@ public abstract class IntegerPrims {
   @GenerateNodeFactory
   @Primitive(className = "Integer", primitive = "<<", selector = "<<")
   public abstract static class LeftShiftPrim extends ArithmeticPrim {
-    private final BranchProfile overflow = BranchProfile.create();
 
     @Override
     public SSymbol getSelector() {
@@ -134,11 +136,12 @@ public abstract class IntegerPrims {
     }
 
     @Specialization(rewriteOn = ArithmeticException.class)
-    public final long doLong(final long receiver, final long right) {
+    public static final long doLong(final long receiver, final long right,
+        @Cached final InlinedBranchProfile overflow, @Bind("this") final Node node) {
       assert right >= 0; // currently not defined for negative values of right
 
       if (Long.SIZE - Long.numberOfLeadingZeros(receiver) + right > Long.SIZE - 1) {
-        overflow.enter();
+        overflow.enter(node);
         throw new ArithmeticException("shift overflows long");
       }
       return receiver << right;
