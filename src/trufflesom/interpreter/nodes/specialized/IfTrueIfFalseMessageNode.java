@@ -3,12 +3,16 @@ package trufflesom.interpreter.nodes.specialized;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.profiles.InlinedCountingConditionProfile;
 
 import bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.TernaryMsgExprNode;
@@ -25,7 +29,6 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateNodeFactory
 @Primitive(selector = "ifTrue:ifFalse:", requiresArguments = true)
 public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
-  private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
 
   private final SInvokable trueMethod;
   private final SInvokable falseMethod;
@@ -69,8 +72,10 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
 
   @Specialization(guards = "hasSameArguments(trueBlock, falseBlock)")
   public final Object doIfTrueIfFalseWithInliningTwoBlocks(final boolean receiver,
-      final SBlock trueBlock, final SBlock falseBlock) {
-    if (condProf.profile(receiver)) {
+      final SBlock trueBlock, final SBlock falseBlock,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, receiver)) {
       return trueValueSend.call(new Object[] {trueBlock});
     } else {
       return falseValueSend.call(new Object[] {falseBlock});
@@ -80,9 +85,11 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningTwoBlocks"})
   @TruffleBoundary
   public final Object doIfTrueIfFalse(final boolean receiver, final SBlock trueBlock,
-      final SBlock falseBlock) {
+      final SBlock falseBlock,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
     CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.10");
-    if (condProf.profile(receiver)) {
+    if (condProf.profile(node, receiver)) {
       return trueBlock.getMethod().invoke(call, new Object[] {trueBlock});
     } else {
       return falseBlock.getMethod().invoke(call, new Object[] {falseBlock});
@@ -91,8 +98,10 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
 
   @Specialization(guards = "hasSameArguments(trueValue, falseBlock)")
   public final Object doIfTrueIfFalseWithInliningTrueValue(final boolean receiver,
-      final Object trueValue, final SBlock falseBlock) {
-    if (condProf.profile(receiver)) {
+      final Object trueValue, final SBlock falseBlock,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, receiver)) {
       return trueValue;
     } else {
       return falseValueSend.call(new Object[] {falseBlock});
@@ -101,8 +110,10 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
 
   @Specialization(guards = "hasSameArguments(trueBlock, falseValue)")
   public final Object doIfTrueIfFalseWithInliningFalseValue(final boolean receiver,
-      final SBlock trueBlock, final Object falseValue) {
-    if (condProf.profile(receiver)) {
+      final SBlock trueBlock, final Object falseValue,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, receiver)) {
       return trueValueSend.call(new Object[] {trueBlock});
     } else {
       return falseValue;
@@ -112,8 +123,10 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningTrueValue"})
   @TruffleBoundary
   public final Object doIfTrueIfFalseTrueValue(final boolean receiver, final Object trueValue,
-      final SBlock falseBlock) {
-    if (condProf.profile(receiver)) {
+      final SBlock falseBlock,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, receiver)) {
       return trueValue;
     } else {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.20");
@@ -124,8 +137,10 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
   @Specialization(replaces = {"doIfTrueIfFalseWithInliningFalseValue"})
   @TruffleBoundary
   public final Object doIfTrueIfFalseFalseValue(final boolean receiver, final SBlock trueBlock,
-      final Object falseValue) {
-    if (condProf.profile(receiver)) {
+      final Object falseValue,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, receiver)) {
       CompilerAsserts.neverPartOfCompilation("IfTrueIfFalseMessageNode.30");
       return trueBlock.getMethod().invoke(call, new Object[] {trueBlock});
     } else {
@@ -135,8 +150,10 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
 
   @Specialization
   public final Object doIfTrueIfFalseTwoValues(final VirtualFrame frame,
-      final boolean receiver, final Object trueValue, final Object falseValue) {
-    if (condProf.profile(receiver)) {
+      final boolean receiver, final Object trueValue, final Object falseValue,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, receiver)) {
       return trueValue;
     } else {
       return falseValue;
