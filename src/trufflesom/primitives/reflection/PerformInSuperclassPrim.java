@@ -2,7 +2,7 @@ package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
@@ -18,12 +18,12 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateNodeFactory
 @Primitive(className = "Object", primitive = "perform:inSuperclass:")
 public abstract class PerformInSuperclassPrim extends TernaryExpressionNode {
-  @Child private IndirectCallNode call = Truffle.getRuntime().createIndirectCallNode();
 
   @Specialization
   @TruffleBoundary
-  public final Object doSAbstractObject(final SAbstractObject receiver, final SSymbol selector,
-      final SClass clazz) {
+  public static final Object doSAbstractObject(final SAbstractObject receiver,
+      final SSymbol selector, final SClass clazz,
+      @Cached final IndirectCallNode call) {
     CompilerAsserts.neverPartOfCompilation("PerformInSuperclassPrim");
     SInvokable invokable = clazz.lookupInvokable(selector);
     return call.call(invokable.getCallTarget(), new Object[] {receiver});
