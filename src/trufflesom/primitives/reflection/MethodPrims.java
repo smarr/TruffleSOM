@@ -1,7 +1,5 @@
 package trufflesom.primitives.reflection;
 
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -60,14 +58,6 @@ public final class MethodPrims {
     public abstract Object executeEvaluated(VirtualFrame frame, SInvokable receiver,
         Object target, SArray somArr);
 
-    public static DirectCallNode create(final CallTarget ct) {
-      return Truffle.getRuntime().createDirectCallNode(ct);
-    }
-
-    public static IndirectCallNode createIndirect() {
-      return Truffle.getRuntime().createIndirectCallNode();
-    }
-
     @Override
     public final Object doPreEvaluated(final VirtualFrame frame,
         final Object[] args) {
@@ -88,7 +78,7 @@ public final class MethodPrims {
     public static final Object doUncached(
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr,
-        @Cached("createIndirect()") final IndirectCallNode callNode) {
+        @Cached final IndirectCallNode callNode) {
       return callNode.call(receiver.getCallTarget(), argArr);
     }
   }

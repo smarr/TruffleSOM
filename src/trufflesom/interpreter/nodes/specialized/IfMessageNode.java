@@ -1,7 +1,7 @@
 package trufflesom.interpreter.nodes.specialized;
 
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -57,18 +57,10 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     throw new UnsupportedOperationException();
   }
 
-  protected static DirectCallNode createDirect(final SInvokable method) {
-    return Truffle.getRuntime().createDirectCallNode(method.getCallTarget());
-  }
-
-  protected static IndirectCallNode createIndirect() {
-    return Truffle.getRuntime().createIndirectCallNode();
-  }
-
   @Specialization(guards = {"arg.getMethod() == method"})
   public final Object cachedBlock(final boolean rcvr, final SBlock arg,
       @Cached("arg.getMethod()") final SInvokable method,
-      @Cached("createDirect(method)") final DirectCallNode callTarget) {
+      @Cached("create(method.getCallTarget())") final DirectCallNode callTarget) {
     if (condProf.profile(rcvr == expected)) {
       return callTarget.call(new Object[] {arg});
     } else {
@@ -78,7 +70,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
 
   @Specialization(replaces = "cachedBlock")
   public final Object fallback(final boolean rcvr, final SBlock arg,
-      @Cached("createIndirect()") final IndirectCallNode callNode) {
+      @Cached final IndirectCallNode callNode) {
     if (condProf.profile(rcvr == expected)) {
       return callNode.call(arg.getMethod().getCallTarget(), new Object[] {arg});
     } else {

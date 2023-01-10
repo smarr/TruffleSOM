@@ -3,8 +3,8 @@ package trufflesom.interpreter.nodes.specialized;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -25,14 +25,6 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "to:do:", disabled = true, inParser = false)
 public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
 
-  protected static final DirectCallNode createCallNode(final CallTarget ct) {
-    return Truffle.getRuntime().createDirectCallNode(ct);
-  }
-
-  protected static final IndirectCallNode createIndirectCall() {
-    return Truffle.getRuntime().createIndirectCallNode();
-  }
-
   @Override
   public SSymbol getSelector() {
     return SymbolTable.symbolFor("to:do:");
@@ -41,7 +33,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
   @Specialization(guards = {"block.getMethod() == cachedMethod"})
   public final long doIntCached(final long receiver, final long limit, final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,
-      @Cached("createCallNode(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
+      @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
     try {
       doLooping(receiver, limit, block, callNode);
     } finally {
@@ -54,7 +46,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
 
   @Specialization(replaces = "doIntCached")
   public final long doIntUncached(final long receiver, final long limit, final SBlock block,
-      @Cached("createIndirectCall()") final IndirectCallNode callNode) {
+      @Shared("all") @Cached final IndirectCallNode callNode) {
     try {
       doLooping(receiver, limit, block, callNode, block.getMethod().getCallTarget());
     } finally {
@@ -69,7 +61,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
   public final long doDoubleCached(final long receiver, final double dLimit,
       final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,
-      @Cached("createCallNode(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
+      @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
     long limit = (long) dLimit;
     return doIntCached(receiver, limit, block, cachedMethod, callNode);
   }
@@ -77,7 +69,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
   @Specialization(replaces = "doDoubleCached")
   public final long doDoubleUncached(final long receiver, final double dLimit,
       final SBlock block,
-      @Cached("createIndirectCall()") final IndirectCallNode callNode) {
+      @Shared("all") @Cached final IndirectCallNode callNode) {
     long limit = (long) dLimit;
     return doIntUncached(receiver, limit, block, callNode);
   }
@@ -106,7 +98,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
   public final double doDoubleDoubleCached(final double receiver, final double limit,
       final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,
-      @Cached("createCallNode(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
+      @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
     try {
       if (receiver <= limit) {
         callNode.call(new Object[] {block, receiver});
@@ -125,7 +117,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
   @Specialization(replaces = "doDoubleDoubleCached")
   public final double doDoubleDoubleUncached(final double receiver, final double limit,
       final SBlock block,
-      @Cached("createIndirectCall()") final IndirectCallNode callNode) {
+      @Shared("all") @Cached final IndirectCallNode callNode) {
     CallTarget ct = block.getMethod().getCallTarget();
     try {
       if (receiver <= limit) {
