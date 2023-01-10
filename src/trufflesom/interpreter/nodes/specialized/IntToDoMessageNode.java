@@ -24,13 +24,14 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateNodeFactory
 @Primitive(selector = "to:do:", disabled = true, inParser = false)
 public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
+  protected static final int LIMIT = 3;
 
   @Override
   public SSymbol getSelector() {
     return SymbolTable.symbolFor("to:do:");
   }
 
-  @Specialization(guards = {"block.getMethod() == cachedMethod"})
+  @Specialization(guards = {"block.getMethod() == cachedMethod"}, limit = "LIMIT")
   public final long doIntCached(final long receiver, final long limit, final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,
       @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
@@ -57,7 +58,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
     return receiver;
   }
 
-  @Specialization(guards = {"block.getMethod() == cachedMethod"})
+  @Specialization(guards = {"block.getMethod() == cachedMethod"}, limit = "LIMIT")
   public final long doDoubleCached(final long receiver, final double dLimit,
       final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,
@@ -94,7 +95,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
     }
   }
 
-  @Specialization(guards = {"block.getMethod() == cachedMethod"})
+  @Specialization(guards = {"block.getMethod() == cachedMethod"}, limit = "LIMIT")
   public final double doDoubleDoubleCached(final double receiver, final double limit,
       final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,

@@ -24,13 +24,14 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateNodeFactory
 @Primitive(selector = "downTo:do:", disabled = true, inParser = false)
 public abstract class IntDownToDoMessageNode extends TernaryMsgExprNode {
+  protected static final int LIMIT = 3;
 
   @Override
   public SSymbol getSelector() {
     return SymbolTable.symbolFor("downTo:do:");
   }
 
-  @Specialization(guards = {"block.getMethod() == cachedMethod"})
+  @Specialization(guards = {"block.getMethod() == cachedMethod"}, limit = "LIMIT")
   public final long doIntCached(final long receiver, final long limit, final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,
       @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
@@ -68,7 +69,7 @@ public abstract class IntDownToDoMessageNode extends TernaryMsgExprNode {
     return receiver;
   }
 
-  @Specialization(guards = {"block.getMethod() == cachedMethod"})
+  @Specialization(guards = {"block.getMethod() == cachedMethod"}, limit = "LIMIT")
   public final long doDoubleCached(final long receiver, final double limit, final SBlock block,
       @Cached("block.getMethod()") final SInvokable cachedMethod,
       @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
