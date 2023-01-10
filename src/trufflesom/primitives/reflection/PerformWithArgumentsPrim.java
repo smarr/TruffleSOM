@@ -17,6 +17,7 @@ public abstract class PerformWithArgumentsPrim extends TernaryExpressionNode {
 
   @Child protected AbstractSymbolDispatch dispatch;
 
+  @SuppressWarnings("unchecked")
   @Override
   public PerformWithArgumentsPrim initialize(final long coord) {
     super.initialize(coord);
