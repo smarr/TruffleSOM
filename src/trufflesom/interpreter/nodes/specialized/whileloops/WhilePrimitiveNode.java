@@ -1,9 +1,7 @@
 package trufflesom.interpreter.nodes.specialized.whileloops;
 
-import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 
@@ -21,10 +19,6 @@ public abstract class WhilePrimitiveNode extends BinaryExpressionNode {
 
   protected WhilePrimitiveNode(final boolean predicateBool) {
     this.predicateBool = predicateBool;
-  }
-
-  protected static DirectCallNode createCallNode(final CallTarget ct) {
-    return Truffle.getRuntime().createDirectCallNode(ct);
   }
 
   private static boolean obj2bool(final Object o) {

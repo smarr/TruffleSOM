@@ -19,8 +19,10 @@ import trufflesom.vmobjects.SObject;
 @GenerateNodeFactory
 @Primitive(className = "Class", primitive = "new")
 public abstract class NewObjectPrim extends UnaryExpressionNode {
+  protected static final int LIMIT = 3;
+
   @Specialization(assumptions = "layout.getAssumption()",
-      guards = "layout.layoutForSameClass(receiver)")
+      guards = "layout.layoutForSameClass(receiver)", limit = "LIMIT")
   public final SAbstractObject doCached(final SClass receiver,
       @Cached("receiver.getLayoutForInstances()") final ObjectLayout layout) {
     return new SObject(receiver, layout);
@@ -46,6 +48,7 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
       final AbstractDispatchNode next) {
     SClass clazz = (SClass) rcvr;
     ObjectLayout layout = clazz.getLayoutForInstances();
-    return new CachedNewObject(clazz.getObjectLayout(), layout.getAssumption(), layout, source, next);
+    return new CachedNewObject(clazz.getObjectLayout(), layout.getAssumption(), layout, source,
+        next);
   }
 }
