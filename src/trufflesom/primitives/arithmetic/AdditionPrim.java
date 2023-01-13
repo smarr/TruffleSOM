@@ -100,13 +100,13 @@ public abstract class AdditionPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
-  public static final String doSSymbol(final SSymbol left, final SSymbol right) {
-    return left.getString() + right.getString();
+  public static final SSymbol doSSymbol(final SSymbol left, final SSymbol right) {
+    return SymbolTable.symbolFor(left.getString() + right.getString());
   }
 
   @Specialization
   @TruffleBoundary
-  public static final String doSSymbol(final SSymbol left, final String right) {
-    return left.getString() + right;
+  public static final SSymbol doSSymbol(final SSymbol left, final String right) {
+    return SymbolTable.symbolFor(left.getString() + right);
   }
 }

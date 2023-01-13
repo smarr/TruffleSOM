@@ -120,7 +120,7 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
 
   @Specialization
   public static final boolean doSSymbol(final SSymbol receiver, final String argument) {
-    return false;
+    return receiver.getString().equals(argument);
   }
 
   @Specialization
