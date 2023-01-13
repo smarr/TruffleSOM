@@ -2,6 +2,8 @@ package trufflesom.primitives.reflection;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Cached.Shared;
+import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.GenerateWrapper;
@@ -72,10 +74,12 @@ public abstract class AbstractSymbolDispatch extends Node
   public abstract Object executeDispatch(VirtualFrame frame, Object receiver,
       SSymbol selector, Object argsArr);
 
+  @NeverDefault
   protected final AbstractMessageSendNode createForPerformNodes(final SSymbol selector) {
     return MessageSendNode.createForPerformNodes(selector, sourceCoord);
   }
 
+  @NeverDefault
   public static final ToArgumentsArrayNode createArgArrayNode() {
     return ToArgumentsArrayNodeFactory.create(null, null);
   }
@@ -115,7 +119,7 @@ public abstract class AbstractSymbolDispatch extends Node
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("selector") final SSymbol cachedSelector,
       @Cached("createForPerformNodes(selector)") final AbstractMessageSendNode cachedSend,
-      @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
+      @Shared("arg") @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
     Object[] arguments = toArgArray.executedEvaluated(frame, argsArr, receiver);
 
     PreevaluatedExpression realCachedSend = cachedSend;
@@ -125,7 +129,7 @@ public abstract class AbstractSymbolDispatch extends Node
   @TruffleBoundary
   @Specialization(replaces = "doCachedWithoutArgArr", guards = "argsArr == null")
   public Object doUncached(final Object receiver, final SSymbol selector, final Object argsArr,
-      @Cached final IndirectCallNode call) {
+      @Shared("indirect") @Cached final IndirectCallNode call) {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
 
     Object[] arguments = {receiver};
@@ -136,8 +140,8 @@ public abstract class AbstractSymbolDispatch extends Node
   @TruffleBoundary
   @Specialization(replaces = "doCached")
   public Object doUncached(final Object receiver, final SSymbol selector, final SArray argsArr,
-      @Cached final IndirectCallNode call,
-      @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
+      @Shared("indirect") @Cached final IndirectCallNode call,
+      @Shared("arg") @Cached("createArgArrayNode()") final ToArgumentsArrayNode toArgArray) {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
 
     Object[] arguments = toArgArray.executedEvaluated(null, argsArr, receiver);

@@ -3,9 +3,12 @@ package trufflesom.primitives.arithmetic;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.profiles.InlinedConditionProfile;
 
 import bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
@@ -16,30 +19,26 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 @Primitive(className = "Double", primitive = "sqrt")
 public abstract class SqrtPrim extends UnaryExpressionNode {
 
-  private final BranchProfile longReturn   = BranchProfile.create();
-  private final BranchProfile doubleReturn = BranchProfile.create();
-
   @Specialization
-  public final Object doLong(final long receiver) {
+  public static final Object doLong(final long receiver,
+      @Cached final InlinedConditionProfile longOrDouble, @Bind("this") final Node node) {
     double result = Math.sqrt(receiver);
 
-    if (result == Math.rint(result)) {
-      longReturn.enter();
+    if (longOrDouble.profile(node, result == Math.rint(result))) {
       return (long) result;
     } else {
-      doubleReturn.enter();
       return result;
     }
   }
 
   @Specialization
   @TruffleBoundary
-  public final double doBigInteger(final BigInteger receiver) {
+  public static final double doBigInteger(final BigInteger receiver) {
     return Math.sqrt(receiver.doubleValue());
   }
 
   @Specialization
-  public final double doDouble(final double receiver) {
+  public static final double doDouble(final double receiver) {
     return Math.sqrt(receiver);
   }
 }

@@ -5,7 +5,7 @@ import com.oracle.truffle.api.dsl.UnsupportedSpecializationException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.CountingConditionProfile;
 
 import bdt.inlining.Inline;
 import bdt.inlining.Inline.False;
@@ -18,7 +18,7 @@ import trufflesom.vm.constants.Nil;
 @Inline(selector = "ifTrue:", inlineableArgIdx = 1, additionalArgs = True.class)
 @Inline(selector = "ifFalse:", inlineableArgIdx = 1, additionalArgs = False.class)
 public final class IfInlinedLiteralNode extends NoPreEvalExprNode {
-  private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
+  private final CountingConditionProfile condProf = CountingConditionProfile.create();
 
   @Child private ExpressionNode conditionNode;
   @Child private ExpressionNode bodyNode;

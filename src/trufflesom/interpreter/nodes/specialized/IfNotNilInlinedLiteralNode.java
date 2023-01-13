@@ -1,7 +1,7 @@
 package trufflesom.interpreter.nodes.specialized;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.CountingConditionProfile;
 
 import bdt.inlining.Inline;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -11,7 +11,7 @@ import trufflesom.vm.constants.Nil;
 
 @Inline(selector = "ifNotNil:", inlineableArgIdx = 1)
 public final class IfNotNilInlinedLiteralNode extends NoPreEvalExprNode {
-  private final ConditionProfile condProf = ConditionProfile.createCountingProfile();
+  private final CountingConditionProfile condProf = CountingConditionProfile.create();
 
   @Child private ExpressionNode rcvr;
   @Child private ExpressionNode arg1;

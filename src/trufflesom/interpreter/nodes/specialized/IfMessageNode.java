@@ -1,12 +1,14 @@
 package trufflesom.interpreter.nodes.specialized;
 
+import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.profiles.InlinedCountingConditionProfile;
 
 import bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
@@ -18,6 +20,8 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class IfMessageNode extends BinaryMsgExprNode {
+
+  protected static final int LIMIT = 3;
 
   @GenerateNodeFactory
   @Primitive(selector = "ifTrue:")
@@ -45,8 +49,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     }
   }
 
-  protected final ConditionProfile condProf = ConditionProfile.createCountingProfile();
-  private final boolean            expected;
+  private final boolean expected;
 
   protected IfMessageNode(final boolean expected) {
     this.expected = expected;
@@ -57,11 +60,14 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     throw new UnsupportedOperationException();
   }
 
-  @Specialization(guards = {"arg.getMethod() == method"})
+  @SuppressWarnings("truffle-static-method")
+  @Specialization(guards = {"arg.getMethod() == method"}, limit = "LIMIT")
   public final Object cachedBlock(final boolean rcvr, final SBlock arg,
       @Cached("arg.getMethod()") final SInvokable method,
-      @Cached("create(method.getCallTarget())") final DirectCallNode callTarget) {
-    if (condProf.profile(rcvr == expected)) {
+      @Cached("create(method.getCallTarget())") final DirectCallNode callTarget,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, rcvr == expected)) {
       return callTarget.call(new Object[] {arg});
     } else {
       return Nil.nilObject;
@@ -70,8 +76,10 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
 
   @Specialization(replaces = "cachedBlock")
   public final Object fallback(final boolean rcvr, final SBlock arg,
-      @Cached final IndirectCallNode callNode) {
-    if (condProf.profile(rcvr == expected)) {
+      @Cached final IndirectCallNode callNode,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, rcvr == expected)) {
       return callNode.call(arg.getMethod().getCallTarget(), new Object[] {arg});
     } else {
       return Nil.nilObject;
@@ -83,8 +91,10 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
   }
 
   @Specialization(guards = {"notABlock(arg)"})
-  public final Object literal(final boolean rcvr, final Object arg) {
-    if (condProf.profile(rcvr == expected)) {
+  public final Object literal(final boolean rcvr, final Object arg,
+      @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
+      @Bind("this") final Node node) {
+    if (condProf.profile(node, rcvr == expected)) {
       return arg;
     } else {
       return Nil.nilObject;
