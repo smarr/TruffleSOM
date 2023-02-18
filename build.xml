@@ -3,7 +3,7 @@
     xmlns:if="ant:if"
     xmlns:jacoco="antlib:org.jacoco.ant">
 
-    <property name="labs-jdk" value="labsjdk-ce-19" />
+    <property name="labs-jdk" value="labsjdk-ce-20" />
 
     <condition property="kernel" value="darwin-amd64" else="linux-amd64">
         <os family="mac"/>
