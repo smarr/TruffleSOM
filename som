@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 import argparse
 import sys
 import os
@@ -168,11 +168,11 @@ if args.use_embedded_graal is True:
         'EXCLUDE_COMPONENTS':   'svmag,nju,nic,ni,nil,ins,dap,lsp,insight,insightheap,vvm',
         'GRAALVM_SKIP_ARCHIVE': 'true',
         'MX_IDE_ECLIPSE_ASYNC_DISTRIBUTIONS': 'true'
-      })
+      }).decode()
     java_bin = libgraal_jdk_home.strip() + '/bin/java'
   except CalledProcessError as e:
-    print "Failed to determine location of libgraal"
-    print e.output
+    print("Failed to determine location of libgraal")
+    print(e.output.decode())
     sys.exit(1)
 else:
     if args.use_embedded_graal is not False:
@@ -360,7 +360,7 @@ if 'Havlak' in args.args:
 all_args = JAVA_ARGS + ['-classpath', classpath] + ['-Dtruffle.class.path.append=' + classpath] + flags + SOM_ARGS + unknown_args + args.args
 
 if args.verbose:
-    print "CMD: " + java_bin + ' ' + ' '.join(all_args)
+    print("CMD: " + java_bin + ' ' + ' '.join(all_args))
 
 env = dict(os.environ)
 env['JVMCI_VERSION_CHECK'] = 'ignore'
