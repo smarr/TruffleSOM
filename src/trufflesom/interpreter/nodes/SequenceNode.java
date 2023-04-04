@@ -94,6 +94,14 @@ public final class SequenceNode extends NoPreEvalExprNode {
   }
 
   @Override
+  public PreevaluatedExpression copyTrivialNodeInBlock() {
+    if (isTrivialInBlock()) {
+      return expressions[0].copyTrivialNodeInBlock();
+    }
+    return null;
+  }
+
+  @Override
   public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
       final AbstractDispatchNode next) {
     if (isTrivial()) {

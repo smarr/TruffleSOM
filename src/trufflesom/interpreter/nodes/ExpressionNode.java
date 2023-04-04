@@ -71,6 +71,20 @@ public abstract class ExpressionNode extends SOMNode
     return null;
   }
 
+  public PreevaluatedExpression copyTrivialNodeInSequence() {
+    // Some of the subclasses may be trivial and implement this
+    return null;
+  }
+
+  public PreevaluatedExpression copyTrivialNodeInBlock() {
+    return copyTrivialNode();
+  }
+
+  public PreevaluatedExpression copyTrivialNodeInSequenceInBlock() {
+    // Some of the subclasses may be trivial and implement this
+    return null;
+  }
+
   public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
       final AbstractDispatchNode next) {
     // Some of the subclasses may be trivial and implement this

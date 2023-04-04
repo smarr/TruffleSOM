@@ -124,6 +124,19 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
+    public PreevaluatedExpression copyTrivialNodeInBlock() {
+      if (self instanceof NonLocalArgumentReadNode arg) {
+        // it works if we are just 1 level in, but at 2 levels, we get a block
+        // object, and this is currently not handled by our trivial method logic
+        if (arg.contextLevel < 2) {
+          return copyTrivialNode();
+        }
+        return null;
+      }
+      return copyTrivialNode();
+    }
+
+    @Override
     public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
         final AbstractDispatchNode next) {
       ObjectLayout layout = ((SObject) rcvr).getObjectLayout();
@@ -178,6 +191,11 @@ public abstract class FieldNode extends ExpressionNode {
             FieldWriteNodeGen.create(write.getFieldIndex(), null, null));
       }
       return null;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNodeInSequence() {
+      return copyTrivialNode();
     }
 
     @Override

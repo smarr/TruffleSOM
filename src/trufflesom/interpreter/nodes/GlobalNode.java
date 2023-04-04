@@ -180,6 +180,11 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     @Override
+    public PreevaluatedExpression copyTrivialNodeInBlock() {
+      return null;
+    }
+
+    @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       Object scope = inliner.getCurrentScope();
 
