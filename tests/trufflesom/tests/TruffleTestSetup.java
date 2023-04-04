@@ -31,6 +31,8 @@ import trufflesom.vmobjects.SSymbol;
 
 @Ignore("provides just setup")
 public class TruffleTestSetup {
+  private static final Context truffleContext;
+
   protected ClassGenerationContext cgenc;
 
   protected final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe;
@@ -44,7 +46,7 @@ public class TruffleTestSetup {
     argNames = new ArrayList<>();
   }
 
-  private static void initTruffle() {
+  private static Context initTruffle() {
     StorageAnalyzer.initAccessors();
 
     if (VmSettings.UseAstInterp) {
@@ -61,6 +63,15 @@ public class TruffleTestSetup {
 
     Universe.selfSource = SomLanguage.getSyntheticSource("self", "self");
     Universe.selfCoord = SourceCoordinate.createEmpty();
+    return context;
+  }
+
+  protected static void enterContext() {
+    truffleContext.enter();
+  }
+
+  protected static void closeContext() {
+    truffleContext.close();
   }
 
   protected void addField(final String name) {
@@ -118,6 +129,6 @@ public class TruffleTestSetup {
   }
 
   static {
-    initTruffle();
+    truffleContext = initTruffle();
   }
 }
