@@ -97,11 +97,13 @@ public final class Method extends Invokable {
   public Method cloneAndAdaptAfterScopeChange(final BytecodeMethodGenContext mgenc,
       final LexicalScope adaptedScope, final int appliesTo,
       final boolean cloneAdaptedAsUninitialized,
-      final boolean requiresChangesToContextLevels) {
+      final boolean requiresChangesToContextLevels,
+      final boolean isSplittingOperation) {
     Scope<?, ?> scope = mgenc == null ? adaptedScope : mgenc;
     ExpressionNode adaptedBody =
         ScopeAdaptationVisitor.adapt(uninitializedBody, scope, currentLexicalScope,
-            appliesTo, requiresChangesToContextLevels, getLanguage(SomLanguage.class));
+            appliesTo, requiresChangesToContextLevels, isSplittingOperation,
+            getLanguage(SomLanguage.class));
 
     ExpressionNode uninit;
     if (cloneAdaptedAsUninitialized) {
@@ -127,7 +129,7 @@ public final class Method extends Invokable {
   public Node deepCopy() {
     LexicalScope splitScope = currentLexicalScope.split();
     assert currentLexicalScope != splitScope;
-    return cloneAndAdaptAfterScopeChange(null, splitScope, 0, false, false);
+    return cloneAndAdaptAfterScopeChange(null, splitScope, 0, false, false, true);
   }
 
   @Override
@@ -135,7 +137,7 @@ public final class Method extends Invokable {
       final SMethod toBeInlined) {
     mgenc.mergeIntoScope(currentLexicalScope, toBeInlined);
     return ScopeAdaptationVisitor.adapt(uninitializedBody, mgenc, currentLexicalScope, 0, true,
-        getLanguage(SomLanguage.class));
+        false, getLanguage(SomLanguage.class));
   }
 
   @Override

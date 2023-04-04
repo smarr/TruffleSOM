@@ -78,7 +78,6 @@ import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeName;
-import trufflesom.vm.Universe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,6 +133,7 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongField
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Classes;
 import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.Universe;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
@@ -1426,7 +1426,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Method blockIvk = (Method) blockMethod.getInvokable();
           Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(null,
               mgenc.getCurrentLexicalScope().getScope(blockIvk),
-              targetContextLevel + 1, true, true);
+              targetContextLevel + 1, true, true, false);
           SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
               blockMethod.getEmbeddedBlocks());
           newMethod.setHolder(blockMethod.getHolder());
@@ -1674,7 +1674,8 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           Method blockIvk = (Method) blockMethod.getInvokable();
           Method adapted =
               blockIvk.cloneAndAdaptAfterScopeChange(null, inliner.getScope(blockIvk),
-                  inliner.contextLevel + 1, true, requiresChangesToContextLevels);
+                  inliner.contextLevel + 1, true, requiresChangesToContextLevels,
+                  inliner.isSplittingOperation);
           blockMethod.updateAfterScopeChange(adapted);
           break;
         }

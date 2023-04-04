@@ -4,19 +4,11 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static trufflesom.vm.SymbolTable.symSelf;
-import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Test;
 
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.Source;
 
-import bdt.basic.ProgramDefinitionError;
-import trufflesom.compiler.ClassGenerationContext;
-import trufflesom.compiler.MethodGenerationContext;
-import trufflesom.compiler.ParserAst;
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -48,27 +40,7 @@ import trufflesom.primitives.arithmetic.SubtractionPrim;
 import trufflesom.primitives.arrays.DoPrim;
 
 
-public class AstInliningTests extends TruffleTestSetup {
-
-  protected MethodGenerationContext mgenc;
-
-  protected ExpressionNode parseMethod(final String source) {
-    Source s = SomLanguage.getSyntheticSource(source, "test");
-
-    cgenc = new ClassGenerationContext(s, null);
-    cgenc.setName(symbolFor("Test"));
-    addAllFields();
-
-    mgenc = new MethodGenerationContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, 0);
-
-    ParserAst parser = new ParserAst(source, s, null);
-    try {
-      return parser.method(mgenc);
-    } catch (ProgramDefinitionError e) {
-      throw new RuntimeException(e);
-    }
-  }
+public class AstInliningTests extends AstTestSetup {
 
   private void accessArgFromInlinedBlock(final String argName, final int argIdx) {
     SequenceNode seq =

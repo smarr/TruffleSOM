@@ -425,9 +425,11 @@ public class ParserAst extends Parser<MethodGenerationContext> {
         mgenc.addEmbeddedBlockMethod(blockMethod);
 
         if (bgenc.requiresContext()) {
-          return new BlockNodeWithContext(blockMethod).initialize(getCoordWithLength(coord));
+          return new BlockNodeWithContext(blockMethod,
+              bgenc.accessesLocalsOfOuterScope).initialize(getCoordWithLength(coord));
         } else {
-          return new BlockNode(blockMethod).initialize(getCoordWithLength(coord));
+          return new BlockNode(blockMethod, bgenc.accessesLocalsOfOuterScope).initialize(
+              getCoordWithLength(coord));
         }
       }
       default: {
