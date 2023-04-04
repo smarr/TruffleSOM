@@ -966,4 +966,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   public ArrayList<Byte> getBytecodes() {
     return bytecode;
   }
+
+  public Object[] getLiteralsArray() {
+    return literals.toArray();
+  }
 }
