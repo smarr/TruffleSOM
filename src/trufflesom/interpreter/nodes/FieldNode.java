@@ -31,6 +31,7 @@ import com.oracle.truffle.api.source.Source;
 import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedFieldRead;
@@ -98,6 +99,16 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public boolean isTrivial() {
+      return true;
+    }
+
+    @Override
+    public boolean isTrivialInBlock() {
+      if (self instanceof NonLocalArgumentReadNode arg) {
+        // it works if we are just 1 level in, but at 2 levels, we get a block
+        // object, and this is currently not handled by our trivial method logic
+        return arg.contextLevel < 2;
+      }
       return true;
     }
 

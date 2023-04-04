@@ -62,6 +62,10 @@ public abstract class ExpressionNode extends SOMNode
     return isTrivial();
   }
 
+  public boolean isTrivialInSequenceInBlock() {
+    return false;
+  }
+
   public PreevaluatedExpression copyTrivialNode() {
     // Some of the subclasses may be trivial and implement this
     return null;
