@@ -28,8 +28,11 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.Source;
 
+import bdt.inlining.ScopeAdaptationVisitor;
 import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
+import trufflesom.compiler.bc.BytecodeGenerator;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
@@ -126,6 +129,16 @@ public abstract class FieldNode extends ExpressionNode {
       ObjectLayout layout = ((SObject) rcvr).getObjectLayout();
       StorageLocation storage = layout.getStorageLocation(read.getFieldIndex());
       return new CachedFieldRead(rcvr.getClass(), layout, source, storage, next);
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      Object scope = inliner.getCurrentScope();
+
+      if (scope instanceof BytecodeMethodGenContext) {
+        BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+        BytecodeGenerator.emitPUSHFIELD(mgenc, (byte) read.getFieldIndex(), (byte) 0);
+      }
     }
   }
 
