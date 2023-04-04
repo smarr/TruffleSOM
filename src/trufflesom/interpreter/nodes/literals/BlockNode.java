@@ -26,8 +26,11 @@ public class BlockNode extends LiteralNode {
   protected final SMethod            blockMethod;
   @CompilationFinal protected SClass blockClass;
 
-  public BlockNode(final SMethod blockMethod) {
+  protected final boolean reliesOnOuterFrameDescriptors;
+
+  public BlockNode(final SMethod blockMethod, final boolean reliesOnOuterFrameDescriptors) {
     this.blockMethod = blockMethod;
+    this.reliesOnOuterFrameDescriptors = reliesOnOuterFrameDescriptors;
   }
 
   public SMethod getMethod() {
@@ -86,19 +89,29 @@ public class BlockNode extends LiteralNode {
 
   @Override
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-    if (!inliner.outerScopeChanged()) {
+    if (!inliner.outerScopeChanged() && !reliesOnOuterFrameDescriptors) {
       return;
     }
 
     Method blockIvk = (Method) blockMethod.getInvokable();
     Method adapted = blockIvk.cloneAndAdaptAfterScopeChange(null, inliner.getScope(blockIvk),
-        inliner.contextLevel + 1, true, inliner.outerScopeChanged());
+        inliner.contextLevel + 1, true, inliner.outerScopeChanged(),
+        inliner.isSplittingOperation);
 
-    blockMethod.updateAfterScopeChange(adapted);
+    if (inliner.isSplittingOperation) {
+      // TODO: figure out whether we can do something better than passing null here.
+      // Just giving `blockMethod.getEmbeddedBlocks()` would be wrong, since it's the wrong
+      // versions of the blocks
+      SMethod splitMethod = new SMethod(blockMethod.getSignature(), adapted,
+          null /* TODO: adapt: blockMethod.getEmbeddedBlocks() */);
+      replace(createNode(splitMethod));
+    } else {
+      blockMethod.updateAfterScopeChange(adapted);
+    }
   }
 
   protected BlockNode createNode(final SMethod adapted) {
-    return new BlockNode(adapted).initialize(sourceCoord);
+    return new BlockNode(adapted, reliesOnOuterFrameDescriptors).initialize(sourceCoord);
   }
 
   @Override
@@ -108,8 +121,9 @@ public class BlockNode extends LiteralNode {
 
   public static final class BlockNodeWithContext extends BlockNode {
 
-    public BlockNodeWithContext(final SMethod blockMethod) {
-      super(blockMethod);
+    public BlockNodeWithContext(final SMethod blockMethod,
+        final boolean reliesOnOuterFrameDescriptors) {
+      super(blockMethod, reliesOnOuterFrameDescriptors);
     }
 
     @Override
@@ -132,7 +146,8 @@ public class BlockNode extends LiteralNode {
 
     @Override
     protected BlockNode createNode(final SMethod adapted) {
-      return new BlockNodeWithContext(adapted).initialize(sourceCoord);
+      return new BlockNodeWithContext(
+          adapted, reliesOnOuterFrameDescriptors).initialize(sourceCoord);
     }
   }
 }

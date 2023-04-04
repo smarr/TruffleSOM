@@ -28,6 +28,12 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
   public final int contextLevel;
 
   /**
+   * The scope adaption happens in response to a split operation.
+   * This means the old body remains in use, and we can't mutate it.
+   */
+  public final boolean isSplittingOperation;
+
+  /**
    * Use the visitor to adapt a copy of the given {@code body} to the current scope.
    *
    * @param <N> the type of the returned node
@@ -42,16 +48,19 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
   public static <N extends Node> N adapt(final N body, final Scope<?, ?> newScope,
       final Scope<?, ?> oldScope,
       final int appliesTo, final boolean someOuterScopeIsMerged,
+      final boolean isSplittingOperation,
       final TruffleLanguage<?> language) {
     N inlinedBody = NodeUtil.cloneNode(body);
 
     return NodeVisitorUtil.applyVisitor(inlinedBody,
-        new ScopeAdaptationVisitor(newScope, oldScope, appliesTo, someOuterScopeIsMerged),
+        new ScopeAdaptationVisitor(newScope, oldScope, appliesTo, someOuterScopeIsMerged,
+            isSplittingOperation),
         language);
   }
 
   private ScopeAdaptationVisitor(final Scope<?, ?> newScope, final Scope<?, ?> oldScope,
-      final int appliesTo, final boolean outerScopeChanged) {
+      final int appliesTo, final boolean outerScopeChanged,
+      final boolean isSplittingOperation) {
     if (newScope == null) {
       throw new IllegalArgumentException(
           "InliningVisitor requires a newScope, but got newScope==null");
@@ -65,6 +74,7 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
     this.oldScope = oldScope;
     this.contextLevel = appliesTo;
     this.outerScopeChanged = outerScopeChanged;
+    this.isSplittingOperation = isSplittingOperation;
   }
 
   /**

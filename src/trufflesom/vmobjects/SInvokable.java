@@ -69,6 +69,8 @@ public abstract class SInvokable extends SAbstractObject {
     }
 
     public SMethod[] getEmbeddedBlocks() {
+      // this being `null` might mean there are no blocks, or that the method was split.
+      // See comment in `BlockNode.replaceAfterScopeChange(..)`.
       return embeddedBlocks;
     }
 
