@@ -523,7 +523,11 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   private FieldReadNode optimizeFieldGetter(final boolean onlyReturnBytecode,
       final byte returnCandidate) {
-    if (isBlockMethod()) {
+    // this works for normal methods and blocks directly nested in the method
+    // it doesn't work for blocks nested 2 or more levels down.
+    // and it only works, because we inline these trivial methods
+    // and pass self as first argument, and not the $blockSelf
+    if (outerGenc != null && outerGenc.isBlockMethod()) {
       return null;
     }
     int idx = -1;
@@ -548,8 +552,13 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       return null;
     }
 
-    // because we don't handle block methods, we don't need to worry about ctx > 0
-    return new FieldReadNode(new LocalArgumentReadNode(arguments.get(symSelf)), idx);
+    Argument self;
+    if (outerGenc != null) {
+      self = outerGenc.getArgument(0);
+    } else {
+      self = arguments.get(symSelf);
+    }
+    return new FieldReadNode(new LocalArgumentReadNode(self), idx);
   }
 
   private ExpressionNode optimizeFieldSetter(final byte returnCandidate) {

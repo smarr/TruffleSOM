@@ -32,6 +32,7 @@ import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
+import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedExprNode;
@@ -359,10 +360,17 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     addField("field");
     Method m = parseBlock("[ [ field ] ]");
 
-    BlockNode block = (BlockNode) m.getChildren().iterator().next();
-    SMethod blockMethod = block.getMethod();
-    PreevaluatedExpression trivial = blockMethod.getInvokable().copyTrivialNode();
+    SMethod blockMethod;
+    if (VmSettings.UseAstInterp) {
+      BlockNode block = (BlockNode) m.getChildren().iterator().next();
+      blockMethod = block.getMethod();
 
+    } else {
+      BytecodeLoopNode bcNode = (BytecodeLoopNode) m.getChildren().iterator().next();
+      blockMethod = (SMethod) bcNode.getConstant(0);
+    }
+
+    PreevaluatedExpression trivial = blockMethod.getInvokable().copyTrivialNode();
     assertNull(trivial);
   }
 
