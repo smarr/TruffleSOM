@@ -347,6 +347,8 @@ public final class Universe {
   @TruffleBoundary
   public static void initializeObjectSystem() {
     CompilerAsserts.neverPartOfCompilation();
+    assert classPath != null : "The classpath hasn't been initialized. Was setupClassPath() called?";
+
     if (alreadyInitialized) {
       return;
     } else {
