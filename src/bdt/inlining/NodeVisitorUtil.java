@@ -12,12 +12,17 @@ final class NodeVisitorUtil {
   @SuppressWarnings("unchecked")
   public static <ExprT extends Node> ExprT applyVisitor(final ExprT body,
       final NodeVisitor visitor, final TruffleLanguage<?> language) {
+    Node oldParent = body.getParent();
     DummyParent dummyParent = new DummyParent(language, body);
 
     body.accept(visitor);
 
     // need to return the child of the dummy parent,
     // since it could have been replaced
-    return (ExprT) dummyParent.child;
+    ExprT result = (ExprT) dummyParent.child;
+    if (oldParent != null) {
+      oldParent.insert(result);
+    }
+    return result;
   }
 }
