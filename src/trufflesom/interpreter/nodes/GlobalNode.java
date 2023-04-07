@@ -180,6 +180,11 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     @Override
+    public PreevaluatedExpression copyTrivialNodeInBlock() {
+      return null;
+    }
+
+    @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
       Object scope = inliner.getCurrentScope();
 
@@ -223,6 +228,20 @@ public abstract class GlobalNode extends ExpressionNode
         assumption = assoc.getAssumption();
       }
       return assoc.getValue();
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      Object scope = inliner.getCurrentScope();
+
+      if (scope instanceof BytecodeMethodGenContext) {
+        BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+        try {
+          BytecodeGenerator.emitPUSHGLOBAL(mgenc, globalName, null);
+        } catch (ParseError e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
   }
 

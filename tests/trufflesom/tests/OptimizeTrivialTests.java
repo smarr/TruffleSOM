@@ -3,6 +3,7 @@ package trufflesom.tests;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static trufflesom.vm.SymbolTable.symSelf;
@@ -31,6 +32,7 @@ import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
+import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedExprNode;
@@ -39,6 +41,7 @@ import trufflesom.interpreter.nodes.dispatch.CachedFieldWriteAndSelf;
 import trufflesom.interpreter.nodes.dispatch.CachedLiteralNode;
 import trufflesom.interpreter.nodes.dispatch.CachedNewObject;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
+import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
@@ -49,6 +52,7 @@ import trufflesom.vm.Universe;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
+import trufflesom.vmobjects.SInvokable.SMethod;
 import trufflesom.vmobjects.SInvokable.SPrimitive;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
@@ -340,6 +344,33 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     Method m = parseMethod("test = ( ^ [] )");
 
     assertFalse(m.isTrivial());
+  }
+
+  @Test
+  public void testFieldReadInBlock() {
+    addField("field");
+    Method m = parseBlock("[ field ]");
+
+    PreevaluatedExpression e = m.copyTrivialNode();
+    assertThat(e, instanceOf(FieldReadNode.class));
+  }
+
+  @Test
+  public void testFieldReadInBlockInsideAnotherBlock() {
+    addField("field");
+    Method m = parseBlock("[ [ field ] ]");
+
+    SMethod blockMethod;
+    if (VmSettings.UseAstInterp) {
+      BlockNode block = (BlockNode) m.getChildren().iterator().next();
+      blockMethod = block.getMethod();
+    } else {
+      BytecodeLoopNode bcNode = (BytecodeLoopNode) m.getChildren().iterator().next();
+      blockMethod = (SMethod) bcNode.getConstant(0);
+    }
+
+    PreevaluatedExpression trivial = blockMethod.getInvokable().copyTrivialNode();
+    assertNull(trivial);
   }
 
   private void literalBlock(final String source, final String result, final Class<?> cls) {

@@ -19,9 +19,10 @@ import trufflesom.primitives.arithmetic.SubtractionPrimFactory;
 import trufflesom.primitives.basics.AsStringPrimFactory;
 import trufflesom.primitives.basics.IntegerPrimsFactory.AbsPrimFactory;
 import trufflesom.primitives.basics.IntegerPrimsFactory.AsDoubleValueFactory;
+import trufflesom.tests.TruffleTestSetup;
 
 
-public class StaticNodeStructureTests {
+public class StaticNodeStructureTests extends TruffleTestSetup {
 
   @Test
   public void testSimpleAdd() {

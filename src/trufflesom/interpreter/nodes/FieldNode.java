@@ -28,9 +28,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.Source;
 
+import bdt.inlining.ScopeAdaptationVisitor;
 import bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
+import trufflesom.compiler.bc.BytecodeGenerator;
+import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.dispatch.CachedFieldRead;
@@ -102,6 +106,16 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
+    public boolean isTrivialInBlock() {
+      if (self instanceof NonLocalArgumentReadNode arg) {
+        // it works if we are just 1 level in, but at 2 levels, we get a block
+        // object, and this is currently not handled by our trivial method logic
+        return arg.contextLevel < 2;
+      }
+      return true;
+    }
+
+    @Override
     public PreevaluatedExpression copyTrivialNode() {
       FieldReadNode node = (FieldReadNode) copy();
       node.self = null;
@@ -110,11 +124,34 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
+    public PreevaluatedExpression copyTrivialNodeInBlock() {
+      if (self instanceof NonLocalArgumentReadNode arg) {
+        // it works if we are just 1 level in, but at 2 levels, we get a block
+        // object, and this is currently not handled by our trivial method logic
+        if (arg.contextLevel < 2) {
+          return copyTrivialNode();
+        }
+        return null;
+      }
+      return copyTrivialNode();
+    }
+
+    @Override
     public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
         final AbstractDispatchNode next) {
       ObjectLayout layout = ((SObject) rcvr).getObjectLayout();
       StorageLocation storage = layout.getStorageLocation(read.getFieldIndex());
       return new CachedFieldRead(rcvr.getClass(), layout, source, storage, next);
+    }
+
+    @Override
+    public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      Object scope = inliner.getCurrentScope();
+
+      if (scope instanceof BytecodeMethodGenContext) {
+        BytecodeMethodGenContext mgenc = (BytecodeMethodGenContext) scope;
+        BytecodeGenerator.emitPUSHFIELD(mgenc, (byte) read.getFieldIndex(), (byte) 0);
+      }
     }
   }
 
@@ -154,6 +191,11 @@ public abstract class FieldNode extends ExpressionNode {
             FieldWriteNodeGen.create(write.getFieldIndex(), null, null));
       }
       return null;
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNodeInSequence() {
+      return copyTrivialNode();
     }
 
     @Override

@@ -114,6 +114,9 @@ public class BytecodeTestSetup extends TruffleTestSetup {
           assertEquals(actual[i + 2], (byte) bc.arg2);
         }
       } else {
+        if ((byte) expectedBc != actualBc) {
+          dump();
+        }
         assertEquals(
             "Bytecode " + i + " expected " + Bytecodes.getBytecodeName((byte) expectedBc)
                 + " but got " + Bytecodes.getBytecodeName(actualBc),

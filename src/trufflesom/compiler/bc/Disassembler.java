@@ -48,6 +48,9 @@ import static trufflesom.interpreter.bc.Bytecodes.PUSH_ARGUMENT;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_BLOCK_NO_CTX;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_0;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_1;
+import static trufflesom.interpreter.bc.Bytecodes.PUSH_CONSTANT_2;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_FIELD;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_GLOBAL;
 import static trufflesom.interpreter.bc.Bytecodes.PUSH_LOCAL;
@@ -129,21 +132,22 @@ public class Disassembler {
 
   public static void dumpMethod(final BytecodeMethodGenContext mgenc) {
     dumpMethod(mgenc.getBytecodes(), "", mgenc.getNumberOfLocals(), mgenc.getStackDepth(),
-        null, null);
+        null, null, mgenc.getLiteralsArray());
   }
 
   public static void dumpMethod(final BytecodeLoopNode m, final String indent) {
     SClass clazz = getClass(m);
     dumpMethod(m.getBytecodes(), indent, m.getNumberOfLocals(),
-        m.getMaximumNumberOfStackElements(), clazz, m);
+        m.getMaximumNumberOfStackElements(), clazz, m, m.getLiterals());
   }
 
   public static void dumpMethod(final List<Byte> bytecodes) {
-    dumpMethod(bytecodes, "", 0, 0, null, null);
+    dumpMethod(bytecodes, "", 0, 0, null, null, null);
   }
 
   public static void dumpMethod(final List<Byte> bytecodes, final String indent,
-      final int numLocals, final int maxStack, final SClass clazz, final BytecodeLoopNode m) {
+      final int numLocals, final int maxStack, final SClass clazz, final BytecodeLoopNode m,
+      final Object[] literals) {
     Universe.errorPrintln("(");
 
     // output stack information
@@ -170,11 +174,6 @@ public class Disassembler {
       byte bytecode = bytecodes.get(b);
       Universe.errorPrint(getPaddedBytecodeName(bytecode) + "  ");
 
-      // parameters (if any)
-      if (getBytecodeLength(bytecode) == 1) {
-        Universe.errorPrintln();
-        continue;
-      }
       switch (bytecode) {
         case POP_LOCAL:
         case PUSH_LOCAL: {
@@ -231,12 +230,36 @@ public class Disassembler {
 
           Universe.errorPrint("(index: " + idx + ")");
 
-          if (m != null) {
-            Object constant = m.getConstant(idx);
+          if (literals != null) {
+            Object constant = literals[idx];
             SClass constantClass = Types.getClassOf(constant);
             Universe.errorPrint(" value: "
                 + "(" + constantClass.getName().toString() + ") "
                 + constant.toString());
+          } else {
+            Universe.errorPrint(" (no literals) ");
+          }
+          Universe.errorPrintln();
+          break;
+        }
+
+        case PUSH_CONSTANT_0:
+        case PUSH_CONSTANT_1:
+        case PUSH_CONSTANT_2: {
+          int idx = bytecode - PUSH_CONSTANT_0;
+
+          Universe.errorPrint("(index: " + idx + ")");
+
+          if (literals != null) {
+            Object constant = literals[idx];
+            SClass constantClass = Types.getClassOf(constant);
+            Universe.errorPrint(" value: ");
+            if (constantClass.getName() != null) {
+              Universe.errorPrint("(" + constantClass.getName().toString() + ") ");
+            }
+            Universe.errorPrint(constant.toString());
+          } else {
+            Universe.errorPrint(" (no literals) ");
           }
           Universe.errorPrintln();
           break;
@@ -301,8 +324,14 @@ public class Disassembler {
           break;
         }
 
-        default:
-          Universe.errorPrintln("<incorrect bytecode>");
+        default: {
+          // parameters (if any)
+          if (getBytecodeLength(bytecode) == 1) {
+            Universe.errorPrintln();
+          } else {
+            Universe.errorPrintln("<incorrect bytecode>");
+          }
+        }
       }
     }
     Universe.errorPrintln(indent + ")");

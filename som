@@ -201,7 +201,6 @@ COVERAGE_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-coverage.jar'
 PROFILER_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-profiler.jar'
 
 classpath = (BASE_DIR + '/build/classes:'
-           + BASE_DIR + '/libs/black-diamonds/build/classes:'
            + GRAAL_SDK_JAR + ':'
            + TRUFFLE_API_JAR)
 

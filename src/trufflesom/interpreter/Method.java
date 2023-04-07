@@ -150,6 +150,9 @@ public final class Method extends Invokable {
 
   @Override
   public PreevaluatedExpression copyTrivialNode() {
+    if (currentLexicalScope.isBlock()) {
+      return body.copyTrivialNodeInBlock();
+    }
     return body.copyTrivialNode();
   }
 

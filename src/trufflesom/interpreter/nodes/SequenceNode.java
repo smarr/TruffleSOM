@@ -70,9 +70,33 @@ public final class SequenceNode extends NoPreEvalExprNode {
   }
 
   @Override
+  public boolean isTrivialInBlock() {
+    // has exactly two expressions
+    if (expressions.length != 2) {
+      return false;
+    }
+
+    // and the last/second one is the self return
+    if (expressions[1].getClass() == LocalArgumentReadNode.class
+        && ((LocalArgumentReadNode) expressions[1]).isSelfRead()) {
+      return expressions[0].isTrivialInSequenceInBlock();
+    }
+
+    return false;
+  }
+
+  @Override
   public PreevaluatedExpression copyTrivialNode() {
     if (isTrivial()) {
       return expressions[0].copyTrivialNode();
+    }
+    return null;
+  }
+
+  @Override
+  public PreevaluatedExpression copyTrivialNodeInBlock() {
+    if (isTrivialInBlock()) {
+      return expressions[0].copyTrivialNodeInBlock();
     }
     return null;
   }

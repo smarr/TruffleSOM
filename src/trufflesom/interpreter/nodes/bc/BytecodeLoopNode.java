@@ -1237,6 +1237,10 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     return list;
   }
 
+  public Object[] getLiterals() {
+    return literalsAndConstantsField;
+  }
+
   public byte[] getBytecodeArray() {
     return bytecodesField;
   }
