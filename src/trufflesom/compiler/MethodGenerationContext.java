@@ -418,9 +418,8 @@ public class MethodGenerationContext
     }
 
     if (ctxLevel == 0) {
-      if (valExpr instanceof LocalVariableSquareNode) {
-        return variable.getReadSquareWriteNode(ctxLevel, coord,
-            ((LocalVariableSquareNode) valExpr).getLocal());
+      if (valExpr instanceof LocalVariableSquareNode l) {
+        return variable.getReadSquareWriteNode(ctxLevel, coord, l.getLocal(), 0);
       }
       if (valExpr instanceof NonLocalVariableSquareNode) {
         throw new NotYetImplementedException(
@@ -439,14 +438,13 @@ public class MethodGenerationContext
         }
       }
     } else {
-      if (valExpr instanceof NonLocalVariableSquareNode) {
+      if (valExpr instanceof NonLocalVariableSquareNode nl) {
         return variable.getReadSquareWriteNode(ctxLevel, coord,
-            ((NonLocalVariableSquareNode) valExpr).getLocal());
+            nl.getLocal(), nl.getContextLevel());
       }
 
-      if (valExpr instanceof LocalVariableSquareNode) {
-        return variable.getReadSquareWriteNode(ctxLevel, coord,
-            ((LocalVariableSquareNode) valExpr).getLocal());
+      if (valExpr instanceof LocalVariableSquareNode l) {
+        return variable.getReadSquareWriteNode(ctxLevel, coord, l.getLocal(), 0);
       }
 
       if (valExpr instanceof UninitializedMessageSendNode) {

@@ -148,8 +148,8 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     }
 
     @Override
-    public ExpressionNode getReadSquareWriteNode(final int contextLevel, final long coord,
-        final Local readLocal) {
+    public ExpressionNode getReadSquareWriteNode(final int writeContextLevel, final long coord,
+        final Local readLocal, final int readContextLevel) {
       throw new NotYetImplementedException();
     }
 
@@ -227,12 +227,13 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     }
 
     @Override
-    public ExpressionNode getReadSquareWriteNode(final int contextLevel, final long coord,
-        final Local readLocal) {
-      if (contextLevel > 0) {
-        return NonLocalVariableReadSquareWriteNodeGen.create(contextLevel, this, readLocal)
-                                                     .initialize(coord);
+    public ExpressionNode getReadSquareWriteNode(final int writeContextLevel, final long coord,
+        final Local readLocal, final int readContextLevel) {
+      if (writeContextLevel > 0) {
+        return NonLocalVariableReadSquareWriteNodeGen.create(
+            writeContextLevel, this, readLocal, readContextLevel).initialize(coord);
       }
+      assert readContextLevel == 0;
       return LocalVariableReadSquareWriteNodeGen.create(this, readLocal).initialize(coord);
     }
 
@@ -349,8 +350,8 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     }
 
     @Override
-    public ExpressionNode getReadSquareWriteNode(final int contextLevel, final long coord,
-        final Local readLocal) {
+    public ExpressionNode getReadSquareWriteNode(final int readContextLevel, final long coord,
+        final Local readLocal, final int writeContextLevel) {
       throw new UnsupportedOperationException(
           "There shouldn't be any language-level square nodes for internal slots. ");
     }
