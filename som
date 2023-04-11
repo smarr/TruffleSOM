@@ -254,6 +254,7 @@ else:
     flags += ['-Dpolyglot.engine.MultiTier=false',
               '-Dpolyglot.engine.DynamicCompilationThresholds=false',
               '-Dpolyglot.engine.SingleTierCompilationThreshold=253',
+              '-Dpolyglot.engine.Mode=throughput',
               '-Dpolyglot.engine.CompilationFailureAction=ExitVM']
 
 if args.som_dnu:

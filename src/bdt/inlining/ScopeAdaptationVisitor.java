@@ -50,9 +50,15 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
       final int appliesTo, final boolean someOuterScopeIsMerged,
       final boolean isSplittingOperation,
       final TruffleLanguage<?> language) {
-    N inlinedBody = NodeUtil.cloneNode(body);
 
-    return NodeVisitorUtil.applyVisitor(inlinedBody,
+    N adaptedBody;
+    if (isSplittingOperation) {
+      adaptedBody = NodeUtil.cloneNode(body);
+    } else {
+      adaptedBody = body;
+    }
+
+    return NodeVisitorUtil.applyVisitor(adaptedBody,
         new ScopeAdaptationVisitor(newScope, oldScope, appliesTo, someOuterScopeIsMerged,
             isSplittingOperation),
         language);
