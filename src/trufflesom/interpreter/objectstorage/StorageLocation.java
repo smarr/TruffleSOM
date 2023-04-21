@@ -1,7 +1,5 @@
 package trufflesom.interpreter.objectstorage;
 
-import java.lang.reflect.Field;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
@@ -23,10 +21,6 @@ import trufflesom.vmobjects.SObject;
 
 public abstract class StorageLocation {
   private static final Unsafe unsafe = UnsafeUtil.load();
-
-  public static long getFieldOffset(final Field field) {
-    return unsafe.objectFieldOffset(field);
-  }
 
   public interface LongStorageLocation {
     long readLong(SObject obj) throws UnexpectedResultException;
