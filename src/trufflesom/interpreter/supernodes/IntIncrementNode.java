@@ -44,20 +44,13 @@ public abstract class IntIncrementNode extends ExpressionNode {
   public abstract ExpressionNode getRcvr();
 
   @Specialization(rewriteOn = ArithmeticException.class)
-  public long doInc(final long rcvr) {
+  public final long doInc(final long rcvr) {
     return Math.addExact(rcvr, incValue);
   }
 
   @Specialization
-  public double doInc(final double rcvr) {
+  public final double doInc(final double rcvr) {
     return rcvr + incValue;
-  }
-
-  public abstract Object executeEvaluated(Object rcvr);
-
-  @Override
-  public final Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
-    return executeEvaluated(args[0]);
   }
 
   @Fallback
@@ -67,7 +60,7 @@ public abstract class IntIncrementNode extends ExpressionNode {
         new Object[] {rcvr, isMinusAndValueNegated ? -incValue : incValue});
   }
 
-  public boolean doesAccessField(final int fieldIdx) {
+  public final boolean doesAccessField(final int fieldIdx) {
     ExpressionNode rcvr = getRcvr();
     if (rcvr instanceof FieldReadNode) {
       FieldReadNode r = (FieldReadNode) rcvr;
@@ -77,7 +70,7 @@ public abstract class IntIncrementNode extends ExpressionNode {
     return false;
   }
 
-  public boolean doesAccessVariable(final Variable var) {
+  public final boolean doesAccessVariable(final Variable var) {
     ExpressionNode rcvr = getRcvr();
     Local local;
     if (rcvr instanceof LocalVariableNode) {
@@ -90,7 +83,7 @@ public abstract class IntIncrementNode extends ExpressionNode {
     return local.equals(var);
   }
 
-  protected AbstractMessageSendNode makeGenericSend() {
+  protected final AbstractMessageSendNode makeGenericSend() {
     CompilerDirectives.transferToInterpreterAndInvalidate();
 
     SSymbol selector =
@@ -110,12 +103,12 @@ public abstract class IntIncrementNode extends ExpressionNode {
     throw new RespecializeException(send);
   }
 
-  public FieldNode createFieldIncNode(final ExpressionNode self, final int fieldIndex,
+  public final FieldNode createFieldIncNode(final ExpressionNode self, final int fieldIndex,
       final long coord) {
     return new IntUninitIncFieldNode(self, fieldIndex, coord, incValue);
   }
 
-  public ExpressionNode createIncNode(final Local local, final int ctxLevel) {
+  public final ExpressionNode createIncNode(final Local local, final int ctxLevel) {
     if (ctxLevel == 0) {
       return IntIncLocalVariableNodeGen.create(local, incValue).initialize(sourceCoord);
     }
