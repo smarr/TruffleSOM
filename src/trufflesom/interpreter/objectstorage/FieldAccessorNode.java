@@ -350,13 +350,13 @@ public abstract class FieldAccessorNode extends Node {
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         ensureNext(obj);
-        return dropAndIncrementNext(obj);
+        return dropAndIncrementNext(obj, incValue);
       }
     }
 
     @InliningCutoff
-    private long dropAndIncrementNext(final SObject obj) {
-      return replace(SOMNode.unwrapIfNeeded(nextInCache)).increment(obj);
+    private long dropAndIncrementNext(final SObject obj, final long incValue) {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).increment(obj, incValue);
     }
 
     @InliningCutoff

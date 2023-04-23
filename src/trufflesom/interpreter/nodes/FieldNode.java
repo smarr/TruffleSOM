@@ -295,7 +295,9 @@ public abstract class FieldNode extends ExpressionNode {
         throw new NotYetImplementedException();
       }
 
-      IncrementLongFieldNode node = FieldAccessorNode.createIncrement(fieldIndex, obj, incValue);
+      assert incValue == 1;
+      IncrementLongFieldNode node =
+          FieldAccessorNode.createIncrement(fieldIndex, obj);
       IncFieldNode incNode = new IncFieldNode(self, node, sourceCoord);
       replace(incNode);
       node.notifyAsInserted();
@@ -334,7 +336,7 @@ public abstract class FieldNode extends ExpressionNode {
     @Override
     public long executeLong(final VirtualFrame frame) {
       SObject obj = (SObject) self.executeGeneric(frame);
-      return inc.increment(obj);
+      return inc.increment(obj, 1);
     }
   }
 

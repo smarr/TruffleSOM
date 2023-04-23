@@ -50,7 +50,6 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
@@ -63,9 +62,10 @@ import trufflesom.interpreter.supernodes.LocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
 import trufflesom.interpreter.supernodes.NonLocalVarReadUnaryMsgWriteNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNode;
+import trufflesom.interpreter.supernodes.UninitIncFieldNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.primitives.arithmetic.AdditionPrim;
 import trufflesom.vm.NotYetImplementedException;
-import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -93,7 +93,7 @@ public class MethodGenerationContext
   protected final LinkedHashMap<SSymbol, Argument> arguments;
   protected final LinkedHashMap<SSymbol, Local>    locals;
 
-  private Internal             frameOnStack;
+  private Internal frameOnStack;
 
   protected final LexicalScope currentScope;
 
@@ -511,7 +511,22 @@ public class MethodGenerationContext
     ExpressionNode self = getSelfRead(coord);
     if (exp instanceof IntIncrementNode
         && ((IntIncrementNode) exp).doesAccessField(fieldIndex)) {
-      return new UninitFieldIncNode(self, fieldIndex, coord);
+      return ((IntIncrementNode) exp).createFieldIncNode(self, fieldIndex, coord);
+    }
+
+    if (exp instanceof AdditionPrim) {
+      AdditionPrim add = (AdditionPrim) exp;
+      ExpressionNode rcvr = add.getReceiver();
+      ExpressionNode arg = add.getArgument();
+
+      if (rcvr instanceof FieldReadNode
+          && fieldIndex == ((FieldReadNode) rcvr).getFieldIndex()) {
+        return new UninitIncFieldNode(self, arg, true, fieldIndex, coord);
+      }
+      if (arg instanceof FieldReadNode
+          && fieldIndex == ((FieldReadNode) arg).getFieldIndex()) {
+        return new UninitIncFieldNode(self, rcvr, false, fieldIndex, coord);
+      }
     }
 
     return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);
