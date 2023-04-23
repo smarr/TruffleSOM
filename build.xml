@@ -27,9 +27,9 @@ kernel:           ${kernel}</echo>
     <property name="compiler.dir"   location="${lib.dir}/truffle/compiler" />
     <property name="truffle.build" location="${truffle.dir}/mxbuild/dists" />
     <property name="sdk.build"   location="${sdk.dir}/mxbuild/dists" />
-    <property name="junit.version" value="4.12" />
+    <property name="junit.version" value="4.13.2" />
 
-    <property name="checkstyle.version" value="8.36" />
+    <property name="checkstyle.version" value="10.9.3" />
 
     <property name="jvmci.home"  location="${lib.dir}/jvmci${home.ext}" />
 
