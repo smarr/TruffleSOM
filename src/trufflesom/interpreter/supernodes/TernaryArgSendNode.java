@@ -1,12 +1,10 @@
 package trufflesom.interpreter.supernodes;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
-import trufflesom.interpreter.nodes.dispatch.GenericDispatchNode;
 import trufflesom.vmobjects.SSymbol;
 
 
@@ -21,7 +19,7 @@ public class TernaryArgSendNode extends AbstractMessageSendNode {
       final ExpressionNode arg2,
       final SSymbol selector,
       final AbstractDispatchNode dispatchNode) {
-    super(null);
+    super(3, null);
     this.argIdx = argIdx;
     this.selector = selector;
     this.dispatchNode = dispatchNode;
@@ -47,18 +45,6 @@ public class TernaryArgSendNode extends AbstractMessageSendNode {
   @Override
   public SSymbol getInvocationIdentifier() {
     return selector;
-  }
-
-  @Override
-  public int getNumberOfArguments() {
-    return 3;
-  }
-
-  @Override
-  public void replaceDispatchListHead(
-      final GenericDispatchNode replacement) {
-    CompilerAsserts.neverPartOfCompilation();
-    dispatchNode.replace(replacement);
   }
 
   @Override
