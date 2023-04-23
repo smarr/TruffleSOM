@@ -52,6 +52,7 @@ public class GenericMessageSendNode extends AbstractMessageSendNode {
     return selector;
   }
 
+  @Override
   public void notifyDispatchInserted() {
     if (VmSettings.UseInstrumentation) {
       notifyInserted(dispatchNode);
