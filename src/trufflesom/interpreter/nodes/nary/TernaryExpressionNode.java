@@ -35,17 +35,17 @@ public abstract class TernaryExpressionNode extends EagerlySpecializableNode {
 
   protected AbstractMessageSendNode makeGenericSend(final SSymbol selector) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    AbstractMessageSendNode send =
-        MessageSendNode.createGenericTernary(selector, getReceiver(), getArg1(), getArg2(),
-            sourceCoord);
 
     if (VmSettings.UseAstInterp) {
+      AbstractMessageSendNode send = MessageSendNode.createGenericTernary(
+          selector, getReceiver(), getArg1(), getArg2(), sourceCoord);
       replace(send);
       send.notifyDispatchInserted();
       return send;
     }
 
     assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
-    throw new RespecializeException(send);
+    throw new RespecializeException(MessageSendNode.createGenericTernary(
+        selector, null, null, null, sourceCoord));
   }
 }

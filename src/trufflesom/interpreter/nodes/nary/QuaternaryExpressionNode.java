@@ -40,17 +40,17 @@ public abstract class QuaternaryExpressionNode extends EagerlySpecializableNode 
 
   protected AbstractMessageSendNode makeGenericSend(final SSymbol selector) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    AbstractMessageSendNode send =
-        MessageSendNode.createGenericQuat(selector, getReceiver(), getArg1(), getArg2(),
-            getArg3(), sourceCoord);
 
     if (VmSettings.UseAstInterp) {
+      AbstractMessageSendNode send = MessageSendNode.createGenericQuat(
+          selector, getReceiver(), getArg1(), getArg2(), getArg3(), sourceCoord);
       replace(send);
       send.notifyDispatchInserted();
       return send;
     }
 
     assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
-    throw new RespecializeException(send);
+    throw new RespecializeException(MessageSendNode.createGenericQuat(
+        selector, null, null, null, null, sourceCoord));
   }
 }

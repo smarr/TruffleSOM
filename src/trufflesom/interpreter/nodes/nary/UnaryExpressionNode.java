@@ -28,16 +28,18 @@ public abstract class UnaryExpressionNode extends EagerlySpecializableNode {
 
   protected AbstractMessageSendNode makeGenericSend(final SSymbol selector) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    AbstractMessageSendNode send =
-        MessageSendNode.createGenericUnary(selector, getReceiver(), sourceCoord);
 
     if (VmSettings.UseAstInterp) {
+      AbstractMessageSendNode send =
+          MessageSendNode.createGenericUnary(selector, getReceiver(), sourceCoord);
+
       replace(send);
       send.notifyDispatchInserted();
       return send;
     }
 
     assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
-    throw new RespecializeException(send);
+    throw new RespecializeException(
+        MessageSendNode.createGenericUnary(selector, null, sourceCoord));
   }
 }
