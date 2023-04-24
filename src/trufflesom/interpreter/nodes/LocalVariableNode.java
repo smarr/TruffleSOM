@@ -31,6 +31,10 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     return local;
   }
 
+  public boolean isSameLocal(final LocalVariableNode node) {
+    return local.equals(node.local);
+  }
+
   @Override
   public final SSymbol getInvocationIdentifier() {
     return local.name;

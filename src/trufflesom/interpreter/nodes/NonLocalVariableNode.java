@@ -39,6 +39,10 @@ public abstract class NonLocalVariableNode extends ContextualNode
     return local;
   }
 
+  public boolean isSameLocal(final NonLocalVariableNode node) {
+    return local.equals(node.local);
+  }
+
   public abstract static class NonLocalVariableReadNode extends NonLocalVariableNode {
 
     public NonLocalVariableReadNode(final int contextLevel, final Local local) {

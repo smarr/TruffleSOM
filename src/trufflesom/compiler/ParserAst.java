@@ -27,7 +27,6 @@ import com.oracle.truffle.api.source.Source;
 import bdt.basic.ProgramDefinitionError;
 import bdt.inlining.InlinableNodes;
 import bdt.tools.structure.StructuralProbe;
-import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -275,78 +274,61 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     String binSelector = msg.getString();
 
     if (binSelector.equals("*")) {
-      if (receiver instanceof LocalVariableReadNode
-          && operand instanceof LocalVariableReadNode) {
-        Local rcvrLocal = ((LocalVariableReadNode) receiver).getLocal();
-        Local opLocal = ((LocalVariableReadNode) operand).getLocal();
-        if (rcvrLocal.equals(opLocal)) {
-          return LocalVariableSquareNodeGen.create(rcvrLocal).initialize(coordWithL);
+      if (receiver instanceof LocalVariableReadNode rcvr
+          && operand instanceof LocalVariableReadNode op) {
+        if (rcvr.isSameLocal(op)) {
+          return LocalVariableSquareNodeGen.create(rcvr.getLocal()).initialize(coordWithL);
         }
-      } else if (receiver instanceof NonLocalVariableReadNode
-          && operand instanceof NonLocalVariableReadNode) {
-        Local rcvrLocal = ((NonLocalVariableReadNode) receiver).getLocal();
-        Local opLocal = ((NonLocalVariableReadNode) operand).getLocal();
-
-        assert ((NonLocalVariableReadNode) receiver).getContextLevel() == ((NonLocalVariableReadNode) operand).getContextLevel();
-        if (rcvrLocal.equals(opLocal)) {
+      } else if (receiver instanceof NonLocalVariableReadNode rcvr
+          && operand instanceof NonLocalVariableReadNode op) {
+        if (rcvr.isSameLocal(op)) {
+          assert rcvr.getContextLevel() == op.getContextLevel();
           return NonLocalVariableSquareNodeGen.create(
-              ((NonLocalVariableReadNode) receiver).getContextLevel(), rcvrLocal)
-                                              .initialize(coordWithL);
+              rcvr.getContextLevel(), rcvr.getLocal()).initialize(coordWithL);
         }
       }
     } else if (binSelector.equals("=")) {
       if (operand instanceof GenericLiteralNode) {
         Object literal = operand.executeGeneric(null);
-        if (literal instanceof String) {
-          if (receiver instanceof FieldReadNode) {
-            FieldReadNode fieldRead = (FieldReadNode) receiver;
+        if (literal instanceof String l) {
+          if (receiver instanceof FieldReadNode fieldRead) {
             ExpressionNode self = fieldRead.getSelf();
-            if (self instanceof LocalArgumentReadNode) {
+            if (self instanceof LocalArgumentReadNode selfLocal) {
               return new LocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
-                  ((LocalArgumentReadNode) self).getArg(), (String) literal).initialize(
-                      coordWithL);
-            } else if (self instanceof NonLocalArgumentReadNode) {
-              NonLocalArgumentReadNode arg = (NonLocalArgumentReadNode) self;
+                  selfLocal.getArg(), l).initialize(coordWithL);
+            } else if (self instanceof NonLocalArgumentReadNode arg) {
               return new NonLocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
-                  arg.getArg(), arg.getContextLevel(), (String) literal).initialize(
-                      coordWithL);
+                  arg.getArg(), arg.getContextLevel(), l).initialize(coordWithL);
             } else {
               throw new NotYetImplementedException();
             }
-
           }
 
-          return StringEqualsNodeGen.create((String) literal, receiver)
-                                    .initialize(coordWithL);
+          return StringEqualsNodeGen.create(l, receiver).initialize(coordWithL);
         }
       }
 
       if (receiver instanceof GenericLiteralNode) {
         Object literal = receiver.executeGeneric(null);
-        if (literal instanceof String) {
-          if (operand instanceof FieldReadNode) {
-            FieldReadNode fieldRead = (FieldReadNode) operand;
+        if (literal instanceof String l) {
+          if (operand instanceof FieldReadNode fieldRead) {
             ExpressionNode self = fieldRead.getSelf();
-            if (self instanceof LocalArgumentReadNode) {
+            if (self instanceof LocalArgumentReadNode selfArg) {
               return new LocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
-                  ((LocalArgumentReadNode) self).getArg(), (String) literal).initialize(
-                      coordWithL);
+                  selfArg.getArg(), l).initialize(coordWithL);
             } else if (self instanceof NonLocalArgumentReadNode) {
               NonLocalArgumentReadNode arg = (NonLocalArgumentReadNode) self;
               return new NonLocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
-                  arg.getArg(), arg.getContextLevel(), (String) literal).initialize(
-                      coordWithL);
+                  arg.getArg(), arg.getContextLevel(), l).initialize(coordWithL);
             } else {
               throw new NotYetImplementedException();
             }
           }
 
-          return StringEqualsNodeGen.create((String) literal, operand)
-                                    .initialize(coordWithL);
+          return StringEqualsNodeGen.create(l, operand).initialize(coordWithL);
         }
       }
-    } else if (operand instanceof IntegerLiteralNode) {
-      IntegerLiteralNode lit = (IntegerLiteralNode) operand;
+    } else if (operand instanceof IntegerLiteralNode lit) {
       if (binSelector.equals("+")) {
         return IntIncrementNodeGen.create(lit.executeLong(null), false, receiver)
                                   .initialize(coordWithL);
@@ -356,8 +338,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
                                   .initialize(coordWithL);
       }
       if (binSelector.equals(">")) {
-        if (receiver instanceof LocalArgumentReadNode) {
-          return new LocalArgGreaterThanInt(((LocalArgumentReadNode) receiver).getArg(),
+        if (receiver instanceof LocalArgumentReadNode rcvr) {
+          return new LocalArgGreaterThanInt(rcvr.getArg(),
               lit.executeLong(null)).initialize(coordWithL);
         }
 
@@ -365,8 +347,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
                                     .initialize(coordWithL);
       }
       if (binSelector.equals("<")) {
-        if (receiver instanceof LocalArgumentReadNode) {
-          return new LocalArgLessThanInt(((LocalArgumentReadNode) receiver).getArg(),
+        if (receiver instanceof LocalArgumentReadNode rcvr) {
+          return new LocalArgLessThanInt(rcvr.getArg(),
               lit.executeLong(null)).initialize(coordWithL);
         }
 
@@ -382,8 +364,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return inlined;
     }
 
-    if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
-      IntegerLiteralNode lit = (IntegerLiteralNode) operand;
+    if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode lit) {
       long value = lit.executeLong(null);
       return IntIncrementNodeGen.create(value, false, receiver);
     }
