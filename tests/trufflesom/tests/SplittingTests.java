@@ -18,6 +18,7 @@ public class SplittingTests extends AstTestSetup {
 
   @BeforeClass
   public static void init() {
+    initTruffle();
     Universe.setupClassPath("Smalltalk");
 
     enterContext();
@@ -31,7 +32,6 @@ public class SplittingTests extends AstTestSetup {
 
   @Test
   public void testCorrectFrameDescriptorUpdatesInBlocks() {
-
     ExpressionNode body = parseMethod("""
         methodToBeSplit = (
           | local |

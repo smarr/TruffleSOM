@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Context.Builder;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 
 import com.oracle.truffle.api.nodes.Node;
@@ -31,7 +33,17 @@ import trufflesom.vmobjects.SSymbol;
 
 @Ignore("provides just setup")
 public class TruffleTestSetup {
-  private static final Context truffleContext;
+  private static Context truffleContext;
+
+  @BeforeClass
+  public static void init() {
+    initTruffle();
+  }
+
+  @AfterClass
+  public static void close() {
+    closeContext();
+  }
 
   protected ClassGenerationContext cgenc;
 
@@ -46,7 +58,7 @@ public class TruffleTestSetup {
     argNames = new ArrayList<>();
   }
 
-  private static Context initTruffle() {
+  protected static void initTruffle() {
     StorageAnalyzer.initAccessors();
 
     if (VmSettings.UseAstInterp) {
@@ -63,7 +75,7 @@ public class TruffleTestSetup {
 
     Universe.selfSource = SomLanguage.getSyntheticSource("self", "self");
     Universe.selfCoord = SourceCoordinate.createEmpty();
-    return context;
+    truffleContext = context;
   }
 
   protected static void enterContext() {
@@ -72,6 +84,7 @@ public class TruffleTestSetup {
 
   protected static void closeContext() {
     truffleContext.close();
+    truffleContext = null;
   }
 
   protected void addField(final String name) {
@@ -126,9 +139,5 @@ public class TruffleTestSetup {
     } catch (IllegalAccessException | IllegalArgumentException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  static {
-    truffleContext = initTruffle();
   }
 }
