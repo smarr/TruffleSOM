@@ -1,6 +1,5 @@
 package trufflesom.compiler;
 
-import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
@@ -127,8 +126,6 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
 
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final long coord) {
-      transferToInterpreterAndInvalidate();
-
       if (contextLevel == 0) {
         return new LocalArgumentReadNode(this).initialize(coord);
       } else {
@@ -156,8 +153,6 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
-      transferToInterpreterAndInvalidate();
-
       if (contextLevel == 0) {
         return new LocalArgumentWriteNode(this, valueExpr).initialize(coord);
       } else {
@@ -199,7 +194,6 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
 
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final long coord) {
-      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(coord);
       }
@@ -209,7 +203,6 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     @Override
     public ExpressionNode getIncNode(final int contextLevel, final long incValue,
         final long coord) {
-      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return IntIncNonLocalVariableNodeGen.create(contextLevel, this, incValue)
                                             .initialize(coord);
@@ -219,7 +212,6 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
 
     @Override
     public ExpressionNode getSquareNode(final int contextLevel, final long coord) {
-      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableSquareNodeGen.create(contextLevel, this).initialize(coord);
       }
@@ -254,8 +246,6 @@ public abstract class Variable implements bdt.inlining.Variable<ExpressionNode> 
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coord) {
-      transferToInterpreterAndInvalidate();
-
       if (contextLevel > 0) {
         if (valueExpr instanceof AdditionPrim) {
           AdditionPrim add = (AdditionPrim) valueExpr;
