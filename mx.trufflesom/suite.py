@@ -102,7 +102,7 @@ suite = {
              "moduleInfo": {
                  "name": "trufflesom",
                  "exports": [
-                     "trufflesom to org.graalvm.truffle",
+                     "trufflesom.* to org.graalvm.truffle",
                  ],
                  "requires": [
                      "jdk.unsupported" # sun.misc.Unsafe
