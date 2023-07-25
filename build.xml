@@ -85,53 +85,6 @@ Native Image Targets
 -Ddbg=true    when building a native image, wait for debugger to attach</echo>
     </target>
 
-    <target name="clean-som" description="Remove build directories and generated code">
-        <delete dir="${build.dir}"/>
-        <delete dir="${src_gen.dir}"/>
-    </target>
-    
-    <target name="clean-ide" description="Remove Eclipse Projects">
-        <exec executable="${mx.cmd}" dir="${truffle.dir}">
-          <arg value="--dynamicimports"/>
-          <arg value="../sdk"/>
-          <arg value="ideclean"/>
-        </exec>
-    </target>
-    
-    <target name="clean" depends="clean-som">
-    </target>
-
-    <target name="clean-truffle" if="truffle.and.jvmci.present">
-        <exec executable="${mx.cmd}" dir="${vm.dir}">
-          <arg value="--dynamicimports"/>
-          <arg value="../substratevm,../tools,../truffle,../sdk,../compiler"/>
-          <arg value="clean"/>
-          <env key="JAVA_HOME" value="${jvmci.home}" />
-        </exec>
-    </target>
-    
-    <target name="clobber-truffle" >
-      <exec executable="git" dir="${lib.dir}/truffle">
-        <arg line="clean -f -f -d -x" />
-      </exec>
-    </target>
-
-    <target name="clobber" description="Do clean, and also clean truffle build"
-        depends="clean-som,clobber-truffle">
-    </target>
-
-    <target name="check-core-lib-available">
-        <available file="core-lib/.git" property="core-lib.present"/>
-    </target>
-    <target name="core-lib" depends="check-core-lib-available"
-            unless="core-lib.present">
-      <exec executable="git">
-        <arg value="submodule" />
-        <arg value="update" />
-        <arg value="--init" />
-      </exec>
-    </target>
-
     <target name="plain-jdk" depends="jvmci-libs">
         <exec executable="${mx.cmd}" dir="${compiler.dir}" failonerror="true">
             <env key="DYNAMIC_IMPORTS" value="/tools" />
