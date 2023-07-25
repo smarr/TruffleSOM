@@ -36,14 +36,9 @@ suite = {
             "subDir": "src",
             "sourceDirs": ["src"],
             "dependencies": [
-                # "TRUFFLESQUEAK_SHARED",
-                # "BOUNCY_CASTLE_CRYPTO_LIB",
                 "truffle:TRUFFLE_API"
-                # "truffle:TRUFFLE_NFI",
             ],
             "requires": [
-                # "java.datatransfer",
-                # "java.desktop",
                 "java.logging",
                 "java.management",
                 "jdk.management",
@@ -58,30 +53,6 @@ suite = {
             "annotationProcessors": ["truffle:TRUFFLE_DSL_PROCESSOR"],
             "workingSets": "TruffleSOM",
         },
-        # "bdt": {
-#              "subDir": "src",
-#              "sourceDirs": ["."],
-#              "dependencies": [
-#                  "truffle:TRUFFLE_API"
-#                  # "sdk:GRAAL_SDK",
-#              ],
-#              "checkstyle": "trufflesom",
-#              "jacoco": "include",
-#              "javaCompliance": "17+",
-#              "workingSets": "TruffleSOM",
-#          },
-#          "tools": {
-#               "subDir": "src",
-#               "sourceDirs": ["."],
-#               "dependencies": [
-#                   "truffle:TRUFFLE_API"
-#                   # "sdk:GRAAL_SDK",
-#               ],
-#               "checkstyle": "trufflesom",
-#               "jacoco": "include",
-#               "javaCompliance": "17+",
-#               "workingSets": "TruffleSOM",
-#           },
         "tests": {
             "subDir": "tests",
             "sourceDirs": ["."],
@@ -115,28 +86,14 @@ suite = {
                  },
              },
              "dependencies": [
-                 "trufflesom",
+                 "trufflesom"
              ],
              "distDependencies": [
-                 # "TRUFFLESQUEAK_SHARED",
-                 "truffle:TRUFFLE_API",
-                 # "truffle:TRUFFLE_NFI",
+                 "truffle:TRUFFLE_API"
              ],
              # "javaProperties": {
              #     "org.graalvm.language.smalltalk.home": "<path:TRUFFLESQUEAK_HOME>",
              # },
          },
-         # "TRUFFLESOM_LIBS": {
-#              "description": "In-repo libraries ",
-#              "moduleInfo": {
-#                  "name": "de.hpi.swa.trufflesqueak.shared",
-#              },
-#              "dependencies": [
-#                  "de.hpi.swa.trufflesqueak.shared",
-#              ],
-#              "distDependencies": [
-#                  "sdk:GRAAL_SDK",
-#              ],
-#          },
      }
 }
