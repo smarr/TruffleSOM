@@ -34,7 +34,7 @@ suite = {
     "projects": {
         "trufflesom": {
             "subDir": "src",
-            "sourceDirs": [".", "../bdt", "../tools"],
+            "sourceDirs": ["src"],
             "dependencies": [
                 # "TRUFFLESQUEAK_SHARED",
                 # "BOUNCY_CASTLE_CRYPTO_LIB",
