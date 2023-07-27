@@ -54,16 +54,21 @@ suite = {
             "workingSets": "TruffleSOM",
         },
         "tests": {
-            "subDir": "tests",
-            "sourceDirs": ["."],
+            "dir": ".",
+            "sourceDirs": ["tests"],
+            "requires": [
+                "java.logging",
+            ],
             "dependencies": [
-                "trufflesom",
+                "truffle:TRUFFLE_API",
+                "TRUFFLESOM",
                 "mx:JUNIT"
             ],
             "checkstyle": "trufflesom",
             "jacoco": "include",
             "javaCompliance": "17+",
             "workingSets": "TruffleSOM",
+            "annotationProcessors": ["truffle:TRUFFLE_DSL_PROCESSOR"],
             "testProject": True,
         },
     },
@@ -95,5 +100,15 @@ suite = {
              #     "org.graalvm.language.smalltalk.home": "<path:TRUFFLESQUEAK_HOME>",
              # },
          },
+         "TRUFFLESOM_TEST": {
+             "description": "TruffleSOM JUnit Tests",
+             "javaCompliance": "17+",
+             "dependencies": [
+                 "tests"
+             ],
+             "exclude": ["mx:JUNIT", "mx:HAMCREST"],
+             "distDependencies": ["TRUFFLESOM"],
+             "testDistribution": True,
+         }
      }
 }
