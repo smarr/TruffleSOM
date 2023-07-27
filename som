@@ -5,7 +5,7 @@ import os
 import shlex
 
 BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
-TRUFFLE_DIR = BASE_DIR + '/libs/truffle'
+TRUFFLE_DIR = BASE_DIR + '/../graal'
 JAVA_HOME   = os.getenv('JAVA_HOME',  None)
 JVMCI_BIN   = os.getenv('JVMCI_BIN',  None)
 GRAAL_HOME  = os.getenv('GRAAL_HOME',  None)
@@ -139,8 +139,6 @@ java_bin = None
 
 # try local JVMCI, which ant already needed
 local_jvmci_bin = BASE_DIR + '/libs/jvmci'
-if sys.platform == 'darwin':
-  local_jvmci_bin += '/Contents/Home'
 local_jvmci_bin += '/bin/java'
 if os.path.isfile(local_jvmci_bin):
   java_bin = local_jvmci_bin
@@ -200,7 +198,7 @@ LIBGRAAL_JAR    = TRUFFLE_DIR + '/compiler/mxbuild/dists/graal-truffle-compiler-
 COVERAGE_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-coverage.jar'
 PROFILER_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-profiler.jar'
 
-classpath = (BASE_DIR + '/build/classes:'
+classpath = (BASE_DIR + '/mxbuild/jdk20/trufflesom/bin:'
            + GRAAL_SDK_JAR + ':'
            + TRUFFLE_API_JAR)
 
