@@ -95,5 +95,15 @@ suite = {
              #     "org.graalvm.language.smalltalk.home": "<path:TRUFFLESQUEAK_HOME>",
              # },
          },
+         "TRUFFLESOM_TEST": {
+             "description": "TruffleSOM JUnit Tests",
+             "javaCompliance": "17+",
+             "dependencies": [
+                 "tests"
+             ],
+             "exclude": ["mx:JUNIT", "mx:HAMCREST"],
+             "distDependencies": ["TRUFFLESOM"],
+             "testDistribution": True,
+         }
      }
 }
