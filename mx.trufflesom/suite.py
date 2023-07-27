@@ -30,6 +30,12 @@ suite = {
             "sha1": "5bd65d2d7e0eefe73782c072db2066f6832d5b43",
             "licence" : "LGPLv21"
         },
+        "LABS_JDK" : {
+            "id": "labsjdk-ce-20",
+             # I am just using the suite.py to store the info
+             # so but manage it in mx_trufflesom.py
+            "path": "."
+        }
     },
     "projects": {
         "trufflesom": {
