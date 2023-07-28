@@ -1,22 +1,24 @@
+# pylint: disable=missing-module-docstring,import-error,missing-function-docstring,unused-argument,invalid-name
 import os
 import sys
 from argparse import ArgumentParser
 
 import mx
 
+INTERP_TYPES = ["AST", "BC"]
 
 suite = mx.suite("trufflesom")
 LABS_JDK_ID = suite.suiteDict["libraries"]["LABS_JDK"]["id"]
 
 
 def ensure_core_lib_is_available():
-    if not os.path.exists("core-lib/.git"):
+    if not os.path.exists(suite.dir + "/core-lib/.git"):
         git = mx.GitConfig()
         git.run(["git", "submodule", "update", "--init", "--recursive"])
 
 
 def ensure_labsjdk():
-    if not os.path.exists("libs/jvmci"):
+    if not os.path.exists(suite.dir + "/libs/jvmci"):
         mx.run_mx(
             [
                 "--quiet",
@@ -66,9 +68,9 @@ bn_parser.add_argument(
     "--type",
     action="store",
     dest="type",
-    default="AST",
+    default=INTERP_TYPES[0],
     metavar="<type>",
-    help="interpreter type, one of AST, BC. Default=AST",
+    help=f"interpreter type, one of {', '.join(INTERP_TYPES)}. Default={INTERP_TYPES[0]}",
 )
 bn_parser.add_argument(
     "-d",
@@ -112,16 +114,14 @@ def get_output_name(opt):
     if opt.without_jit:
         output_name += "-interp"
 
-    if opt.type == "AST":
-        output_name += "-ast"
-    elif opt.type == "BC":
-        output_name += "-bc"
-    else:
+    if not opt.type in INTERP_TYPES:
         print(
-            "Unknown interpreter type selected %s. Instead choose one of: AST, BC"
-            % opt.type
+            f"Unknown interpreter type selected {opt.type}. "
+            + f"Instead choose one of: {', '.join(INTERP_TYPES)}"
         )
         sys.exit(1)
+
+    output_name += "-" + opt.type.lower()
 
     return output_name
 
@@ -222,6 +222,81 @@ def build_native_obj_test(args, **kwargs):
         "trufflesom.intepreter.objectstorage.BasicStorageTester",
     ]
     mx.run_mx(cmd, svm_path)
+
+
+@mx.command(suite.name, "tests-junit")
+def tests_junit(args, **kwargs):
+    """run Java unit tests"""
+    for t in INTERP_TYPES:
+        print(f"Run JUnit for {t} interpreter:")
+        mx.run_mx(["unittest", "--suite", "trufflesom", "-Dsom.interp=AST"])
+
+
+@mx.command(suite.name, "tests-som")
+def tests_som(args, **kwargs):
+    """run SOM unit tests"""
+    for t in INTERP_TYPES:
+        print(f"Run Unit Tests on {t} interpreter:")
+        mx.run(
+            [
+                suite.dir + "/som",
+                "-G",
+                "--no-embedded-graal",
+                "-Dsom.interp" + t,
+                "-cp",
+                suite.dir + "/Smalltalk",
+                suite.dir + "/TestSuite/TestHarness.som",
+            ]
+        )
+
+
+@mx.command(suite.name, "tests-native")
+def tests_native(args, **kwargs):
+    """run SOM unit tests on native"""
+    possible_native_binaries = [
+        "som-native-ast",
+        "som-native-interp-ast",
+        "som-native-bc",
+        "som-native-interp-bc",
+    ]
+
+    did_run = False
+    for b in possible_native_binaries:
+        binary = suite.dir + "/" + b
+        if os.path.exists(binary):
+            print("Run Unit Tests on " + binary + ":")
+            mx.run(
+                [
+                    binary,
+                    "-cp",
+                    suite.dir + "/Smalltalk",
+                    suite.dir + "/TestSuite/TestHarness.som",
+                ]
+            )
+            did_run = True
+
+    if not did_run:
+        print("No binary found to run tests on")
+        sys.exit(1)
+
+
+@mx.command(suite.name, "tests-nodestats")
+def tests_nodestats(args, **kwargs):
+    """run nodestats tests"""
+    mx.run(["tests/tools/nodestats/test.sh"])
+
+
+@mx.command(suite.name, "tests-coverage")
+def tests_coverage(args, **kwargs):
+    """run coverage tests"""
+    mx.run(["tests/tools/coverage/test.sh"])
+
+
+@mx.command(suite.name, "tests-update-data")
+def tests_update_data(args, **kwargs):
+    """update expected data for tests"""
+    mx.run(["tests/tools/nodestats/test.sh", "update"])
+    mx.run(["tests/tools/coverage/test.sh", "update"])
 
 
 ensure_core_lib_is_available()

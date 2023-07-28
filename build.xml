@@ -235,104 +235,16 @@ kernel:           ${kernel}</echo>
     <target name="compile-for-dev" depends="graal-jdk,libs,compile-som" description="Compile TruffleSOM with LibGraal">
     </target>
 
-    <target name="jar" depends="compile-for-jar" description="Package as JAR">
-        <jar destfile="${build.dir}/som.jar" basedir="${classes.dir}"></jar>
-    </target>
 
     <target name="test" depends="compile-for-jar,unit-test" description="Execute tests" />
     
-    <target name="unit-test" description="Run unit tests">
-        <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed.ast"
-            outputtoformatters="true">
-            <jvmarg value="-ea" />
-            <jvmarg value="-esa" />
-            <jvmarg value="-Dsom.interp=AST" />
-            <jvmarg value="-Dpolyglot.engine.WarnInterpreterOnly=false" />
-            <classpath refid="som.cp" />
-            <batchtest fork="yes" filtertrace="false">
-              <fileset dir="tests">
-                  <include name="**/*Test*.java"/>
-              </fileset>
-            </batchtest>
-            <formatter type="brief" usefile="false"/>
-        </junit>
-        
-        <junit haltonerror="false" haltonfailure="false" failureproperty="test.failed.bc"
-            outputtoformatters="true">
-            <jvmarg value="-ea" />
-            <jvmarg value="-esa" />
-            <jvmarg value="-Dsom.interp=BC" />
-            <jvmarg value="-Dpolyglot.engine.WarnInterpreterOnly=false" />
-            <classpath refid="som.cp" />
-            <batchtest fork="yes" filtertrace="false">
-              <fileset dir="tests">
-                  <include name="**/*Test*.java"/>
-              </fileset>
-            </batchtest>
-            <formatter type="brief" usefile="false"/>
-        </junit>
 
-        <java classname="trufflesom.vm.Universe" fork="true" failonerror="true">
-            <classpath refid="som.cp" />
-            <jvmarg value="-ea" />
-            <jvmarg value="-esa" />
-            <jvmarg value="-Dpolyglot.engine.WarnInterpreterOnly=false" />
-            <arg line="-cp Smalltalk TestSuite/TestHarness.som --ignore-inefficacies" />
-        </java>
-        <fail message="Basic tests failed for AST interpreter." if="test.failed.ast" />
-        <fail message="Basic tests failed for BC interpreter." if="test.failed.bc" />
-    </target>
+    
 
-    <target name="som-test" depends="compile-for-jar" description="Test som script">
-        <exec executable="./som" failonerror="true">
-            <arg value="-G" />
-            <arg value="--no-embedded-graal" />
-            <arg value="-Dsom.interp=AST" />
-            <arg value="-cp" />
-            <arg value="Smalltalk" />
-            <arg value="TestSuite/TestHarness.com" />
-        </exec>
-        
-        <exec executable="./som" failonerror="true">
-            <arg value="-G" />
-            <arg value="--no-embedded-graal" />
-            <arg value="-Dsom.interp=BC" />
-            <arg value="-cp" />
-            <arg value="Smalltalk" />
-            <arg value="TestSuite/TestHarness.com" />
-        </exec>
-    </target>
-
-    <target name="native-tests" depends="native-ast">
-      <exec executable="${src.dir}/../som-native-ast" failonerror="true">
-          <arg value="-cp" />
-          <arg value="Smalltalk" />
-          <arg value="TestSuite/TestHarness.com" />
-      </exec>
-    </target>
-    
-    <target name="nodestats-test">
-        <exec executable="tests/tools/nodestats/test.sh" failonerror="true">
-        </exec>
-    </target>
-    
-    <target name="coverage-test">
-        <exec executable="tests/tools/coverage/test.sh" failonerror="true">
-        </exec>
-    </target>
-    
     <target name="tools-test" depends="compile-for-jar,nodestats-test,coverage-test" description="Test Tools">
     </target>
     
     <target name="tests" depends="test,som-test" />
     
-    <target name="update-test-data" depends="compile-for-jar" description="Update expected test data">
-        <exec executable="tests/tools/nodestats/test.sh" failonerror="true">
-          <arg value="update" />
-        </exec>
-        <exec executable="tests/tools/coverage/test.sh" failonerror="true">
-          <arg value="update" />
-        </exec>
-    </target>
 
 </project>
