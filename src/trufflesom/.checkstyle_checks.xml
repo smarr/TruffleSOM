@@ -155,9 +155,6 @@
   <module name="LineLength">
     <property name="max" value="250"/>
   </module>
-  <module name="SuppressionFilter">
-    <property name="file" value="${basedir}/.checkstyle_suppressions.xml"/>
-  </module>
   <module name="RegexpHeader">
     <property name="severity" value="ignore"/>
     <property name="header" value="(?m)/\*\*\n \* Copyright((.*\n)*) \*/\n"/>
