@@ -18,18 +18,21 @@ def ensure_core_lib_is_available():
 
 
 def ensure_labsjdk():
-    if not os.path.exists(suite.dir + "/libs/jvmci"):
-        mx.run_mx(
-            [
-                "--quiet",
-                "fetch-jdk",
-                "--strip-contents-home",
-                "--jdk-id",
-                LABS_JDK_ID,
-                "--alias",
-                suite.dir + "/libs/jvmci",
-            ]
-        )
+    if not os.path.exists(suite.dir + "/libs"):
+        os.mkdir(suite.dir + "/libs")
+    elif os.path.exists(suite.dir + "/libs/jvmci"):
+        return
+    mx.run_mx(
+        [
+            "--quiet",
+            "fetch-jdk",
+            "--strip-contents-home",
+            "--jdk-id",
+            LABS_JDK_ID,
+            "--alias",
+            suite.dir + "/libs/jvmci",
+        ]
+    )
 
 
 bn_parser = ArgumentParser(
