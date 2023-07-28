@@ -126,6 +126,12 @@ def get_output_name(opt):
     return output_name
 
 
+@mx.command(suite.name, "get-labsjdk")
+def get_labsjdk(args, **kwargs):
+    """download the LabsJDK"""
+    ensure_labsjdk()
+
+
 @mx.command(
     suite.name,
     "build-native",

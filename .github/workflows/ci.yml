@@ -10,10 +10,19 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
+          
+      - name: Setup MX
+        run: |
+          git clone --depth 1 https://github.com/graalvm/mx.git
+          echo "PATH=$PATH:`pwd`/mx" >> "$GITHUB_ENV"
+
+      - name: Get LabsJDK
+        run: |
+          mx --java-home=$JAVA_HOME_17_X64 get-labsjdk
 
       - name: CheckStyle
         run: |
-          ant -e checkstyle
+          mx checkstyle
       
       - name: Download Eclipse
         run: |
@@ -25,7 +34,7 @@ jobs:
       - name: Check Eclipse Format
         run: |
           export ECLIPSE_EXE=${GITHUB_WORKSPACE}/../eclipse/eclipse
-          ant -e eclipseformat
+          mx eclipseformat
 
   test_som:
     runs-on: ubuntu-22.04
@@ -35,16 +44,35 @@ jobs:
         with:
           submodules: true
       
+      - name: Setup MX
+        run: |
+          git clone --depth 1 https://github.com/graalvm/mx.git
+          echo "PATH=$PATH:`pwd`/mx" >> "$GITHUB_ENV"
+      
+      - name: Get LabsJDK
+        run: |
+          mx --java-home=$JAVA_HOME_17_X64 get-labsjdk
+      
+      - name: Compile TruffleSOM
+        run: |
+          mx build
+      
       - name: Tests
         run: |
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          ant -e tests native-obj-storage-test
+          mx tests-junit
+          mx tests-som
+    
+      - name: Test Object Storage System
+        run: |
+          mx build-native-obj-test
+          ./som-obj-storage-tester
+          
       
       - name: Tool Tests
         continue-on-error: true
         run: |
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          ant -e nodestats-test coverage-test
+          mx tests-nodestats
+          mx tesst-coverage
       
       - name: SomSom Tests
         run: |
