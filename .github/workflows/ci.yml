@@ -20,10 +20,6 @@ jobs:
         run: |
           mx --java-home=$JAVA_HOME_17_X64 get-labsjdk
 
-      - name: CheckStyle
-        run: |
-          mx checkstyle
-      
       - name: Download Eclipse
         run: |
           export ECLIPSE_TAR=eclipse.tar.gz
@@ -31,10 +27,10 @@ jobs:
           curl -L ${ECLIPSE_URL} -o ${ECLIPSE_TAR}
           tar --warning=no-unknown-keyword -C ${GITHUB_WORKSPACE}/.. -xzf ${ECLIPSE_TAR}
 
-      - name: Check Eclipse Format
+      - name: Run Style Gate
         run: |
           export ECLIPSE_EXE=${GITHUB_WORKSPACE}/../eclipse/eclipse
-          mx eclipseformat
+          mx gate --tags style
 
   test_som:
     runs-on: ubuntu-22.04

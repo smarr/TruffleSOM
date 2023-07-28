@@ -1,5 +1,6 @@
 package bdt.inlining;
 
+
 public class TScope implements Scope<TScope, Void> {
 
   @Override
