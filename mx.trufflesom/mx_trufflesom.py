@@ -135,6 +135,13 @@ def get_labsjdk(args, **kwargs):
     ensure_labsjdk()
 
 
+@mx.command(suite.name, "build-native-image-tool")
+def build_native_image_tool(args, **kwargs):
+    """build the native-image tool"""
+    svm_path = get_svm_path()
+    mx.run_mx(["build"], svm_path)
+
+
 @mx.command(
     suite.name,
     "build-native",

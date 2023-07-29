@@ -57,6 +57,10 @@ jobs:
         run: |
           mx tests-junit
           mx tests-som
+      
+      - name: Build native-image tool
+        run: |
+          mx build-native-image-tool
     
       - name: Test Object Storage System
         run: |
