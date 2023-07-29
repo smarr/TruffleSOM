@@ -121,10 +121,10 @@ public class MethodGenerationContext
     accessesVariablesOfOuterScope = false;
     throwsNonLocalReturn = false;
     needsToCatchNonLocalReturn = false;
-    embeddedBlockMethods = new ArrayList<SMethod>();
+    embeddedBlockMethods = new ArrayList<>();
 
-    arguments = new LinkedHashMap<SSymbol, Argument>();
-    locals = new LinkedHashMap<SSymbol, Local>();
+    arguments = new LinkedHashMap<>();
+    locals = new LinkedHashMap<>();
   }
 
   @Override

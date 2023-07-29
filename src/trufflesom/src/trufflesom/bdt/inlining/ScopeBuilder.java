@@ -27,7 +27,6 @@ public interface ScopeBuilder<This extends ScopeBuilder<This>> {
    * perform the counting and communicate it to the lambda.
    *
    * @param node the node using a variable that needs to be represented as a new temporary
-   * @param source the synthetic source location for the new variable definition
    * @return the introduced variable representing the temporary
    * @throws ProgramDefinitionError when there is a consistency problem caused by introducing
    *           the variable. This is supposed to be used to indicate errors in the user

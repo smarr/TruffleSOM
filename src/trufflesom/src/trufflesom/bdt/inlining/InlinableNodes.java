@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.source.SourceSection;
 
 import trufflesom.bdt.basic.IdProvider;
 import trufflesom.bdt.basic.ProgramDefinitionError;
@@ -18,8 +17,7 @@ import trufflesom.bdt.inlining.Inliner.FactoryInliner;
  * the @{@link Inline} annotation.
  *
  * <p>
- * A typical use case would be in a parser, which can use the
- * {@link #inline(Object, List, ScopeBuilder, SourceSection)} to request inlining.
+ * A typical use case would be in a parser, which can request inlining.
  * For this purpose, {@link InlinableNodes} takes a list of node classes and factories as
  * candidates for inlining.
  *
@@ -114,7 +112,6 @@ public final class InlinableNodes<Id> {
    * @param selector to identify a potential inline replacement
    * @param argNodes the argument/child nodes to the potential node
    * @param builder used for providing context to the inlining operation
-   * @param source the source section of the potential node
    * @return the inlined version of the potential node, or {@code null}, if inlining is not
    *         applicable
    * @throws ProgramDefinitionError in case the inlining would result in a structural violation

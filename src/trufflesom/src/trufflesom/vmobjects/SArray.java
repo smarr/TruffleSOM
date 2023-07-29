@@ -282,7 +282,6 @@ public final class SArray extends SAbstractObject {
    * There we now, it is either empty, or of OBJECT type.
    *
    * @param value
-   * @return
    */
   public SArray copyAndExtendWith(final Object value) {
     Object[] newArr;

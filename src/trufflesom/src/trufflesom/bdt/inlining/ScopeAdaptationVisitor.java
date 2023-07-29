@@ -191,7 +191,7 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
    * @param <S> the scope type
    * @param <MethodT> the type of the run-time element representing the scope
    *
-   * @param method, the run-time element for which to determine the adapted scope
+   * @param method the run-time element for which to determine the adapted scope
    *
    * @return the adapted scope for the given method
    */
@@ -228,8 +228,6 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
 
   /**
    * Factory method to update a read node with an appropriate version for the adapted scope.
-   *
-   * @param <N> the type of the node to be returned
    *
    * @param var the variable accessed by {@code node}
    * @param node the read node

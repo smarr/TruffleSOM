@@ -98,9 +98,9 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected long lastMethodsCoord;
 
-  private static final List<Symbol>   singleOpSyms        = new ArrayList<Symbol>();
-  protected static final List<Symbol> binaryOpSyms        = new ArrayList<Symbol>();
-  private static final List<Symbol>   keywordSelectorSyms = new ArrayList<Symbol>();
+  private static final List<Symbol>   singleOpSyms        = new ArrayList<>();
+  protected static final List<Symbol> binaryOpSyms        = new ArrayList<>();
+  private static final List<Symbol>   keywordSelectorSyms = new ArrayList<>();
 
   protected boolean superSend;
 

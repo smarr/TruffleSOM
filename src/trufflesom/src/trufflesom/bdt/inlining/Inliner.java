@@ -84,13 +84,6 @@ class Inliner {
    * <p>
    * The rest is treated as normal, first the args, then the inlined args,
    * then possibly to be introduced temps, and finally possible additional args.
-   *
-   * @param <ExprT>
-   * @param <NodeState>
-   * @param <MethodT>
-   * @param <OuterT>
-   * @param <S>
-   * @param <SB>
    */
   static class FactoryInliner extends Inliner {
     private final NodeFactory<? extends Node> factory;

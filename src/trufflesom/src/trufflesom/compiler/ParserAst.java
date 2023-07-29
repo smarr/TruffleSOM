@@ -68,7 +68,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   protected ExpressionNode blockBody(final MethodGenerationContext mgenc,
       final boolean seenPeriod) throws ProgramDefinitionError {
     int coord = getStartIndex();
-    List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
+    List<ExpressionNode> expressions = new ArrayList<>();
 
     boolean sawPeriod = true;
 
@@ -276,7 +276,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     boolean isSuperSend = superSend;
     superSend = false;
     int coord = getStartIndex();
-    List<ExpressionNode> arguments = new ArrayList<ExpressionNode>();
+    List<ExpressionNode> arguments = new ArrayList<>();
     StringBuilder kw = new StringBuilder();
 
     arguments.add(receiver);
@@ -353,7 +353,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   }
 
   private SArray literalArray() throws ParseError {
-    List<Object> literals = new ArrayList<Object>();
+    List<Object> literals = new ArrayList<>();
     expect(Pound);
     expect(NewTerm);
     while (sym != EndTerm) {

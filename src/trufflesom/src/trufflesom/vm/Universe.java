@@ -315,7 +315,6 @@ public final class Universe {
    *
    * @param className
    * @param selector
-   * @return
    */
   public static Object interpret(final String className, final String selector) {
     initializeObjectSystem();

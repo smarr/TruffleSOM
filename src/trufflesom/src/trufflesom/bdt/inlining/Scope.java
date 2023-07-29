@@ -47,7 +47,7 @@ public interface Scope<This extends Scope<This, MethodT>, MethodT> {
    * Lookup the scope corresponding to the given run-time entity, which often corresponds to a
    * nested method, block, lambda, etc.
    *
-   * @param method, the method, block, lambda, etc, for which the scope is to be determined
+   * @param method the method, block, lambda, etc, for which the scope is to be determined
    * @return a scope, or {@code null}
    */
   This getScope(MethodT method);

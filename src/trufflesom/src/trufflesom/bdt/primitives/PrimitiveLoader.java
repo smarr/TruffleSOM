@@ -26,8 +26,6 @@ public abstract class PrimitiveLoader<ExprT, Id> {
 
   /**
    * Initializes the PrimitiveLoader.
-   *
-   * @param context the object representing the language's context
    */
   protected PrimitiveLoader(final IdProvider<Id> ids) {
     this.ids = ids;
@@ -89,11 +87,10 @@ public abstract class PrimitiveLoader<ExprT, Id> {
   }
 
   /**
-   * {@link #initialize()} iterates over all factories and consequently primitives provided by
-   * {@link #getFactories()}. These primitives are exposed by this method to allow custom
+   * {@link #initialize()} iterates over all factories and consequently primitives. These
+   * primitives are exposed by this method to allow custom
    * handling, for instance to install them in language-level classes.
    *
-   * @param prim the primitive annotation
    * @param specializer the specializer object for this primitive
    */
   protected abstract void registerPrimitive(Specializer<ExprT, Id> specializer);

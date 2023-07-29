@@ -170,8 +170,8 @@ public final class SystemPrims {
 
     @TruffleBoundary
     public static void printStackTrace(final int skipDnuFrames, final SourceSection topNode) {
-      List<String> method = new ArrayList<String>();
-      List<String> location = new ArrayList<String>();
+      List<String> method = new ArrayList<>();
+      List<String> location = new ArrayList<>();
       int[] maxLengthMethod = {0};
       boolean[] first = {true};
       Universe.println("Stack Trace");

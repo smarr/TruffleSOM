@@ -13,8 +13,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public class Globals {
-  private static final HashMap<SSymbol, Association> globals =
-      new HashMap<SSymbol, Association>();
+  private static final HashMap<SSymbol, Association> globals = new HashMap<>();
 
   @TruffleBoundary
   public static boolean hasGlobal(final SSymbol name) {
