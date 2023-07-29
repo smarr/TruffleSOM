@@ -31,7 +31,7 @@ import trufflesom.vmobjects.SSymbol;
 
 @Ignore("provides just setup")
 public class TruffleTestSetup {
-  private static final Context truffleContext;
+  private static Context truffleContext;
 
   protected ClassGenerationContext cgenc;
 
@@ -66,7 +66,8 @@ public class TruffleTestSetup {
     return context;
   }
 
-  protected static void enterContext() {
+  protected static void reinitTruffleAndEnterContext() {
+    truffleContext = initTruffle();
     truffleContext.enter();
   }
 
