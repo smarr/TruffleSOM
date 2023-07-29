@@ -159,12 +159,12 @@ public final class Universe {
     return returnCode;
   }
 
-  public static Object interpret(String[] arguments) {
+  public static Object interpret(final String[] arguments) {
     // Check for command line switches
-    arguments = handleArguments(arguments);
+    String[] remainingArguments = handleArguments(arguments);
 
     // Initialize the known universe
-    return execute(arguments);
+    return execute(remainingArguments);
   }
 
   private Universe() {}
