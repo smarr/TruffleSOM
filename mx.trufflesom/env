@@ -1,1 +1,3 @@
 JAVA_HOME=libs/jvmci
+MX_BUILD_EXPLODED=true
+LINKY_LAYOUT=*.jar
