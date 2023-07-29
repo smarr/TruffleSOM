@@ -68,9 +68,9 @@ import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
 
-import bdt.basic.ProgramDefinitionError;
-import bdt.source.SourceCoordinate;
-import bdt.tools.structure.StructuralProbe;
+import trufflesom.bdt.basic.ProgramDefinitionError;
+import trufflesom.bdt.source.SourceCoordinate;
+import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.nodes.ExpressionNode;

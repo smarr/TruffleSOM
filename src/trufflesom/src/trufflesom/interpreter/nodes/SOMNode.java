@@ -29,11 +29,11 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bdt.basic.nodes.DummyParent;
-import bdt.inlining.ScopeAdaptationVisitor;
-import bdt.inlining.nodes.ScopeReference;
-import bdt.inlining.nodes.WithSource;
-import bdt.source.SourceCoordinate;
+import trufflesom.bdt.basic.nodes.DummyParent;
+import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
+import trufflesom.bdt.inlining.nodes.ScopeReference;
+import trufflesom.bdt.inlining.nodes.WithSource;
+import trufflesom.bdt.source.SourceCoordinate;
 import trufflesom.interpreter.Types;
 
 

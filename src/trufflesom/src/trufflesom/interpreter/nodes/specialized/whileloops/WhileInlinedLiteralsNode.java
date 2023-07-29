@@ -8,9 +8,9 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-import bdt.inlining.Inline;
-import bdt.inlining.Inline.False;
-import bdt.inlining.Inline.True;
+import trufflesom.bdt.inlining.Inline;
+import trufflesom.bdt.inlining.Inline.False;
+import trufflesom.bdt.inlining.Inline.True;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;

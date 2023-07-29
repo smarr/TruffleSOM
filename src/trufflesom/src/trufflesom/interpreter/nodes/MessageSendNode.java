@@ -4,8 +4,8 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
-import bdt.primitives.Specializer;
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.primitives.Specializer;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.NotYetImplementedException;

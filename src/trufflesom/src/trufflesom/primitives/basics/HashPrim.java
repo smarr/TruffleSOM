@@ -4,7 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
-import bdt.primitives.Primitive;
+import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SSymbol;

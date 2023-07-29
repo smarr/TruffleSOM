@@ -14,8 +14,8 @@ import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
-import bdt.primitives.Primitive;
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.primitives.Primitive;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.bc.RestartLoopException;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;

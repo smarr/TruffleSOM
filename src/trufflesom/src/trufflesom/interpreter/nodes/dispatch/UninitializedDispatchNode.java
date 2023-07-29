@@ -6,7 +6,7 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Types;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;

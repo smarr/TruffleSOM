@@ -5,7 +5,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.source.Source;
 
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.nodes.SOMNode;
 
 

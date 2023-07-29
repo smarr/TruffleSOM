@@ -23,8 +23,8 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 import com.sun.management.ThreadMXBean;
 
-import bdt.primitives.Primitive;
-import bdt.source.SourceCoordinate;
+import trufflesom.bdt.primitives.Primitive;
+import trufflesom.bdt.source.SourceCoordinate;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;

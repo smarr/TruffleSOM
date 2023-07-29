@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
-import bdt.basic.IdProvider;
+import trufflesom.bdt.basic.IdProvider;
 import trufflesom.vmobjects.SSymbol;
 
 

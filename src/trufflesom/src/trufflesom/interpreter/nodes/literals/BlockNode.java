@@ -7,8 +7,8 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.source.Source;
 
-import bdt.inlining.ScopeAdaptationVisitor;
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Argument;

@@ -26,8 +26,8 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.source.Source;
 
-import bdt.inlining.nodes.Inlinable;
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.inlining.nodes.Inlinable;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;

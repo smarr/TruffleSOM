@@ -55,7 +55,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import bdt.tools.structure.StructuralProbe;
+import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.MethodGenerationContext;

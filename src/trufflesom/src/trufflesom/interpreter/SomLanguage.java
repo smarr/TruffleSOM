@@ -20,10 +20,10 @@ import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 
-import tools.nodestats.Tags.AnyNode;
 import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
 import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
+import trufflesom.tools.nodestats.Tags.AnyNode;
 import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vm.Universe;
 import trufflesom.vm.Universe.SomExit;

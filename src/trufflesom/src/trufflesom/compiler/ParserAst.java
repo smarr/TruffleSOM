@@ -24,9 +24,9 @@ import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
 
-import bdt.basic.ProgramDefinitionError;
-import bdt.inlining.InlinableNodes;
-import bdt.tools.structure.StructuralProbe;
+import trufflesom.bdt.basic.ProgramDefinitionError;
+import trufflesom.bdt.inlining.InlinableNodes;
+import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.GlobalNode;

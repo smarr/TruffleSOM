@@ -38,7 +38,7 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;

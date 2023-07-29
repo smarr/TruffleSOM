@@ -10,7 +10,7 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.InlinedCountingConditionProfile;
 
-import bdt.primitives.Primitive;
+import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;

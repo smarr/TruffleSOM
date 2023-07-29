@@ -2,7 +2,7 @@ package trufflesom.interpreter.nodes.literals;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import bdt.inlining.ScopeAdaptationVisitor;
+import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;

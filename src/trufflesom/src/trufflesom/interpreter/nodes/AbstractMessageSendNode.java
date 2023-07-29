@@ -3,8 +3,8 @@ package trufflesom.interpreter.nodes;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
-import bdt.primitives.nodes.PreevaluatedExpression;
-import bdt.tools.nodes.Invocation;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.tools.nodes.Invocation;
 import trufflesom.vmobjects.SSymbol;
 
 

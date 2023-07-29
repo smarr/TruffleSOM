@@ -14,7 +14,7 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.InlinedCountingConditionProfile;
 
-import bdt.primitives.Primitive;
+import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.TernaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SBlock;

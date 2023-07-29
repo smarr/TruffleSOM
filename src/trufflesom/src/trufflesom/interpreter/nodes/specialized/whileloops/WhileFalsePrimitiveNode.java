@@ -5,7 +5,7 @@ import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 
-import bdt.primitives.Primitive;
+import trufflesom.bdt.primitives.Primitive;
 import trufflesom.vmobjects.SBlock;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SObject;

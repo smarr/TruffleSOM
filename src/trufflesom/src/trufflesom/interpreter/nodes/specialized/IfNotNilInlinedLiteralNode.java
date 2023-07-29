@@ -3,7 +3,7 @@ package trufflesom.interpreter.nodes.specialized;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 
-import bdt.inlining.Inline;
+import trufflesom.bdt.inlining.Inline;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;

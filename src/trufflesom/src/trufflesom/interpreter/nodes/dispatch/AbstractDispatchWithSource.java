@@ -2,7 +2,7 @@ package trufflesom.interpreter.nodes.dispatch;
 
 import com.oracle.truffle.api.source.Source;
 
-import bdt.inlining.nodes.WithSource;
+import trufflesom.bdt.inlining.nodes.WithSource;
 
 
 public abstract class AbstractDispatchWithSource extends AbstractDispatchNode

@@ -10,7 +10,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
-import bdt.primitives.Primitive;
+import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.primitives.basics.BlockPrims.ValueNonePrim;

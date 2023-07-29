@@ -36,12 +36,12 @@ import java.util.List;
 
 import com.oracle.truffle.api.source.Source;
 
-import bdt.basic.ProgramDefinitionError;
-import bdt.inlining.Scope;
-import bdt.inlining.ScopeBuilder;
-import bdt.inlining.nodes.Inlinable;
-import bdt.source.SourceCoordinate;
-import bdt.tools.structure.StructuralProbe;
+import trufflesom.bdt.basic.ProgramDefinitionError;
+import trufflesom.bdt.inlining.Scope;
+import trufflesom.bdt.inlining.ScopeBuilder;
+import trufflesom.bdt.inlining.nodes.Inlinable;
+import trufflesom.bdt.source.SourceCoordinate;
+import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
@@ -496,7 +496,7 @@ public class MethodGenerationContext
   }
 
   @Override
-  public bdt.inlining.Variable<?> introduceTempForInlinedVersion(
+  public trufflesom.bdt.inlining.Variable<?> introduceTempForInlinedVersion(
       final Inlinable<MethodGenerationContext> blockOrVal, final long coord)
       throws ProgramDefinitionError {
     Local loopIdx;

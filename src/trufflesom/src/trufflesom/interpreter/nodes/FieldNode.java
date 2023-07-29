@@ -28,8 +28,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.Source;
 
-import bdt.inlining.ScopeAdaptationVisitor;
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.bc.BytecodeGenerator;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;

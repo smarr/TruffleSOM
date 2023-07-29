@@ -29,9 +29,9 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.source.Source;
 
-import bdt.inlining.Scope;
-import bdt.inlining.ScopeAdaptationVisitor;
-import bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.inlining.Scope;
+import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;

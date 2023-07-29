@@ -6,8 +6,8 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import bdt.inlining.ScopeAdaptationVisitor;
-import bdt.tools.nodes.Invocation;
+import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
+import trufflesom.bdt.tools.nodes.Invocation;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SObject;

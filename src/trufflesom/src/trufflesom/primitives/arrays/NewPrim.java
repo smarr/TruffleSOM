@@ -5,8 +5,8 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
-import bdt.primitives.Primitive;
-import bdt.primitives.Specializer;
+import trufflesom.bdt.primitives.Primitive;
+import trufflesom.bdt.primitives.Specializer;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.Classes;
