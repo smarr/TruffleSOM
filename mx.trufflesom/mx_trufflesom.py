@@ -266,6 +266,36 @@ def tests_som(args, **kwargs):
         )
 
 
+@mx.command(suite.name, "tests-somsom")
+def tests_somsom(args, **kwargs):
+    """run SomSom unit tests"""
+
+    somsom_cp = ":".join(
+        [
+            suite.dir + "/Smalltalk",
+            suite.dir + "/TestSuite",
+            suite.dir + "/core-lib/SomSom/src/compiler",
+            suite.dir + "/core-lib/SomSom/src/vm",
+            suite.dir + "/core-lib/SomSom/src/vmobjects",
+            suite.dir + "/core-lib/SomSom/src/interpreter",
+            suite.dir + "/core-lib/SomSom/src/primitives",
+        ]
+    )
+
+    for t in INTERP_TYPES:
+        print(f"Run SomSom Unit Tests on {t} interpreter:")
+        mx.run(
+            [
+                suite.dir + "/som",
+                "-G",
+                "-Dsom.interp" + t,
+                "-cp",
+                somsom_cp,
+                suite.dir + "/core-lib/SomSom/tests/SomSomTests.som",
+            ]
+        )
+
+
 @mx.command(suite.name, "tests-native")
 def tests_native(args, **kwargs):
     """run SOM unit tests on native"""
