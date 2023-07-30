@@ -51,7 +51,7 @@ jobs:
       
       - name: Compile TruffleSOM
         run: |
-          mx build
+          mx build --no-native
       
       - name: Tests
         run: |
