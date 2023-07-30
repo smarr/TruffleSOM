@@ -72,7 +72,7 @@ jobs:
         continue-on-error: true
         run: |
           mx tests-nodestats
-          mx tesst-coverage
+          mx tests-coverage
       
       - name: SomSom Tests
         run: |
