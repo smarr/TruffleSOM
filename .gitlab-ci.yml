@@ -9,31 +9,43 @@ variables:
   ECLIPSE_EXE: /home/gitlab-runner/.local/eclipse/eclipse
   GRAALEE_HOME: /home/gitlab-runner/.local/graalvm-ee-java17-22.2.0
   JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64/
-  ANT: "ant -e"
 
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
+  - (cd ..; git clone --depth 1 https://github.com/graalvm/mx.git || cd mx && git reset --hard origin/HEAD)
+  - export PATH="$PATH:`pwd`/../mx"
 
 test:
   stage: build-and-test
   tags: [yuria]
   script:
-    - (cd libs/truffle/compiler/mxbuild && sudo reown-project.sh) || true
-    - ${ANT} tests native-obj-storage-test native-tests
-    - ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives core-lib/SomSom/tests/SomSomTests.som
-    - ${ANT} nodestats-test || true
-    - ${ANT} coverage-test || true
+    - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
+    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - mx sforceimport
+    - mx build --no-native
+    - mx tests-junit
+    - mx tests-som
+    - mx tests-somsom
+    - mx build-native-image-tool
+    - mx build-native-obj-test
+    - ./som-obj-storage-tester
+
+    - mx tests-nodestats || true
+    - mx tests-coverage || true
 
 build:native-interp-ast:
   stage: build-and-test
   tags: [yuria2]
   script:
-    - (cd libs/truffle/compiler/mxbuild && sudo reown-project.sh) || true
-    - ${ANT} compile native-ast -Dno.jit=true
+    - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
+    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - mx sforceimport
+    - mx build --no-native
+    - mx build-native -J -t AST -bn -bt
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
 
-    # - ${ANT} compile-native-ast-ee -Dno.jit=true
+    # - mx build-native -J -t AST -g ${GRAALEE_HOME}
     # - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
     
     # Package and Upload
@@ -51,11 +63,14 @@ build:native-interp-bc:
   stage: build-and-test
   tags: [yuria3]
   script:
-    - (cd libs/truffle/compiler/mxbuild && sudo reown-project.sh) || true
-    - ${ANT} compile native-bc -Dno.jit=true
+    - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
+    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - mx sforceimport
+    - mx build --no-native
+    - mx build-native -J -t BC -bn -bt
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
 
-    # - ${ANT} compile-native-bc-ee -Dno.jit=true
+    # - mx build-native -J -t BC -g ${GRAALEE_HOME}
     # - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
     
     - lz4 som-native-interp-bc som-native-interp-bc.lz4
@@ -73,7 +88,9 @@ benchmark-y1:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria]
   script:
-    - ${ANT} compile
+    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - mx sforceimport
+    - mx build # todo: make sure libgraal is build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
@@ -96,7 +113,9 @@ benchmark-y2:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria2]
   script:
-    - ${ANT} compile
+    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - mx sforceimport
+    - mx build # todo: make sure libgraal is build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
@@ -119,7 +138,9 @@ benchmark-y3:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria3]
   script:
-    - ${ANT} compile
+    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - mx sforceimport
+    - mx build # todo: make sure libgraal is build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
