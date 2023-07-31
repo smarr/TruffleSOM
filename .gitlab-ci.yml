@@ -42,7 +42,7 @@ build:native-interp-ast:
     - mx --java-home=${JAVA_HOME} get-labsjdk
     - mx sforceimport
     - mx build --no-native
-    - mx build-native -J -t AST -bn -bt
+    - mx build-native -J -t AST -bn
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
 
     # - mx build-native -J -t AST -g ${GRAALEE_HOME}
@@ -67,7 +67,7 @@ build:native-interp-bc:
     - mx --java-home=${JAVA_HOME} get-labsjdk
     - mx sforceimport
     - mx build --no-native
-    - mx build-native -J -t BC -bn -bt
+    - mx build-native -J -t BC -bn
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
 
     # - mx build-native -J -t BC -g ${GRAALEE_HOME}
@@ -90,7 +90,7 @@ benchmark-y1:
   script:
     - mx --java-home=${JAVA_HOME} get-labsjdk
     - mx sforceimport
-    - mx build # todo: make sure libgraal is build
+    - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
@@ -115,7 +115,7 @@ benchmark-y2:
   script:
     - mx --java-home=${JAVA_HOME} get-labsjdk
     - mx sforceimport
-    - mx build # todo: make sure libgraal is build
+    - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
@@ -140,7 +140,7 @@ benchmark-y3:
   script:
     - mx --java-home=${JAVA_HOME} get-labsjdk
     - mx sforceimport
-    - mx build # todo: make sure libgraal is build
+    - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
