@@ -51,9 +51,7 @@ jobs:
       
       - name: Compile TruffleSOM
         run: |
-          mx build
-          # --no-native restore after updating after the fix
-          # https://github.com/oracle/graal/commit/3bfca94351befabd80aa7b9c2bfb5ca67aa29561
+          mx build --no-native
       
       - name: Tests
         run: |
