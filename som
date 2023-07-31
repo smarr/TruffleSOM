@@ -206,7 +206,7 @@ else:
 
 MODULE_PATH_ENTRIES = [BASE_DIR + '/mxbuild/dists/trufflesom.jar', GRAAL_SDK_JAR, TRUFFLE_API_JAR]
 
-SOM_ARGS = ['trufflesom.vm.Universe']
+SOM_ARGS = ['--module', 'trufflesom/trufflesom.Launcher']
 
 # == Compiler Settings
 TWEAK_INLINING = ['-Dpolyglot.engine.CompilationThreshold=191',

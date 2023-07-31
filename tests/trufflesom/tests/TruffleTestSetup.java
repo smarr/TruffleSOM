@@ -11,6 +11,7 @@ import org.junit.Ignore;
 
 import com.oracle.truffle.api.nodes.Node;
 
+import trufflesom.Launcher;
 import trufflesom.bdt.source.SourceCoordinate;
 import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.ClassGenerationContext;
@@ -55,7 +56,7 @@ public class TruffleTestSetup {
       Universe.setSourceCompiler(new BcCompiler(), true);
     }
 
-    Builder builder = Universe.createContextBuilder();
+    Builder builder = Launcher.createContextBuilder();
     builder.logHandler(System.err);
 
     Context context = builder.build();

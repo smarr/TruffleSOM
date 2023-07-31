@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import trufflesom.Launcher;
 import trufflesom.compiler.SourcecodeCompiler.AstCompiler;
 import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
 import trufflesom.interpreter.SomLanguage;
@@ -206,7 +207,7 @@ public class BasicInterpreterTests {
       Universe.setSourceCompiler(new BcCompiler(), true);
     }
 
-    Builder builder = Universe.createContextBuilder();
+    Builder builder = Launcher.createContextBuilder();
     builder.option("som.CLASS_PATH", "Smalltalk:TestSuite/BasicInterpreterTests");
     builder.option("som.TEST_CLASS", testClass);
     builder.option("som.TEST_SELECTOR", testSelector);

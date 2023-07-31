@@ -51,10 +51,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Context.Builder;
-import org.graalvm.polyglot.Value;
-
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -67,7 +63,6 @@ import trufflesom.compiler.Disassembler;
 import trufflesom.compiler.Field;
 import trufflesom.compiler.SourcecodeCompiler;
 import trufflesom.compiler.Variable;
-import trufflesom.interpreter.SomLanguage;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SArray;
@@ -125,38 +120,6 @@ public final class Universe {
     if (FailOnMissingOptimizations) {
       CompilerAsserts.neverPartOfCompilation(msg);
     }
-  }
-
-  public static void main(final String[] arguments) {
-    Value returnCode = eval(arguments);
-    if (returnCode.isNumber()) {
-      System.exit(returnCode.asInt());
-    } else {
-      System.exit(0);
-    }
-  }
-
-  public static Builder createContextBuilder() {
-    Builder builder = Context.newBuilder(SomLanguage.LANG_ID)
-                             .in(System.in)
-                             .out(System.out)
-                             .allowAllAccess(true);
-    return builder;
-  }
-
-  public static Value eval(final String[] arguments) {
-    Builder builder = createContextBuilder();
-    builder.arguments(SomLanguage.LANG_ID, arguments);
-    builder.logHandler(System.err);
-
-    if (!VmSettings.UseJitCompiler) {
-      builder.option("engine.Compilation", "false");
-    }
-
-    Context context = builder.build();
-
-    Value returnCode = context.eval(SomLanguage.START);
-    return returnCode;
   }
 
   public static Object interpret(final String[] arguments) {
