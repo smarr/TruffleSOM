@@ -199,28 +199,12 @@ LIBGRAAL_JAR    = TRUFFLE_DIR + '/compiler/mxbuild/dists/graal-truffle-compiler-
 COVERAGE_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-coverage.jar'
 PROFILER_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-profiler.jar'
 
-classpath = (BASE_DIR + '/mxbuild/jdk20/trufflesom/bin:'
-           + GRAAL_SDK_JAR + ':'
-           + TRUFFLE_API_JAR)
-
-TRUFFLE_API_CLASSPATH = (TRUFFLE_API_JAR)
-
 if args.use_libgraal:
   GRAAL_JVMCI_FLAGS = ['-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:+UseJVMCICompiler', '-XX:+UseJVMCINativeLibrary']
 else:
   GRAAL_JVMCI_FLAGS = ['-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:+UseJVMCICompiler', '-XX:-UseJVMCINativeLibrary']
 
-
-GRAAL_TRUFFLE_FLAGS = [
-  '--module-path=' + GRAAL_SDK_JAR + ':' + TRUFFLE_API_JAR,
-  '--upgrade-module-path=' + LIBGRAAL_JAR
-]
-
-ADD_OPEN_FLAGS = [
-  '--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED',
-  '--add-opens=org.graalvm.truffle/com.oracle.truffle.api.interop=ALL-UNNAMED',
-  '--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED'
-]
+MODULE_PATH_ENTRIES = [BASE_DIR + '/mxbuild/dists/trufflesom.jar', GRAAL_SDK_JAR, TRUFFLE_API_JAR]
 
 SOM_ARGS = ['trufflesom.vm.Universe']
 
@@ -240,8 +224,6 @@ if not args.interpreter and GRAAL_FLAGS:
 else:
     flags = []
 
-flags += GRAAL_TRUFFLE_FLAGS
-
 if args.dump_ir:
     SOM_ARGS += ['-di']
 
@@ -249,7 +231,7 @@ if args.interpreter:
     flags += ['-Dtruffle.TruffleRuntime=com.oracle.truffle.api.impl.DefaultTruffleRuntime',
               '-Dpolyglot.engine.WarnInterpreterOnly=false']
 else:
-    flags += GRAAL_JVMCI_FLAGS + ADD_OPEN_FLAGS
+    flags += GRAAL_JVMCI_FLAGS
     flags += ['-Dpolyglot.engine.MultiTier=false',
               '-Dpolyglot.engine.DynamicCompilationThresholds=false',
               '-Dpolyglot.engine.SingleTierCompilationThreshold=253',
@@ -312,7 +294,7 @@ if args.nodestats:
     flags += ['-Dpolyglot.nodestats.OutputFile=' + args.nodestats, '-Dpolyglot.nodestats=true']
 
 if args.coverage != False:
-    classpath += ':' + COVERAGE_JAR
+    MODULE_PATH_ENTRIES.append(COVERAGE_JAR)
     flags += ['-Dpolyglot.coverage=true',
               '-Dpolyglot.coverage.Count=true',
               '-Dpolyglot.coverage.StrictLines=false',
@@ -321,7 +303,7 @@ if args.coverage != False:
       flags += ['-Dpolyglot.coverage.OutputFile=' + args.coverage]
 
 if args.cpusampler != False:
-    classpath += ':' + PROFILER_JAR
+    MODULE_PATH_ENTRIES.append(PROFILER_JAR)
     flags += ['-Dpolyglot.cpusampler=true', '-Dpolyglot.cpusampler.Output=' + args.cpusampler]
     
 
@@ -334,7 +316,7 @@ if not args.interpreter and not args.background_compilation:
 if not args.interpreter and args.no_compilation:
     flags.append('-Dpolyglot.engine.CompileOnly=__FAKE_METHOD_NON_EXISTING__')
 if not args.interpreter and args.no_trace and not args.perf_warnings:
-    flags += ['-Dpolyglot.engine.TraceInlining=false', '-Dpolyglot.engine.TraceCompilation=false']
+    flags += ['-Dpolyglot.compiler.TraceInlining=false', '-Dpolyglot.engine.TraceCompilation=false']
 if not args.interpreter and not args.graph_pe:
     flags += ['-Dpolyglot.engine.GraphPE=false']
 if args.threads:
@@ -356,7 +338,12 @@ if 'Havlak' in args.args:
   # we don't do it always, because...
   JAVA_ARGS += ['-Xss3072k']
 
-all_args = JAVA_ARGS + ['-classpath', classpath] + ['-Dtruffle.class.path.append=' + classpath] + flags + SOM_ARGS + unknown_args + args.args
+flags += [
+  '--module-path=' + ':'.join(MODULE_PATH_ENTRIES),
+  '--upgrade-module-path=' + LIBGRAAL_JAR
+]
+
+all_args = JAVA_ARGS + flags + SOM_ARGS + unknown_args + args.args
 
 if args.verbose:
     print("CMD: " + java_bin + ' ' + ' '.join(all_args))
