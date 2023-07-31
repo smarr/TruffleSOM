@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import com.oracle.truffle.api.source.Source;
 
-import bdt.basic.ProgramDefinitionError;
-import bdt.primitives.nodes.PreevaluatedExpression;
-import bdt.source.SourceCoordinate;
+import trufflesom.bdt.basic.ProgramDefinitionError;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
+import trufflesom.bdt.source.SourceCoordinate;
 import trufflesom.compiler.ClassGenerationContext;
 import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Parser.ParseError;

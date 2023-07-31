@@ -30,15 +30,20 @@ page][SOM] for links to other VM implementations.
 Obtaining and Running TruffleSOM
 --------------------------------
 
-To checkout the code:
+To checkout the code, run:
 
+    git clone --depth 1 https://github.com/graalvm/mx.git
     git clone https://github.com/SOM-st/TruffleSOM.git
+    export PATH=$PATH:`pwd`/mx
 
-Then, TruffleSOM can be build with Ant:
+TruffleSOM uses the [mx](https://github.com/graalvm/mx) build tool, which is
+easiest to use when on the PATH.
 
-    ant jar
+After downloading the git repositories, TruffleSOM can be build with:
 
-Afterwards, the tests can be executed with:
+    mx build
+
+And now we, can execute tests with:
 
     ./som -G -cp Smalltalk TestSuite/TestHarness.som
    
@@ -46,31 +51,22 @@ A simple Hello World program is executed with:
 
     ./som -G -cp Smalltalk Examples/Hello.som
 
-When working on TruffleSOM using Eclipse, ant can generate the Eclipse projects
-for the Truffle framework and the Graal compiler:
+To work on TruffleSOM, mx can generate project definitions for
+Eclipse, IntelliJ, and NetBeans. Chose the one you prefer:
 
-    ant ideinit
-
-For other IDEs, the mx tool in `libs/mx` can generate configurations.
-The following will for instance generate the IntelliJ projects for
-the Truffle framework:
-
-    cd libs/truffle/truffle
-    ../../mx/mx intellijinit
+    mx eclipseinit
+    mx intellijinit
+    mx netbeansinit
 
 TruffleSOM uses the Graal compiler to reach state-of-the-art performance.
 To use it, we need to compile it together with TruffleSOM:
 
-    ant compile
+    mx --env libgraal build
 
 Afterwards, we can run a benchmark, and observe that the initial iterations
 take much longer, but after a while we reach magnitudes faster execution speeds:
 
     ./som -cp Smalltalk Examples/Benchmarks/BenchmarkHarness.som Mandelbrot 100 500
-
-For more documentation on building TruffleSOM, run:
-
-    ant help
 
 Information on previous authors are included in the AUTHORS file. This code is
 distributed under the MIT License. Please see the LICENSE file for details.

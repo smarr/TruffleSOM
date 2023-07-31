@@ -20,7 +20,7 @@ public class SplittingTests extends AstTestSetup {
   public static void init() {
     Universe.setupClassPath("Smalltalk");
 
-    enterContext();
+    reinitTruffleAndEnterContext();
     Universe.initializeObjectSystem();
   }
 

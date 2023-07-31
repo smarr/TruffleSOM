@@ -10,11 +10,16 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
-
-      - name: CheckStyle
+          
+      - name: Setup MX
         run: |
-          ant -e checkstyle
-      
+          git clone --depth 1 https://github.com/graalvm/mx.git
+          echo "PATH=$PATH:`pwd`/mx" >> "$GITHUB_ENV"
+
+      - name: Get LabsJDK
+        run: |
+          mx --java-home=$JAVA_HOME_17_X64 get-labsjdk
+
       - name: Download Eclipse
         run: |
           export ECLIPSE_TAR=eclipse.tar.gz
@@ -22,10 +27,10 @@ jobs:
           curl -L ${ECLIPSE_URL} -o ${ECLIPSE_TAR}
           tar --warning=no-unknown-keyword -C ${GITHUB_WORKSPACE}/.. -xzf ${ECLIPSE_TAR}
 
-      - name: Check Eclipse Format
+      - name: Run Style Gate
         run: |
           export ECLIPSE_EXE=${GITHUB_WORKSPACE}/../eclipse/eclipse
-          ant -e eclipseformat
+          mx gate --tags style
 
   test_som:
     runs-on: ubuntu-22.04
@@ -35,16 +40,39 @@ jobs:
         with:
           submodules: true
       
+      - name: Setup MX
+        run: |
+          git clone --depth 1 https://github.com/graalvm/mx.git
+          echo "PATH=$PATH:`pwd`/mx" >> "$GITHUB_ENV"
+      
+      - name: Get LabsJDK
+        run: |
+          mx --java-home=$JAVA_HOME_17_X64 get-labsjdk
+      
+      - name: Compile TruffleSOM
+        run: |
+          mx build --no-native
+      
       - name: Tests
         run: |
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          ant -e tests native-obj-storage-test
+          mx tests-junit
+          mx tests-som
+      
+      - name: Build native-image tool
+        run: |
+          mx build-native-image-tool
+    
+      - name: Test Object Storage System
+        run: |
+          mx build-native-obj-test
+          ./som-obj-storage-tester
+          
       
       - name: Tool Tests
         continue-on-error: true
         run: |
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          ant -e nodestats-test coverage-test
+          mx tests-nodestats
+          mx tests-coverage
       
       - name: SomSom Tests
         run: |
