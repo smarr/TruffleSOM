@@ -149,15 +149,26 @@ if not java_bin and JAVA_HOME:
 if not java_bin:
   java_bin = "java"
 
+def get_compiled_graalvm_java_bin():
+  graal_bin = None
+  possible_mx = ['mx', '../mx/mx']
+  while graal_bin is None and possible_mx:
+    mx = possible_mx.pop()
+    try:
+      libgraal_jdk_home = check_output(
+        [mx, '--env', 'libgraal', 'graalvm-home'],
+        stderr=STDOUT
+      ).decode()
+      graal_bin = libgraal_jdk_home.strip() + '/bin/java'
+    except (OSError, FileNotFoundError):
+      pass
+  return graal_bin
+
 
 if args.use_embedded_graal is True:
   from subprocess import check_output, STDOUT, CalledProcessError
   try:
-    libgraal_jdk_home = check_output(
-      ['mx', '--env', 'libgraal', 'graalvm-home'],
-      stderr=STDOUT
-    ).decode()
-    java_bin = libgraal_jdk_home.strip() + '/bin/java'
+    java_bin = get_compiled_graalvm_java_bin()
   except CalledProcessError as e:
     print("Failed to determine location of libgraal")
     print(e.output.decode())
