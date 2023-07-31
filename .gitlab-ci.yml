@@ -13,7 +13,7 @@ variables:
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
-  - (cd ..; git clone --depth 1 https://github.com/graalvm/mx.git || cd mx && git reset --hard origin/HEAD)
+  - (cd ..; git clone --depth 1 https://github.com/graalvm/mx.git || cd mx && git fetch --all && git reset --hard origin/HEAD)
   - export PATH="$PATH:`pwd`/../mx"
 
 test:
