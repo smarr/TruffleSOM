@@ -212,7 +212,7 @@ def build_native(args, **kwargs):
     if opt.graalvm:
         cmd += ["--gc=G1"]
 
-    cmd += ["trufflesom.vm.Universe"]
+    cmd += ["trufflesom.Launcher"]
 
     mx.run_mx(cmd, svm_path)
 

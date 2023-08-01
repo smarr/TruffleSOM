@@ -32,8 +32,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import trufflesom.Launcher;
 import trufflesom.vm.Classes;
-import trufflesom.vm.Universe;
 import trufflesom.vmobjects.SObject;
 
 
@@ -98,7 +98,7 @@ public class SomTests {
   public void testSomeTest() {
     Classes.reset();
 
-    Value returnCode = Universe.eval(
+    Value returnCode = Launcher.eval(
         new String[] {"-cp", "Smalltalk", "TestSuite/TestHarness.som", testName});
     if (returnCode.isNumber()) {
       assertEquals(0, returnCode.asInt());
