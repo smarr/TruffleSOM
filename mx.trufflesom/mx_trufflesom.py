@@ -17,24 +17,6 @@ def ensure_core_lib_is_available():
         git.run(["git", "submodule", "update", "--init", "--recursive"])
 
 
-def ensure_labsjdk():
-    if not os.path.exists(suite.dir + "/libs"):
-        os.mkdir(suite.dir + "/libs")
-    elif os.path.exists(suite.dir + "/libs/jvmci"):
-        return
-    mx.run_mx(
-        [
-            "--quiet",
-            "fetch-jdk",
-            "--strip-contents-home",
-            "--jdk-id",
-            LABS_JDK_ID,
-            "--alias",
-            suite.dir + "/libs/jvmci",
-        ]
-    )
-
-
 bn_parser = ArgumentParser(
     prog="mx build-native", description="Build TruffleSOM native images"
 )
@@ -129,12 +111,6 @@ def get_output_name(opt):
     return output_name
 
 
-@mx.command(suite.name, "get-labsjdk")
-def get_labsjdk(args, **kwargs):
-    """download the LabsJDK"""
-    ensure_labsjdk()
-
-
 @mx.command(suite.name, "build-native-image-tool")
 def build_native_image_tool(args, **kwargs):
     """build the native-image tool"""
@@ -150,8 +126,6 @@ def build_native_image_tool(args, **kwargs):
 )
 def build_native(args, **kwargs):
     """build TruffleSOM native images"""
-    ensure_labsjdk()
-
     opt = bn_parser.parse_args(args)
     output_name = get_output_name(opt)
 
@@ -220,7 +194,6 @@ def build_native(args, **kwargs):
 @mx.command(suite.name, "build-native-obj-test")
 def build_native_obj_test(args, **kwargs):
     """build native object storage test image"""
-    ensure_labsjdk()
     svm_path = get_svm_path()
     cmd = [
         "native-image",

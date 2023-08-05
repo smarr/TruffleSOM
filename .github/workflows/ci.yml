@@ -13,12 +13,12 @@ jobs:
           
       - name: Setup MX
         run: |
-          git clone --depth 1 https://github.com/graalvm/mx.git
-          echo "PATH=$PATH:`pwd`/mx" >> "$GITHUB_ENV"
+          ./som --setup mx
+          echo "PATH=$PATH:`pwd`/../mx" >> "$GITHUB_ENV"
 
       - name: Get LabsJDK
         run: |
-          mx --java-home=$JAVA_HOME_17_X64 get-labsjdk
+          ./som --setup labsjdk
 
       - name: Download Eclipse
         run: |
@@ -42,12 +42,12 @@ jobs:
       
       - name: Setup MX
         run: |
-          git clone --depth 1 https://github.com/graalvm/mx.git
-          echo "PATH=$PATH:`pwd`/mx" >> "$GITHUB_ENV"
+          ./som --setup mx
+          echo "PATH=$PATH:`pwd`/../mx" >> "$GITHUB_ENV"
       
       - name: Get LabsJDK
         run: |
-          mx --java-home=$JAVA_HOME_17_X64 get-labsjdk
+          ./som --setup labsjdk
       
       - name: Compile TruffleSOM
         run: |
