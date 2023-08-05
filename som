@@ -15,7 +15,7 @@ GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 ## Defining Argument Parsing
 ##
 parser = argparse.ArgumentParser(
-    description='Helper script to run TruffleSOM with/without Graal')
+    description='TruffleSOM launcher and tool integration')
 
 parser.add_argument('-d', '--debug', help='wait for debugger to attach',
                     dest='debug', action='store_true', default=False)
@@ -27,7 +27,7 @@ parser.add_argument('-di', '--dump-ir', help='Dump the IR, i.e., the AST or byte
                     dest='dump_ir', action='store_true', default=False)
 
 
-explore = parser.add_argument_group('Explore', 'Investigate Execution')
+explore = parser.add_argument_group('Explore and Investigate Execution')
 explore.add_argument('-i', '--igv', help='dump compilation details to IGV',
                     dest='igv', action='store_true', default=False)
 explore.add_argument('-if', '--igv-to-file', help='dump compilation details to file to be loaded by IGV',
@@ -43,7 +43,7 @@ explore.add_argument('-ts', '--trace-splitting', help='trace splitting decisions
 explore.add_argument('-w', '--perf-warnings', help='enable performance warnings',
                     dest='perf_warnings', action='store_true', default=False)
 
-profile = parser.add_argument_group('Profile', 'Profile Execution')
+profile = parser.add_argument_group('Profile Execution')
 profile.add_argument('-gp', '--graal-profile', help='enable Graal-level profiling after warmup',
                     dest='graal_profile', action='store_true', default=False)
 profile.add_argument('-ga', '--graal-profile-allocations', help='enable Graal-level profiling after warmup, and profile allocations',
@@ -56,21 +56,21 @@ profile.add_argument('-tp', '--truffle-profile', help='enable Graal-level profil
                     dest='truffle_profile', action='store_true', default=False)
 explore.add_argument('-v', '--visual-vm', help='connect to VisualVM for profiling',
                     dest='visual_vm', action='store_true', default=False)
-explore.add_argument('-fr', '--flight-recorder', help='profile with Java Flight Recorder',
-                    dest='flight_recorder', action='store_true', default=False)
 
-tools = parser.add_argument_group('Tools', 'Tools for various purposes')
-explore.add_argument('-n', '--node-stats', help='collect details about AST nodes. Optionally define output file name. Default: node-stats.yml',
-                     dest='nodestats', action='store', nargs='?',
-                     const='node-stats.yml', default=False)
-explore.add_argument('-cov', '--coverage', help='collect coverage statistics. Optionally define output file. Default is standard out.',
-                     dest='coverage', action='store', nargs='?',
-                     const='', default=False)
-explore.add_argument('-ct', '--coverage-type', help="human readable 'histogram' (per file coverage summary) or 'detailed' (per line coverage summary), machine readable 'json', tool compliant 'lcov'. (default: histogram)",
-                     dest='coverage_type', action='store', default='histogram')
-explore.add_argument('-cs', '--cpu-sampler', help='Truffle CPU Sampler. [CPUSAMPLE] can be one of histogram, calltree, json',
-                     dest='cpusampler', action='store', nargs='?',
-                     const='histogram', default=False)
+tools = parser.add_argument_group('Tools for various purposes')
+tools.add_argument('-n', '--node-stats', help='collect details about AST nodes. Optionally define output file name. Default: node-stats.yml',
+                   dest='nodestats', action='store', nargs='?',
+                   const='node-stats.yml', default=False)
+tools.add_argument('-cov', '--coverage', help='collect coverage statistics. Optionally define output file. Default is standard out.',
+                   dest='coverage', action='store', nargs='?',
+                   const='', default=False)
+tools.add_argument('-ct', '--coverage-type', help="human readable 'histogram' (per file coverage summary) or 'detailed' (per line coverage summary), machine readable 'json', tool compliant 'lcov'. (default: histogram)",
+                   dest='coverage_type', action='store', default='histogram')
+tools.add_argument('-cs', '--cpu-sampler', help='Truffle CPU Sampler. [CPUSAMPLE] can be one of histogram, calltree, json',
+                   dest='cpusampler', action='store', nargs='?',
+                   const='histogram', default=False)
+tools.add_argument('-fr', '--flight-recorder', help='profile with Java Flight Recorder',
+                   dest='flight_recorder', action='store_true', default=False)
 
 parser.add_argument('-o', '--only', help='only compile give methods, comma separated list',
                     dest='only_compile', default=None)
@@ -91,8 +91,6 @@ parser.add_argument('-LG', '--no-libgraal', help='run without using the embedded
                     dest='use_libgraal', action='store_false', default=True)
 parser.add_argument('-X', '--java-interpreter', help='run without Graal, and only the Java interpreter',
                     dest='java_interpreter', action='store_true', default=False)
-parser.add_argument('-T', '--no-trace', help='do not print truffle compilation info',
-                    dest='no_trace', action='store_false', default=True)
 parser.add_argument('--no-graph-pe', help='disable Graph PE',
                     dest='graph_pe', action='store_false', default=True)
 
@@ -110,7 +108,7 @@ parser.add_argument('-D', help="define a Java property",
 
 
 parser.add_argument('args', nargs=argparse.REMAINDER,
-                    help='arguments passed to SOMns')
+                    help='arguments passed to TruffleSOM')
 args, unknown_args = parser.parse_known_args()
 
 
@@ -127,7 +125,6 @@ if args.interpreter:
 # Handle executable names
 if sys.argv[0].endswith('fast'):
     args.assert_ = False
-    args.no_trace = True
 if sys.argv[0].endswith('debug'):
     args.perf_warnings = True
     args.trace_splitting = True
