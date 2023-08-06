@@ -41,6 +41,8 @@ easiest to use when on the PATH.
 
 After downloading the git repositories, TruffleSOM can be build with:
 
+    cd TruffleSOM
+    ./som --setup labsjdk  # downloads a compatible JDK
     mx build
 
 And now we, can execute tests with:

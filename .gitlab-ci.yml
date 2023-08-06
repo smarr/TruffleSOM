@@ -13,7 +13,7 @@ variables:
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
-  - (cd ..; git clone --depth 1 https://github.com/graalvm/mx.git || cd mx && git fetch --all && git reset --hard origin/HEAD)
+  - ./som --setup latest-mx
   - export PATH="$PATH:`pwd`/../mx"
 
 test:
@@ -21,7 +21,7 @@ test:
   tags: [yuria]
   script:
     - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
-    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - ./som --setup labsjdk
     - mx sforceimport
     - mx build --no-native
     - mx tests-junit
@@ -39,7 +39,7 @@ build:native-interp-ast:
   tags: [yuria2]
   script:
     - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
-    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - ./som --setup labsjdk
     - mx sforceimport
     - mx build --no-native
     - mx build-native -J -t AST -bn
@@ -64,7 +64,7 @@ build:native-interp-bc:
   tags: [yuria3]
   script:
     - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
-    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - ./som --setup labsjdk
     - mx sforceimport
     - mx build --no-native
     - mx build-native -J -t BC -bn
@@ -88,7 +88,7 @@ benchmark-y1:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria]
   script:
-    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - ./som --setup labsjdk
     - mx sforceimport
     - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
@@ -113,7 +113,7 @@ benchmark-y2:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria2]
   script:
-    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - ./som --setup labsjdk
     - mx sforceimport
     - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
@@ -138,7 +138,7 @@ benchmark-y3:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria3]
   script:
-    - mx --java-home=${JAVA_HOME} get-labsjdk
+    - ./som --setup labsjdk
     - mx sforceimport
     - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4

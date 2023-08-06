@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import sys
 import os
 import shlex
+import subprocess
 
 BASE_DIR    = os.path.dirname(os.path.realpath(__file__))
 TRUFFLE_DIR = BASE_DIR + '/../graal'
@@ -15,7 +16,7 @@ GRAAL_FLAGS = os.getenv('GRAAL_FLAGS', None)
 ## Defining Argument Parsing
 ##
 parser = argparse.ArgumentParser(
-    description='Helper script to run TruffleSOM with/without Graal')
+    description='TruffleSOM launcher and tool integration')
 
 parser.add_argument('-d', '--debug', help='wait for debugger to attach',
                     dest='debug', action='store_true', default=False)
@@ -27,7 +28,7 @@ parser.add_argument('-di', '--dump-ir', help='Dump the IR, i.e., the AST or byte
                     dest='dump_ir', action='store_true', default=False)
 
 
-explore = parser.add_argument_group('Explore', 'Investigate Execution')
+explore = parser.add_argument_group('Explore and Investigate Execution')
 explore.add_argument('-i', '--igv', help='dump compilation details to IGV',
                     dest='igv', action='store_true', default=False)
 explore.add_argument('-if', '--igv-to-file', help='dump compilation details to file to be loaded by IGV',
@@ -42,8 +43,10 @@ explore.add_argument('-ts', '--trace-splitting', help='trace splitting decisions
                     dest='trace_splitting', action='store_true', default=False)
 explore.add_argument('-w', '--perf-warnings', help='enable performance warnings',
                     dest='perf_warnings', action='store_true', default=False)
+explore.add_argument('-o', '--only', help='only compile give methods, comma separated list',
+                    dest='only_compile', default=None)
 
-profile = parser.add_argument_group('Profile', 'Profile Execution')
+profile = parser.add_argument_group('Profile Execution')
 profile.add_argument('-gp', '--graal-profile', help='enable Graal-level profiling after warmup',
                     dest='graal_profile', action='store_true', default=False)
 profile.add_argument('-ga', '--graal-profile-allocations', help='enable Graal-level profiling after warmup, and profile allocations',
@@ -56,24 +59,21 @@ profile.add_argument('-tp', '--truffle-profile', help='enable Graal-level profil
                     dest='truffle_profile', action='store_true', default=False)
 explore.add_argument('-v', '--visual-vm', help='connect to VisualVM for profiling',
                     dest='visual_vm', action='store_true', default=False)
-explore.add_argument('-fr', '--flight-recorder', help='profile with Java Flight Recorder',
-                    dest='flight_recorder', action='store_true', default=False)
 
-tools = parser.add_argument_group('Tools', 'Tools for various purposes')
-explore.add_argument('-n', '--node-stats', help='collect details about AST nodes. Optionally define output file name. Default: node-stats.yml',
-                     dest='nodestats', action='store', nargs='?',
-                     const='node-stats.yml', default=False)
-explore.add_argument('-cov', '--coverage', help='collect coverage statistics. Optionally define output file. Default is standard out.',
-                     dest='coverage', action='store', nargs='?',
-                     const='', default=False)
-explore.add_argument('-ct', '--coverage-type', help="human readable 'histogram' (per file coverage summary) or 'detailed' (per line coverage summary), machine readable 'json', tool compliant 'lcov'. (default: histogram)",
-                     dest='coverage_type', action='store', default='histogram')
-explore.add_argument('-cs', '--cpu-sampler', help='Truffle CPU Sampler. [CPUSAMPLE] can be one of histogram, calltree, json',
-                     dest='cpusampler', action='store', nargs='?',
-                     const='histogram', default=False)
-
-parser.add_argument('-o', '--only', help='only compile give methods, comma separated list',
-                    dest='only_compile', default=None)
+tools = parser.add_argument_group('Tools for various purposes')
+tools.add_argument('-n', '--node-stats', help='collect details about AST nodes. Optionally define output file name. Default: node-stats.yml',
+                   dest='nodestats', action='store', nargs='?',
+                   const='node-stats.yml', default=False)
+tools.add_argument('-cov', '--coverage', help='collect coverage statistics. Optionally define output file. Default is standard out.',
+                   dest='coverage', action='store', nargs='?',
+                   const='', default=False)
+tools.add_argument('-ct', '--coverage-type', help="human readable 'histogram' (per file coverage summary) or 'detailed' (per line coverage summary), machine readable 'json', tool compliant 'lcov'. (default: histogram)",
+                   dest='coverage_type', action='store', default='histogram')
+tools.add_argument('-cs', '--cpu-sampler', help='Truffle CPU Sampler. [CPUSAMPLE] can be one of histogram, calltree, json',
+                   dest='cpusampler', action='store', nargs='?',
+                   const='histogram', default=False)
+tools.add_argument('-fr', '--flight-recorder', help='profile with Java Flight Recorder',
+                   dest='flight_recorder', action='store_true', default=False)
 
 
 parser.add_argument('-A', '--no-assert', help='execute with assertions disabled',
@@ -91,8 +91,6 @@ parser.add_argument('-LG', '--no-libgraal', help='run without using the embedded
                     dest='use_libgraal', action='store_false', default=True)
 parser.add_argument('-X', '--java-interpreter', help='run without Graal, and only the Java interpreter',
                     dest='java_interpreter', action='store_true', default=False)
-parser.add_argument('-T', '--no-trace', help='do not print truffle compilation info',
-                    dest='no_trace', action='store_false', default=True)
 parser.add_argument('--no-graph-pe', help='disable Graph PE',
                     dest='graph_pe', action='store_false', default=True)
 
@@ -110,9 +108,85 @@ parser.add_argument('-D', help="define a Java property",
 
 
 parser.add_argument('args', nargs=argparse.REMAINDER,
-                    help='arguments passed to SOMns')
+                    help='arguments passed to TruffleSOM')
+
+setup = parser.add_argument_group('Setting up TruffleSOM')
+setup.add_argument('--setup', choices=['labsjdk', 'mx', 'latest-mx'],
+                   dest='setup',
+                   help='sets up the chosen dependency. LabsJDK is needed for running with Graal and building native images, and mx is the used build tool.')
+
 args, unknown_args = parser.parse_known_args()
 
+
+def get_mx_suite():
+  import importlib.util
+  import sys
+  spec = importlib.util.spec_from_file_location('suite', BASE_DIR + '/mx.trufflesom/suite.py')
+  module = importlib.util.module_from_spec(spec)
+  spec.loader.exec_module(module)
+  return getattr(module, 'suite')
+
+def get_labs_jdk_id():
+  return get_mx_suite()['libraries']['LABS_JDK']['id']
+
+def find_mx(exit_when_missing=True):
+  possible_mx = [BASE_DIR + '/../mx/mx', 'mx']
+  for m in possible_mx:
+    try:
+      p = subprocess.run([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+      if p.returncode == 0:
+        return m
+    except:
+      pass
+  
+  if exit_when_missing:
+    print("The mx build tool is not on the PATH or in the " + BASE_DIR + "/../mx folder. Please run `./som --setup mx`")
+    exit(1)
+
+  return None
+
+def get_compiled_graalvm_java_bin():
+  graal_bin = None
+  
+  mx = find_mx()
+  libgraal_jdk_home = check_output(
+    [mx, '--env', 'libgraal', 'graalvm-home'],
+    stderr=STDOUT
+  ).decode()
+  return libgraal_jdk_home.strip() + '/bin/java'
+
+
+if args.setup == 'mx':
+  mx = find_mx(False)
+  if mx is None:
+    p = subprocess.run(['git', 'clone', '--depth', '1', 'https://github.com/graalvm/mx.git', BASE_DIR + '/../mx'])
+    exit(p.returncode)
+  exit(0)
+
+if args.setup == 'latest-mx':
+  if not os.path.exists(BASE_DIR + '/../mx'):
+    p = subprocess.run(['git', 'clone', '--depth', '1', 'https://github.com/graalvm/mx.git', BASE_DIR + '/../mx'])
+    exit(p.returncode)
+  else:
+    subprocess.run(['git', '-C', BASE_DIR + '/../mx', 'fetch', '--all'])
+    p = subprocess.run(['git', '-C', BASE_DIR + '/../mx', 'reset', '--hard', 'origin/HEAD'])
+    exit(p.returncode)
+
+if args.setup == 'labsjdk':
+  if not os.path.exists(BASE_DIR + "/libs"):
+    os.mkdir(BASE_DIR + "/libs")
+  elif os.path.exists(BASE_DIR + "/libs/jvmci"):
+    exit(0)
+
+  mx = find_mx()
+  # move the env file out of the way, because of latest mx changes
+  os.rename(BASE_DIR + '/mx.trufflesom/env', BASE_DIR + '/mx.trufflesom/env-load-jdk')
+  try:
+    p = subprocess.run([mx, "--quiet", "fetch-jdk", "--strip-contents-home",
+                       "--jdk-id", get_labs_jdk_id(), "--alias", BASE_DIR + "/libs/jvmci"])
+  finally:
+    os.rename(BASE_DIR + '/mx.trufflesom/env-load-jdk', BASE_DIR + '/mx.trufflesom/env')
+  exit(p.returncode)
 
 
 if args.java_interpreter:
@@ -127,7 +201,6 @@ if args.interpreter:
 # Handle executable names
 if sys.argv[0].endswith('fast'):
     args.assert_ = False
-    args.no_trace = True
 if sys.argv[0].endswith('debug'):
     args.perf_warnings = True
     args.trace_splitting = True
@@ -148,21 +221,6 @@ if not java_bin and JAVA_HOME:
 
 if not java_bin:
   java_bin = "java"
-
-def get_compiled_graalvm_java_bin():
-  graal_bin = None
-  possible_mx = ['mx', '../mx/mx']
-  while graal_bin is None and possible_mx:
-    mx = possible_mx.pop()
-    try:
-      libgraal_jdk_home = check_output(
-        [mx, '--env', 'libgraal', 'graalvm-home'],
-        stderr=STDOUT
-      ).decode()
-      graal_bin = libgraal_jdk_home.strip() + '/bin/java'
-    except (OSError, FileNotFoundError):
-      pass
-  return graal_bin
 
 
 if args.use_embedded_graal is True:
