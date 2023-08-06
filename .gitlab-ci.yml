@@ -7,20 +7,23 @@ variables:
   PYTHONUNBUFFERED: "true"
   JVMCI_VERSION_CHECK: ignore
   ECLIPSE_EXE: /home/gitlab-runner/.local/eclipse/eclipse
-  GRAALEE_HOME: /home/gitlab-runner/.local/graalvm-ee-java17-22.2.0
-  JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64/
+  GRAALEE_HOME: /home/gitlab-runner/.asdf/installs/java/oracle-graalvm-21.0.2
+  JAVA_HOME: /home/gitlab-runner/.asdf/installs/java/temurin-21.0.2+13.0.LTS
 
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
   - ./som --setup latest-mx
   - export PATH="$PATH:`pwd`/../mx"
+  - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
+  - |
+      COMMIT_ID=`./som --setup truffle-commit-id`
+      (cd ../graal && git fetch --all && git reset --hard $COMMIT_ID) || true
 
 test:
   stage: build-and-test
   tags: [yuria]
   script:
-    - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
     - ./som --setup labsjdk
     - mx sforceimport
     - rm libs/jvmci || true
@@ -40,54 +43,50 @@ build:native-interp-ast:
   stage: build-and-test
   tags: [yuria2]
   script:
-    - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
     - ./som --setup labsjdk
     - mx sforceimport
     - rm libs/jvmci || true
     - ./som --setup labsjdk
     - mx build
-    - mx build-native -J -t AST -bn
+    - mx build-native --no-jit -t AST -bn
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
 
-    # - mx build-native -J -t AST -g ${GRAALEE_HOME}
-    # - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
+    - mx build-native --no-jit -t AST -g ${GRAALEE_HOME}
+    - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
     
     # Package and Upload
     - lz4 som-native-interp-ast som-native-interp-ast.lz4
-    # - lz4 som-native-interp-ast-ee som-native-interp-ast-ee.lz4
+    - lz4 som-native-interp-ast-ee som-native-interp-ast-ee.lz4
     - |
       sftp tmp-artifacts << EOF
         -mkdir incoming/${CI_PIPELINE_ID}/
         put som-native-interp-ast.lz4 incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-ast-ee.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
-
-#         put som-native-interp-ast-ee.lz4 incoming/${CI_PIPELINE_ID}/
 
 build:native-interp-bc:
   stage: build-and-test
   tags: [yuria3]
   script:
-    - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
     - ./som --setup labsjdk
     - mx sforceimport
     - rm libs/jvmci || true
     - ./som --setup labsjdk
     - mx build
-    - mx build-native -J -t BC -bn
+    - mx build-native --no-jit -t BC -bn
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
 
-    # - mx build-native -J -t BC -g ${GRAALEE_HOME}
-    # - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
+    - mx build-native --no-jit -t BC -g ${GRAALEE_HOME}
+    - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
     
     - lz4 som-native-interp-bc som-native-interp-bc.lz4
-    # - lz4 som-native-interp-bc-ee som-native-interp-bc-ee.lz4
+    - lz4 som-native-interp-bc-ee som-native-interp-bc-ee.lz4
     - |
       sftp tmp-artifacts << EOF
         -mkdir incoming/${CI_PIPELINE_ID}/
         put som-native-interp-bc.lz4 incoming/${CI_PIPELINE_ID}/
+        put som-native-interp-bc-ee.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
-#         put som-native-interp-bc-ee.lz4 incoming/${CI_PIPELINE_ID}/
-
 
 benchmark-y1:
   stage: benchmark
@@ -99,13 +98,13 @@ benchmark-y1:
     - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
     
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    # - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    # - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
+    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
@@ -124,13 +123,13 @@ benchmark-y2:
     - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
     
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    # - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    # - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
+    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
@@ -149,13 +148,13 @@ benchmark-y3:
     - mx --env libgraal build
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    # - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
+    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
     
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    # - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    # - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
+    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
 
     # Profile
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
