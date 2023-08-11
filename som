@@ -251,8 +251,6 @@ else:
 ##
 ## Defining Necessary Parameter Bits
 ##
-TRUFFLE_API_JAR = TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar'
-GRAAL_SDK_JAR   = TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar'
 LIBGRAAL_JAR    = TRUFFLE_DIR + '/compiler/mxbuild/dists/graal-truffle-compiler-libgraal.jar'
 COVERAGE_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-coverage.jar'
 PROFILER_JAR    = TRUFFLE_DIR + '/tools/mxbuild/dists/truffle-profiler.jar'
@@ -262,7 +260,14 @@ if args.use_libgraal:
 else:
   GRAAL_JVMCI_FLAGS = ['-XX:+UnlockExperimentalVMOptions', '-XX:+EnableJVMCI', '-XX:+UseJVMCICompiler', '-XX:-UseJVMCINativeLibrary']
 
-MODULE_PATH_ENTRIES = [BASE_DIR + '/mxbuild/dists/trufflesom.jar', GRAAL_SDK_JAR, TRUFFLE_API_JAR]
+MODULE_PATH_ENTRIES = [
+  BASE_DIR + '/mxbuild/dists/trufflesom.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/collections.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/polyglot.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/word.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/nativeimage.jar',
+  TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar']
 
 SOM_ARGS = ['--module', 'trufflesom/trufflesom.Launcher']
 
