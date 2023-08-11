@@ -80,6 +80,18 @@ Build Status
 Thanks to GitHub Actions, all commits of this repository are tested.
 The current build status is: ![Build Status](https://github.com/SOM-st/TruffleSOM/actions/workflows/ci.yml/badge.svg)
 
+YourKit
+------------
+This Project makes use of the Yourkit profiler to help find performance bugs and aid in our research of profilers.
+
+YourKit supports open source projects with innovative and intelligent tools
+for monitoring and profiling Java and .NET applications.
+YourKit is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>,
+<a href="https://www.yourkit.com/dotnet-profiler/features/">YourKit .NET Profiler</a>,
+and <a href="https://www.yourkit.com/youmonitor/download/">YourKit YouMonitor</a>.
+
+![Yourkit Logo](https://www.yourkit.com/images/yklogo.png)
+
  [SOM]: https://www.hpi.uni-potsdam.de/hirschfeld/projects/som/
  [SOMst]: https://github.com/SOM-st/TruffleSOM/actions
  [RS]:  https://dx.doi.org/10.1016/j.cl.2005.02.003
