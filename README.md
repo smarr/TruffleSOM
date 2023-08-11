@@ -80,12 +80,6 @@ Build Status
 Thanks to GitHub Actions, all commits of this repository are tested.
 The current build status is: ![Build Status](https://github.com/SOM-st/TruffleSOM/actions/workflows/ci.yml/badge.svg)
 
- [SOM]: https://www.hpi.uni-potsdam.de/hirschfeld/projects/som/
- [SOMst]: https://github.com/SOM-st/TruffleSOM/actions
- [RS]:  https://dx.doi.org/10.1016/j.cl.2005.02.003
- [T]:   https://www.christianwimmer.at/Publications/Wuerthinger12a/
-
-
 YourKit
 ------------
 This Project makes use of the Yourkit profiler to help find performance bugs and aid in our research of profilers.
@@ -97,3 +91,8 @@ YourKit is the creator of <a href="https://eur01.safelinks.protection.outlook.co
 and <a href="https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.yourkit.com%2Fyoumonitor%2F&data=05%7C01%7CH.Burchell%40kent.ac.uk%7C8ae706181ac548da7e6a08db8fa58754%7C51a9fa563f32449aa7213e3f49aa5e9a%7C0%7C0%7C638261713327144205%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=joU%2FKKeR4d7FgvI9IB8YhZJw46l65W4VrN3VAxwCsgg%3D&reserved=0">YourKit YouMonitor</a>.
 
 ![Yourkit Logo](https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.yourkit.com%2Fimages%2Fyklogo.png&data=05%7C01%7CH.Burchell%40kent.ac.uk%7C8ae706181ac548da7e6a08db8fa58754%7C51a9fa563f32449aa7213e3f49aa5e9a%7C0%7C0%7C638261713327144205%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=B9eFbpIYckmrKGv5OYeLICnm2rPeTXNfqeFp4eVui0o%3D&reserved=0)
+
+ [SOM]: https://www.hpi.uni-potsdam.de/hirschfeld/projects/som/
+ [SOMst]: https://github.com/SOM-st/TruffleSOM/actions
+ [RS]:  https://dx.doi.org/10.1016/j.cl.2005.02.003
+ [T]:   https://www.christianwimmer.at/Publications/Wuerthinger12a/
