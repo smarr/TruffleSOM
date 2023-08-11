@@ -86,11 +86,11 @@ This Project makes use of the Yourkit profiler to help find performance bugs and
 
 YourKit supports open source projects with innovative and intelligent tools
 for monitoring and profiling Java and .NET applications.
-YourKit is the creator of <a href="https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.yourkit.com%2Fjava%2Fprofiler%2F&data=05%7C01%7CH.Burchell%40kent.ac.uk%7C8ae706181ac548da7e6a08db8fa58754%7C51a9fa563f32449aa7213e3f49aa5e9a%7C0%7C0%7C638261713327144205%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=fp8sUig2SCb9Z9FtOQs08vSqTWZ1BPE6joH4v9AAttU%3D&reserved=0">YourKit Java Profiler</a>,
-<a href="https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.yourkit.com%2Fdotnet-profiler%2F&data=05%7C01%7CH.Burchell%40kent.ac.uk%7C8ae706181ac548da7e6a08db8fa58754%7C51a9fa563f32449aa7213e3f49aa5e9a%7C0%7C0%7C638261713327144205%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=r95kixedP6rtQk6gn2DgLvr7yF%2B5exlB1gl54WkWgCI%3D&reserved=0">YourKit .NET Profiler</a>,
-and <a href="https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.yourkit.com%2Fyoumonitor%2F&data=05%7C01%7CH.Burchell%40kent.ac.uk%7C8ae706181ac548da7e6a08db8fa58754%7C51a9fa563f32449aa7213e3f49aa5e9a%7C0%7C0%7C638261713327144205%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=joU%2FKKeR4d7FgvI9IB8YhZJw46l65W4VrN3VAxwCsgg%3D&reserved=0">YourKit YouMonitor</a>.
+YourKit is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>,
+<a href="https://www.yourkit.com/dotnet-profiler/features/">YourKit .NET Profiler</a>,
+and <a href="https://www.yourkit.com/youmonitor/download/">YourKit YouMonitor</a>.
 
-![Yourkit Logo](https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.yourkit.com%2Fimages%2Fyklogo.png&data=05%7C01%7CH.Burchell%40kent.ac.uk%7C8ae706181ac548da7e6a08db8fa58754%7C51a9fa563f32449aa7213e3f49aa5e9a%7C0%7C0%7C638261713327144205%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=B9eFbpIYckmrKGv5OYeLICnm2rPeTXNfqeFp4eVui0o%3D&reserved=0)
+![Yourkit Logo](https://www.yourkit.com/images/yklogo.png)
 
  [SOM]: https://www.hpi.uni-potsdam.de/hirschfeld/projects/som/
  [SOMst]: https://github.com/SOM-st/TruffleSOM/actions
