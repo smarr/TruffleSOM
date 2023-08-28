@@ -30,7 +30,7 @@ suite = {
             "licence": "LGPLv21",
         },
         "LABS_JDK": {
-            "id": "labsjdk-ce-20",
+            "id": "labsjdk-ce-21",
             # I am just using the suite.py to store the info
             # so but manage it in mx_trufflesom.py
             "path": ".",
