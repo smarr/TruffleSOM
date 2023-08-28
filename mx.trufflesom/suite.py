@@ -16,7 +16,7 @@ suite = {
             {
                 "name": "truffle",
                 "subdir": True,
-                "version": "b38902d359f3af2c7cdec65afc562dd9e54fb974",
+                "version": "6c9c467700bb4ae67cace2191e5d9c90058a40fb",
                 "urls": [{"url": "https://github.com/oracle/graal", "kind": "git"}],
             },
         ]
@@ -30,7 +30,7 @@ suite = {
             "licence": "LGPLv21",
         },
         "LABS_JDK": {
-            "id": "labsjdk-ce-20",
+            "id": "labsjdk-ce-21",
             # I am just using the suite.py to store the info
             # so but manage it in mx_trufflesom.py
             "path": ".",
