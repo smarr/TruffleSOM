@@ -13,10 +13,10 @@ public abstract class AbstractCachedDispatchNode
 
   public AbstractCachedDispatchNode(final CallTarget methodCallTarget,
       final AbstractDispatchNode nextInCache) {
-    DirectCallNode cachedMethod =
+    DirectCallNode method =
         Truffle.getRuntime().createDirectCallNode(methodCallTarget);
 
-    this.cachedMethod = cachedMethod;
+    this.cachedMethod = method;
     this.nextInCache = nextInCache;
   }
 

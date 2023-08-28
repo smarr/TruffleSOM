@@ -45,8 +45,8 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
   @Specialization
   public final SArray doArray(final VirtualFrame frame,
       final SArray receiver, final SBlock block) {
-    int length = (int) this.length.executeEvaluated(frame, receiver);
-    loop(frame, block, length);
+    int l = (int) this.length.executeEvaluated(frame, receiver);
+    loop(frame, block, l);
     return receiver;
   }
 

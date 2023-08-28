@@ -320,8 +320,7 @@ public class MethodGenerationContext
     return l;
   }
 
-  private Local addLocalAndUpdateScope(final SSymbol name, final long coord)
-      throws ProgramDefinitionError {
+  private Local addLocalAndUpdateScope(final SSymbol name, final long coord) {
     Local l = addLocal(name, coord);
     currentScope.addVariable(l);
     return l;
