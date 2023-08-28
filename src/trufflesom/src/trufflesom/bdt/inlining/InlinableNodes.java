@@ -138,7 +138,7 @@ public final class InlinableNodes<Id> {
   /**
    * Get the {@link Inline} annotation from a {@link NodeFactory}.
    */
-  private <T extends Node> Inline[] getInlineAnnotation(final NodeFactory<T> factory) {
+  private static <T extends Node> Inline[] getInlineAnnotation(final NodeFactory<T> factory) {
     Class<?> nodeClass = factory.getNodeClass();
     return nodeClass.getAnnotationsByType(Inline.class);
   }
@@ -146,7 +146,7 @@ public final class InlinableNodes<Id> {
   /**
    * Get the {@link Inline} annotation from a {@link Node} class.
    */
-  private Inline[] getInlineAnnotation(final Class<? extends Node> nodeClass) {
+  private static Inline[] getInlineAnnotation(final Class<? extends Node> nodeClass) {
     Inline[] annotations = nodeClass.getAnnotationsByType(Inline.class);
     if (annotations == null || annotations.length < 1) {
       throw new IllegalArgumentException("The class " + nodeClass.getName()

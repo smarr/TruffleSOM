@@ -16,7 +16,7 @@ public class ClassPrims {
   @Primitive(className = "Class", primitive = "name")
   public abstract static class NamePrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doSClass(final SClass receiver) {
+    public static final SAbstractObject doSClass(final SClass receiver) {
       return receiver.getName();
     }
   }
@@ -25,7 +25,7 @@ public class ClassPrims {
   @Primitive(className = "Class", primitive = "superclass")
   public abstract static class SuperClassPrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doSClass(final SClass receiver) {
+    public static final SAbstractObject doSClass(final SClass receiver) {
       return receiver.getSuperClass();
     }
   }
@@ -34,7 +34,7 @@ public class ClassPrims {
   @Primitive(className = "Class", primitive = "methods")
   public abstract static class InstanceInvokablesPrim extends UnaryExpressionNode {
     @Specialization
-    public final SArray doSClass(final SClass receiver) {
+    public static final SArray doSClass(final SClass receiver) {
       return receiver.getInstanceInvokables();
     }
   }
@@ -43,7 +43,7 @@ public class ClassPrims {
   @Primitive(className = "Class", primitive = "fields")
   public abstract static class InstanceFieldsPrim extends UnaryExpressionNode {
     @Specialization
-    public final SArray doSClass(final SClass receiver) {
+    public static final SArray doSClass(final SClass receiver) {
       return receiver.getInstanceFields();
     }
   }

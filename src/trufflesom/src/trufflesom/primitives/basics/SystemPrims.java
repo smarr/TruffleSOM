@@ -45,7 +45,7 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class LoadPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+    public static final Object doSObject(final SObject receiver, final SSymbol argument) {
       SClass result = Universe.loadClass(argument);
       return result != null ? result : Nil.nilObject;
     }
@@ -55,7 +55,7 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class ExitPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final long error) {
+    public static final Object doSObject(final SObject receiver, final long error) {
       Universe.exit((int) error);
       return receiver;
     }
@@ -65,7 +65,7 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "global:put:")
   public abstract static class GlobalPutPrim extends TernaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol global,
+    public static final Object doSObject(final SObject receiver, final SSymbol global,
         final Object value) {
       Globals.setGlobal(global, value);
       return value;
@@ -76,13 +76,13 @@ public final class SystemPrims {
   @GenerateNodeFactory
   public abstract static class PrintStringPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final String argument) {
+    public static final Object doSObject(final SObject receiver, final String argument) {
       Universe.print(argument);
       return receiver;
     }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+    public static final Object doSObject(final SObject receiver, final SSymbol argument) {
       return doSObject(receiver, argument.getString());
     }
   }
@@ -91,13 +91,13 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "errorPrint:")
   public abstract static class ErrorPrintPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final String argument) {
+    public static final Object doSObject(final SObject receiver, final String argument) {
       Universe.errorPrint(argument);
       return receiver;
     }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+    public static final Object doSObject(final SObject receiver, final SSymbol argument) {
       return doSObject(receiver, argument.getString());
     }
   }
@@ -106,13 +106,13 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "errorPrintln:")
   public abstract static class ErrorPrintlnPrim extends BinaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver, final String argument) {
+    public static final Object doSObject(final SObject receiver, final String argument) {
       Universe.errorPrintln(argument);
       return receiver;
     }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+    public static final Object doSObject(final SObject receiver, final SSymbol argument) {
       return doSObject(receiver, argument.getString());
     }
   }
@@ -121,7 +121,7 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "printNewline")
   public abstract static class PrintNewlinePrim extends UnaryExpressionNode {
     @Specialization
-    public final Object doSObject(final SObject receiver) {
+    public static final Object doSObject(final SObject receiver) {
       Universe.println();
       return receiver;
     }
@@ -133,7 +133,7 @@ public final class SystemPrims {
 
     @TruffleBoundary
     @Specialization
-    public final Object doSObject(final SObject receiver) {
+    public static final Object doSObject(final SObject receiver) {
       System.gc();
       return true;
     }
@@ -144,7 +144,7 @@ public final class SystemPrims {
   public abstract static class LoadFilePrim extends BinaryExpressionNode {
     @TruffleBoundary
     @Specialization
-    public final Object doSObject(final SObject receiver, final String fileName) {
+    public static final Object doSObject(final SObject receiver, final String fileName) {
       Path p = Paths.get(fileName);
       try {
         return new String(Files.readAllBytes(p));
@@ -154,7 +154,7 @@ public final class SystemPrims {
     }
 
     @Specialization
-    public final Object doSObject(final SObject receiver, final SSymbol argument) {
+    public static final Object doSObject(final SObject receiver, final SSymbol argument) {
       return doSObject(receiver, argument.getString());
     }
   }
@@ -163,7 +163,7 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "printStackTrace")
   public abstract static class PrintStackTracePrim extends UnaryExpressionNode {
     @Specialization
-    public final boolean doSObject(final SObject receiver) {
+    public static final boolean doSObject(final SObject receiver) {
       printStackTrace(2, null);
       return true;
     }
@@ -230,7 +230,7 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "time")
   public abstract static class TimePrim extends UnaryExpressionNode {
     @Specialization
-    public final long doSObject(final SObject receiver) {
+    public static final long doSObject(final SObject receiver) {
       return System.currentTimeMillis() - startTime;
     }
   }
@@ -239,7 +239,7 @@ public final class SystemPrims {
   @Primitive(className = "System", primitive = "ticks")
   public abstract static class TicksPrim extends UnaryExpressionNode {
     @Specialization
-    public final long doSObject(final SObject receiver) {
+    public static final long doSObject(final SObject receiver) {
       return System.nanoTime() / 1000L - startMicroTime;
     }
   }
@@ -251,7 +251,7 @@ public final class SystemPrims {
     @CompilationFinal private static ThreadMXBean                 threadBean;
 
     @Specialization
-    public final SArray doSObject(final Object receiver) {
+    public static final SArray doSObject(final Object receiver) {
       if (gcBeans == null) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         gcBeans = ManagementFactory.getGarbageCollectorMXBeans();
@@ -264,7 +264,7 @@ public final class SystemPrims {
     }
 
     @TruffleBoundary
-    private SArray createStatsArray() {
+    private static SArray createStatsArray() {
       long allocatedBytes = threadBean.getCurrentThreadAllocatedBytes();
       long counts = 0;
       long time = 0;
@@ -291,7 +291,7 @@ public final class SystemPrims {
     @CompilationFinal private static CompilationMXBean bean;
 
     @Specialization
-    public final long doSObject(final Object receiver) {
+    public static final long doSObject(final Object receiver) {
       if (bean == null) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         bean = ManagementFactory.getCompilationMXBean();

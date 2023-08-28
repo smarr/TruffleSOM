@@ -51,7 +51,7 @@ public class NodeStatisticsCollector {
   }
 
   @SuppressWarnings("unlikely-arg-type")
-  private Map<WrapperNode, NodeActivation> toWrapperMap(
+  private static Map<WrapperNode, NodeActivation> toWrapperMap(
       final Map<Node, NodeActivation> nodeActivations) {
     Map<WrapperNode, NodeActivation> result = new HashMap<>();
 

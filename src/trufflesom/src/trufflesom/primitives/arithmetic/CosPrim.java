@@ -11,7 +11,7 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 @Primitive(className = "Double", primitive = "cos")
 public abstract class CosPrim extends UnaryExpressionNode {
   @Specialization
-  public final double doCos(final double rcvr) {
+  public static final double doCos(final double rcvr) {
     return Math.cos(rcvr);
   }
 }

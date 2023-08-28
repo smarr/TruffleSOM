@@ -11,7 +11,7 @@ import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 @Primitive(className = "Double", primitive = "sin")
 public abstract class SinPrim extends UnaryExpressionNode {
   @Specialization
-  public final double doSin(final double rcvr) {
+  public static final double doSin(final double rcvr) {
     return Math.sin(rcvr);
   }
 }

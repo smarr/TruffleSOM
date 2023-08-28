@@ -52,6 +52,7 @@ public abstract class SAbstractObject implements TruffleObject {
     return send("escapedBlock:", arguments);
   }
 
+  @SuppressWarnings("static-method")
   @ExportMessage
   public final boolean isNull() {
     // can't be null, because our Nil.nilObject is `null`, which is a dynamic object

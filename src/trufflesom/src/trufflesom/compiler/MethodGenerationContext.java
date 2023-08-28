@@ -538,7 +538,7 @@ public class MethodGenerationContext
     return signature;
   }
 
-  private String stripColonsAndSourceLocation(String str) {
+  private static String stripColonsAndSourceLocation(String str) {
     int startOfSource = str.indexOf('@');
     if (startOfSource > -1) {
       str = str.substring(0, startOfSource);

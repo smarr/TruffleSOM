@@ -102,7 +102,7 @@ public class StringPrims {
   @Primitive(className = "String", primitive = "asSymbol")
   public abstract static class AsSymbolPrim extends UnaryExpressionNode {
     @Specialization
-    public final SAbstractObject doString(final String receiver) {
+    public static final SAbstractObject doString(final String receiver) {
       return symbolFor(receiver);
     }
 

@@ -23,13 +23,13 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
 
   @Specialization(assumptions = "layout.getAssumption()",
       guards = "layout.layoutForSameClass(receiver)", limit = "LIMIT")
-  public final SAbstractObject doCached(final SClass receiver,
+  public static final SAbstractObject doCached(final SClass receiver,
       @Cached("receiver.getLayoutForInstances()") final ObjectLayout layout) {
     return new SObject(receiver, layout);
   }
 
   @Specialization(replaces = "doCached")
-  public final SAbstractObject doUncached(final SClass receiver) {
+  public static final SAbstractObject doUncached(final SClass receiver) {
     return new SObject(receiver);
   }
 
