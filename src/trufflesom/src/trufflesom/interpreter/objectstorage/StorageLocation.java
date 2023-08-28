@@ -24,6 +24,7 @@ import trufflesom.vmobjects.SObject;
 public abstract class StorageLocation {
   private static final Unsafe unsafe = UnsafeUtil.load();
 
+  @SuppressWarnings("deprecation")
   public static long getFieldOffset(final Field field) {
     return unsafe.objectFieldOffset(field);
   }
