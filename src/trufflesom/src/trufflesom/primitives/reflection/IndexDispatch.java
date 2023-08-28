@@ -109,17 +109,17 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
     }
 
     @Override
-    public Object executeDispatch(final SObject obj, final int index) {
-      if (this.index == index && this.clazz == obj.getSOMClass()) {
+    public Object executeDispatch(final SObject obj, final int idx) {
+      if (this.index == idx && this.clazz == obj.getSOMClass()) {
         return access.read(obj);
       } else {
-        return next.executeDispatch(obj, index);
+        return next.executeDispatch(obj, idx);
       }
     }
 
     @TruffleBoundary
     @Override
-    public Object executeDispatch(final SObject obj, final int index, final Object value) {
+    public Object executeDispatch(final SObject obj, final int idx, final Object value) {
       CompilerAsserts.neverPartOfCompilation();
       throw new RuntimeException("This should be never reached.");
     }
@@ -147,17 +147,17 @@ public abstract class IndexDispatch extends Node implements DispatchChain {
 
     @Override
     @TruffleBoundary
-    public Object executeDispatch(final SObject obj, final int index) {
+    public Object executeDispatch(final SObject obj, final int idx) {
       CompilerAsserts.neverPartOfCompilation();
       throw new RuntimeException("This should be never reached.");
     }
 
     @Override
-    public Object executeDispatch(final SObject obj, final int index, final Object value) {
-      if (this.index == index && this.clazz == obj.getSOMClass()) {
+    public Object executeDispatch(final SObject obj, final int idx, final Object value) {
+      if (this.index == idx && this.clazz == obj.getSOMClass()) {
         return access.write(obj, value);
       } else {
-        return next.executeDispatch(obj, index, value);
+        return next.executeDispatch(obj, idx, value);
       }
     }
 

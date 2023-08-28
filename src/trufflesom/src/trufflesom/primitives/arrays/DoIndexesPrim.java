@@ -50,21 +50,21 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
     return receiver;
   }
 
-  private void loop(final VirtualFrame frame, final SBlock block, final int length) {
+  private void loop(final VirtualFrame frame, final SBlock b, final int l) {
     try {
       assert SArray.FIRST_IDX == 0;
-      if (SArray.FIRST_IDX < length) {
+      if (SArray.FIRST_IDX < l) {
         this.block.executeEvaluated(
             // +1 because it is going to the Smalltalk level
-            frame, block, (long) SArray.FIRST_IDX + 1);
+            frame, b, (long) SArray.FIRST_IDX + 1);
       }
-      for (long i = 1; i < length; i++) {
+      for (long i = 1; i < l; i++) {
         this.block.executeEvaluated(
-            frame, block, i + 1); // +1 because it is going to the Smalltalk level
+            frame, b, i + 1); // +1 because it is going to the Smalltalk level
       }
     } finally {
       if (CompilerDirectives.inInterpreter()) {
-        reportLoopCount(length);
+        reportLoopCount(l);
       }
     }
   }

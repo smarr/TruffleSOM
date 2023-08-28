@@ -153,9 +153,9 @@ public class MethodGenerationContext
     }
   }
 
-  public void addEmbeddedBlockMethod(final SMethod blockMethod) {
-    embeddedBlockMethods.add(blockMethod);
-    currentScope.addEmbeddedScope(((Method) blockMethod.getInvokable()).getScope());
+  public void addEmbeddedBlockMethod(final SMethod method) {
+    embeddedBlockMethods.add(method);
+    currentScope.addEmbeddedScope(((Method) method.getInvokable()).getScope());
   }
 
   public LexicalScope getCurrentLexicalScope() {

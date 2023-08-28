@@ -57,62 +57,62 @@ public abstract class PutAllNode extends BinaryExpressionNode {
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock block, final long length, final Object[] storage) {
+      final SBlock b, final long length, final Object[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = this.block.executeEvaluated(frame, block);
+      storage[i] = this.block.executeEvaluated(frame, b);
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock block, final long length, final long[] storage) {
+      final SBlock b, final long length, final long[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (long) this.block.executeEvaluated(frame, block);
+      storage[i] = (long) this.block.executeEvaluated(frame, b);
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock block, final long length, final double[] storage) {
+      final SBlock b, final long length, final double[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (double) this.block.executeEvaluated(frame, block);
+      storage[i] = (double) this.block.executeEvaluated(frame, b);
     }
   }
 
   private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock block, final long length, final boolean[] storage) {
+      final SBlock b, final long length, final boolean[] storage) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (boolean) this.block.executeEvaluated(frame, block);
+      storage[i] = (boolean) this.block.executeEvaluated(frame, b);
     }
   }
 
   @Specialization
   public SArray doPutEvalBlock(final VirtualFrame frame, final SArray rcvr,
-      final SBlock block, final long length) {
+      final SBlock b, final long length) {
     if (length <= 0) {
       return rcvr;
     }
     // TODO: this version does not handle the case that a subsequent value is not of the
     // expected type...
     try {
-      Object result = this.block.executeEvaluated(frame, block);
+      Object result = this.block.executeEvaluated(frame, b);
       if (result instanceof Long) {
         long[] newStorage = new long[(int) length];
         newStorage[0] = (long) result;
-        evalBlockForRemaining(frame, block, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage);
         rcvr.transitionTo(newStorage);
       } else if (result instanceof Double) {
         double[] newStorage = new double[(int) length];
         newStorage[0] = (double) result;
-        evalBlockForRemaining(frame, block, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage);
         rcvr.transitionTo(newStorage);
       } else if (result instanceof Boolean) {
         boolean[] newStorage = new boolean[(int) length];
         newStorage[0] = (boolean) result;
-        evalBlockForRemaining(frame, block, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage);
         rcvr.transitionTo(newStorage);
       } else {
         Object[] newStorage = new Object[(int) length];
         newStorage[0] = result;
-        evalBlockForRemaining(frame, block, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage);
         rcvr.transitionTo(newStorage);
       }
     } finally {
@@ -168,7 +168,7 @@ public abstract class PutAllNode extends BinaryExpressionNode {
 
   @Fallback
   public Object makeGenericSend(final VirtualFrame frame, final Object rcvr,
-      final Object value, final Object length) {
+      final Object value, @SuppressWarnings("unused") final Object length) {
     return makeGenericSend(SymbolTable.symbolFor("putAll:")).doPreEvaluated(frame,
         new Object[] {rcvr, value});
   }
