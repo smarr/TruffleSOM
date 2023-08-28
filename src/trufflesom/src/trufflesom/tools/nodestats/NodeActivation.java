@@ -11,10 +11,10 @@ public class NodeActivation extends ExecutionEventNode {
 
   public NodeActivation old;
 
-  public void addOld(final Set<NodeActivation> activations) {
+  public void addOld(final Set<NodeActivation> acts) {
     NodeActivation o = old;
     while (o != null) {
-      activations.add(o);
+      acts.add(o);
       o = o.old;
     }
   }
