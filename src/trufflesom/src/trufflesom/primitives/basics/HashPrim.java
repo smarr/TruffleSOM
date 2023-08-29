@@ -15,19 +15,19 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(className = "String", primitive = "hashcode")
 public abstract class HashPrim extends UnaryExpressionNode {
   @Specialization
-  public final long doString(final String receiver) {
+  public static final long doString(final String receiver) {
     return receiver.hashCode();
   }
 
   @Specialization
   @TruffleBoundary
-  public final long doSSymbol(final SSymbol receiver) {
+  public static final long doSSymbol(final SSymbol receiver) {
     return receiver.getString().hashCode();
   }
 
   @Specialization
   @TruffleBoundary
-  public final long doSAbstractObject(final SAbstractObject receiver) {
+  public static final long doSAbstractObject(final SAbstractObject receiver) {
     return receiver.hashCode();
   }
 }

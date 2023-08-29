@@ -202,7 +202,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     }
   }
 
-  private void checkJumpOffset(final ParserBc parser, final int jumpOffset) throws ParseError {
+  private static void checkJumpOffset(final ParserBc parser, final int jumpOffset)
+      throws ParseError {
     if (jumpOffset < 0 || jumpOffset > 0xffff) {
       throw new ParseError(
           "The jumpOffset for the JUMP* bytecode is too large or small. jumpOffset="
@@ -416,7 +417,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return INVALID;
   }
 
-  private boolean isOneOf(final byte bytecode, final byte[] candidates) {
+  private static boolean isOneOf(final byte bytecode, final byte[] candidates) {
     for (byte c : candidates) {
       if (c == bytecode) {
         return true;

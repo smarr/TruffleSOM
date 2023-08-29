@@ -30,6 +30,7 @@ public class StorageAnalyzer {
       dimensions = 1) private static final DirectPrimitiveAccessor[]               primAccessors =
           new DirectPrimitiveAccessor[SObject.NUM_PRIMITIVE_FIELDS];
 
+  @SuppressWarnings("deprecation")
   private static long getFieldOffset(final String fieldName) {
     try {
       Field field = SObject.class.getDeclaredField(fieldName);

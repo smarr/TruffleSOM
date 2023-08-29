@@ -149,7 +149,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
   }
 
   @Specialization
-  public final Object doIfTrueIfFalseTwoValues(final VirtualFrame frame,
+  public static final Object doIfTrueIfFalseTwoValues(final VirtualFrame frame,
       final boolean receiver, final Object trueValue, final Object falseValue,
       @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
       @Bind("this") final Node node) {

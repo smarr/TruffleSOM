@@ -416,7 +416,7 @@ public final class Universe {
   }
 
   @TruffleBoundary
-  public static SClass loadShellClass(final String stmt) throws IOException {
+  public static SClass loadShellClass(final String stmt) {
     try {
       // Load the class from a stream and return the loaded class
       SClass result = sourceCompiler.compileClass(stmt, null, null);

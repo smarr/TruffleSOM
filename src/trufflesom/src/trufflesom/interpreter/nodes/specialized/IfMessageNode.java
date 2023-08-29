@@ -86,7 +86,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     }
   }
 
-  protected final boolean notABlock(final Object arg) {
+  protected static final boolean notABlock(final Object arg) {
     return !(arg instanceof SBlock);
   }
 

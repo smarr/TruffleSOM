@@ -446,7 +446,7 @@ public class Lexer {
     return p >= content.length() ? '\0' : content.charAt(p);
   }
 
-  private boolean isIdentifierChar(final char c) {
+  private static boolean isIdentifierChar(final char c) {
     return Character.isLetterOrDigit(c) || c == '_';
   }
 

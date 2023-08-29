@@ -38,7 +38,7 @@ class Inliner {
     return allInlinable;
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes", "unused"})
   public <N extends Node> N create(final N[] argNodes, final ScopeBuilder scopeBuilder,
       final long coord) throws ProgramDefinitionError {
     Object[] args = new Object[argNodes.length + inline.inlineableArgIdx().length

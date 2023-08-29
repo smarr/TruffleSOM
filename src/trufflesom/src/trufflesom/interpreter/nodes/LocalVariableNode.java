@@ -47,7 +47,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     }
 
     @Specialization(guards = "isUninitialized(frame)")
-    public final SObject doNil(final VirtualFrame frame) {
+    public static final SObject doNil(final VirtualFrame frame) {
       return Nil.nilObject;
     }
 

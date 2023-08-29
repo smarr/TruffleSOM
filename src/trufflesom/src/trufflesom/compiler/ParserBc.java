@@ -330,8 +330,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
         if (nextSym == NewTerm) {
           literalArray(mgenc);
         } else {
-          SSymbol sym = literalSymbol();
-          emitPUSHCONSTANT(mgenc, sym, this);
+          SSymbol s = literalSymbol();
+          emitPUSHCONSTANT(mgenc, s, this);
         }
         break;
       }

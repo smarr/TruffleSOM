@@ -17,25 +17,25 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(className = "Symbol", primitive = "asString")
 public abstract class AsStringPrim extends UnaryExpressionNode {
   @Specialization
-  public final String doSSymbol(final SSymbol receiver) {
+  public static final String doSSymbol(final SSymbol receiver) {
     return receiver.getString();
   }
 
   @TruffleBoundary
   @Specialization
-  public final String doLong(final long receiver) {
+  public static final String doLong(final long receiver) {
     return Long.toString(receiver);
   }
 
   @TruffleBoundary
   @Specialization
-  public final String doDouble(final double receiver) {
+  public static final String doDouble(final double receiver) {
     return Double.toString(receiver);
   }
 
   @TruffleBoundary
   @Specialization
-  public final String doBigInteger(final BigInteger receiver) {
+  public static final String doBigInteger(final BigInteger receiver) {
     return receiver.toString();
   }
 }

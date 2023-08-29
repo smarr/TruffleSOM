@@ -153,9 +153,9 @@ public class MethodGenerationContext
     }
   }
 
-  public void addEmbeddedBlockMethod(final SMethod blockMethod) {
-    embeddedBlockMethods.add(blockMethod);
-    currentScope.addEmbeddedScope(((Method) blockMethod.getInvokable()).getScope());
+  public void addEmbeddedBlockMethod(final SMethod method) {
+    embeddedBlockMethods.add(method);
+    currentScope.addEmbeddedScope(((Method) method.getInvokable()).getScope());
   }
 
   public LexicalScope getCurrentLexicalScope() {
@@ -320,8 +320,7 @@ public class MethodGenerationContext
     return l;
   }
 
-  private Local addLocalAndUpdateScope(final SSymbol name, final long coord)
-      throws ProgramDefinitionError {
+  private Local addLocalAndUpdateScope(final SSymbol name, final long coord) {
     Local l = addLocal(name, coord);
     currentScope.addVariable(l);
     return l;
@@ -539,7 +538,7 @@ public class MethodGenerationContext
     return signature;
   }
 
-  private String stripColonsAndSourceLocation(String str) {
+  private static String stripColonsAndSourceLocation(String str) {
     int startOfSource = str.indexOf('@');
     if (startOfSource > -1) {
       str = str.substring(0, startOfSource);

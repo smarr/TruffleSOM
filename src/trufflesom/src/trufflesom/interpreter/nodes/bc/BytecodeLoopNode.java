@@ -198,7 +198,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
   }
 
   @ExplodeLoop
-  private VirtualFrame determineOuterContext(final VirtualFrame frame) {
+  private static VirtualFrame determineOuterContext(final VirtualFrame frame) {
     // TODO: change bytecode format to include the context level
     Object object = frame.getArguments()[0];
 
@@ -222,7 +222,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
   @ExplodeLoop
   @InliningCutoff
-  private MaterializedFrame determineContext(final VirtualFrame frame,
+  private static MaterializedFrame determineContext(final VirtualFrame frame,
       final int contextLevel) {
     SBlock self = (SBlock) frame.getArguments()[0];
     int i = contextLevel - 1;
@@ -263,7 +263,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
   }
 
   @InliningCutoff
-  private Object throwIllegaleState() {
+  private static Object throwIllegaleState() {
     throw new IllegalStateException("Not all required fields initialized in bytecode loop.");
   }
 
@@ -305,7 +305,8 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
   }
 
   @InliningCutoff
-  private Object handleEscapedBlock(final VirtualFrame frame, final EscapedBlockException e) {
+  private static Object handleEscapedBlock(final VirtualFrame frame,
+      final EscapedBlockException e) {
     CompilerDirectives.transferToInterpreter();
     VirtualFrame outer = determineOuterContext(frame);
     SObject sendOfBlockValueMsg = (SObject) outer.getArguments()[0];
@@ -337,14 +338,14 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
   }
 
   @InliningCutoff
-  private void missingBytecode(final byte bytecode) {
+  private static void missingBytecode(final byte bytecode) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
     throw new NotYetImplementedException("The bytecode " + bytecode + " ("
         + Bytecodes.getBytecodeName(bytecode) + ") is not yet implemented.");
   }
 
   @InliningCutoff
-  private void printBytecode(final byte bytecode) {
+  private static void printBytecode(final byte bytecode) {
     CompilerDirectives.transferToInterpreter();
     Universe.println(Bytecodes.getBytecodeName(bytecode));
   }
@@ -1211,7 +1212,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
   }
 
   @TruffleBoundary
-  private SInvokable doLookup(final SSymbol signature, final Object[] callArgs) {
+  private static SInvokable doLookup(final SSymbol signature, final Object[] callArgs) {
     SClass rcvrClass = Types.getClassOf(callArgs[0]);
     SInvokable invokable = rcvrClass.lookupInvokable(signature);
     return invokable;
@@ -1337,7 +1338,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     return loops;
   }
 
-  private void prepareBackJumpToCurrentAddress(final PriorityQueue<BackJump> backJumps,
+  private static void prepareBackJumpToCurrentAddress(final PriorityQueue<BackJump> backJumps,
       final PriorityQueue<BackJumpPatch> backJumpsToPatch, final int i,
       final BytecodeMethodGenContext mgenc) {
     while (backJumps != null && !backJumps.isEmpty() && backJumps.peek().loopBeginIdx <= i) {
@@ -1348,7 +1349,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     }
   }
 
-  private void patchJumpToCurrentAddress(final int i, final PriorityQueue<Jump> jumps,
+  private static void patchJumpToCurrentAddress(final int i, final PriorityQueue<Jump> jumps,
       final BytecodeMethodGenContext mgenc) throws ParseError {
     while (!jumps.isEmpty() && jumps.peek().originalTarget <= i) {
       Jump j = jumps.poll();

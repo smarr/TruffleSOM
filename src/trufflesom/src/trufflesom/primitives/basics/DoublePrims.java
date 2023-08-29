@@ -18,7 +18,7 @@ public abstract class DoublePrims {
   @Primitive(className = "Double", primitive = "round")
   public abstract static class RoundPrim extends UnaryExpressionNode {
     @Specialization
-    public final long doDouble(final double receiver) {
+    public static final long doDouble(final double receiver) {
       return Math.round(receiver);
     }
   }
@@ -27,7 +27,7 @@ public abstract class DoublePrims {
   @Primitive(className = "Double", primitive = "asInteger")
   public abstract static class AsIntegerPrim extends UnaryExpressionNode {
     @Specialization
-    public final long doDouble(final double receiver) {
+    public static final long doDouble(final double receiver) {
       return (long) receiver;
     }
   }
@@ -37,7 +37,7 @@ public abstract class DoublePrims {
   @Primitive(className = "Double", primitive = "PositiveInfinity", classSide = true)
   public abstract static class PositiveInfinityPrim extends UnaryExpressionNode {
     @Specialization(guards = "receiver == doubleClass")
-    public final double doSClass(final SClass receiver) {
+    public static final double doSClass(final SClass receiver) {
       return Double.POSITIVE_INFINITY;
     }
   }
@@ -49,7 +49,7 @@ public abstract class DoublePrims {
 
     @TruffleBoundary
     @Specialization(guards = "receiver == doubleClass")
-    public final double doSClass(final SClass receiver, final String str) {
+    public static final double doSClass(final SClass receiver, final String str) {
       try {
         return Double.parseDouble(str);
       } catch (NumberFormatException e) {
