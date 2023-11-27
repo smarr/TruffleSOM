@@ -95,7 +95,7 @@ suite = {
             "javaCompliance": "17+",
             "dependencies": ["tests"],
             "exclude": ["mx:JUNIT", "mx:HAMCREST"],
-            "distDependencies": ["TRUFFLESOM"],
+            "distDependencies": ["TRUFFLESOM", "truffle:TRUFFLE_TEST"],
             "testDistribution": True,
         },
     },
