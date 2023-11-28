@@ -23,7 +23,7 @@ test:
     - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
     - ./som --setup labsjdk
     - mx sforceimport
-    - mx build --no-native
+    - mx build
     - mx tests-junit
     - mx tests-som
     - mx tests-somsom
@@ -41,7 +41,7 @@ build:native-interp-ast:
     - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
     - ./som --setup labsjdk
     - mx sforceimport
-    - mx build --no-native
+    - mx build
     - mx build-native -J -t AST -bn
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
 
@@ -66,7 +66,7 @@ build:native-interp-bc:
     - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
     - ./som --setup labsjdk
     - mx sforceimport
-    - mx build --no-native
+    - mx build
     - mx build-native -J -t BC -bn
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
 

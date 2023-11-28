@@ -16,7 +16,7 @@ suite = {
             {
                 "name": "truffle",
                 "subdir": True,
-                "version": "6c9c467700bb4ae67cace2191e5d9c90058a40fb",
+                "version": "ee8e9a01557122593cebcb43ca27641442b12cd9",
                 "urls": [{"url": "https://github.com/oracle/graal", "kind": "git"}],
             },
         ]
@@ -95,7 +95,7 @@ suite = {
             "javaCompliance": "17+",
             "dependencies": ["tests"],
             "exclude": ["mx:JUNIT", "mx:HAMCREST"],
-            "distDependencies": ["TRUFFLESOM"],
+            "distDependencies": ["TRUFFLESOM", "truffle:TRUFFLE_TEST"],
             "testDistribution": True,
         },
     },

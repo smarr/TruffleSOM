@@ -218,7 +218,7 @@ def tests_junit(args, **kwargs):
     """run Java unit tests"""
     for t in INTERP_TYPES:
         print(f"Run JUnit for {t} interpreter:")
-        mx.run_mx(["unittest", "--suite", "trufflesom", "-Dsom.interp=AST"])
+        mx.run_mx(["unittest", "--suite", "trufflesom", "-Dsom.interp=" + t])
 
 
 @mx.command(suite.name, "tests-som")
@@ -231,7 +231,7 @@ def tests_som(args, **kwargs):
                 suite.dir + "/som",
                 "-G",
                 "--no-embedded-graal",
-                "-Dsom.interp" + t,
+                "-Dsom.interp=" + t,
                 "-cp",
                 suite.dir + "/Smalltalk",
                 suite.dir + "/TestSuite/TestHarness.som",
@@ -261,7 +261,7 @@ def tests_somsom(args, **kwargs):
             [
                 suite.dir + "/som",
                 "-G",
-                "-Dsom.interp" + t,
+                "-Dsom.interp=" + t,
                 "-cp",
                 somsom_cp,
                 suite.dir + "/core-lib/SomSom/tests/SomSomTests.som",
