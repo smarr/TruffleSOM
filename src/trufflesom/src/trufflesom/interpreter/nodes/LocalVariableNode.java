@@ -47,7 +47,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     }
 
     @Specialization(guards = "isUninitialized(frame)")
-    public static final SObject doNil(final VirtualFrame frame) {
+    public static final SObject doNil(@SuppressWarnings("unused") final VirtualFrame frame) {
       return Nil.nilObject;
     }
 
@@ -76,7 +76,8 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
       return frame.getObject(slotIndex);
     }
 
-    protected final boolean isUninitialized(final VirtualFrame frame) {
+    protected final boolean isUninitialized(
+        @SuppressWarnings("unused") final VirtualFrame frame) {
       return local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Illegal;
     }
 
@@ -125,7 +126,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     }
 
     // uses expValue to make sure guard is not converted to assertion
-    protected final boolean isBoolKind(final boolean expValue) {
+    protected final boolean isBoolKind(@SuppressWarnings("unused") final boolean expValue) {
       if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Boolean) {
         return true;
       }
@@ -137,7 +138,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     }
 
     // uses expValue to make sure guard is not converted to assertion
-    protected final boolean isLongKind(final long expValue) {
+    protected final boolean isLongKind(@SuppressWarnings("unused") final long expValue) {
       if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Long) {
         return true;
       }
@@ -149,7 +150,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     }
 
     // uses expValue to make sure guard is not converted to assertion
-    protected final boolean isDoubleKind(final double expValue) {
+    protected final boolean isDoubleKind(@SuppressWarnings("unused") final double expValue) {
       if (local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Double) {
         return true;
       }

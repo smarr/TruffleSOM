@@ -181,7 +181,7 @@ public abstract class BlockPrims {
   @Primitive(className = "Block4", primitive = "value:with:with:")
   public abstract static class ValueMorePrim extends QuaternaryExpressionNode {
     @Specialization
-    public static final Object doSBlock(final VirtualFrame frame,
+    public static final Object doSBlock(
         final SBlock receiver, final Object firstArg, final Object secondArg,
         final Object thirdArg) {
       CompilerDirectives.transferToInterpreter();

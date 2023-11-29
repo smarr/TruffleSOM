@@ -46,13 +46,13 @@ public abstract class NonLocalVariableNode extends ContextualNode
     }
 
     @Specialization(guards = "isUninitialized(frame)")
-    public static final SObject doNil(final VirtualFrame frame) {
+    public static final SObject doNil(@SuppressWarnings("unused") final VirtualFrame frame) {
       return Nil.nilObject;
     }
 
     @Specialization(guards = {"ctx.isBoolean(slotIndex)"},
         rewriteOn = {FrameSlotTypeException.class})
-    public final boolean doBoolean(final VirtualFrame frame,
+    public final boolean doBoolean(@SuppressWarnings("unused") final VirtualFrame frame,
         @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
         throws FrameSlotTypeException {
       return ctx.getBoolean(slotIndex);
@@ -60,7 +60,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
 
     @Specialization(guards = {"ctx.isLong(slotIndex)"},
         rewriteOn = {FrameSlotTypeException.class})
-    public final long doLong(final VirtualFrame frame,
+    public final long doLong(@SuppressWarnings("unused") final VirtualFrame frame,
         @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
         throws FrameSlotTypeException {
       return ctx.getLong(slotIndex);
@@ -68,7 +68,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
 
     @Specialization(guards = {"ctx.isDouble(slotIndex)"},
         rewriteOn = {FrameSlotTypeException.class})
-    public final double doDouble(final VirtualFrame frame,
+    public final double doDouble(@SuppressWarnings("unused") final VirtualFrame frame,
         @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
         throws FrameSlotTypeException {
       return ctx.getDouble(slotIndex);
@@ -77,13 +77,14 @@ public abstract class NonLocalVariableNode extends ContextualNode
     @Specialization(guards = {"ctx.isObject(slotIndex)"},
         replaces = {"doBoolean", "doLong", "doDouble"},
         rewriteOn = {FrameSlotTypeException.class})
-    public final Object doObject(final VirtualFrame frame,
+    public final Object doObject(@SuppressWarnings("unused") final VirtualFrame frame,
         @Shared("all") @Bind("determineContext(frame)") final MaterializedFrame ctx)
         throws FrameSlotTypeException {
       return ctx.getObject(slotIndex);
     }
 
-    protected final boolean isUninitialized(final VirtualFrame frame) {
+    protected final boolean isUninitialized(
+        @SuppressWarnings("unused") final VirtualFrame frame) {
       return local.getFrameDescriptor().getSlotKind(slotIndex) == FrameSlotKind.Illegal;
     }
 
@@ -127,7 +128,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
       return expValue;
     }
 
-    protected final boolean isBoolKind(final VirtualFrame frame) {
+    protected final boolean isBoolKind(@SuppressWarnings("unused") final VirtualFrame frame) {
       FrameDescriptor descriptor = local.getFrameDescriptor();
       FrameSlotKind kind = descriptor.getSlotKind(slotIndex);
       if (kind == FrameSlotKind.Boolean) {
@@ -140,7 +141,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
       return false;
     }
 
-    protected final boolean isLongKind(final VirtualFrame frame) {
+    protected final boolean isLongKind(@SuppressWarnings("unused") final VirtualFrame frame) {
       FrameDescriptor descriptor = local.getFrameDescriptor();
       FrameSlotKind kind = descriptor.getSlotKind(slotIndex);
       if (kind == FrameSlotKind.Long) {
@@ -153,7 +154,8 @@ public abstract class NonLocalVariableNode extends ContextualNode
       return false;
     }
 
-    protected final boolean isDoubleKind(final VirtualFrame frame) {
+    protected final boolean isDoubleKind(
+        @SuppressWarnings("unused") final VirtualFrame frame) {
       FrameDescriptor descriptor = local.getFrameDescriptor();
       FrameSlotKind kind = descriptor.getSlotKind(slotIndex);
       if (kind == FrameSlotKind.Double) {
