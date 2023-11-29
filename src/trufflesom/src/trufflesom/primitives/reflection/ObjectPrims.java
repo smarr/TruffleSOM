@@ -115,6 +115,7 @@ public final class ObjectPrims {
 
   @GenerateNodeFactory
   @Primitive(className = "Object", primitive = "class")
+  @SuppressWarnings("unused")
   public abstract static class ClassPrim extends UnaryExpressionNode {
 
     public abstract SClass executeEvaluated(Object rcvr);

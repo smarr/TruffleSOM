@@ -98,6 +98,7 @@ public abstract class Invokable extends RootNode implements WithSource {
     return null;
   }
 
+  @SuppressWarnings("unused")
   public AbstractDispatchNode asDispatchNode(final Object rcvr,
       final AbstractDispatchNode next) {
     return null;

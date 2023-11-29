@@ -39,7 +39,7 @@ public abstract class BlockPrims {
   @Primitive(className = "Block", primitive = "restart")
   public abstract static class RestartPrim extends UnaryExpressionNode {
     @Specialization
-    public SAbstractObject doSBlock(final SBlock receiver) {
+    public SAbstractObject doSBlock(@SuppressWarnings("unused") final SBlock receiver) {
       assert VmSettings.UseBcInterp : "This primitive is not supported in the AST interpreter "
           + "Perhaps something went wrong with the intrinsification of "
           + "#whileTrue:/#whileFalse:?";
@@ -63,7 +63,7 @@ public abstract class BlockPrims {
         guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
     public static final Object doSBlock(final SBlock receiver,
-        @Cached("receiver.getMethod()") final SInvokable method,
+        @SuppressWarnings("unused") @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver);
     }
@@ -72,7 +72,7 @@ public abstract class BlockPrims {
         guards = {"receiver.getMethod() == method", "method.isTrivial()"},
         limit = "InlineCacheSize")
     public static final Object doTrivial(final SBlock receiver,
-        @Cached("receiver.getMethod()") final SInvokable method,
+        @SuppressWarnings("unused") @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
       return expr.doPreEvaluated(null, new Object[] {receiver});
     }
@@ -108,7 +108,7 @@ public abstract class BlockPrims {
         guards = {"receiver.getMethod() == method", "!method.isTrivial()"},
         limit = "InlineCacheSize")
     public static final Object doSBlock(final SBlock receiver, final Object arg,
-        @Cached("receiver.getMethod()") final SInvokable method,
+        @SuppressWarnings("unused") @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver, arg);
     }
@@ -117,7 +117,7 @@ public abstract class BlockPrims {
         guards = {"receiver.getMethod() == method", "method.isTrivial()"},
         limit = "InlineCacheSize")
     public static final Object doTrivial(final SBlock receiver, final Object arg,
-        @Cached("receiver.getMethod()") final SInvokable method,
+        @SuppressWarnings("unused") @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
       return expr.doPreEvaluated(null, new Object[] {receiver, arg});
     }
@@ -154,7 +154,7 @@ public abstract class BlockPrims {
         limit = "InlineCacheSize")
     public static final Object doSBlock(final SBlock receiver, final Object arg1,
         final Object arg2,
-        @Cached("receiver.getMethod()") final SInvokable method,
+        @SuppressWarnings("unused") @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("createCallNode(method)") final DirectCallNode call) {
       return call.call(receiver, arg1, arg2);
     }
@@ -164,7 +164,7 @@ public abstract class BlockPrims {
         limit = "InlineCacheSize")
     public static final Object doTrivial(final SBlock receiver, final Object arg1,
         final Object arg2,
-        @Cached("receiver.getMethod()") final SInvokable method,
+        @SuppressWarnings("unused") @Cached("receiver.getMethod()") final SInvokable method,
         @Cached("method.copyTrivialNode()") final PreevaluatedExpression expr) {
       return expr.doPreEvaluated(null, new Object[] {receiver, arg1, arg2});
     }
@@ -181,6 +181,7 @@ public abstract class BlockPrims {
   @Primitive(className = "Block4", primitive = "value:with:with:")
   public abstract static class ValueMorePrim extends QuaternaryExpressionNode {
     @Specialization
+    @SuppressWarnings("unused")
     public static final Object doSBlock(
         final SBlock receiver, final Object firstArg, final Object secondArg,
         final Object thirdArg) {

@@ -63,7 +63,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
   @SuppressWarnings("truffle-static-method")
   @Specialization(guards = {"arg.getMethod() == method"}, limit = "LIMIT")
   public final Object cachedBlock(final boolean rcvr, final SBlock arg,
-      @Cached("arg.getMethod()") final SInvokable method,
+      @SuppressWarnings("unused") @Cached("arg.getMethod()") final SInvokable method,
       @Cached("create(method.getCallTarget())") final DirectCallNode callTarget,
       @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
       @Bind("this") final Node node) {

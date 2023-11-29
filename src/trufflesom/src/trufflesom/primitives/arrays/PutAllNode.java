@@ -43,14 +43,16 @@ public abstract class PutAllNode extends BinaryExpressionNode {
   }
 
   @Specialization(guards = {"rcvr.isEmptyType()", "valueIsNil(nil)"})
-  public SArray doPutNilInEmptyArray(final SArray rcvr, final SObject nil,
-      final long length) {
+  public SArray doPutNilInEmptyArray(final SArray rcvr,
+      @SuppressWarnings("unused") final SObject nil,
+      @SuppressWarnings("unused") final long length) {
     // NO OP
     return rcvr;
   }
 
   @Specialization(guards = {"valueIsNil(nil)"}, replaces = {"doPutNilInEmptyArray"})
-  public SArray doPutNilInOtherArray(final SArray rcvr, final SObject nil,
+  public SArray doPutNilInOtherArray(final SArray rcvr,
+      @SuppressWarnings("unused") final SObject nil,
       final long length) {
     rcvr.transitionToEmpty(length);
     return rcvr;

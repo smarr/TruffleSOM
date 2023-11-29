@@ -22,7 +22,8 @@ public abstract class GlobalPrim extends BinaryExpressionNode {
   @Child private GetGlobalNode getGlobal = new UninitializedGetGlobal(0);
 
   @Specialization
-  public final Object doSObject(final VirtualFrame frame, final SObject receiver,
+  public final Object doSObject(final VirtualFrame frame,
+      @SuppressWarnings("unused") final SObject receiver,
       final SSymbol argument) {
     return getGlobal.getGlobal(frame, argument);
   }

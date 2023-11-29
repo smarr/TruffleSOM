@@ -30,7 +30,8 @@ public abstract class ToArgumentsArrayNode extends NoPreEvalExprNode {
   }
 
   @Specialization(guards = "somArray == null")
-  public static final Object[] doNoArray(final Object somArray, final Object rcvr) {
+  public static final Object[] doNoArray(@SuppressWarnings("unused") final Object somArray,
+      final Object rcvr) {
     return new Object[] {rcvr};
   }
 

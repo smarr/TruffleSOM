@@ -112,7 +112,8 @@ public abstract class IntegerPrims {
 
     @TruffleBoundary
     @Specialization(guards = "receiver == integerClass")
-    public static final Object doString(final SClass receiver, final String argument) {
+    public static final Object doString(@SuppressWarnings("unused") final SClass receiver,
+        final String argument) {
       try {
         return Long.parseLong(argument);
       } catch (NumberFormatException e) {
@@ -276,7 +277,8 @@ public abstract class IntegerPrims {
 
     @Specialization(guards = "minLong(receiver)")
     @TruffleBoundary
-    public static final BigInteger doLongMinValue(final long receiver) {
+    public static final BigInteger doLongMinValue(
+        @SuppressWarnings("unused") final long receiver) {
       return BigInteger.valueOf(Long.MIN_VALUE).abs();
     }
 

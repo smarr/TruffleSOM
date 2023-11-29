@@ -217,7 +217,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
   private static SInvokable constructPrimitive(final SSymbol signature,
       final Source source, final long coord,
       final Specializer<ExpressionNode, SSymbol> splzr,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
+      @SuppressWarnings("unused") final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
 
     final int numArgs = signature.getNumberOfSignatureArguments();

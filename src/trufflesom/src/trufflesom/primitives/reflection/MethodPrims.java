@@ -66,6 +66,7 @@ public final class MethodPrims {
 
     @Specialization(guards = "receiver == cachedReceiver",
         limit = "" + AbstractDispatchNode.INLINE_CACHE_SIZE)
+    @SuppressWarnings("unused")
     public static final Object doCached(
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr,
@@ -75,6 +76,7 @@ public final class MethodPrims {
     }
 
     @Specialization(replaces = "doCached")
+    @SuppressWarnings("unused")
     public static final Object doUncached(
         final SInvokable receiver, final Object target, final SArray somArr,
         final Object[] argArr,
