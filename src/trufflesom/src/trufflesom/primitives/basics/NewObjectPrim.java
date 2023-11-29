@@ -22,7 +22,7 @@ import trufflesom.vmobjects.SObject;
 @GenerateNodeFactory
 @Primitive(className = "Class", primitive = "new")
 public abstract class NewObjectPrim extends UnaryExpressionNode {
-  protected static final int LIMIT = 3;
+  public static final int LIMIT = 3;
 
   @Specialization(assumptions = "layout.getAssumption()",
       guards = "layout.layoutForSameClass(receiver)", limit = "LIMIT")
