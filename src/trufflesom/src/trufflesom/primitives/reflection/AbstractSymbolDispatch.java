@@ -45,9 +45,9 @@ public abstract class AbstractSymbolDispatch extends Node
     this.sourceCoord = wrapped.sourceCoord;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public AbstractSymbolDispatch initialize(final long coord) {
+  @SuppressWarnings("unchecked")
+  public <T extends Node> T initialize(final long coord) {
     throw new UnsupportedOperationException();
   }
 

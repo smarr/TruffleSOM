@@ -30,7 +30,7 @@ public abstract class AbstractDispatchNode extends Node
 
   @Override
   @SuppressWarnings("unchecked")
-  public AbstractDispatchNode initialize(final long sourceCoord) {
+  public <T extends Node> T initialize(final long sourceCoord) {
     throw new UnsupportedOperationException();
   }
 

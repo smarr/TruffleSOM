@@ -1,10 +1,13 @@
 package trufflesom.bdt.inlining;
 
+import com.oracle.truffle.api.nodes.Node;
+
+
 public class TScope implements Scope<TScope, Void> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public Variable<?>[] getVariables() {
+  public <T extends Variable<? extends Node>> T[] getVariables() {
     return null;
   }
 

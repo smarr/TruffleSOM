@@ -1,6 +1,7 @@
 package trufflesom.interpreter;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
@@ -32,7 +33,7 @@ public abstract class Invokable extends RootNode implements WithSource {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Invokable initialize(final long coord) {
+  public <T extends Node> T initialize(final long coord) {
     throw new UnsupportedOperationException();
   }
 
