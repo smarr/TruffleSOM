@@ -4,6 +4,7 @@ import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAnd
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.nodes.Node;
 
 import trufflesom.interpreter.nodes.dispatch.DispatchChain;
@@ -18,6 +19,7 @@ import trufflesom.vmobjects.SObject;
 public abstract class IndexDispatch extends Node implements DispatchChain {
   public static final int INLINE_CACHE_SIZE = 6;
 
+  @NeverDefault
   public static IndexDispatch create() {
     return new UninitializedDispatchNode(0);
   }
