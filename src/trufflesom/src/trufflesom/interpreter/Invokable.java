@@ -32,7 +32,7 @@ public abstract class Invokable extends RootNode implements WithSource {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Invokable initialize(final long sourceCoord) {
+  public Invokable initialize(final long coord) {
     throw new UnsupportedOperationException();
   }
 

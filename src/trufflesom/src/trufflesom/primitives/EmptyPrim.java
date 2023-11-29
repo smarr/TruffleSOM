@@ -29,7 +29,7 @@ public final class EmptyPrim extends UnaryExpressionNode {
   }
 
   @Override
-  public Object executeEvaluated(final VirtualFrame frame, final Object receiver) {
+  public Object executeEvaluated(final VirtualFrame frame, final Object rcvr) {
     CompilerDirectives.transferToInterpreter();
     Universe.errorExit(
         "Warning: undefined primitive called: " + signature + " at: " + getSourceSection());

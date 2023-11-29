@@ -54,7 +54,7 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
   }
 
   @Override
-  public abstract ExpressionNode getReadNode(int contextLevel, long coord);
+  public abstract ExpressionNode getReadNode(int contextLevel, long coordinate);
 
   protected abstract void emitPop(BytecodeMethodGenContext mgenc);
 
@@ -115,25 +115,26 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
     }
 
     @Override
-    public ExpressionNode getReadNode(final int contextLevel, final long coord) {
+    public ExpressionNode getReadNode(final int contextLevel, final long coordinate) {
       transferToInterpreterAndInvalidate();
 
       if (contextLevel == 0) {
-        return new LocalArgumentReadNode(this).initialize(coord);
+        return new LocalArgumentReadNode(this).initialize(coordinate);
       } else {
-        return new NonLocalArgumentReadNode(this, contextLevel).initialize(coord);
+        return new NonLocalArgumentReadNode(this, contextLevel).initialize(coordinate);
       }
     }
 
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
-        final ExpressionNode valueExpr, final long coord) {
+        final ExpressionNode valueExpr, final long coordinate) {
       transferToInterpreterAndInvalidate();
 
       if (contextLevel == 0) {
-        return new LocalArgumentWriteNode(this, valueExpr).initialize(coord);
+        return new LocalArgumentWriteNode(this, valueExpr).initialize(coordinate);
       } else {
-        return new NonLocalArgumentWriteNode(this, contextLevel, valueExpr).initialize(coord);
+        return new NonLocalArgumentWriteNode(this, contextLevel, valueExpr).initialize(
+            coordinate);
       }
     }
 
@@ -165,17 +166,17 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
       this.descriptor = descriptor;
     }
 
-    public void init(final FrameDescriptor descriptor) {
-      this.descriptor = descriptor;
+    public void init(final FrameDescriptor desc) {
+      this.descriptor = desc;
     }
 
     @Override
-    public ExpressionNode getReadNode(final int contextLevel, final long coord) {
+    public ExpressionNode getReadNode(final int contextLevel, final long coordinate) {
       transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
-        return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(coord);
+        return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(coordinate);
       }
-      return LocalVariableReadNodeGen.create(this).initialize(coord);
+      return LocalVariableReadNodeGen.create(this).initialize(coordinate);
     }
 
     public final int getIndex() {
@@ -194,13 +195,13 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
 
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
-        final ExpressionNode valueExpr, final long coord) {
+        final ExpressionNode valueExpr, final long coordinate) {
       transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableWriteNodeGen.create(contextLevel, this, valueExpr)
-                                           .initialize(coord);
+                                           .initialize(coordinate);
       }
-      return LocalVariableWriteNodeGen.create(this, valueExpr).initialize(coord);
+      return LocalVariableWriteNodeGen.create(this, valueExpr).initialize(coordinate);
     }
 
     public final FrameDescriptor getFrameDescriptor() {
@@ -232,7 +233,7 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
     }
 
     @Override
-    public ExpressionNode getReadNode(final int contextLevel, final long coord) {
+    public ExpressionNode getReadNode(final int contextLevel, final long coordinate) {
       throw new UnsupportedOperationException(
           "There shouldn't be any language-level read nodes for internal slots. "
               + "They are used directly by other nodes.");

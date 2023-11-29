@@ -147,11 +147,11 @@ public final class ClassGenerationContext {
     }
   }
 
-  public Field addInstanceField(final SSymbol name, final long coord) {
+  public Field addInstanceField(final SSymbol fieldName, final long coord) {
     int length = SourceCoordinate.getLength(coord);
-    assert name.getString().length() == length;
+    assert fieldName.getString().length() == length;
 
-    Field f = new Field(instanceFields.size(), name, coord);
+    Field f = new Field(instanceFields.size(), fieldName, coord);
     instanceFields.add(f);
     if (structuralProbe != null) {
       structuralProbe.recordNewSlot(f);
@@ -159,11 +159,11 @@ public final class ClassGenerationContext {
     return f;
   }
 
-  public Field addClassField(final SSymbol name, final long coord) {
+  public Field addClassField(final SSymbol fieldName, final long coord) {
     int length = SourceCoordinate.getLength(coord);
-    assert name.getString().length() == length;
+    assert fieldName.getString().length() == length;
 
-    Field f = new Field(classFields.size(), name, coord);
+    Field f = new Field(classFields.size(), fieldName, coord);
     classFields.add(f);
     if (structuralProbe != null) {
       structuralProbe.recordNewSlot(f);

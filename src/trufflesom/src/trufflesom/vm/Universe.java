@@ -380,26 +380,26 @@ public final class Universe {
     objectSystemInitialized = true;
   }
 
-  private static void initializeSystemClass(final SClass systemClass, final SClass superClass,
+  private static void initializeSystemClass(final SClass sysClass, final SClass superClass,
       final String name) {
     // Initialize the superclass hierarchy
     if (superClass != null) {
-      systemClass.setSuperClass(superClass);
-      systemClass.getSOMClass().setSuperClass(superClass.getSOMClass());
+      sysClass.setSuperClass(superClass);
+      sysClass.getSOMClass().setSuperClass(superClass.getSOMClass());
     } else {
-      systemClass.getSOMClass().setSuperClass(classClass);
+      sysClass.getSOMClass().setSuperClass(classClass);
     }
 
     // Initialize the array of instance fields
-    systemClass.setInstanceFields(Arrays.asList());
-    systemClass.getSOMClass().setInstanceFields(Arrays.asList());
+    sysClass.setInstanceFields(Arrays.asList());
+    sysClass.getSOMClass().setInstanceFields(Arrays.asList());
 
     // Initialize the name of the system class
-    systemClass.setName(symbolFor(name));
-    systemClass.getSOMClass().setName(symbolFor(name + " class"));
+    sysClass.setName(symbolFor(name));
+    sysClass.getSOMClass().setName(symbolFor(name + " class"));
 
     // Insert the system class into the dictionary of globals
-    setGlobal(systemClass.getName(), systemClass);
+    setGlobal(sysClass.getName(), sysClass);
   }
 
   private static void loadBlockClass(final int numberOfArguments) {
@@ -462,12 +462,12 @@ public final class Universe {
   }
 
   @TruffleBoundary
-  public static void loadSystemClass(final SClass systemClass) {
+  public static void loadSystemClass(final SClass sysClass) {
     // Load the system class
-    SClass result = loadClass(systemClass.getName(), systemClass);
+    SClass result = loadClass(sysClass.getName(), sysClass);
 
     if (result == null) {
-      throw new IllegalStateException(systemClass.getName().getString()
+      throw new IllegalStateException(sysClass.getName().getString()
           + " class could not be loaded. "
           + "It is likely that the class path has not been initialized properly. "
           + "Please set system property 'system.class.path' or "
@@ -478,7 +478,7 @@ public final class Universe {
   }
 
   @TruffleBoundary
-  private static SClass loadClass(final SSymbol name, final SClass systemClass) {
+  private static SClass loadClass(final SSymbol name, final SClass sysClass) {
     // Skip if classPath is not set
     if (classPath == null) {
       return null;
@@ -489,7 +489,7 @@ public final class Universe {
       try {
         // Load the class from a file and return the loaded class
         SClass result = sourceCompiler.compileClass(
-            cpEntry, name.getString(), systemClass, structuralProbe);
+            cpEntry, name.getString(), sysClass, structuralProbe);
         if (printIR > 0) {
           Disassembler.dump(result.getSOMClass());
           Disassembler.dump(result);

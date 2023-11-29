@@ -60,8 +60,8 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
 
   @Override
   protected BytecodeMethodGenContext createMGenC(final ClassGenerationContext cgenc,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
-    return new BytecodeMethodGenContext(cgenc, structuralProbe);
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structProbe) {
+    return new BytecodeMethodGenContext(cgenc, structProbe);
   }
 
   @Override

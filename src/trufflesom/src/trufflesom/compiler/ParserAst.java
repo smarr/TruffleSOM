@@ -60,8 +60,8 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
   @Override
   protected MethodGenerationContext createMGenC(final ClassGenerationContext cgenc,
-      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe) {
-    return new MethodGenerationContext(cgenc, structuralProbe);
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structProbe) {
+    return new MethodGenerationContext(cgenc, structProbe);
   }
 
   @Override

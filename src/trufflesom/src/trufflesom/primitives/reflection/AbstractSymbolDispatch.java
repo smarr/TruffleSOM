@@ -47,7 +47,7 @@ public abstract class AbstractSymbolDispatch extends Node
 
   @SuppressWarnings("unchecked")
   @Override
-  public AbstractSymbolDispatch initialize(final long sourceCoord) {
+  public AbstractSymbolDispatch initialize(final long coord) {
     throw new UnsupportedOperationException();
   }
 

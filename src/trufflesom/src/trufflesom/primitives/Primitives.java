@@ -196,9 +196,9 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
 
   @Override
   protected void registerPrimitive(
-      final Specializer<ExpressionNode, SSymbol> specializer) {
-    String className = specializer.getPrimitive().className();
-    String primName = specializer.getPrimitive().primitive();
+      final Specializer<ExpressionNode, SSymbol> splzr) {
+    String className = splzr.getPrimitive().className();
+    String primName = splzr.getPrimitive().primitive();
 
     if (!("".equals(primName)) && !("".equals(className))) {
       SSymbol clazz = ids.getId(className);
@@ -207,7 +207,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
           primitives.computeIfAbsent(clazz, s -> new HashMap<>());
       assert !primsForClass.containsKey(signature) : className
           + " already has a primitive " + primName + " registered.";
-      primsForClass.put(signature, specializer);
+      primsForClass.put(signature, splzr);
     } else {
       assert "".equals(primName) && "".equals(
           className) : "If either primitive() or className() is set on @Primitive, both should be set";
@@ -216,7 +216,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
 
   private static SInvokable constructPrimitive(final SSymbol signature,
       final Source source, final long coord,
-      final Specializer<ExpressionNode, SSymbol> specializer,
+      final Specializer<ExpressionNode, SSymbol> splzr,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
     CompilerAsserts.neverPartOfCompilation("This is only executed during bootstrapping.");
 
@@ -225,7 +225,7 @@ public final class Primitives extends PrimitiveLoader<ExpressionNode, SSymbol> {
     // args is needed to communicate the number of arguments to the constructor
     ExpressionNode[] args = new ExpressionNode[numArgs];
 
-    ExpressionNode primNode = specializer.create(null, args, coord);
+    ExpressionNode primNode = splzr.create(null, args, coord);
 
     Primitive primMethodNode = new Primitive(signature.getString(), source, coord, primNode,
         (ExpressionNode) primNode.deepCopy());

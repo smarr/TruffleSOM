@@ -224,7 +224,8 @@ public class MethodGenerationContext
     return assembleMethod(body, coord);
   }
 
-  protected SMethod assembleMethod(ExpressionNode body, final long coord) {
+  protected SMethod assembleMethod(final ExpressionNode methodBody, final long coord) {
+    ExpressionNode body = methodBody;
     if (needsToCatchNonLocalReturn()) {
       body = new CatchNonLocalReturnNode(
           body, getFrameOnStackMarker(coord)).initialize(body.getSourceCoordinate());
@@ -538,7 +539,8 @@ public class MethodGenerationContext
     return signature;
   }
 
-  private static String stripColonsAndSourceLocation(String str) {
+  private static String stripColonsAndSourceLocation(final String s) {
+    String str = s;
     int startOfSource = str.indexOf('@');
     if (startOfSource > -1) {
       str = str.substring(0, startOfSource);
