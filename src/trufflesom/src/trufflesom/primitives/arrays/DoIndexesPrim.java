@@ -35,11 +35,11 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
 
   @Override
   @SuppressWarnings("unchecked")
-  public DoIndexesPrim initialize(final long coord) {
+  public <T extends Node> T initialize(final long coord) {
     super.initialize(coord);
     block = ValueOnePrimFactory.create(null, null);
     length = LengthPrimFactory.create(null);
-    return this;
+    return (T) this;
   }
 
   @Specialization

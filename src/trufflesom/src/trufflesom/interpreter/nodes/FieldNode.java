@@ -209,7 +209,7 @@ public abstract class FieldNode extends ExpressionNode {
       return new CachedFieldWriteAndSelf(rcvr.getClass(), layout, source, storage, next);
     }
 
-    public final Object executeEvaluated(final VirtualFrame frame,
+    public final Object executeEvaluated(@SuppressWarnings("unused") final VirtualFrame frame,
         final SObject self, final Object value) {
       return write.write(self, value);
     }
@@ -221,14 +221,12 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Specialization
-    public long doLong(final VirtualFrame frame, final SObject self,
-        final long value) {
+    public long doLong(final SObject self, final long value) {
       return write.write(self, value);
     }
 
     @Specialization
-    public double doDouble(final VirtualFrame frame, final SObject self,
-        final double value) {
+    public double doDouble(final SObject self, final double value) {
       return write.write(self, value);
     }
 

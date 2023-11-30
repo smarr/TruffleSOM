@@ -35,7 +35,8 @@ public abstract class NewPrim extends BinaryMsgExprNode {
   }
 
   @Specialization(guards = "receiver == arrayClass")
-  public static final SArray doSClass(final SClass receiver, final long length) {
+  public static final SArray doSClass(@SuppressWarnings("unused") final SClass receiver,
+      final long length) {
     return new SArray(length);
   }
 

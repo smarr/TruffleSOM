@@ -23,6 +23,7 @@ public abstract class WhileFalsePrimitiveNode extends WhilePrimitiveNode {
   @Specialization(limit = "INLINE_CACHE_SIZE",
       guards = {"loopCondition.getMethod() == cachedLoopCondition",
           "loopBody.getMethod() == cachedLoopBody"})
+  @SuppressWarnings("unused")
   public final SObject doCached(final SBlock loopCondition, final SBlock loopBody,
       @Cached("loopCondition.getMethod()") final SInvokable cachedLoopCondition,
       @Cached("loopBody.getMethod()") final SInvokable cachedLoopBody,

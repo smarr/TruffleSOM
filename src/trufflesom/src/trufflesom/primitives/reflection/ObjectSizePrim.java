@@ -26,7 +26,8 @@ public abstract class ObjectSizePrim extends UnaryExpressionNode {
   }
 
   @Specialization
-  public static final long doSAbstractObject(final Object receiver) {
+  public static final long doSAbstractObject(
+      @SuppressWarnings("unused") final Object receiver) {
     return 0; // TODO: allow polymorphism?
   }
 }

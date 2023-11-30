@@ -85,6 +85,7 @@ public abstract class ExpressionNode extends SOMNode
     return null;
   }
 
+  @SuppressWarnings("unused")
   public AbstractDispatchNode asDispatchNode(final Object rcvr, final Source source,
       final AbstractDispatchNode next) {
     // Some of the subclasses may be trivial and implement this

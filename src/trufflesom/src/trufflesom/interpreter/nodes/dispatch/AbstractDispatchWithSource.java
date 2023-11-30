@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.dispatch;
 
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.inlining.nodes.WithSource;
@@ -28,7 +29,7 @@ public abstract class AbstractDispatchWithSource extends AbstractDispatchNode
 
   @SuppressWarnings("unchecked")
   @Override
-  public final AbstractDispatchNode initialize(final long sourceCoord) {
+  public final <T extends Node> T initialize(final long sourceCoord) {
     throw new UnsupportedOperationException();
   }
 

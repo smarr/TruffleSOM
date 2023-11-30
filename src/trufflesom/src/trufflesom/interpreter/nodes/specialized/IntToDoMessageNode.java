@@ -33,7 +33,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
 
   @Specialization(guards = {"block.getMethod() == cachedMethod"}, limit = "LIMIT")
   public final long doIntCached(final long receiver, final long limit, final SBlock block,
-      @Cached("block.getMethod()") final SInvokable cachedMethod,
+      @SuppressWarnings("unused") @Cached("block.getMethod()") final SInvokable cachedMethod,
       @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
     try {
       doLooping(receiver, limit, block, callNode);
@@ -98,7 +98,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
   @Specialization(guards = {"block.getMethod() == cachedMethod"}, limit = "LIMIT")
   public final double doDoubleDoubleCached(final double receiver, final double limit,
       final SBlock block,
-      @Cached("block.getMethod()") final SInvokable cachedMethod,
+      @SuppressWarnings("unused") @Cached("block.getMethod()") final SInvokable cachedMethod,
       @Cached("create(cachedMethod.getCallTarget())") final DirectCallNode callNode) {
     try {
       if (receiver <= limit) {

@@ -242,7 +242,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   protected abstract MGenC createMGenC(ClassGenerationContext cgenc,
-      StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structuralProbe);
+      StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> structProbe);
 
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     int coord = getStartIndex();

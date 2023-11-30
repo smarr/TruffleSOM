@@ -45,9 +45,9 @@ public abstract class AbstractSymbolDispatch extends Node
     this.sourceCoord = wrapped.sourceCoord;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public AbstractSymbolDispatch initialize(final long sourceCoord) {
+  @SuppressWarnings("unchecked")
+  public <T extends Node> T initialize(final long coord) {
     throw new UnsupportedOperationException();
   }
 
@@ -104,6 +104,7 @@ public abstract class AbstractSymbolDispatch extends Node
 
   @Specialization(limit = "INLINE_CACHE_SIZE",
       guards = {"selector == cachedSelector", "argsArr == null"})
+  @SuppressWarnings("unused")
   public Object doCachedWithoutArgArr(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final Object argsArr,
       @Cached("selector") final SSymbol cachedSelector,
@@ -115,6 +116,7 @@ public abstract class AbstractSymbolDispatch extends Node
   }
 
   @Specialization(limit = "INLINE_CACHE_SIZE", guards = "selector == cachedSelector")
+  @SuppressWarnings("unused")
   public Object doCached(final VirtualFrame frame,
       final Object receiver, final SSymbol selector, final SArray argsArr,
       @Cached("selector") final SSymbol cachedSelector,
@@ -128,7 +130,8 @@ public abstract class AbstractSymbolDispatch extends Node
 
   @TruffleBoundary
   @Specialization(replaces = "doCachedWithoutArgArr", guards = "argsArr == null")
-  public Object doUncached(final Object receiver, final SSymbol selector, final Object argsArr,
+  public Object doUncached(final Object receiver, final SSymbol selector,
+      @SuppressWarnings("unused") final Object argsArr,
       @Shared("indirect") @Cached final IndirectCallNode call) {
     SInvokable invokable = Types.getClassOf(receiver).lookupInvokable(selector);
 

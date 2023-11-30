@@ -16,9 +16,9 @@ public abstract class ExprNode extends Node implements WithSource {
 
   @Override
   @SuppressWarnings("unchecked")
-  public ExprNode initialize(final long coord) {
+  public <T extends Node> T initialize(final long coord) {
     this.sourceCoord = coord;
-    return this;
+    return (T) this;
   }
 
   @Override

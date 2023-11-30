@@ -19,7 +19,8 @@ public abstract class HasGlobalPrim extends BinaryExpressionNode {
   @Child private HasGlobalNode hasGlobal = new UninitializedHasGlobal(0);
 
   @Specialization
-  public final boolean doSObject(final SObject receiver, final SSymbol argument) {
+  public final boolean doSObject(@SuppressWarnings("unused") final SObject receiver,
+      final SSymbol argument) {
     return hasGlobal.hasGlobal(argument);
   }
 

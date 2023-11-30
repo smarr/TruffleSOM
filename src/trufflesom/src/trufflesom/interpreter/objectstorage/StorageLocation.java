@@ -120,7 +120,7 @@ public abstract class StorageLocation {
     }
 
     @Override
-    public AbstractWriteFieldNode getWriteNode(final int fieldIndex,
+    public AbstractWriteFieldNode getWriteNode(final int fieldIdx,
         final ObjectLayout layout, final AbstractWriteFieldNode next) {
       CompilerAsserts.neverPartOfCompilation("StorageLocation");
       throw new RuntimeException("we should not get here, should we?");

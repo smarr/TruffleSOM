@@ -62,7 +62,8 @@ public class Specializer<ExprT, Id> {
     return fact.getClass().getSimpleName();
   }
 
-  public boolean matches(final Object[] args, final ExprT[] argNodes) {
+  public boolean matches(final Object[] args,
+      @SuppressWarnings("unused") final ExprT[] argNodes) {
     // TODO: figure out whether we really want it like this with a VmSetting, or whether
     // there should be something on the context
     // TODO: with the dynamic metrics setting gone, this assertion isn't useful anymore

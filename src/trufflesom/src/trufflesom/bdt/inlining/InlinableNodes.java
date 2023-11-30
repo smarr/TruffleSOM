@@ -50,12 +50,12 @@ public final class InlinableNodes<Id> {
     initializeFactories(inlinableFactories);
   }
 
-  private void initializeNodes(final List<Class<? extends Node>> inlinableNodes) {
-    if (inlinableNodes == null) {
+  private void initializeNodes(final List<Class<? extends Node>> nodes) {
+    if (nodes == null) {
       return;
     }
 
-    for (Class<? extends Node> nodeClass : inlinableNodes) {
+    for (Class<? extends Node> nodeClass : nodes) {
       Inline[] ann = getInlineAnnotation(nodeClass);
       assert ann != null;
 

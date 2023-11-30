@@ -29,6 +29,7 @@ public abstract class UnequalsPrim extends BinaryMsgExprNode {
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doBoolean(final boolean left, final SObject right) {
     return true;
   }
@@ -82,36 +83,43 @@ public abstract class UnequalsPrim extends BinaryMsgExprNode {
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doLong(final long left, final String right) {
     return true;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doLong(final long left, final SObject right) {
     return true;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doLong(final long left, final SSymbol right) {
     return true;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doString(final String receiver, final long argument) {
     return true;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doString(final String receiver, final SObject argument) {
     return true;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doSSymbol(final SSymbol receiver, final long argument) {
     return true;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doSSymbol(final SSymbol receiver, final SObject argument) {
     return true;
   }

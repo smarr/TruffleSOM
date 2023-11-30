@@ -209,8 +209,8 @@ public final class LexicalScope implements Scope<LexicalScope, Method> {
   }
 
   @Override
-  public LexicalScope getScope(final Method method) {
-    if (method.equals(this.method)) {
+  public LexicalScope getScope(final Method m) {
+    if (m.equals(this.method)) {
       return this;
     }
 
@@ -218,8 +218,8 @@ public final class LexicalScope implements Scope<LexicalScope, Method> {
       return null;
     }
 
-    for (LexicalScope m : embeddedScopes) {
-      LexicalScope result = m.getScope(method);
+    for (LexicalScope scope : embeddedScopes) {
+      LexicalScope result = scope.getScope(m);
       if (result != null) {
         return result;
       }

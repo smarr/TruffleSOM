@@ -8,7 +8,6 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
@@ -149,7 +148,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
   }
 
   @Specialization
-  public static final Object doIfTrueIfFalseTwoValues(final VirtualFrame frame,
+  public static final Object doIfTrueIfFalseTwoValues(
       final boolean receiver, final Object trueValue, final Object falseValue,
       @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
       @Bind("this") final Node node) {

@@ -46,6 +46,7 @@ public abstract class DoubleDivPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
+  @SuppressWarnings("unused")
   public static final SAbstractObject doLong(final long left, final BigInteger right) {
     CompilerAsserts.neverPartOfCompilation("DoubleDiv100");
     // TODO: need to implement the "/" case here directly... :

@@ -3,6 +3,7 @@ package trufflesom.primitives.reflection;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 
 import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -16,10 +17,10 @@ public abstract class PerformPrim extends BinaryExpressionNode {
 
   @SuppressWarnings("unchecked")
   @Override
-  public PerformPrim initialize(final long coord) {
+  public <T extends Node> T initialize(final long coord) {
     super.initialize(coord);
     dispatch = AbstractSymbolDispatchNodeGen.create(coord);
-    return this;
+    return (T) this;
   }
 
   @Specialization

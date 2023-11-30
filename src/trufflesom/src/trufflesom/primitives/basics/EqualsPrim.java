@@ -30,6 +30,7 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doBoolean(final boolean left, final SObject right) {
     return false;
   }
@@ -51,16 +52,19 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doLong(final long left, final String right) {
     return false;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doLong(final long left, final SObject right) {
     return false;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doLong(final long left, final SSymbol right) {
     return false;
   }
@@ -104,11 +108,13 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doString(final String receiver, final long argument) {
     return false;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doString(final String receiver, final SObject argument) {
     return false;
   }
@@ -124,11 +130,13 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doSSymbol(final SSymbol receiver, final long argument) {
     return false;
   }
 
   @Specialization
+  @SuppressWarnings("unused")
   public static final boolean doSSymbol(final SSymbol receiver, final SObject argument) {
     return false;
   }
