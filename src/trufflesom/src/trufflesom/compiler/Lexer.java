@@ -114,11 +114,15 @@ public class Lexer {
   }
 
   public String getCurrentLine() {
+    int next = state.lastLineEnd + 1;
     int endLine = content.indexOf("\n", state.lastLineEnd + 1);
     if (endLine == -1) {
       endLine = content.length() - 1;
     }
-    return content.substring(state.lastLineEnd + 1, endLine);
+    if (next > endLine) {
+      return "";
+    }
+    return content.substring(next, endLine);
   }
 
   private Symbol doSym() {
