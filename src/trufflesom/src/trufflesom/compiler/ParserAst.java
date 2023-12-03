@@ -313,8 +313,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return inlined;
     }
 
-    if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
-      IntegerLiteralNode lit = (IntegerLiteralNode) operand;
+    if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode lit) {
       if (lit.executeLong(null) == 1) {
         return IntIncrementNodeGen.create(receiver);
       }
