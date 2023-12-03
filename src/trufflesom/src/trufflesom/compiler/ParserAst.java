@@ -48,6 +48,7 @@ import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
 import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -313,7 +314,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return inlined;
     }
 
-    if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode lit) {
+    if (msg == SymbolTable.symPlus && operand instanceof IntegerLiteralNode lit) {
       if (lit.executeLong(null) == 1) {
         return IntIncrementNodeGen.create(receiver);
       }
