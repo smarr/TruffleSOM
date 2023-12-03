@@ -1,6 +1,5 @@
 package trufflesom.compiler;
 
-import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreterAndInvalidate;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
@@ -116,8 +115,6 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
 
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final long coordinate) {
-      transferToInterpreterAndInvalidate();
-
       if (contextLevel == 0) {
         return new LocalArgumentReadNode(this).initialize(coordinate);
       } else {
@@ -128,8 +125,6 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coordinate) {
-      transferToInterpreterAndInvalidate();
-
       if (contextLevel == 0) {
         return new LocalArgumentWriteNode(this, valueExpr).initialize(coordinate);
       } else {
@@ -172,7 +167,6 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
 
     @Override
     public ExpressionNode getReadNode(final int contextLevel, final long coordinate) {
-      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableReadNodeGen.create(contextLevel, this).initialize(coordinate);
       }
@@ -196,7 +190,6 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
     @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coordinate) {
-      transferToInterpreterAndInvalidate();
       if (contextLevel > 0) {
         return NonLocalVariableWriteNodeGen.create(contextLevel, this, valueExpr)
                                            .initialize(coordinate);

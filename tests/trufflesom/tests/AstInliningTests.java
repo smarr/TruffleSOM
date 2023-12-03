@@ -33,9 +33,9 @@ import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInli
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.FalseIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.arithmetic.SubtractionPrim;
 import trufflesom.primitives.arrays.DoPrim;
 

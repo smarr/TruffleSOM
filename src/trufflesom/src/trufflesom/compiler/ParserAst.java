@@ -27,8 +27,11 @@ import com.oracle.truffle.api.source.Source;
 import trufflesom.bdt.basic.ProgramDefinitionError;
 import trufflesom.bdt.inlining.InlinableNodes;
 import trufflesom.bdt.tools.structure.StructuralProbe;
+import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
+import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
+import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.SequenceNode;
@@ -38,9 +41,14 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
+import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
+import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.NonLocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
+import trufflesom.vm.NotYetImplementedException;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SArray;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -255,6 +263,50 @@ public class ParserAst extends Parser<MethodGenerationContext> {
           mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
     }
 
+    String binSelector = msg.getString();
+
+    if (binSelector.equals("=")) {
+      if (operand instanceof GenericLiteralNode) {
+        Object literal = operand.executeGeneric(null);
+        if (literal instanceof String s) {
+          if (receiver instanceof FieldReadNode fieldRead) {
+            ExpressionNode self = fieldRead.getSelf();
+            if (self instanceof LocalArgumentReadNode localSelf) {
+              return new LocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
+                  localSelf.getArg(), s).initialize(coordWithL);
+            } else if (self instanceof NonLocalArgumentReadNode arg) {
+              return new NonLocalFieldStringEqualsNode(fieldRead.getFieldIndex(), arg.getArg(),
+                  arg.getContextLevel(), s).initialize(coordWithL);
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+
+          return StringEqualsNodeGen.create(s, receiver).initialize(coordWithL);
+        }
+      }
+
+      if (receiver instanceof GenericLiteralNode) {
+        Object literal = receiver.executeGeneric(null);
+        if (literal instanceof String s) {
+          if (operand instanceof FieldReadNode fieldRead) {
+            ExpressionNode self = fieldRead.getSelf();
+            if (self instanceof LocalArgumentReadNode localSelf) {
+              return new LocalFieldStringEqualsNode(fieldRead.getFieldIndex(),
+                  localSelf.getArg(), s).initialize(coordWithL);
+            } else if (self instanceof NonLocalArgumentReadNode arg) {
+              return new NonLocalFieldStringEqualsNode(fieldRead.getFieldIndex(), arg.getArg(),
+                  arg.getContextLevel(), s).initialize(coordWithL);
+            } else {
+              throw new NotYetImplementedException();
+            }
+          }
+
+          return StringEqualsNodeGen.create(s, operand).initialize(coordWithL);
+        }
+      }
+    }
+
     ExpressionNode inlined =
         inlinableNodes.inline(msg, args, mgenc, coordWithL);
     if (inlined != null) {
@@ -262,8 +314,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return inlined;
     }
 
-    if (msg.getString().equals("+") && operand instanceof IntegerLiteralNode) {
-      IntegerLiteralNode lit = (IntegerLiteralNode) operand;
+    if (msg == SymbolTable.symPlus && operand instanceof IntegerLiteralNode lit) {
       if (lit.executeLong(null) == 1) {
         return IntIncrementNodeGen.create(receiver);
       }
