@@ -38,7 +38,7 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNodeGen;
+import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;

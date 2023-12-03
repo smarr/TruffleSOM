@@ -1,4 +1,4 @@
-package trufflesom.interpreter.nodes.specialized;
+package trufflesom.interpreter.supernodes;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;

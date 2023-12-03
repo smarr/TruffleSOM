@@ -55,7 +55,7 @@ import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
