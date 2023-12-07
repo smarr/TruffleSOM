@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.dsl.ReportPolymorphism.Megamorphic;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -21,6 +22,7 @@ import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.QuaternaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.TernaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
+import trufflesom.primitives.basics.BlockPrimsFactory.ValueNonePrimFactory;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SAbstractObject;
@@ -56,6 +58,10 @@ public abstract class BlockPrims {
       receiverType = {SBlock.class, Boolean.class})
   @ImportStatic(BlockPrims.class)
   public abstract static class ValueNonePrim extends UnaryExpressionNode {
+    @NeverDefault
+    public static ValueNonePrim create() {
+      return ValueNonePrimFactory.create(null);
+    }
 
     public abstract Object executeEvaluated(VirtualFrame frame, SBlock receiver);
 
