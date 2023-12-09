@@ -181,9 +181,17 @@ if args.setup == 'labsjdk':
   mx = find_mx()
   # move the env file out of the way, because of latest mx changes
   os.rename(BASE_DIR + '/mx.trufflesom/env', BASE_DIR + '/mx.trufflesom/env-load-jdk')
+
+  if os.path.exists(TRUFFLE_DIR + "/common.json"):
+    graal_common_json = ["--configuration", TRUFFLE_DIR + "/common.json"]
+  else:
+    graal_common_json = []
+
   try:
-    p = subprocess.run([mx, "--quiet", "fetch-jdk", "--strip-contents-home",
-                       "--jdk-id", get_labs_jdk_id(), "--alias", BASE_DIR + "/libs/jvmci"])
+    p = subprocess.run([
+      mx, "--quiet", "fetch-jdk"] + graal_common_json + [
+        "--strip-contents-home",
+        "--jdk-id", get_labs_jdk_id(), "--alias", BASE_DIR + "/libs/jvmci"])
   finally:
     os.rename(BASE_DIR + '/mx.trufflesom/env-load-jdk', BASE_DIR + '/mx.trufflesom/env')
   exit(p.returncode)

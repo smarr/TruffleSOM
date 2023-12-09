@@ -8,7 +8,6 @@ import mx
 INTERP_TYPES = ["AST", "BC"]
 
 suite = mx.suite("trufflesom")
-LABS_JDK_ID = suite.suiteDict["libraries"]["LABS_JDK"]["id"]
 
 
 def ensure_core_lib_is_available():

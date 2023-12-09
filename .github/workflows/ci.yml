@@ -45,8 +45,11 @@ jobs:
           ./som --setup mx
           echo "PATH=$PATH:`pwd`/../mx" >> "$GITHUB_ENV"
       
-      - name: Get LabsJDK
+      - name: Get LabsJDK and Get Graal
         run: |
+          ./som --setup labsjdk
+          mx sforceimport
+          rm libs/jvmci || true
           ./som --setup labsjdk
       
       - name: Compile TruffleSOM
