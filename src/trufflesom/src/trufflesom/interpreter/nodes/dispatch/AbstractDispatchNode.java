@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.dispatch;
 
+import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.GenerateWrapper;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode;
@@ -14,12 +15,18 @@ import trufflesom.bdt.source.SourceCoordinate;
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.tools.nodestats.Tags.AnyNode;
 import trufflesom.vm.VmSettings;
+import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateWrapper
 public abstract class AbstractDispatchNode extends Node
     implements DispatchChain, InstrumentableNode, WithSource {
   public static final int INLINE_CACHE_SIZE = 6;
+
+  @NeverDefault
+  public static AbstractDispatchNode create(final SSymbol selector) {
+    return new UninitializedDispatchNode(selector);
+  }
 
   public abstract Object executeDispatch(VirtualFrame frame, Object[] arguments);
 

@@ -45,12 +45,14 @@ public class SomTests {
     return Arrays.asList(new Object[][] {
         {"Array"},
         {"Block"},
+        {"Boolean"},
         {"ClassLoading"},
         {"ClassStructure"},
 
         {"Closure"},
         {"Coercion"},
         {"CompilerReturn"},
+        {"Dictionary"},
         {"DoesNotUnderstand"},
         {"Double"},
 

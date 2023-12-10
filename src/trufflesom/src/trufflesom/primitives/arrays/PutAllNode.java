@@ -2,6 +2,7 @@ package trufflesom.primitives.arrays;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -14,7 +15,6 @@ import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.primitives.basics.BlockPrims.ValueNonePrim;
-import trufflesom.primitives.basics.BlockPrimsFactory.ValueNonePrimFactory;
 import trufflesom.primitives.basics.LengthPrim;
 import trufflesom.primitives.basics.LengthPrimFactory;
 import trufflesom.vm.SymbolTable;
@@ -29,8 +29,6 @@ import trufflesom.vmobjects.SObject;
     extraChild = LengthPrimFactory.class)
 @NodeChild(value = "length", type = LengthPrim.class, executeWith = "receiver")
 public abstract class PutAllNode extends BinaryExpressionNode {
-  @Child private ValueNonePrim block = ValueNonePrimFactory.create(null);
-
   protected static final boolean valueIsNil(final SObject value) {
     return value == Nil.nilObject;
   }
@@ -58,63 +56,66 @@ public abstract class PutAllNode extends BinaryExpressionNode {
     return rcvr;
   }
 
-  private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock b, final long length, final Object[] storage) {
+  private static void evalBlockForRemaining(final VirtualFrame frame,
+      final SBlock b, final long length, final Object[] storage,
+      final ValueNonePrim blockNode) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = this.block.executeEvaluated(frame, b);
+      storage[i] = blockNode.executeEvaluated(frame, b);
     }
   }
 
-  private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock b, final long length, final long[] storage) {
+  private static void evalBlockForRemaining(final VirtualFrame frame,
+      final SBlock b, final long length, final long[] storage, final ValueNonePrim blockNode) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (long) this.block.executeEvaluated(frame, b);
+      storage[i] = (long) blockNode.executeEvaluated(frame, b);
     }
   }
 
-  private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock b, final long length, final double[] storage) {
+  private static void evalBlockForRemaining(final VirtualFrame frame,
+      final SBlock b, final long length, final double[] storage,
+      final ValueNonePrim blockNode) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (double) this.block.executeEvaluated(frame, b);
+      storage[i] = (double) blockNode.executeEvaluated(frame, b);
     }
   }
 
-  private void evalBlockForRemaining(final VirtualFrame frame,
-      final SBlock b, final long length, final boolean[] storage) {
+  private static void evalBlockForRemaining(final VirtualFrame frame,
+      final SBlock b, final long length, final boolean[] storage,
+      final ValueNonePrim blockNode) {
     for (int i = SArray.FIRST_IDX + 1; i < length; i++) {
-      storage[i] = (boolean) this.block.executeEvaluated(frame, b);
+      storage[i] = (boolean) blockNode.executeEvaluated(frame, b);
     }
   }
 
   @Specialization
   public SArray doPutEvalBlock(final VirtualFrame frame, final SArray rcvr,
-      final SBlock b, final long length) {
+      final SBlock b, final long length, @Cached final ValueNonePrim blockNode) {
     if (length <= 0) {
       return rcvr;
     }
     // TODO: this version does not handle the case that a subsequent value is not of the
     // expected type...
     try {
-      Object result = this.block.executeEvaluated(frame, b);
+      Object result = blockNode.executeEvaluated(frame, b);
       if (result instanceof Long) {
         long[] newStorage = new long[(int) length];
         newStorage[0] = (long) result;
-        evalBlockForRemaining(frame, b, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage, blockNode);
         rcvr.transitionTo(newStorage);
       } else if (result instanceof Double) {
         double[] newStorage = new double[(int) length];
         newStorage[0] = (double) result;
-        evalBlockForRemaining(frame, b, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage, blockNode);
         rcvr.transitionTo(newStorage);
       } else if (result instanceof Boolean) {
         boolean[] newStorage = new boolean[(int) length];
         newStorage[0] = (boolean) result;
-        evalBlockForRemaining(frame, b, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage, blockNode);
         rcvr.transitionTo(newStorage);
       } else {
         Object[] newStorage = new Object[(int) length];
         newStorage[0] = result;
-        evalBlockForRemaining(frame, b, length, newStorage);
+        evalBlockForRemaining(frame, b, length, newStorage, blockNode);
         rcvr.transitionTo(newStorage);
       }
     } finally {
