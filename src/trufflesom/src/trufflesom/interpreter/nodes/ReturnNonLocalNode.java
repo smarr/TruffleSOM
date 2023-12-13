@@ -149,7 +149,11 @@ public final class ReturnNonLocalNode extends ContextualNode {
       this.methodBody = methodBody;
       this.nonLocalReturnHandler = BranchProfile.create();
       this.onStackMarkerVar = onStackMarker;
-      this.onStackMarkerIndex = onStackMarker.getIndex();
+      if (onStackMarker == null) {
+        this.onStackMarkerIndex = -1;
+      } else {
+        this.onStackMarkerIndex = onStackMarker.getIndex();
+      }
 
       this.doCatch = BranchProfile.create();
       this.doPropagate = BranchProfile.create();
@@ -162,13 +166,20 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
     @Override
     public Object executeGeneric(final VirtualFrame frame) {
-      FrameOnStackMarker marker = new FrameOnStackMarker();
-      frame.setObject(onStackMarkerIndex, marker);
+      FrameOnStackMarker marker = null;
+      if (onStackMarkerIndex != -1) {
+        marker = new FrameOnStackMarker();
+        frame.setObject(onStackMarkerIndex, marker);
+      }
 
       try {
         return methodBody.executeGeneric(frame);
       } catch (ReturnException e) {
         nonLocalReturnHandler.enter();
+        if (onStackMarkerIndex == -1) {
+          throw e;
+        }
+
         if (!e.reachedTarget(marker)) {
           doPropagate.enter();
           throw e;
@@ -177,12 +188,18 @@ public final class ReturnNonLocalNode extends ContextualNode {
           return e.result();
         }
       } finally {
-        marker.frameNoLongerOnStack();
+        if (onStackMarkerIndex != -1) {
+          marker.frameNoLongerOnStack();
+        }
       }
     }
 
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
+      if (onStackMarkerVar == null) {
+        return;
+      }
+
       ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
       if (se.var != onStackMarkerVar) {
         replace(new CatchNonLocalReturnNode(

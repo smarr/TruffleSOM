@@ -200,7 +200,7 @@ public class MethodGenerationContext
     return ctx;
   }
 
-  public boolean needsToCatchNonLocalReturn() {
+  public final boolean needsToCatchNonLocalReturn() {
     // only the most outer method needs to catch
     return needsToCatchNonLocalReturn && outerGenc == null;
   }
@@ -226,10 +226,12 @@ public class MethodGenerationContext
 
   protected SMethod assembleMethod(final ExpressionNode methodBody, final long coord) {
     ExpressionNode body = methodBody;
+    Internal frameOnStackMarker = null;
     if (needsToCatchNonLocalReturn()) {
-      body = new CatchNonLocalReturnNode(
-          body, getFrameOnStackMarker(coord)).initialize(body.getSourceCoordinate());
+      frameOnStackMarker = getFrameOnStackMarker(coord);
     }
+    body = new CatchNonLocalReturnNode(
+        body, frameOnStackMarker).initialize(body.getSourceCoordinate());
 
     Method truffleMethod =
         new Method(getMethodIdentifier(), holderGenc.getSource(), coord,
