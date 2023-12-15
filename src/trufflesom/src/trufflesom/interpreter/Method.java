@@ -159,6 +159,10 @@ public final class Method extends Invokable {
   @Override
   public AbstractDispatchNode asDispatchNode(final Object rcvr,
       final AbstractDispatchNode next) {
-    return body.asDispatchNode(rcvr, source, next);
+    return body.getFirstMethodBodyNode().asDispatchNode(rcvr, source, next);
+  }
+
+  public ExpressionNode getFirstMethodBodyNode() {
+    return body.getFirstMethodBodyNode();
   }
 }

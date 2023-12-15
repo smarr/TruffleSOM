@@ -27,6 +27,7 @@ import com.oracle.truffle.api.profiles.BranchProfile;
 
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
+import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.ReturnException;
@@ -192,6 +193,46 @@ public final class ReturnNonLocalNode extends ContextualNode {
           marker.frameNoLongerOnStack();
         }
       }
+    }
+
+    @Override
+    public boolean isTrivial() {
+      return methodBody.isTrivial();
+    }
+
+    @Override
+    public boolean isTrivialInSequence() {
+      return methodBody.isTrivialInSequence();
+    }
+
+    @Override
+    public boolean isTrivialInBlock() {
+      return methodBody.isTrivialInBlock();
+    }
+
+    @Override
+    public boolean isTrivialInSequenceInBlock() {
+      return methodBody.isTrivialInSequenceInBlock();
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNode() {
+      return methodBody.copyTrivialNode();
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNodeInSequence() {
+      return methodBody.copyTrivialNodeInSequence();
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNodeInSequenceInBlock() {
+      return methodBody.copyTrivialNodeInSequenceInBlock();
+    }
+
+    @Override
+    public PreevaluatedExpression copyTrivialNodeInBlock() {
+      return methodBody.copyTrivialNodeInBlock();
     }
 
     @Override

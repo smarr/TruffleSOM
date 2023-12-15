@@ -362,7 +362,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
 
     SMethod blockMethod;
     if (VmSettings.UseAstInterp) {
-      BlockNode block = (BlockNode) m.getChildren().iterator().next();
+      BlockNode block = (BlockNode) m.getFirstMethodBodyNode();
       blockMethod = block.getMethod();
     } else {
       BytecodeLoopNode bcNode = (BytecodeLoopNode) m.getChildren().iterator().next();
