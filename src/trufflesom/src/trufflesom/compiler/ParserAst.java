@@ -316,7 +316,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     if (msg == SymbolTable.symPlus && operand instanceof IntegerLiteralNode lit) {
       if (lit.executeLong(null) == 1) {
-        return IntIncrementNodeGen.create(receiver);
+        return IntIncrementNodeGen.create(receiver).initialize(coordWithL);
       }
     }
     return MessageSendNode.create(msg, args, coordWithL);
