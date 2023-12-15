@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
@@ -36,6 +37,12 @@ public class StringEqualsTests extends AstTestSetup {
     BlockNode block = (BlockNode) read(seq, "expressions", 0);
     ExpressionNode testExpr =
         read(block.getMethod().getInvokable(), "body", ExpressionNode.class);
+
+    if (testExpr instanceof CatchNonLocalReturnNode cn
+        && expectedNode != CatchNonLocalReturnNode.class) {
+      testExpr = cn.getFirstMethodBodyNode();
+    }
+
     assertThat(testExpr, instanceOf(expectedNode));
     return (T) testExpr;
   }

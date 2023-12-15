@@ -230,8 +230,8 @@ public class MethodGenerationContext
     if (needsToCatchNonLocalReturn()) {
       frameOnStackMarker = getFrameOnStackMarker(coord);
     }
-    body = new CatchNonLocalReturnNode(
-        body, frameOnStackMarker).initialize(body.getSourceCoordinate());
+    body = new CatchNonLocalReturnNode(body, frameOnStackMarker).initialize(
+        body.getSourceCoordinate());
 
     Method truffleMethod =
         new Method(getMethodIdentifier(), holderGenc.getSource(), coord,

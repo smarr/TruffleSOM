@@ -21,6 +21,7 @@ import trufflesom.compiler.SourcecodeCompiler.BcCompiler;
 import trufflesom.compiler.Variable;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.objectstorage.StorageAnalyzer;
 import trufflesom.vm.Universe;
@@ -124,7 +125,11 @@ public class TruffleTestSetup {
     java.lang.reflect.Field field = lookup(obj.getClass(), fieldName);
     field.setAccessible(true);
     try {
-      return c.cast(field.get(obj));
+      Object node = field.get(obj);
+      if (node instanceof CatchNonLocalReturnNode cn && c != CatchNonLocalReturnNode.class) {
+        node = cn.getFirstMethodBodyNode();
+      }
+      return c.cast(node);
     } catch (IllegalAccessException | IllegalArgumentException e) {
       throw new RuntimeException(e);
     }
