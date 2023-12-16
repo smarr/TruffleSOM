@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import trufflesom.interpreter.LexicalScope;
 import trufflesom.interpreter.Method;
+import trufflesom.interpreter.MethodNoCatch;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.primitives.arithmetic.AdditionPrim;
@@ -43,9 +44,9 @@ public class StaticNodeStructureTests extends TruffleTestSetup {
     SubTree c2 = i.next();
     SubTree c3 = i.next();
 
-    assertTrue(c1.getRoot().getNodeClass() == Method.class
-        || (Class<?>) c2.getRoot().getNodeClass() == Method.class
-        || (Class<?>) c3.getRoot().getNodeClass() == Method.class);
+    assertTrue(c1.getRoot().getNodeClass() == MethodNoCatch.class
+        || (Class<?>) c2.getRoot().getNodeClass() == MethodNoCatch.class
+        || (Class<?>) c3.getRoot().getNodeClass() == MethodNoCatch.class);
 
     assertTrue(AdditionPrim.class.isAssignableFrom(c1.getRoot().getNodeClass()) ||
         AdditionPrim.class.isAssignableFrom(c2.getRoot().getNodeClass()) ||
@@ -99,9 +100,9 @@ public class StaticNodeStructureTests extends TruffleTestSetup {
     assertEquals(15, cs.size());
   }
 
-  private Method constructMethod(final ExpressionNode body) {
+  private static Method constructMethod(final ExpressionNode body) {
     LexicalScope scope = new LexicalScope(null);
     scope.finalizeVariables(0);
-    return new Method("test", null, 0, body, scope, body);
+    return new MethodNoCatch("test", null, 0, body, scope, body);
   }
 }

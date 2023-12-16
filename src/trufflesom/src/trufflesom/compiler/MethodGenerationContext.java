@@ -47,13 +47,14 @@ import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.LexicalScope;
 import trufflesom.interpreter.Method;
+import trufflesom.interpreter.MethodNoCatch;
+import trufflesom.interpreter.MethodWithCatch;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
-import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.Primitives;
@@ -226,14 +227,15 @@ public class MethodGenerationContext
 
   protected SMethod assembleMethod(final ExpressionNode methodBody, final long coord) {
     ExpressionNode body = methodBody;
-    if (needsToCatchNonLocalReturn()) {
-      body = new CatchNonLocalReturnNode(
-          body, getFrameOnStackMarker(coord)).initialize(body.getSourceCoordinate());
-    }
 
-    Method truffleMethod =
-        new Method(getMethodIdentifier(), holderGenc.getSource(), coord,
-            body, currentScope, (ExpressionNode) body.deepCopy());
+    Method truffleMethod;
+    if (needsToCatchNonLocalReturn()) {
+      truffleMethod = new MethodWithCatch(getMethodIdentifier(), holderGenc.getSource(), coord,
+          body, currentScope, (ExpressionNode) body.deepCopy(), getFrameOnStackMarker(coord));
+    } else {
+      truffleMethod = new MethodNoCatch(getMethodIdentifier(), holderGenc.getSource(), coord,
+          body, currentScope, (ExpressionNode) body.deepCopy());
+    }
 
     SMethod meth = new SMethod(signature, truffleMethod,
         embeddedBlockMethods.toArray(new SMethod[0]));

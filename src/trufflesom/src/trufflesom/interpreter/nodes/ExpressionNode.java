@@ -35,7 +35,6 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
-import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.tools.nodestats.Tags.AnyNode;
 import trufflesom.vm.VmSettings;
@@ -146,9 +145,6 @@ public abstract class ExpressionNode extends SOMNode
         parent = parent.getParent();
       }
 
-      if (parent.getClass() == CatchNonLocalReturnNode.class) {
-        return true;
-      }
       if (parent != null) {
         Node grandParent = parent.getParent();
         if (grandParent == null) {

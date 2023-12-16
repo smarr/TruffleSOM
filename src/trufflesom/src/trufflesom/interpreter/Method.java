@@ -23,7 +23,6 @@ package trufflesom.interpreter;
 
 import java.util.Objects;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
@@ -39,7 +38,7 @@ import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.vmobjects.SInvokable.SMethod;
 
 
-public final class Method extends Invokable {
+public abstract class Method extends Invokable {
 
   private final LexicalScope currentLexicalScope;
 
@@ -55,11 +54,6 @@ public final class Method extends Invokable {
     currentLexicalScope.setMethod(this);
     body = expressions;
     uninitializedBody = uninitialized;
-  }
-
-  @Override
-  public Object execute(final VirtualFrame frame) {
-    return body.executeGeneric(frame);
   }
 
   public LexicalScope getScope() {
@@ -94,6 +88,9 @@ public final class Method extends Invokable {
     return getName();
   }
 
+  protected abstract Method createAdapted(ExpressionNode adaptedBody,
+      Scope<?, ?> newScope, LexicalScope adaptedScope, ExpressionNode uninit);
+
   public Method cloneAndAdaptAfterScopeChange(final BytecodeMethodGenContext mgenc,
       final LexicalScope adaptedScope, final int appliesTo,
       final boolean cloneAdaptedAsUninitialized,
@@ -112,7 +109,7 @@ public final class Method extends Invokable {
       uninit = uninitializedBody;
     }
 
-    Method clone = new Method(name, source, sourceCoord, adaptedBody, adaptedScope, uninit);
+    Method clone = createAdapted(adaptedBody, scope, adaptedScope, uninit);
     adaptedScope.setMethod(clone);
     return clone;
   }
