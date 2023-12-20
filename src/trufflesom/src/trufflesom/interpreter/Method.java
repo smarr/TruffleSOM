@@ -206,6 +206,7 @@ public final class Method extends Invokable {
     origBody.accept(visitor);
     opBuilder.endReturn();
     SomOperations newMethodBody = opBuilder.endRoot();
+    newMethodBody.setFrameOnStackMarker(scope.getOnStackMarker());
 
     OpBody opBody = new OpBody(newMethodBody);
 
