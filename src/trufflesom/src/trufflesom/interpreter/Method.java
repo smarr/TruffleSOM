@@ -40,10 +40,8 @@ import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
-import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.SOMNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
-import trufflesom.interpreter.operations.OpBody;
 import trufflesom.interpreter.operations.SomOperations;
 import trufflesom.interpreter.operations.SomOperations.LexicalScopeForOp;
 import trufflesom.interpreter.operations.SomOperationsGen;
@@ -150,13 +148,6 @@ public final class Method extends Invokable {
   public Node deepCopy() {
     LexicalScope splitScope = currentLexicalScope.split();
     assert currentLexicalScope != splitScope;
-
-    if (body instanceof OpBody opBody) {
-      Method clone = new Method((OpBody) opBody.deepCopy(), this, getFrameDescriptor().copy());
-      splitScope.setMethod(clone);
-      return clone;
-    }
-
     return cloneAndAdaptAfterScopeChange(null, splitScope, 0, false, false, true);
   }
 
@@ -207,21 +198,9 @@ public final class Method extends Invokable {
     opBuilder.endReturn();
     SomOperations newMethodBody = opBuilder.endRoot();
     newMethodBody.setFrameOnStackMarker(scope.getOnStackMarker());
+    newMethodBody.initialize(name, source, sourceCoord);
 
-    OpBody opBody = new OpBody(newMethodBody);
-
-    ExpressionNode newBody;
-
-    if (origBody == this.body) {
-      newBody = opBody;
-    } else {
-      assert this.body instanceof CatchNonLocalReturnNode : "Expected CatchNonLocalReturnNode but got "
-          + this.body.getClass().getName();
-
-      newBody = new CatchNonLocalReturnNode(opBody, ((CatchNonLocalReturnNode) this.body));
-    }
-
-    return new Method(newBody, this, newMethodBody.getFrameDescriptor());
+    return newMethodBody;
   }
 
   @Override

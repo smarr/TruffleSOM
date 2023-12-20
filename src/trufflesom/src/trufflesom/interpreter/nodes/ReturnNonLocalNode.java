@@ -31,7 +31,6 @@ import trufflesom.compiler.Variable.Internal;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.ReturnException;
-import trufflesom.interpreter.operations.OpBody;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
 
@@ -173,15 +172,6 @@ public final class ReturnNonLocalNode extends ContextualNode {
       this.onStackMarkerVar = onStackMarker;
       this.onStackMarkerIndex = onStackMarker.getIndex();
 
-      this.doCatch = BranchProfile.create();
-      this.doPropagate = BranchProfile.create();
-    }
-
-    public CatchNonLocalReturnNode(final OpBody body, final CatchNonLocalReturnNode oldNode) {
-      this.methodBody = body;
-      this.nonLocalReturnHandler = BranchProfile.create();
-      this.onStackMarkerVar = oldNode.onStackMarkerVar;
-      this.onStackMarkerIndex = oldNode.onStackMarkerIndex;
       this.doCatch = BranchProfile.create();
       this.doPropagate = BranchProfile.create();
     }
