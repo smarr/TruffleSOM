@@ -92,7 +92,7 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-@GenerateOperations(languageClass = SomLanguage.class)
+@GenerateBytecode(languageClass = SomLanguage.class)
 @TypeSystemReference(Types.class)
 @OperationProxy(SubtractionOp.class)
 @OperationProxy(AdditionOp.class)
