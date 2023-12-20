@@ -25,19 +25,21 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.LoopNode;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.source.Source;
 
+import trufflesom.compiler.MethodGenerationContext;
 import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.interpreter.FrameOnStackMarker;
+import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.ContextualNode;
+import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.specialized.AndBoolMessageNode;
-import trufflesom.interpreter.nodes.specialized.IntIncrementNode;
 import trufflesom.interpreter.nodes.specialized.NotMessageNode;
 import trufflesom.interpreter.nodes.specialized.OrBoolMessageNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileFalsePrimitiveNode;
@@ -56,6 +58,7 @@ import trufflesom.interpreter.operations.copied.IfMessageOp;
 import trufflesom.interpreter.operations.copied.NonLocalArgumentReadOp;
 import trufflesom.interpreter.operations.copied.ReturnNonLocal;
 import trufflesom.interpreter.operations.copied.SubtractionOp;
+import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.arithmetic.BitXorPrim;
 import trufflesom.primitives.arithmetic.DividePrim;
 import trufflesom.primitives.arithmetic.DoubleDivPrim;
@@ -147,16 +150,23 @@ import trufflesom.vmobjects.SSymbol;
 @OperationProxy(InstVarAtPrim.class)
 @OperationProxy(InstVarAtPutPrim.class)
 @OperationProxy(IfMessageOp.class)
-public abstract class SomOperations extends RootNode implements BytecodeRootNode {
+public abstract class SomOperations extends Invokable implements BytecodeRootNode {
 
   @CompilationFinal private BytecodeLocal frameOnStackMarker;
 
   @CompilationFinal private int frameOnStackMarkerIdx;
 
-  protected SomOperations(final TruffleLanguage<?> language,
+  protected SomOperations(
+      final TruffleLanguage<?> language,
       final FrameDescriptor.Builder frameDescriptorBuilder) {
-    super(language, makeDescriptorWithNil(frameDescriptorBuilder));
+    super(null, null, 0, makeDescriptorWithNil(frameDescriptorBuilder));
     frameOnStackMarkerIdx = -1;
+  }
+
+  public void initialize(final String n, final Source s, final long sc) {
+    this.name = n;
+    this.source = s;
+    this.sourceCoord = sc;
   }
 
   public void setFrameOnStackMarker(final BytecodeLocal frameOnStackMarker) {
@@ -169,6 +179,28 @@ public abstract class SomOperations extends RootNode implements BytecodeRootNode
   private static FrameDescriptor makeDescriptorWithNil(final FrameDescriptor.Builder builder) {
     builder.defaultValue(Nil.nilObject);
     return builder.build();
+  }
+
+  @Override
+  public HashMap<Local, BytecodeLocal> createLocals(final SomOperationsGen.Builder opBuilder) {
+    return null;
+  }
+
+  @Override
+  public ExpressionNode inline(final MethodGenerationContext targetMgenc,
+      final SMethod toBeInlined) {
+    return null;
+  }
+
+  @Override
+  public Invokable convertMethod(final SomOperationsGen.Builder opBuilder,
+      final LexicalScopeForOp scope) {
+    return this;
+  }
+
+  @Override
+  public boolean isTrivial() {
+    return false;
   }
 
   public static final class LexicalScopeForOp {
@@ -503,6 +535,7 @@ public abstract class SomOperations extends RootNode implements BytecodeRootNode
     throw ex;
   }
 
+  @Override
   public void propagateLoopCountThroughoutLexicalScope(final long count) {
     assert count >= 0;
     // TODO:
