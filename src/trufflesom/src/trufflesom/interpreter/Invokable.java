@@ -2,6 +2,7 @@ package trufflesom.interpreter;
 
 import java.util.HashMap;
 
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.nodes.Node;
@@ -23,9 +24,9 @@ import trufflesom.vmobjects.SInvokable.SMethod;
 
 
 public abstract class Invokable extends RootNode implements WithSource {
-  protected final String name;
-  protected final Source source;
-  protected final long   sourceCoord;
+  @CompilationFinal protected String name;
+  @CompilationFinal protected Source source;
+  @CompilationFinal protected long   sourceCoord;
 
   protected SClass holder;
 
