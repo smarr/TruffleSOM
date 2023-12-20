@@ -3,6 +3,7 @@ package trufflesom.interpreter.operations;
 import java.util.HashMap;
 
 import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
@@ -21,12 +22,16 @@ import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+import trufflesom.compiler.Variable.Internal;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.FrameOnStackMarker;
+import trufflesom.interpreter.ReturnException;
 import trufflesom.interpreter.SomLanguage;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.ContextualNode;
@@ -84,6 +89,7 @@ import trufflesom.primitives.reflection.ObjectPrims.NotNilNode;
 import trufflesom.vm.Classes;
 import trufflesom.vm.Globals;
 import trufflesom.vm.Globals.Association;
+import trufflesom.vm.SymbolTable;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SAbstractObject;
 import trufflesom.vmobjects.SBlock;
@@ -143,9 +149,21 @@ import trufflesom.vmobjects.SSymbol;
 @OperationProxy(IfMessageOp.class)
 public abstract class SomOperations extends RootNode implements BytecodeRootNode {
 
+  @CompilationFinal private BytecodeLocal frameOnStackMarker;
+
+  @CompilationFinal private int frameOnStackMarkerIdx;
+
   protected SomOperations(final TruffleLanguage<?> language,
       final FrameDescriptor.Builder frameDescriptorBuilder) {
     super(language, makeDescriptorWithNil(frameDescriptorBuilder));
+    frameOnStackMarkerIdx = -1;
+  }
+
+  public void setFrameOnStackMarker(final BytecodeLocal frameOnStackMarker) {
+    if (frameOnStackMarker != null) {
+      this.frameOnStackMarker = frameOnStackMarker;
+      this.frameOnStackMarkerIdx = getLocalIndex(frameOnStackMarker);
+    }
   }
 
   private static FrameDescriptor makeDescriptorWithNil(final FrameDescriptor.Builder builder) {
@@ -161,6 +179,17 @@ public abstract class SomOperations extends RootNode implements BytecodeRootNode
         final LexicalScopeForOp outer) {
       this.opLocals = opLocals;
       this.outer = outer;
+    }
+
+    public BytecodeLocal getOnStackMarker() {
+      for (var e : opLocals.entrySet()) {
+        if (e.getKey() instanceof Internal i) {
+          if (i.getName() == SymbolTable.symFrameOnStack) {
+            return e.getValue();
+          }
+        }
+      }
+      return null;
     }
   }
 
@@ -442,6 +471,36 @@ public abstract class SomOperations extends RootNode implements BytecodeRootNode
       frame.getArguments()[argIdx] = value;
       return value;
     }
+  }
+
+  @Override
+  public void executeProlog(final VirtualFrame frame) {
+    if (frameOnStackMarkerIdx != -1) {
+      FrameOnStackMarker marker = new FrameOnStackMarker();
+      frame.setObject(frameOnStackMarkerIdx, marker);
+    }
+  }
+
+  @Override
+  public void executeEpilog(final VirtualFrame frame, final Object returnValue,
+      final Throwable throwable) {
+    if (frameOnStackMarkerIdx != -1) {
+      FrameOnStackMarker marker = (FrameOnStackMarker) frame.getObject(frameOnStackMarkerIdx);
+      marker.frameNoLongerOnStack();
+    }
+  }
+
+  @Override
+  public Object interceptControlFlowException(final ControlFlowException ex,
+      final VirtualFrame frame, final int bci) throws Throwable {
+    if (frameOnStackMarkerIdx != -1) {
+      var marker = (FrameOnStackMarker) frame.getObject(frameOnStackMarkerIdx);
+      if (ex instanceof ReturnException retEx && retEx.reachedTarget(marker)) {
+        return retEx.result();
+      }
+    }
+
+    throw ex;
   }
 
   public void propagateLoopCountThroughoutLexicalScope(final long count) {
