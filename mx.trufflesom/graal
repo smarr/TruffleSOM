@@ -1,5 +1,5 @@
 JAVA_HOME=libs/jvmci
-# MX_BUILD_EXPLODED=true
+# MX_BUILD_EXPLODED=true  # Java modules, which are now used, don't support exploded builds
 LINKY_LAYOUT=*.jar
 DYNAMIC_IMPORTS=/vm,/tools,/truffle,/sdk,/compiler
 FORCE_BASH_LAUNCHERS=true
