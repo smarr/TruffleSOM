@@ -138,7 +138,7 @@ def find_mx(exit_when_missing=True):
         return m
     except:
       pass
-  
+
   if exit_when_missing:
     print("The mx build tool is not on the PATH or in the " + BASE_DIR + "/../mx folder. Please run `./som --setup mx`")
     exit(1)
@@ -147,7 +147,7 @@ def find_mx(exit_when_missing=True):
 
 def get_compiled_graalvm_java_bin(use_libgraal):
   graal_bin = None
-  
+
   mx = find_mx()
   libgraal_jdk_home = check_output(
     [mx, '--env', 'libgraal' if use_libgraal else 'graal', 'graalvm-home'],
@@ -235,6 +235,14 @@ if args.use_embedded_graal is True:
   from subprocess import check_output, STDOUT, CalledProcessError
   try:
     java_bin = get_compiled_graalvm_java_bin(args.use_libgraal)
+    if not os.path.isfile(java_bin):
+      if args.use_libgraal:
+        print("The use of LibGraal was requested, but it does not seem to be available.")
+        print("To build it, please run `mx --env libgraal build`")
+      else:
+        print("The use of the Graal compiler was requested, but it does not seem to be available.")
+        print("To build it, please run `mx --env graal build`")
+      sys.exit(1)
   except CalledProcessError as e:
     print("Failed to determine location of libgraal")
     print(e.output.decode())
@@ -244,7 +252,7 @@ else:
       if not os.path.isdir(args.use_embedded_graal):
         print("USE_EMBEDDED_GRAAL does not seem to exist: " + args.use_embedded_graal)
         sys.exit(1)
-        
+
       if not os.path.isfile(args.use_embedded_graal + '/bin/java'):
         print("USE_EMBEDDED_GRAAL did not seem to have a bin/java: " + args.use_embedded_graal)
         sys.exit(1)
@@ -376,7 +384,7 @@ if args.coverage != False:
 if args.cpusampler != False:
     MODULE_PATH_ENTRIES.append(PROFILER_JAR)
     flags += ['-Dpolyglot.cpusampler=true', '-Dpolyglot.cpusampler.Output=' + args.cpusampler]
-    
+
 
 if args.assert_:
     flags += ['-esa', '-ea']
