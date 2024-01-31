@@ -196,6 +196,7 @@ public final class Method extends Invokable {
     opBuilder.beginReturn();
     origBody.accept(visitor);
     opBuilder.endReturn();
+    opBuilder.endSource();
     SomOperations newMethodBody = opBuilder.endRoot();
     newMethodBody.setFrameOnStackMarker(scope.getOnStackMarker());
     newMethodBody.initialize(name, source, sourceCoord);
@@ -211,6 +212,7 @@ public final class Method extends Invokable {
     }
 
     opBuilder.beginRoot(getLanguage(SomLanguage.class));
+    opBuilder.beginSource(source);
 
     HashMap<Local, BytecodeLocal> opLocals = new HashMap<>();
 

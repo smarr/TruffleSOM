@@ -22,7 +22,7 @@ public class ParserOp extends ParserAst {
   public void classdef(final ClassGenerationContext cgenc) throws ProgramDefinitionError {
     ProgramDefinitionError[] error = new ProgramDefinitionError[1];
 
-    SomOperationsGen.create(BytecodeConfig.DEFAULT, builder -> {
+    SomOperationsGen.create(BytecodeConfig.WITH_SOURCE, builder -> {
       try {
         super.classdef(cgenc);
         cgenc.convertMethods(builder);
