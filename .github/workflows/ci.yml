@@ -7,10 +7,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
-          
+
       - name: Setup MX
         run: |
           ./som --setup mx
@@ -36,47 +36,46 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
-      
+
       - name: Setup MX
         run: |
           ./som --setup mx
           echo "PATH=$PATH:`pwd`/../mx" >> "$GITHUB_ENV"
-      
+
       - name: Get LabsJDK and Get Graal
         run: |
           ./som --setup labsjdk
           mx sforceimport
           rm libs/jvmci || true
           ./som --setup labsjdk
-      
+
       - name: Compile TruffleSOM
         run: |
           mx build
-      
+
       - name: Tests
         run: |
           mx tests-junit
           mx tests-som
-      
+
       - name: Build native-image tool
         run: |
           mx build-native-image-tool
-    
+
       - name: Test Object Storage System
         run: |
           mx build-native-obj-test
           ./som-obj-storage-tester
-          
-      
+
       - name: Tool Tests
         continue-on-error: true
         run: |
           mx tests-nodestats
           mx tests-coverage
-      
+
       - name: SomSom Tests
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
@@ -84,11 +83,11 @@ jobs:
             core-lib/SomSom/tests/SomSomTests.som
 
       - name: Checkout AWFY
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: smarr/are-we-fast-yet
           path: are-we-fast-yet
-      
+
       - name: AWFY Test Run
         run: |
           pwd
