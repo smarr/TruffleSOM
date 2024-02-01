@@ -73,9 +73,11 @@ public abstract class ContextualNode extends NoPreEvalExprNode {
     return frameType.profile(self.getContext());
   }
 
-  @ExplodeLoop
-  public static final MaterializedFrame determineContext(final VirtualFrame frame,
+  @InliningCutoff
+  public static final MaterializedFrame determineContextNoUnroll(final VirtualFrame frame,
       final int contextLevel) {
+    CompilerDirectives.isPartialEvaluationConstant(contextLevel);
+
     SBlock self = (SBlock) frame.getArguments()[0];
     int i = contextLevel - 1;
 
