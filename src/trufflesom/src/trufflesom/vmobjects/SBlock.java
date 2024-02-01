@@ -55,7 +55,7 @@ public final class SBlock extends SAbstractObject {
   }
 
   public Object getOuterSelf() {
-    return getContext().getArguments()[0];
+    return context.getArguments()[0];
   }
 
   private final SClass            blockClass;

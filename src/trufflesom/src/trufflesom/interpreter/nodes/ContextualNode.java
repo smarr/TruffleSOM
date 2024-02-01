@@ -21,6 +21,9 @@
  */
 package trufflesom.interpreter.nodes;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.HostCompilerDirectives.InliningCutoff;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -47,8 +50,16 @@ public abstract class ContextualNode extends NoPreEvalExprNode {
     return contextLevel > 0;
   }
 
-  @ExplodeLoop
   protected final MaterializedFrame determineContext(final VirtualFrame frame) {
+    return determineContext(frame, contextLevel);
+  }
+
+  @ExplodeLoop
+  @InliningCutoff
+  public static final MaterializedFrame determineContext(final VirtualFrame frame,
+      final int contextLevel) {
+    CompilerAsserts.partialEvaluationConstant(contextLevel);
+
     SBlock self = (SBlock) frame.getArguments()[0];
     int i = contextLevel - 1;
 
@@ -62,9 +73,11 @@ public abstract class ContextualNode extends NoPreEvalExprNode {
     return frameType.profile(self.getContext());
   }
 
-  @ExplodeLoop
-  public static final MaterializedFrame determineContext(final VirtualFrame frame,
+  @InliningCutoff
+  public static final MaterializedFrame determineContextNoUnroll(final VirtualFrame frame,
       final int contextLevel) {
+    CompilerDirectives.isPartialEvaluationConstant(contextLevel);
+
     SBlock self = (SBlock) frame.getArguments()[0];
     int i = contextLevel - 1;
 
