@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
@@ -69,5 +70,13 @@ public abstract class StringEqualsNode extends UnaryExpressionNode {
 
     assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
     throw new RespecializeException(send);
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginEqualsOp();
+    opBuilder.dsl.emitLoadConstant(value);
+    getReceiver().accept(opBuilder);
+    opBuilder.dsl.endEqualsOp();
   }
 }
