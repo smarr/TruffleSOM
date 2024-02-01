@@ -9,6 +9,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Argument;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -41,6 +42,7 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
       final String value) {
     this.fieldIdx = fieldIdx;
     this.arg = arg;
+
     this.value = value;
 
     this.state = 0;
@@ -49,6 +51,7 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
     try {
+      assert arg.index == 0;
       SObject rcvr = (SObject) frame.getArguments()[0];
       return executeEvaluated(frame, rcvr);
     } catch (UnexpectedResultException e) {
@@ -59,6 +62,7 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
   @Override
   public Object doPreEvaluated(final VirtualFrame frame, final Object[] args) {
     try {
+      assert arg.index == 0;
       return executeEvaluated(frame, (SObject) args[0]);
     } catch (UnexpectedResultException e) {
       return e.getResult();
@@ -163,5 +167,19 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
     } else {
       assert 0 == se.contextLevel;
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder) {
+    opBuilder.dsl.beginEqualsOp();
+    opBuilder.dsl.emitLoadConstant(opBuilder);
+
+    opBuilder.dsl.beginReadField();
+    assert arg.index == 0;
+    opBuilder.dsl.emitLoadArgument(0);
+    opBuilder.dsl.emitLoadConstant(fieldIdx);
+    opBuilder.dsl.endReadField();
+
+    opBuilder.dsl.endEqualsOp();
   }
 }
