@@ -80,6 +80,7 @@ import static trufflesom.interpreter.bc.Bytecodes.SEND;
 import static trufflesom.interpreter.bc.Bytecodes.SUPER_SEND;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeName;
+import static trufflesom.interpreter.nodes.ContextualNode.determineContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -231,23 +232,6 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         return outer;
       }
     }
-  }
-
-  @ExplodeLoop
-  @InliningCutoff
-  private static MaterializedFrame determineContext(final VirtualFrame frame,
-      final int contextLevel) {
-    SBlock self = (SBlock) frame.getArguments()[0];
-    int i = contextLevel - 1;
-
-    while (i > 0) {
-      self = (SBlock) self.getOuterSelf();
-      i--;
-    }
-
-    // Graal needs help here to see that this is always a MaterializedFrame
-    // so, we record explicitly a class profile
-    return frameType.profile(self.getContext());
   }
 
   @InliningCutoff
