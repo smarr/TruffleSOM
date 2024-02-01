@@ -28,11 +28,13 @@ import java.io.File;
 import java.io.IOException;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.bytecode.BytecodeConfig;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.basic.ProgramDefinitionError;
 import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.interpreter.SomLanguage;
+import trufflesom.interpreter.operations.SomOperationsGen;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -55,8 +57,8 @@ public abstract class SourcecodeCompiler {
     File f = new File(fname);
     Source source = SomLanguage.getSource(f);
 
-    Parser<?> parser = createParser(source.getCharacters().toString(), source, probe);
-    SClass result = compile(parser, systemClass);
+    SClass result =
+        createParserAndCompile(source.getCharacters().toString(), source, probe, systemClass);
 
     SSymbol cname = result.getName();
     String cnameC = cname.getString();
@@ -69,13 +71,18 @@ public abstract class SourcecodeCompiler {
     return result;
   }
 
+  protected SClass createParserAndCompile(final String sourceStr, final Source source,
+      final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe,
+      final SClass systemClass) throws ProgramDefinitionError {
+    Parser<?> parser = createParser(sourceStr, source, probe);
+    return compile(parser, systemClass);
+  }
+
   @TruffleBoundary
   public SClass compileClass(final String stmt, final SClass systemClass,
       final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe)
       throws ProgramDefinitionError {
-    Parser<?> parser = createParser(stmt, null, probe);
-    SClass result = compile(parser, systemClass);
-    return result;
+    return createParserAndCompile(stmt, null, probe, systemClass);
   }
 
   public static SClass compile(final Parser<?> parser, final SClass systemClass)
@@ -134,6 +141,39 @@ public abstract class SourcecodeCompiler {
     public Parser<?> createParser(final String code, final Source source,
         final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe) {
       return new ParserOp(code, source, probe);
+    }
+
+    @Override
+    protected SClass createParserAndCompile(final String sourceStr, final Source source,
+        final StructuralProbe<SSymbol, SClass, SInvokable, Field, Variable> probe,
+        final SClass systemClass) throws ProgramDefinitionError {
+      SClass[] result = new SClass[1];
+
+      try {
+        SomOperationsGen.create(BytecodeConfig.DEFAULT, builder -> {
+          Parser<?> parser = createParser(sourceStr, source, probe);
+
+          if (parser instanceof ParserOp p) {
+            p.setBuilder(builder);
+          } else {
+            throw new IllegalStateException("We're using the OpCompiler, but see a "
+                + parser.getClass().getSimpleName() + " parser? That's not supported");
+          }
+
+          try {
+            result[0] = compile(parser, systemClass);
+          } catch (ProgramDefinitionError pde) {
+            throw new RuntimeException(pde);
+          }
+        });
+      } catch (RuntimeException e) {
+        if (e.getCause() instanceof ProgramDefinitionError pe) {
+          throw pe;
+        }
+        throw e;
+      }
+
+      return result[0];
     }
   }
 }
