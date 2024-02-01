@@ -16,6 +16,7 @@ import com.oracle.truffle.api.bytecode.Variadic;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -269,14 +270,16 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class GlobalReadOp {
     @Specialization(guards = "assoc != null")
     public static Object doCached(@SuppressWarnings("unused") final SSymbol globalName,
-        @Cached("getGlobalsAssociation(globalName)") final Association assoc) {
+        @Cached(value = "getGlobalsAssociation(globalName)",
+            neverDefault = false) final Association assoc) {
       return assoc.getValue();
     }
 
     @Specialization(guards = {"assoc == null", "freshLookupResult == null"})
     public static Object doCached(final VirtualFrame frame, final SSymbol globalName,
         @SuppressWarnings("unused") @Bind("getGlobalsAssociation(globalName)") final Association freshLookupResult,
-        @SuppressWarnings("unused") @Cached("getGlobalsAssociation(globalName)") final Association assoc) {
+        @SuppressWarnings("unused") @Cached(value = "getGlobalsAssociation(globalName)",
+            neverDefault = false) final Association assoc) {
 
       Object self = frame.getArguments()[0];
       return sendUnknownGlobalToOuter(globalName, self);
@@ -301,6 +304,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @Operation
   @TypeSystemReference(Types.class)
   public static final class GlobalCachedReadOp {
+    @NeverDefault
     public static Assumption get(final Object assoc) {
       return ((Association) assoc).getAssumption();
     }
@@ -312,6 +316,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     }
   }
 
+  @NeverDefault
   protected static SClass getBlockClass(final SMethod blockMethod) {
     return Classes.getBlockClass(blockMethod.getNumberOfArguments());
   }
