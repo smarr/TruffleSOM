@@ -151,7 +151,7 @@ def get_compiled_graalvm_java_bin(use_libgraal):
   mx = find_mx()
   libgraal_jdk_home = check_output(
     [mx, '--env', 'libgraal' if use_libgraal else 'graal', 'graalvm-home'],
-    stderr=STDOUT
+    stderr=STDOUT, cwd=BASE_DIR
   ).decode()
   return libgraal_jdk_home.strip() + '/bin/java'
 
