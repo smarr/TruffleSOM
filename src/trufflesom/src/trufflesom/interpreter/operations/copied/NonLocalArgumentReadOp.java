@@ -19,7 +19,7 @@ public abstract class NonLocalArgumentReadOp extends Node {
   @Specialization
   public static final Object read(final VirtualFrame frame, final int argIndex,
       final int contextLevel) {
-    return ContextualNode.determineContextNoUnroll(frame, contextLevel)
+    return ContextualNode.determineContext(frame, contextLevel)
                          .getArguments()[argIndex];
   }
 }

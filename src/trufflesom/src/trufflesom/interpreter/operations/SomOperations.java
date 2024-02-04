@@ -231,7 +231,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     @Specialization
     public static MaterializedFrame determineContext(final VirtualFrame frame,
         final int contextLevel) {
-      return ContextualNode.determineContextNoUnroll(frame, contextLevel);
+      return ContextualNode.determineContext(frame, contextLevel);
     }
   }
 
