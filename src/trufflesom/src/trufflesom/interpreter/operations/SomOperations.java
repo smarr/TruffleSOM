@@ -245,7 +245,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static Object doCached(final VirtualFrame frame,
-        @SuppressWarnings("unused") final SSymbol selector,
+        @SuppressWarnings("unused") final Object selector,
         @Variadic final Object[] arguments,
         @Cached("create(selector)") final AbstractDispatchNode dispatch) {
       return dispatch.executeDispatch(frame, arguments);
