@@ -72,6 +72,14 @@ bn_parser.add_argument(
     default=False,
     help="disables the JIT compiler, creating an interpreter-only binary.",
 )
+bn_parser.add_argument(
+    "-g1",
+    "--use-g1",
+    action="store_true",
+    dest="use_g1",
+    default=False,
+    help="Use the G1 garbage collector. Only supported on Linux and with Oracle GraalVM.",
+)
 
 bn_parser.add_argument(
     "-m",
@@ -116,6 +124,20 @@ def build_native_image_tool(args, **kwargs):
     svm_path = get_svm_path()
     mx.run_mx(["build"], svm_path)
 
+BASE_DIR = suite.dir
+TRUFFLE_DIR = BASE_DIR + '/../graal'
+
+MODULE_PATH_ENTRIES = [
+  BASE_DIR + '/mxbuild/dists/trufflesom.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/collections.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/polyglot.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/word.jar',
+  TRUFFLE_DIR + '/sdk/mxbuild/dists/jniutils.jar',
+  TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-runtime.jar',
+  TRUFFLE_DIR + '/substratevm/mxbuild/dists/truffle-runtime-svm.jar',
+  TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar']
+
 
 @mx.command(
     suite.name,
@@ -148,18 +170,17 @@ def build_native(args, **kwargs):
         ]
 
     cmd += [
-        "--macro:truffle",
         "--no-fallback",
-        "--allow-incomplete-classpath",
+        "--link-at-build-time",
         "-H:+ReportExceptionStackTraces",
-        "-H:-DeleteLocalSymbols",
+        "-H:+UnlockExperimentalVMOptions", "-H:-DeleteLocalSymbols",
         "-Dsom.interp=" + opt.type,
     ]
 
     if opt.method_filter:
         cmd += [
-            "--initialize-at-build-time=bd,tools,trufflesom,org.graalvm.graphio",
-            "-H:Dump=",
+            "--initialize-at-build-time=trufflesom,org.graalvm.graphio",
+            "-H:Dump=:3",
             "-H:PrintGraph=File",
             "-H:MethodFilter=" + opt.method_filter,
         ]
@@ -176,18 +197,20 @@ def build_native(args, **kwargs):
     # -H:+EnforceMaxRuntimeCompileMethods
 
     cmd += [
-        "-cp",
-        suite.dir + "/mxbuild/dists/trufflesom.jar",
+        '--module-path', ':'.join(MODULE_PATH_ENTRIES),
         "-o",
         suite.dir + output_name,
     ]
 
-    if opt.graalvm:
+    if opt.use_g1 and opt.graalvm and os.uname().sysname != 'Darwin':
         cmd += ["--gc=G1"]
 
     cmd += ["trufflesom.Launcher"]
 
-    mx.run_mx(cmd, svm_path)
+    if opt.graalvm:
+        mx.run(cmd, svm_path)
+    else:
+        mx.run_mx(cmd, svm_path)
 
 
 @mx.command(suite.name, "build-native-obj-test")

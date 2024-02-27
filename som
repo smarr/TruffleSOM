@@ -111,7 +111,7 @@ parser.add_argument('args', nargs=argparse.REMAINDER,
                     help='arguments passed to TruffleSOM')
 
 setup = parser.add_argument_group('Setting up TruffleSOM')
-setup.add_argument('--setup', choices=['labsjdk', 'mx', 'latest-mx'],
+setup.add_argument('--setup', choices=['labsjdk', 'mx', 'latest-mx', 'truffle-commit-id'],
                    dest='setup',
                    help='sets up the chosen dependency. LabsJDK is needed for running with Graal and building native images, and mx is the used build tool.')
 
@@ -128,6 +128,9 @@ def get_mx_suite():
 
 def get_labs_jdk_id():
   return get_mx_suite()['libraries']['LABS_JDK']['id']
+
+def get_truffle_commit_id():
+  return get_mx_suite()['imports']['suites'][0]['version']
 
 def find_mx(exit_when_missing=True):
   possible_mx = [BASE_DIR + '/../mx/mx', 'mx']
@@ -196,6 +199,9 @@ if args.setup == 'labsjdk':
     os.rename(BASE_DIR + '/mx.trufflesom/env-load-jdk', BASE_DIR + '/mx.trufflesom/env')
   exit(p.returncode)
 
+if args.setup == 'truffle-commit-id':
+  print(get_truffle_commit_id())
+  exit(0)
 
 if args.java_interpreter:
     args.interpreter = True
