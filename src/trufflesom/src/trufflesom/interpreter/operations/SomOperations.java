@@ -7,7 +7,11 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
+import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
+import com.oracle.truffle.api.bytecode.EpilogExceptional;
+import com.oracle.truffle.api.bytecode.EpilogReturn;
+import com.oracle.truffle.api.bytecode.Prolog;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.LocalSetter;
 import com.oracle.truffle.api.bytecode.Operation;
@@ -19,6 +23,7 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
+import com.oracle.truffle.api.exception.AbstractTruffleException;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -505,26 +510,48 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     }
   }
 
-  @Override
-  public void executeProlog(final VirtualFrame frame) {
-    if (frameOnStackMarkerIdx != -1) {
-      FrameOnStackMarker marker = new FrameOnStackMarker();
-      frame.setObject(frameOnStackMarkerIdx, marker);
+  @Prolog
+  public static final class PrologOp {
+    @Specialization
+    public static void executeProlog(final VirtualFrame frame, @Bind("$root") SomOperations root) {
+      if (root.frameOnStackMarkerIdx != -1) {
+        FrameOnStackMarker marker = new FrameOnStackMarker();
+        frame.setObject(root.frameOnStackMarkerIdx, marker);
+      }
     }
   }
 
-  @Override
-  public void executeEpilog(final VirtualFrame frame, final Object returnValue,
-      final Throwable throwable) {
-    if (frameOnStackMarkerIdx != -1) {
-      FrameOnStackMarker marker = (FrameOnStackMarker) frame.getObject(frameOnStackMarkerIdx);
-      marker.frameNoLongerOnStack();
+  @EpilogExceptional
+  public static final class ExecuteEpilogExceptionalOp {
+    @Specialization
+    public static void doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
+                                 @SuppressWarnings("unused") final AbstractTruffleException ex,
+                                 @Bind("$root") SomOperations root) {
+      if (root.frameOnStackMarkerIdx != -1) {
+        var marker = (FrameOnStackMarker) frame.getObject(root.frameOnStackMarkerIdx);
+        marker.frameNoLongerOnStack();
+      }
+
+      throw ex;
     }
   }
 
+  @EpilogReturn
+  public static final class ExecuteEpilogOp {
+    @Specialization
+    public static Object doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
+                                 Object object, @Bind("$root") SomOperations root) {
+      if (root.frameOnStackMarkerIdx != -1) {
+        FrameOnStackMarker marker = (FrameOnStackMarker) frame.getObject(root.frameOnStackMarkerIdx);
+        marker.frameNoLongerOnStack();
+      }
+      return object;
+    }
+
+  }
+
   @Override
-  public Object interceptControlFlowException(final ControlFlowException ex,
-      final VirtualFrame frame, final int bci) throws Throwable {
+  public Object interceptControlFlowException(ControlFlowException ex, VirtualFrame frame, BytecodeNode bytecodeNode, int bci) throws Throwable {
     if (frameOnStackMarkerIdx != -1) {
       var marker = (FrameOnStackMarker) frame.getObject(frameOnStackMarkerIdx);
       if (ex instanceof ReturnException retEx && retEx.reachedTarget(marker)) {
