@@ -175,7 +175,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public void setFrameOnStackMarker(final BytecodeLocal frameOnStackMarker) {
     if (frameOnStackMarker != null) {
       this.frameOnStackMarker = frameOnStackMarker;
-      this.frameOnStackMarkerIdx = getLocalIndex(frameOnStackMarker);
+      this.frameOnStackMarkerIdx = frameOnStackMarker.getLocalOffset() + 1; // hack. DSL bug???
     }
   }
 
