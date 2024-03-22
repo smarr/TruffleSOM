@@ -570,6 +570,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public Object interceptControlFlowException(ControlFlowException ex, VirtualFrame frame, BytecodeNode bytecodeNode, int bci) throws Throwable {
     if (frameOnStackMarkerIdx != -1) {
       var marker = (FrameOnStackMarker) frame.getObject(frameOnStackMarkerIdx);
+      marker.frameNoLongerOnStack();
       if (ex instanceof ReturnException retEx && retEx.reachedTarget(marker)) {
         return retEx.result();
       }
