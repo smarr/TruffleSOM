@@ -61,7 +61,6 @@ import trufflesom.interpreter.operations.copied.CharAtOp;
 import trufflesom.interpreter.operations.copied.EqualsOp;
 import trufflesom.interpreter.operations.copied.IfMessageOp;
 import trufflesom.interpreter.operations.copied.NonLocalArgumentReadOp;
-import trufflesom.interpreter.operations.copied.ReturnNonLocal;
 import trufflesom.interpreter.operations.copied.SubtractionOp;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.arithmetic.BitXorPrim;
@@ -112,7 +111,6 @@ import trufflesom.vmobjects.SSymbol;
 @OperationProxy(SubtractionOp.class)
 @OperationProxy(AdditionOp.class)
 @OperationProxy(MultiplicationPrim.class)
-@OperationProxy(ReturnNonLocal.class)
 @OperationProxy(EqualsOp.class)
 @OperationProxy(EqualsEqualsPrim.class)
 @OperationProxy(UnequalsPrim.class)
@@ -507,6 +505,24 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
         final int argIdx) {
       frame.getArguments()[argIdx] = value;
       return value;
+    }
+  }
+
+  @Operation
+    @TypeSystemReference(Types.class)
+  public static final class ReturnNonLocal {
+    @Specialization
+    public static Object doReturn(final VirtualFrame frame, final Object result,
+        final FrameOnStackMarker marker, int contextLevel) {
+      if (marker.isOnStack()) {
+        throw new ReturnException(result, marker);
+      } else {
+        // TODO: add branch profile
+        MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+        SBlock block = (SBlock) frame.getArguments()[0];
+        Object self = ctx.getArguments()[0];
+        return SAbstractObject.sendEscapedBlock(self, block);
+      }
     }
   }
 
