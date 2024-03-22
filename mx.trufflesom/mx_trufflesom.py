@@ -135,6 +135,8 @@ MODULE_PATH_ENTRIES = [
     TRUFFLE_DIR + "/sdk/mxbuild/dists/polyglot.jar",
     TRUFFLE_DIR + "/sdk/mxbuild/dists/word.jar",
     TRUFFLE_DIR + "/sdk/mxbuild/dists/jniutils.jar",
+    TRUFFLE_DIR + "/truffle/mxbuild/dists/truffle-json.jar",
+    TRUFFLE_DIR + "/truffle/mxbuild/dists/truffle-jcodings.jar",
     TRUFFLE_DIR + "/truffle/mxbuild/dists/truffle-runtime.jar",
     TRUFFLE_DIR + "/substratevm/mxbuild/dists/truffle-runtime-svm.jar",
     TRUFFLE_DIR + "/truffle/mxbuild/dists/truffle-api.jar",
