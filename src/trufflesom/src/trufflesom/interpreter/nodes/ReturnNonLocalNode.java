@@ -93,8 +93,14 @@ public final class ReturnNonLocalNode extends ContextualNode {
   @Override
   public void constructOperation(final OpBuilder opBuilder) {
     opBuilder.dsl.beginReturnNonLocal();
-    expression.accept(opBuilder);
-    opBuilder.dsl.emitLoadConstant(onStackMarkerIndex);
+    expression.accept(opBuilder); // return value for the non-local return
+
+    opBuilder.dsl.beginLoadLocalMaterialized(opBuilder.getLocal(onStackMarkerVar));
+    opBuilder.dsl.beginDetermineContextOp();
+    opBuilder.dsl.emitLoadConstant(contextLevel);
+    opBuilder.dsl.endDetermineContextOp();
+    opBuilder.dsl.endLoadLocalMaterialized();
+
     opBuilder.dsl.emitLoadConstant(contextLevel);
     opBuilder.dsl.endReturnNonLocal();
   }
