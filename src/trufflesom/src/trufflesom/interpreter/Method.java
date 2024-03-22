@@ -198,8 +198,8 @@ public final class Method extends Invokable {
     opBuilder.endReturn();
     opBuilder.endSource();
     SomOperations newMethodBody = opBuilder.endRoot();
-    newMethodBody.setFrameOnStackMarker(scope.getOnStackMarker());
     newMethodBody.initialize(name, source, sourceCoord);
+    newMethodBody.setFrameOnStackMarker(scope.getOnStackMarker());
 
     return newMethodBody;
   }
