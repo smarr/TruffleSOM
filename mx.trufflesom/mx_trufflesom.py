@@ -128,8 +128,7 @@ def build_native_image_tool(args, **kwargs):
 BASE_DIR = suite.dir
 TRUFFLE_DIR = BASE_DIR + "/../graal"
 
-MODULE_PATH_ENTRIES = [
-    BASE_DIR + "/mxbuild/dists/trufflesom.jar",
+TRUFFLE_MODULES = [
     TRUFFLE_DIR + "/sdk/mxbuild/dists/graal-sdk.jar",
     TRUFFLE_DIR + "/sdk/mxbuild/dists/collections.jar",
     TRUFFLE_DIR + "/sdk/mxbuild/dists/polyglot.jar",
@@ -139,6 +138,10 @@ MODULE_PATH_ENTRIES = [
     TRUFFLE_DIR + "/substratevm/mxbuild/dists/truffle-runtime-svm.jar",
     TRUFFLE_DIR + "/truffle/mxbuild/dists/truffle-api.jar",
 ]
+
+MODULE_PATH_ENTRIES = [
+  BASE_DIR + "/mxbuild/dists/trufflesom.jar",
+] + TRUFFLE_MODULES
 
 
 @mx.command(
