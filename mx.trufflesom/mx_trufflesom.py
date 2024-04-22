@@ -143,6 +143,9 @@ MODULE_PATH_ENTRIES = [
   BASE_DIR + '/mxbuild/dists/trufflesom.jar',
 ] + TRUFFLE_MODULES
 
+EE_MODULE_PATH_UPGRADES = [
+    TRUFFLE_DIR + '/compiler/mxbuild/dists/graal.jar',
+]
 
 @mx.command(
     suite.name,
@@ -182,6 +185,22 @@ def build_native(args, **kwargs):
         "-H:-DeleteLocalSymbols",
         "-Dsom.interp=" + opt.type,
     ]
+
+    if opt.graalvm:
+        cmd += [
+          '-J--upgrade-module-path=' + ':'.join(EE_MODULE_PATH_UPGRADES),
+        ]
+
+        # In addition to Graal, which we can use --upgrade-module-path for, we
+        # also need to copy the svm.jar and truffle-runtime-svm.jar to the
+        # GraalVM distribution, so that the native-image tool can find them.
+        import shutil
+        shutil.copyfile(
+            TRUFFLE_DIR + '/substratevm/mxbuild/dists/truffle-runtime-svm.jar',
+            opt.graalvm + '/lib/truffle/builder/truffle-runtime-svm.jar')
+        shutil.copyfile(
+            TRUFFLE_DIR + '/substratevm/mxbuild/dists/svm.jar',
+            opt.graalvm + '/lib/svm/builder/svm.jar')
 
     if opt.method_filter:
         cmd += [
