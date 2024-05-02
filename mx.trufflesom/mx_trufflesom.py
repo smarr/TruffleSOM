@@ -205,7 +205,7 @@ def build_native(args, **kwargs):
     if opt.method_filter:
         cmd += [
             "--initialize-at-build-time=trufflesom,org.graalvm.graphio",
-            "-H:Dump=:3",
+            "-H:Dump=:3", "-H:+PrintBackendCFG",
             "-H:PrintGraph=File",
             "-H:MethodFilter=" + opt.method_filter,
         ]
