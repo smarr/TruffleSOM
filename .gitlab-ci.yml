@@ -96,7 +96,10 @@ build:aarch64-test-and-rebench:
     GRAALEE_HOME: /Users/gitlab-runner/.asdf/installs/awfy/oracle-graalvm-ea-jdk-23.0.0-ea.08/Contents/Home
     JAVA_HOME: /Users/gitlab-runner/.asdf/installs/java/temurin-21.0.2+13.0.LTS
 
-  script: 
+  script:
+    - pmset -g live
+    - pmset -g systemstate
+
     - ./som --setup labsjdk
     - mx sforceimport
     - rm libs/jvmci || true
