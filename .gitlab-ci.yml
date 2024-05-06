@@ -6,19 +6,30 @@ stages:
 variables:
   PYTHONUNBUFFERED: "true"
   JVMCI_VERSION_CHECK: ignore
-  ECLIPSE_EXE: /home/gitlab-runner/.local/eclipse/eclipse
-  GRAALEE_HOME: /home/gitlab-runner/.asdf/installs/java/oracle-graalvm-21.0.2
-  JAVA_HOME: /home/gitlab-runner/.asdf/installs/java/temurin-21.0.2+13.0.LTS
+  GRAALEE_VERSION: oracle-graalvm-ea-jdk-23.0.0-ea.14
+  JAVA_VERSION: temurin-22.0.1+8
 
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
   - ./som --setup latest-mx
-  - export PATH="$PATH:`pwd`/../mx"
+  - export PATH=${PATH}:$(pwd)/../mx
   - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
+
   - |
-      COMMIT_ID=`./som --setup truffle-commit-id`
-      (cd ../graal && git fetch --all && git reset --hard $COMMIT_ID) || true
+    COMMIT_ID=`./som --setup truffle-commit-id`
+    (cd ../graal && git fetch --all && git reset --hard $COMMIT_ID) || true
+
+  - |
+    ~/.asdf/bin/asdf install awfy $GRAALEE_VERSION
+    ~/.asdf/bin/asdf install java $JAVA_VERSION
+    export GRAALEE_HOME=$HOME/.asdf/installs/awfy/$GRAALEE_VERSION
+    export ECLIPSE_EXE=$HOME/.local/eclipse/eclipse
+    export JAVA_HOME=$HOME/.asdf/installs/java/$JAVA_VERSION
+
+    if [ -d $GRAALEE_HOME/Contents/Home ]; then
+      export GRAALEE_HOME=$GRAALEE_HOME/Contents/Home
+    fi
 
 test:
   stage: build-and-test
@@ -53,7 +64,7 @@ build:native-interp-ast:
 
     - mx build-native --no-jit -t AST -g ${GRAALEE_HOME}
     - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
-    
+
     # Package and Upload
     - lz4 som-native-interp-ast som-native-interp-ast.lz4
     - lz4 som-native-interp-ast-ee som-native-interp-ast-ee.lz4
@@ -78,7 +89,7 @@ build:native-interp-bc:
 
     - mx build-native --no-jit -t BC -g ${GRAALEE_HOME}
     - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
-    
+
     - lz4 som-native-interp-bc som-native-interp-bc.lz4
     - lz4 som-native-interp-bc-ee som-native-interp-bc-ee.lz4
     - |
@@ -91,11 +102,6 @@ build:native-interp-bc:
 build:aarch64-test-and-rebench:
   stage: build-and-test
   tags: [zullie1]
-  variables:
-    ECLIPSE_EXE: /Users/gitlab-runner/.local/eclipse/eclipse
-    GRAALEE_HOME: /Users/gitlab-runner/.asdf/installs/awfy/oracle-graalvm-ea-jdk-23.0.0-ea.08/Contents/Home
-    JAVA_HOME: /Users/gitlab-runner/.asdf/installs/java/temurin-21.0.2+13.0.LTS
-
   script:
     - pmset -g live
     - pmset -g systemstate
@@ -120,13 +126,13 @@ build:aarch64-test-and-rebench:
 
     - mx build-native --no-jit -t AST
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
-    
+
     - mx build-native --no-jit -t BC -g ${GRAALEE_HOME}
     - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
 
     - mx build-native --no-jit -t AST -g ${GRAALEE_HOME}
     - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
-    
+
     - mx tests-nodestats || true
     - mx tests-coverage || true
 
@@ -145,7 +151,7 @@ benchmark-y1:
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-    
+
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
     - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
@@ -170,7 +176,7 @@ benchmark-y2:
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-    
+
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
     - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
@@ -195,7 +201,7 @@ benchmark-y3:
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
     - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-    
+
     - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
     - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
     - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
