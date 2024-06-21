@@ -1,6 +1,6 @@
 suite = {
     "name": "trufflesom",
-    "mxversion": "6.18.0",
+    "mxversion": "7.27.2",
     "versionConflictResolution": "latest",
     "version": "0.0.1",
     "release": False,
