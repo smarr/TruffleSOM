@@ -26,7 +26,7 @@ suite = {
             "urls": [
                 "https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.9.3/checkstyle-10.9.3-all.jar"
             ],
-            "sha1": "5bd65d2d7e0eefe73782c072db2066f6832d5b43",
+            "digest": "sha512:57443ea697a02630cea080e78296545586ce2fa40c72d4d5e3d24c511287fc5d460e274ef49a6c0fc386682df248c4306a232b5f13d844c2ef4d1613d5b37e92",
             "licence": "LGPLv21",
         },
         "LABS_JDK": {
