@@ -13,7 +13,8 @@ before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
   - ./som --setup latest-mx
-  - export PATH=${PATH}:$(pwd)/../mx
+  - export PATH=${PATH}:$(pwd)/../mx:/opt/local/bin
+  - echo "PATH=$PATH"
   - (cd ../graal/compiler/mxbuild && sudo reown-project.sh) || true
 
   - |
