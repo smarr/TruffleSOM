@@ -3,7 +3,6 @@ package trufflesom.interpreter.nodes;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.InstrumentableNode.WrapperNode;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
-import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 
@@ -27,11 +26,6 @@ final class GenericMessageSendNodeWrapper extends GenericMessageSendNode
   @Override
   public ProbeNode getProbeNode() {
     return probeNode;
-  }
-
-  @Override
-  public NodeCost getCost() {
-    return NodeCost.NONE;
   }
 
   @Override
