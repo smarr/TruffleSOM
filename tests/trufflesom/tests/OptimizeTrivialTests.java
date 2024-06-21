@@ -1,10 +1,10 @@
 package trufflesom.tests;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
@@ -541,7 +541,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     return objClazz;
   }
 
-  private SPrimitive constructDummyNewPrim(final Source s) {
+  private static SPrimitive constructDummyNewPrim(final Source s) {
     ExpressionNode newPrim = NewObjectPrimFactory.create(null);
     SSymbol symNew = symbolFor("new");
     Primitive primMethodNode = new Primitive("new", s, 1, newPrim, newPrim);

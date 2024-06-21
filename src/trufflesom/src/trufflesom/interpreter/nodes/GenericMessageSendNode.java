@@ -2,10 +2,8 @@ package trufflesom.interpreter.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.ProbeNode;
-import com.oracle.truffle.api.nodes.NodeCost;
 
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
-import trufflesom.interpreter.nodes.dispatch.DispatchChain.Cost;
 import trufflesom.vm.VmSettings;
 import trufflesom.vmobjects.SSymbol;
 
@@ -40,11 +38,6 @@ public class GenericMessageSendNode extends AbstractMessageSendNode {
   @Override
   public String toString() {
     return "GMsgSend(" + selector.getString() + ")";
-  }
-
-  @Override
-  public NodeCost getCost() {
-    return Cost.getCost(dispatchNode);
   }
 
   @Override

@@ -152,11 +152,17 @@ def get_compiled_graalvm_java_bin(use_libgraal):
   graal_bin = None
 
   mx = find_mx()
-  libgraal_jdk_home = check_output(
+  output = check_output(
     [mx, '--env', 'libgraal' if use_libgraal else 'graal', 'graalvm-home'],
     stderr=STDOUT, cwd=BASE_DIR
   ).decode()
-  return libgraal_jdk_home.strip() + '/bin/java'
+
+  lines = output.strip().split('\n')
+  if not lines:
+    return None
+
+  libgraal_jdk_home = lines[-1].strip()
+  return libgraal_jdk_home + '/bin/java'
 
 
 if args.setup == 'mx':
@@ -241,7 +247,7 @@ if args.use_embedded_graal is True:
   from subprocess import check_output, STDOUT, CalledProcessError
   try:
     java_bin = get_compiled_graalvm_java_bin(args.use_libgraal)
-    if not os.path.isfile(java_bin):
+    if not java_bin or not os.path.isfile(java_bin):
       if args.use_libgraal:
         print("The use of LibGraal was requested, but it does not seem to be available.")
         print("To build it, please run `mx --env libgraal build`")

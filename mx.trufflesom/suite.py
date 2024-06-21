@@ -1,6 +1,6 @@
 suite = {
     "name": "trufflesom",
-    "mxversion": "6.18.0",
+    "mxversion": "7.27.2",
     "versionConflictResolution": "latest",
     "version": "0.0.1",
     "release": False,
@@ -16,7 +16,7 @@ suite = {
             {
                 "name": "truffle",
                 "subdir": True,
-                "version": "888e43559fc6975c00d3aa7278093d941cb52479",
+                "version": "4186b49c88690386fce71af0c7ad8a5a341d6d8e",
                 "urls": [{"url": "https://github.com/oracle/graal", "kind": "git"}],
             },
         ]
@@ -26,7 +26,7 @@ suite = {
             "urls": [
                 "https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.9.3/checkstyle-10.9.3-all.jar"
             ],
-            "sha1": "5bd65d2d7e0eefe73782c072db2066f6832d5b43",
+            "digest": "sha512:57443ea697a02630cea080e78296545586ce2fa40c72d4d5e3d24c511287fc5d460e274ef49a6c0fc386682df248c4306a232b5f13d844c2ef4d1613d5b37e92",
             "licence": "LGPLv21",
         },
         "LABS_JDK": {

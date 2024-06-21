@@ -22,8 +22,6 @@
 package trufflesom.interpreter.nodes.literals;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.inlining.nodes.Inlinable;
@@ -40,7 +38,6 @@ import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SBlock;
 
 
-@NodeInfo(cost = NodeCost.NONE)
 public abstract class LiteralNode extends ExpressionNode
     implements PreevaluatedExpression, Inlinable<MethodGenerationContext> {
   public static ExpressionNode create(final Object literal) {

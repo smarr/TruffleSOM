@@ -26,8 +26,6 @@ import com.oracle.truffle.api.instrumentation.StandardTags.ExpressionTag;
 import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag;
 import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
@@ -35,7 +33,6 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 
 
-@NodeInfo(cost = NodeCost.NONE)
 public final class SequenceNode extends NoPreEvalExprNode {
   @Children private final ExpressionNode[] expressions;
 

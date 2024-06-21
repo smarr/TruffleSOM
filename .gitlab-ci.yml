@@ -88,6 +88,51 @@ build:native-interp-bc:
         put som-native-interp-bc-ee.lz4 incoming/${CI_PIPELINE_ID}/
       EOF
 
+build:aarch64-test-and-rebench:
+  stage: build-and-test
+  tags: [zullie1]
+  variables:
+    ECLIPSE_EXE: /Users/gitlab-runner/.local/eclipse/eclipse
+    GRAALEE_HOME: /Users/gitlab-runner/.asdf/installs/awfy/oracle-graalvm-ea-jdk-23.0.0-ea.08/Contents/Home
+    JAVA_HOME: /Users/gitlab-runner/.asdf/installs/java/temurin-21.0.2+13.0.LTS
+
+  script:
+    - pmset -g live
+    - pmset -g systemstate
+
+    - ./som --setup labsjdk
+    - mx sforceimport
+    - rm libs/jvmci || true
+    - ./som --setup labsjdk
+
+    - mx build
+    - mx --env libgraal build
+    - mx tests-junit
+    - mx tests-som
+    - mx tests-somsom
+    - mx build-native-image-tool
+
+    - mx build-native-obj-test
+    - ./som-obj-storage-tester
+
+    - mx build-native --no-jit -t BC
+    - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
+
+    - mx build-native --no-jit -t AST
+    - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
+    
+    - mx build-native --no-jit -t BC -g ${GRAALEE_HOME}
+    - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
+
+    - mx build-native --no-jit -t AST -g ${GRAALEE_HOME}
+    - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
+    
+    - mx tests-nodestats || true
+    - mx tests-coverage || true
+
+    - export PATH=$PATH:/Users/gitlab-runner/Library/Python/3.12/bin
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf
+
 benchmark-y1:
   stage: benchmark
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
