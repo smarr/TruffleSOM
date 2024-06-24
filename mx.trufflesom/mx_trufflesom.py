@@ -46,6 +46,14 @@ bn_parser.add_argument(
     help="path to GraalVM distribution",
     metavar="<path>",
 )
+bn_parser.add_argument(
+    "-P",
+    "--dont-patch-graalvm",
+    action="store_false",
+    dest="patch_graalvm",
+    default=True,
+    help="Do not patch the GraalVM distribution with local Graal changes.",
+)
 
 bn_parser.add_argument(
     "-t",
@@ -147,6 +155,18 @@ EE_MODULE_PATH_UPGRADES = [
     TRUFFLE_DIR + '/compiler/mxbuild/dists/graal.jar',
 ]
 
+def patch_graalvm(graalvm_path):
+    # In addition to Graal, which we can use --upgrade-module-path for, we
+    # also need to copy the svm.jar and truffle-runtime-svm.jar to the
+    # GraalVM distribution, so that the native-image tool can find them.
+    import shutil
+    shutil.copyfile(
+        TRUFFLE_DIR + '/substratevm/mxbuild/dists/truffle-runtime-svm.jar',
+        graalvm_path + '/lib/truffle/builder/truffle-runtime-svm.jar')
+    shutil.copyfile(
+        TRUFFLE_DIR + '/substratevm/mxbuild/dists/svm.jar',
+        graalvm_path + '/lib/svm/builder/svm.jar')
+
 @mx.command(
     suite.name,
     "build-native",
@@ -187,20 +207,9 @@ def build_native(args, **kwargs):
     ]
 
     if opt.graalvm:
-        cmd += [
-          '-J--upgrade-module-path=' + ':'.join(EE_MODULE_PATH_UPGRADES),
-        ]
-
-        # In addition to Graal, which we can use --upgrade-module-path for, we
-        # also need to copy the svm.jar and truffle-runtime-svm.jar to the
-        # GraalVM distribution, so that the native-image tool can find them.
-        import shutil
-        shutil.copyfile(
-            TRUFFLE_DIR + '/substratevm/mxbuild/dists/truffle-runtime-svm.jar',
-            opt.graalvm + '/lib/truffle/builder/truffle-runtime-svm.jar')
-        shutil.copyfile(
-            TRUFFLE_DIR + '/substratevm/mxbuild/dists/svm.jar',
-            opt.graalvm + '/lib/svm/builder/svm.jar')
+        if opt.patch_graalvm:
+            cmd += ['-J--upgrade-module-path=' + ':'.join(EE_MODULE_PATH_UPGRADES)]
+            patch_graalvm(opt.graalvm)
 
     if opt.method_filter:
         cmd += [
