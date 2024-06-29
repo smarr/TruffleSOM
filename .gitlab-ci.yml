@@ -6,7 +6,7 @@ stages:
 variables:
   PYTHONUNBUFFERED: "true"
   JVMCI_VERSION_CHECK: ignore
-  GRAALEE_VERSION: oracle-graalvm-ea-jdk-23.0.0-ea.14
+  GRAALEE_VERSION: oracle-graalvm-ea-jdk-24.0.0-ea.01
   JAVA_VERSION: temurin-22.0.1+8
 
 before_script:
