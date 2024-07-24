@@ -496,7 +496,7 @@ public class MethodGenerationContext
   }
 
   @Override
-  public trufflesom.bdt.inlining.Variable<?> introduceTempForInlinedVersion(
+  public Variable introduceTempForInlinedVersion(
       final Inlinable<MethodGenerationContext> blockOrVal, final long coord)
       throws ProgramDefinitionError {
     Local loopIdx;

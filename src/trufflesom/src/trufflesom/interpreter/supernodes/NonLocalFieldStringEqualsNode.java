@@ -140,7 +140,7 @@ public class NonLocalFieldStringEqualsNode extends ContextualNode {
 
   @Override
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-    ScopeElement<? extends Node> se = inliner.getAdaptedVar(arg);
+    ScopeElement se = inliner.getAdaptedVar(arg);
     if (se.var != arg || se.contextLevel < contextLevel) {
       Node newNode;
       if (se.contextLevel == 0) {

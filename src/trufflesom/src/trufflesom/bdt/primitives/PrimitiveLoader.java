@@ -62,7 +62,7 @@ public abstract class PrimitiveLoader<ExprT, Id> {
    * <p>
    * This methods should be called when the constructor completes.
    */
-  protected void initialize() {
+  protected final void initialize() {
     List<Specializer<ExprT, Id>> specializers = getSpecializers();
     for (Specializer<ExprT, Id> s : specializers) {
       // TODO: figure out whether we really want it like this with a VmSetting, or whether

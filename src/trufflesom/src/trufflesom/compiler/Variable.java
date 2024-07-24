@@ -29,7 +29,7 @@ import trufflesom.vm.NotYetImplementedException;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class Variable implements trufflesom.bdt.inlining.Variable<ExpressionNode> {
+public abstract class Variable {
   public final SSymbol name;
   public final long    coord;
 
@@ -52,8 +52,10 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
     return getClass().getSimpleName() + "(" + name + ")";
   }
 
-  @Override
   public abstract ExpressionNode getReadNode(int contextLevel, long coordinate);
+
+  public abstract ExpressionNode getWriteNode(
+      int contextLevel, ExpressionNode valueExpr, long coord);
 
   protected abstract void emitPop(BytecodeMethodGenContext mgenc);
 
@@ -122,7 +124,6 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
       }
     }
 
-    @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coordinate) {
       if (contextLevel == 0) {
@@ -187,7 +188,6 @@ public abstract class Variable implements trufflesom.bdt.inlining.Variable<Expre
       return new Local(name, coord, newSlotIndex);
     }
 
-    @Override
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coordinate) {
       if (contextLevel > 0) {
