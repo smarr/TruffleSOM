@@ -49,7 +49,6 @@ public abstract class BlockPrims {
     }
   }
 
-  @ReportPolymorphism
   @GenerateNodeFactory
   @GenerateWrapper
   @Primitive(className = "Block", primitive = "value")
@@ -100,7 +99,6 @@ public abstract class BlockPrims {
     }
   }
 
-  @ReportPolymorphism
   @GenerateWrapper
   @GenerateNodeFactory
   @Primitive(className = "Block2", primitive = "value:", selector = "value:", inParser = false,
@@ -146,7 +144,6 @@ public abstract class BlockPrims {
     }
   }
 
-  @ReportPolymorphism
   @GenerateNodeFactory
   @Primitive(className = "Block3", primitive = "value:with:", selector = "value:with:",
       inParser = false, receiverType = SBlock.class)
