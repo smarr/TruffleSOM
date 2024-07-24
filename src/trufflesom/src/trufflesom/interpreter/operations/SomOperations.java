@@ -240,7 +240,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ImportStatic(Types.class)
-  @TypeSystemReference(Types.class)
   public static final class MessageSendOp {
     public static Object getRcvr(final Object[] arguments) {
       return arguments[0];
@@ -258,7 +257,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   public static final class SuperSendOp {
     @Specialization
     public static Object doSuper(final DirectCallNode callNode,
@@ -269,7 +267,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ImportStatic(Globals.class)
-  @TypeSystemReference(Types.class)
   public static final class GlobalReadOp {
     @Specialization(guards = "assoc != null")
     public static Object doCached(@SuppressWarnings("unused") final SSymbol globalName,
@@ -305,7 +302,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   public static final class GlobalCachedReadOp {
     @NeverDefault
     public static Assumption get(final Object assoc) {
@@ -325,7 +321,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   @ImportStatic(SomOperations.class)
   public static final class PushBlockWithoutContextOp {
     @Specialization
@@ -336,7 +331,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   @ImportStatic(SomOperations.class)
   public static final class PushBlockWithContextOp {
     @Specialization
@@ -347,7 +341,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   public static final class LoopBoundLessOrEqual {
     @Specialization
     public static boolean isLessOrEqual(final long a, final long b) {
@@ -371,7 +364,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   public static final class UnsafeLoopIncrement {
     @Specialization
     public static void increment(final VirtualFrame frame, final long currentValue,
@@ -387,7 +379,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   public static final class UnsafeLoopDecrement {
     @Specialization
     public static void increment(final VirtualFrame frame, final long currentValue,
@@ -403,7 +394,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   @ImportStatic(FieldAccessorNode.class)
   public static final class ReadField {
     @Specialization(rewriteOn = UnexpectedResultException.class)
@@ -431,7 +421,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   @ImportStatic(FieldAccessorNode.class)
   public static final class WriteField {
     @Specialization
@@ -457,7 +446,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   @ImportStatic(FieldAccessorNode.class)
   public static final class WriteFieldAndReturnSelf {
     @Specialization
@@ -486,7 +474,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   @ImportStatic(FieldAccessorNode.class)
   public static final class IncField {
     @Specialization
@@ -498,7 +485,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @TypeSystemReference(Types.class)
   public static final class WriteArgument {
     @Specialization
     public static Object writeArg(final VirtualFrame frame, final Object value,
@@ -509,7 +495,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-    @TypeSystemReference(Types.class)
   public static final class ReturnNonLocal {
     @Specialization
     public static Object doReturn(final VirtualFrame frame, final Object result,
