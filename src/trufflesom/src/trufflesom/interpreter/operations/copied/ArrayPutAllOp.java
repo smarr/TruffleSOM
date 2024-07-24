@@ -99,7 +99,7 @@ public abstract class ArrayPutAllOp extends BinaryExpressionNode {
   public static SArray doPutEvalBlock(final VirtualFrame frame, final SArray rcvr,
       final SBlock block,
       @Shared("length") @Cached("createLength()") final LengthPrim lengthNode,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Cached final ValueNonePrim call) {
     int length = (int) lengthNode.executeEvaluated(frame, rcvr);
     if (length <= 0) {
@@ -184,7 +184,7 @@ public abstract class ArrayPutAllOp extends BinaryExpressionNode {
   @Fallback
   public static Object makeGenericSend(final VirtualFrame frame, final Object rcvr,
       final Object value,
-      @Bind("this") final Node node) {
+      @Bind final Node node) {
     return ((ArrayPutAllOp) node).makeGenericSend(
         SymbolTable.symbolFor("putAll:")).doPreEvaluated(
             frame, new Object[] {rcvr, value});
