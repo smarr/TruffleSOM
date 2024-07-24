@@ -16,7 +16,7 @@ public abstract class BinaryMsgExprNode extends BinaryExpressionNode {
   @Fallback
   public static final Object makeGenericSend(final VirtualFrame frame,
       final Object receiver, final Object argument,
-      @Bind("this") final Node s) {
+      @Bind final Node s) {
     BinaryMsgExprNode self = (BinaryMsgExprNode) s;
     CompilerDirectives.transferToInterpreterAndInvalidate();
     return self.makeGenericSend(self.getSelector()).doPreEvaluated(frame,

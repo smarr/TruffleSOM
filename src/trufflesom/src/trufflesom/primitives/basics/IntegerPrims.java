@@ -173,7 +173,7 @@ public abstract class IntegerPrims {
 
     @Specialization(rewriteOn = ArithmeticException.class)
     public static final long doLong(final long receiver, final long right,
-        @Cached final InlinedBranchProfile overflow, @Bind("this") final Node node) {
+        @Cached final InlinedBranchProfile overflow, @Bind final Node node) {
       assert right >= 0; // currently not defined for negative values of right
 
       if (Long.SIZE - Long.numberOfLeadingZeros(receiver) + right > Long.SIZE - 1) {

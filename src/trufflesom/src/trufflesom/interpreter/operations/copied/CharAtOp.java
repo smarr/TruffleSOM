@@ -29,7 +29,7 @@ public abstract class CharAtOp extends BinaryMsgExprNode {
   @Specialization
   public static final String doString(final String receiver, final long idx,
       @Shared("profile") @Cached final InlinedBranchProfile profile,
-      @Bind("this") final Node self) {
+      @Bind final Node self) {
     int index = (int) idx;
     if (0 < index && index <= receiver.length()) {
       return substring(receiver, index - 1, index);
@@ -42,7 +42,7 @@ public abstract class CharAtOp extends BinaryMsgExprNode {
   @Specialization
   public static final String doSSymbol(final SSymbol receiver, final long idx,
       @Shared("profile") @Cached final InlinedBranchProfile profile,
-      @Bind("this") final Node self) {
+      @Bind final Node self) {
     int index = (int) idx;
     String s = receiver.getString();
     if (0 < index && index <= s.length()) {

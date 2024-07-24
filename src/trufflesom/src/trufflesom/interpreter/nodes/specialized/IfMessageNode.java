@@ -67,7 +67,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
       @SuppressWarnings("unused") @Cached("arg.getMethod()") final SInvokable method,
       @Cached("create(method.getCallTarget())") final DirectCallNode callTarget,
       @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
-      @Bind("this") final Node node) {
+      @Bind final Node node) {
     if (condProf.profile(node, rcvr == expected)) {
       return callTarget.call(new Object[] {arg});
     } else {
@@ -79,7 +79,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
   public final Object fallback(final boolean rcvr, final SBlock arg,
       @Cached final IndirectCallNode callNode,
       @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
-      @Bind("this") final Node node) {
+      @Bind final Node node) {
     if (condProf.profile(node, rcvr == expected)) {
       return callNode.call(arg.getMethod().getCallTarget(), new Object[] {arg});
     } else {
@@ -94,7 +94,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
   @Specialization(guards = {"notABlock(arg)"})
   public static final Object literal(final boolean rcvr, final Object arg,
       @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
-      @Bind("this") final Node node) {
+      @Bind final Node node) {
     if (condProf.profile(node, rcvr == ((IfMessageNode) node).expected)) {
       return arg;
     } else {

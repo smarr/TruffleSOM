@@ -14,7 +14,7 @@ public abstract class UnaryMsgExprNode extends UnaryExpressionNode {
 
   @Fallback
   public static final Object makeGenericSend(final VirtualFrame frame, final Object receiver,
-      @Bind("this") final Node s) {
+      @Bind final Node s) {
     UnaryMsgExprNode self = (UnaryMsgExprNode) s;
     CompilerDirectives.transferToInterpreterAndInvalidate();
     return self.makeGenericSend(self.getSelector()).doPreEvaluated(frame,
