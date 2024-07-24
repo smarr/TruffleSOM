@@ -33,7 +33,7 @@ public abstract class ReturnNonLocal extends Node {
   public static Object doReturn(final VirtualFrame frame, final Object result,
       final int onStackMarkerIndex, final int contextLevel,
       @Cached final InlinedBranchProfile blockEscaped,
-      @Bind("this") final Node selfNode) {
+      @Bind final Node selfNode) {
     MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
     FrameOnStackMarker marker =
         (FrameOnStackMarker) ctx.getObject(onStackMarkerIndex);
