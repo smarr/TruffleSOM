@@ -138,7 +138,7 @@ public abstract class IntDownToDoInlinedLiteralsNode extends NoPreEvalExprNode {
 
   @Override
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-    ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(loopIdxVar);
+    ScopeElement se = inliner.getAdaptedVar(loopIdxVar);
     IntDownToDoInlinedLiteralsNode node =
         IntDownToDoInlinedLiteralsNodeFactory.create(bodyActualNode,
             body, (Local) se.var, getFrom(), getTo());

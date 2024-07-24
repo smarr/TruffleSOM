@@ -12,6 +12,8 @@ import trufflesom.bdt.testsetup.StringId;
 
 
 public class Primitives extends PrimitiveLoader<ExprNode, String> {
+
+  @SuppressWarnings("this-escape")
   protected Primitives() {
     super(new StringId());
     initialize();

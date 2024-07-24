@@ -147,7 +147,7 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
 
   @Override
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-    ScopeElement<? extends Node> se = inliner.getAdaptedVar(arg);
+    ScopeElement se = inliner.getAdaptedVar(arg);
     if (se.var != arg || se.contextLevel < 0) {
       Node newNode;
       if (se.contextLevel == 0) {

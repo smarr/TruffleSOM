@@ -75,7 +75,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
   @Override
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-    ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
+    ScopeElement se = inliner.getAdaptedVar(onStackMarkerVar);
 
     if (se.var != onStackMarkerVar || se.contextLevel < contextLevel) {
       ExpressionNode node;
@@ -125,7 +125,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-      ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
+      ScopeElement se = inliner.getAdaptedVar(onStackMarkerVar);
       if (se.var != onStackMarkerVar) {
         ReturnLocalNode node = new ReturnLocalNode(expression, (Internal) se.var);
         node.initialize(sourceCoord);
@@ -183,7 +183,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
     @Override
     public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
-      ScopeElement<ExpressionNode> se = inliner.getAdaptedVar(onStackMarkerVar);
+      ScopeElement se = inliner.getAdaptedVar(onStackMarkerVar);
       if (se.var != onStackMarkerVar) {
         replace(new CatchNonLocalReturnNode(
             methodBody, (Internal) se.var).initialize(sourceCoord));

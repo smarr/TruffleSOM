@@ -4,12 +4,13 @@ import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.basic.ProgramDefinitionError;
 import trufflesom.bdt.inlining.nodes.Inlinable;
+import trufflesom.compiler.Variable;
 
 
 public class TScopeBuilder implements ScopeBuilder<TScopeBuilder> {
 
   @Override
-  public Variable<?> introduceTempForInlinedVersion(final Inlinable<TScopeBuilder> node,
+  public Variable introduceTempForInlinedVersion(final Inlinable<TScopeBuilder> node,
       final long coord) throws ProgramDefinitionError {
     return null;
   }

@@ -2,6 +2,7 @@ package trufflesom.bdt.inlining;
 
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import trufflesom.compiler.Variable;
 
 
 /**
@@ -30,11 +31,9 @@ public interface Scope<This extends Scope<This, MethodT>, MethodT> {
    * The set excludes variables that are defined in other scopes, even if they might be
    * logically part of the set from language perspective, perhaps because of nesting scopes.
    *
-   * @param <T> the type of the {@link Variable} implementation
-   *
    * @return the set of variables defined in this scope
    */
-  <T extends Variable<? extends Node>> T[] getVariables();
+  Variable[] getVariables();
 
   /**
    * The scope directly enclosing the current scope.

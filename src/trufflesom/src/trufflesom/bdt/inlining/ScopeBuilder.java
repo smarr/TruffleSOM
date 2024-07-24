@@ -4,6 +4,7 @@ import com.oracle.truffle.api.source.Source;
 
 import trufflesom.bdt.basic.ProgramDefinitionError;
 import trufflesom.bdt.inlining.nodes.Inlinable;
+import trufflesom.compiler.Variable;
 
 
 /**
@@ -32,7 +33,7 @@ public interface ScopeBuilder<This extends ScopeBuilder<This>> {
    *           the variable. This is supposed to be used to indicate errors in the user
    *           program.
    */
-  Variable<?> introduceTempForInlinedVersion(Inlinable<This> node, long coord)
+  Variable introduceTempForInlinedVersion(Inlinable<This> node, long coord)
       throws ProgramDefinitionError;
 
   Source getSource();

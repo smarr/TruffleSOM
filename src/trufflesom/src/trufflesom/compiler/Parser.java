@@ -229,7 +229,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     getSymbolFromLexer();
   }
 
-  protected Lexer createLexer(final String content) {
+  protected static Lexer createLexer(final String content) {
     return new Lexer(content);
   }
 

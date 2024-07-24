@@ -7,7 +7,9 @@ import com.oracle.truffle.api.nodes.NodeVisitor;
 
 import trufflesom.bdt.inlining.nodes.ScopeReference;
 import trufflesom.bdt.inlining.nodes.WithSource;
+import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.nodes.ExpressionNode;
 
 
 /**
@@ -92,20 +94,18 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
 
   /**
    * The result of a lookup in the scope chain to find a variable and its context level.
-   *
-   * @param <N> the type of node used for node access, can be very unprecise
    */
-  public static final class ScopeElement<N extends Node> {
+  public static final class ScopeElement {
 
     /** The variable found by the lookup. */
-    public final Variable<N> var;
+    public final Variable var;
 
     /**
      * The context level at which the variable is defined, relative to the start of the lookup.
      */
     public final int contextLevel;
 
-    private ScopeElement(final Variable<N> var, final int contextLevel) {
+    private ScopeElement(final Variable var, final int contextLevel) {
       this.var = var;
       this.contextLevel = contextLevel;
     }
@@ -117,11 +117,11 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
   }
 
   @SuppressWarnings("unchecked")
-  private <N extends Node> ScopeElement<N> getSplitVar(final Variable<N> var,
+  private <N extends Node> ScopeElement getSplitVar(final Variable var,
       final Scope<?, ?> scope, final int lvl) {
-    for (Variable<? extends Node> v : scope.getVariables()) {
+    for (Variable v : scope.getVariables()) {
       if (v.equals(var)) {
-        return new ScopeElement<>((Variable<N>) v, lvl);
+        return new ScopeElement(v, lvl);
       }
     }
 
@@ -139,7 +139,7 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
    * @param var in the un-adapted node
    * @return the adapted version of the variable
    */
-  public <N extends Node> ScopeElement<N> getAdaptedVar(final Variable<N> var) {
+  public ScopeElement getAdaptedVar(final Variable var) {
     return getSplitVar(var, newScope, 0);
   }
 
@@ -165,12 +165,12 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
       newCtxLevel -= 1;
     }
 
-    Variable<?>[] old = oldS.getVariables();
-    for (Variable<?> v : old) {
+    Variable[] old = oldS.getVariables();
+    for (Variable v : old) {
       if (v instanceof Local) {
         Local l = (Local) v;
         if (l.getIndex() == localIdx) {
-          for (Variable<?> newV : newS.getVariables()) {
+          for (Variable newV : newS.getVariables()) {
             if (newV.equals(l)) {
               return (Local) newV;
             }
@@ -233,9 +233,9 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
    * @param node the read node
    * @param ctxLevel the context level of the node
    */
-  public void updateRead(final Variable<?> var, final WithSource node,
+  public void updateRead(final Variable var, final WithSource node,
       final int ctxLevel) {
-    ScopeElement<? extends Node> se = getAdaptedVar(var);
+    ScopeElement se = getAdaptedVar(var);
     if (se.var != var || se.contextLevel < ctxLevel) {
       ((Node) node).replace(se.var.getReadNode(se.contextLevel, node.getSourceCoordinate()));
     } else {
@@ -246,17 +246,15 @@ public final class ScopeAdaptationVisitor implements NodeVisitor {
   /**
    * Factory method to update a write node with an appropriate version for the adapted scope.
    *
-   * @param <N> the type of the node to be returned
-   *
    * @param var the variable accessed by {@code node}
    * @param node the write node
    * @param valExpr the expression that is evaluated to determine the value to be written to
    *          the variable
    * @param ctxLevel the context level of the node
    */
-  public <N extends Node> void updateWrite(final Variable<N> var, final WithSource node,
-      final N valExpr, final int ctxLevel) {
-    ScopeElement<N> se = getAdaptedVar(var);
+  public void updateWrite(final Variable var, final WithSource node,
+      final ExpressionNode valExpr, final int ctxLevel) {
+    ScopeElement se = getAdaptedVar(var);
     if (se.var != var || se.contextLevel < ctxLevel) {
       ((Node) node).replace(
           se.var.getWriteNode(se.contextLevel, valExpr, node.getSourceCoordinate()));
