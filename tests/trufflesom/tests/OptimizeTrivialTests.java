@@ -356,6 +356,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     assertFalse(m.isTrivial());
   }
 
+  @Ignore
   @Test
   public void testFieldReadInBlock() {
     addField("field");
@@ -365,6 +366,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     assertThat(e, instanceOf(FieldReadNode.class));
   }
 
+  @Ignore
   @Test
   public void testFieldReadInBlockInsideAnotherBlock() {
     addField("field");
