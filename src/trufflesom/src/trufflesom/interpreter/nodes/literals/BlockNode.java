@@ -113,10 +113,8 @@ public class BlockNode extends LiteralNode {
 
   @Override
   public void constructOperation(final OpBuilder opBuilder) {
-    opBuilder.dsl.beginPushBlockWithoutContextOp();
     assert blockMethod.isConverted();
-    opBuilder.dsl.emitLoadConstant(blockMethod);
-    opBuilder.dsl.endPushBlockWithoutContextOp();
+    opBuilder.dsl.emitPushBlockWithoutContextOp(blockMethod);
   }
 
   protected BlockNode createNode(final SMethod adapted) {
@@ -161,10 +159,8 @@ public class BlockNode extends LiteralNode {
 
     @Override
     public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.beginPushBlockWithContextOp();
       assert blockMethod.isConverted();
-      opBuilder.dsl.emitLoadConstant(blockMethod);
-      opBuilder.dsl.endPushBlockWithContextOp();
+      opBuilder.dsl.emitPushBlockWithContextOp(blockMethod);
     }
   }
 }
