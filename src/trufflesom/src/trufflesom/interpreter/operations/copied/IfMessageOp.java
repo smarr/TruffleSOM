@@ -33,7 +33,7 @@ public abstract class IfMessageOp extends TernaryExpressionNode {
       @SuppressWarnings("unused") @Cached("arg.getMethod()") final SInvokable method,
       @Cached("create(method.getCallTarget())") final DirectCallNode callTarget,
       @Shared("profile") @Cached final InlinedCountingConditionProfile condProf,
-      @Bind("this") final Node self) {
+      @Bind final Node self) {
     if (condProf.profile(self, rcvr == expected)) {
       return callTarget.call(new Object[] {arg});
     } else {
@@ -46,7 +46,7 @@ public abstract class IfMessageOp extends TernaryExpressionNode {
       final boolean expected,
       @Cached final IndirectCallNode callNode,
       @Shared("profile") @Cached final InlinedCountingConditionProfile condProf,
-      @Bind("this") final Node self) {
+      @Bind final Node self) {
     if (condProf.profile(self, rcvr == expected)) {
       return callNode.call(arg.getMethod().getCallTarget(), new Object[] {arg});
     } else {
@@ -58,7 +58,7 @@ public abstract class IfMessageOp extends TernaryExpressionNode {
   public static final Object literal(final boolean rcvr, final Object arg,
       final boolean expected,
       @Shared("profile") @Cached final InlinedCountingConditionProfile condProf,
-      @Bind("this") final Node self) {
+      @Bind final Node self) {
     if (condProf.profile(self, rcvr == expected)) {
       return arg;
     } else {

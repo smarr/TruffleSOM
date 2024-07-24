@@ -42,7 +42,7 @@ public abstract class ArrayDoOp extends BinaryExpressionNode {
   @Specialization(guards = "arr.isEmptyType()")
   public static final SArray doEmptyArray(final VirtualFrame frame,
       final SArray arr, final SBlock block,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Shared("valuePrim") @Cached("createValue()") final ValueOnePrim valuePrim) {
     int length = arr.getEmptyStorage();
     try {
@@ -63,7 +63,7 @@ public abstract class ArrayDoOp extends BinaryExpressionNode {
   @Specialization(guards = "arr.isPartiallyEmptyType()")
   public static final SArray doPartiallyEmptyArray(final VirtualFrame frame,
       final SArray arr, final SBlock block,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Shared("valuePrim") @Cached("createValue()") final ValueOnePrim valuePrim) {
     PartiallyEmptyArray storage = arr.getPartiallyEmptyStorage();
     int length = storage.getLength();
@@ -85,7 +85,7 @@ public abstract class ArrayDoOp extends BinaryExpressionNode {
   @Specialization(guards = "arr.isObjectType()")
   public static final SArray doObjectArray(final VirtualFrame frame,
       final SArray arr, final SBlock block,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Shared("valuePrim") @Cached("createValue()") final ValueOnePrim valuePrim) {
     Object[] storage = arr.getObjectStorage();
     int length = storage.length;
@@ -107,7 +107,7 @@ public abstract class ArrayDoOp extends BinaryExpressionNode {
   @Specialization(guards = "arr.isLongType()")
   public static final SArray doLongArray(final VirtualFrame frame,
       final SArray arr, final SBlock block,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Shared("valuePrim") @Cached("createValue()") final ValueOnePrim valuePrim) {
     long[] storage = arr.getLongStorage();
     int length = storage.length;
@@ -129,7 +129,7 @@ public abstract class ArrayDoOp extends BinaryExpressionNode {
   @Specialization(guards = "arr.isDoubleType()")
   public static final SArray doDoubleArray(final VirtualFrame frame,
       final SArray arr, final SBlock block,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Shared("valuePrim") @Cached("createValue()") final ValueOnePrim valuePrim) {
     double[] storage = arr.getDoubleStorage();
     int length = storage.length;
@@ -151,7 +151,7 @@ public abstract class ArrayDoOp extends BinaryExpressionNode {
   @Specialization(guards = "arr.isBooleanType()")
   public static final SArray doBooleanArray(final VirtualFrame frame,
       final SArray arr, final SBlock block,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Shared("valuePrim") @Cached("createValue()") final ValueOnePrim valuePrim) {
     boolean[] storage = arr.getBooleanStorage();
     int length = storage.length;
