@@ -155,6 +155,14 @@ build:aarch64-test-and-rebench:
         EE_FAILED=70
       fi
 
+    - |
+      EE_FAILED=0
+      if mx build-native --no-jit -t OP -g ${GRAALEE_HOME}; then
+        ./som-native-interp-op-ee -cp Smalltalk TestSuite/TestHarness.som
+      else
+        EE_FAILED=70
+      fi
+
     - mx tests-nodestats || true
     - mx tests-coverage || true
 
