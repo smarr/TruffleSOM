@@ -39,7 +39,7 @@ public abstract class ArrayDoIndexesOp extends BinaryExpressionNode {
   @Specialization
   public static final SArray doArray(final VirtualFrame frame,
       final SArray receiver, final SBlock block,
-      @Bind("this") final Node node,
+      @Bind final Node node,
       @Cached("createValue()") final ValueOnePrim call,
       @Cached("createLength()") final LengthPrim length) {
     int l = (int) length.executeEvaluated(frame, receiver);

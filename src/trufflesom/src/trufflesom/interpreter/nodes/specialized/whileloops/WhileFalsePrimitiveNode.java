@@ -31,7 +31,7 @@ public abstract class WhileFalsePrimitiveNode extends WhilePrimitiveNode {
       @Cached("loopBody.getMethod()") final SInvokable cachedLoopBody,
       @Cached("create(cachedLoopCondition.getCallTarget())") final DirectCallNode conditionNode,
       @Cached("create(cachedLoopBody.getCallTarget())") final DirectCallNode bodyNode,
-      @Bind("this") final Node node) {
+      @Bind final Node node) {
     return doWhileCached(loopCondition, loopBody, conditionNode, bodyNode, false, node);
   }
 
