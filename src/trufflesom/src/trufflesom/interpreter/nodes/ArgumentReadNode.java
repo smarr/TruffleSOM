@@ -107,9 +107,8 @@ public abstract class ArgumentReadNode {
 
     @Override
     public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.beginWriteArgument();
+      opBuilder.dsl.beginWriteArgument(argumentIndex);
       valueNode.accept(opBuilder);
-      opBuilder.dsl.emitLoadConstant(argumentIndex);
       opBuilder.dsl.endWriteArgument();
     }
   }
@@ -147,10 +146,7 @@ public abstract class ArgumentReadNode {
 
     @Override
     public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.beginNonLocalArgumentReadOp();
-      opBuilder.dsl.emitLoadConstant(argumentIndex);
-      opBuilder.dsl.emitLoadConstant(contextLevel);
-      opBuilder.dsl.endNonLocalArgumentReadOp();
+      opBuilder.dsl.emitNonLocalArgumentReadOp(argumentIndex, contextLevel);
     }
 
     @Override

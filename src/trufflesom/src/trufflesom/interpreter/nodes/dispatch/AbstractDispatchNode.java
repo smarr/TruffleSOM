@@ -24,8 +24,8 @@ public abstract class AbstractDispatchNode extends Node
   public static final int INLINE_CACHE_SIZE = 6;
 
   @NeverDefault
-  public static AbstractDispatchNode create(final Object selector) {
-    return new UninitializedDispatchNode((SSymbol) selector);
+  public static AbstractDispatchNode create(final SSymbol selector) {
+    return new UninitializedDispatchNode(selector);
   }
 
   public abstract Object executeDispatch(VirtualFrame frame, Object[] arguments);
