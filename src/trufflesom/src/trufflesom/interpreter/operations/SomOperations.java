@@ -9,6 +9,7 @@ import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
+import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.EpilogExceptional;
 import com.oracle.truffle.api.bytecode.EpilogReturn;
 import com.oracle.truffle.api.bytecode.Prolog;
@@ -229,6 +230,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
+  @ConstantOperand(type = int.class)
   public static final class DetermineContextOp {
 
     @Specialization
@@ -240,6 +242,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ImportStatic(Types.class)
+  @ConstantOperand(type = SSymbol.class)
   public static final class MessageSendOp {
     public static Object getRcvr(final Object[] arguments) {
       return arguments[0];
@@ -247,7 +250,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static Object doCached(final VirtualFrame frame,
-        @SuppressWarnings("unused") final Object selector,
+        @SuppressWarnings("unused") final SSymbol selector,
         @Variadic final Object[] arguments,
         @Cached("create(selector)") final AbstractDispatchNode dispatch) {
       return dispatch.executeDispatch(frame, arguments);
@@ -257,6 +260,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
+  @ConstantOperand(type = DirectCallNode.class)
   public static final class SuperSendOp {
     @Specialization
     public static Object doSuper(final DirectCallNode callNode,
@@ -266,6 +270,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
+  @ConstantOperand(type = SSymbol.class)
   @ImportStatic(Globals.class)
   public static final class GlobalReadOp {
     @Specialization(guards = "assoc != null")
@@ -302,16 +307,17 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
+  @ConstantOperand(type = Association.class)
   public static final class GlobalCachedReadOp {
     @NeverDefault
-    public static Assumption get(final Object assoc) {
-      return ((Association) assoc).getAssumption();
+    public static Assumption get(final Association assoc) {
+      return assoc.getAssumption();
     }
 
     @Specialization // TODO: debug DSL bug: (assumptions = "cachedAssumption", limit = "1")
-    public static Object doCached(final Object assoc,
+    public static Object doCached(final Association assoc,
         @Cached("get(assoc)") final Assumption cachedAssumption) {
-      return ((Association) assoc).getValue();
+      return assoc.getValue();
     }
   }
 
@@ -322,6 +328,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ImportStatic(SomOperations.class)
+  @ConstantOperand(type = SMethod.class)
   public static final class PushBlockWithoutContextOp {
     @Specialization
     public static SBlock instantiate(final SMethod blockMethod,
@@ -332,6 +339,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ImportStatic(SomOperations.class)
+  @ConstantOperand(type = SMethod.class)
   public static final class PushBlockWithContextOp {
     @Specialization
     public static SBlock instantiate(final VirtualFrame frame, final SMethod blockMethod,
@@ -364,57 +372,75 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
+  @ConstantOperand(type = LocalSetter.class)
   public static final class UnsafeLoopIncrement {
     @Specialization
-    public static void increment(final VirtualFrame frame, final long currentValue,
-        final LocalSetter setter) {
-      setter.setLong(frame, currentValue + 1);
+    public static void increment(final VirtualFrame frame,
+        final LocalSetter setter,
+        final long currentValue,
+        @Bind BytecodeNode bytecodeNode,
+        @Bind("$bytecodeIndex") int bci) {
+      setter.setLong(bytecodeNode, bci, frame, currentValue + 1);
     }
 
     @Specialization
-    public static void increment(final VirtualFrame frame, final double currentValue,
-        final LocalSetter setter) {
-      setter.setDouble(frame, currentValue + 1.0);
+    public static void increment(final VirtualFrame frame,
+        final LocalSetter setter,
+        final double currentValue,
+        @Bind BytecodeNode bytecodeNode,
+        @Bind("$bytecodeIndex") int bci) {
+      setter.setDouble(bytecodeNode, bci, frame, currentValue + 1.0);
     }
   }
 
   @Operation
+  @ConstantOperand(type = LocalSetter.class)
   public static final class UnsafeLoopDecrement {
     @Specialization
-    public static void increment(final VirtualFrame frame, final long currentValue,
-        final LocalSetter setter) {
-      setter.setLong(frame, currentValue - 1);
+    public static void increment(final VirtualFrame frame,
+        final LocalSetter setter,
+        final long currentValue,
+        @Bind BytecodeNode bytecodeNode,
+        @Bind("$bytecodeIndex") int bci) {
+      setter.setLong(bytecodeNode, bci, frame, currentValue - 1);
     }
 
     @Specialization
-    public static void increment(final VirtualFrame frame, final double currentValue,
-        final LocalSetter setter) {
-      setter.setDouble(frame, currentValue - 1.0);
+    public static void increment(final VirtualFrame frame,
+        final LocalSetter setter,
+        final double currentValue,
+        @Bind BytecodeNode bytecodeNode,
+        @Bind("$bytecodeIndex") int bci) {
+      setter.setDouble(bytecodeNode, bci, frame, currentValue - 1.0);
     }
   }
 
   @Operation
+  @ConstantOperand(type = int.class)
   @ImportStatic(FieldAccessorNode.class)
   public static final class ReadField {
     @Specialization(rewriteOn = UnexpectedResultException.class)
-    public static long readLong(@SuppressWarnings("unused") final SObject self,
+    public static long readLong(
         @SuppressWarnings("unused") final int fieldIdx,
+        @SuppressWarnings("unused") final SObject self,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
         throws UnexpectedResultException {
       return read.readLong(self);
     }
 
     @Specialization(rewriteOn = UnexpectedResultException.class)
-    public static double readDouble(@SuppressWarnings("unused") final SObject self,
+    public static double readDouble(
         @SuppressWarnings("unused") final int fieldIdx,
+        @SuppressWarnings("unused") final SObject self,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
         throws UnexpectedResultException {
       return read.readDouble(self);
     }
 
     @Specialization
-    public static Object readObject(@SuppressWarnings("unused") final SObject self,
+    public static Object readObject(
         @SuppressWarnings("unused") final int fieldIdx,
+        @SuppressWarnings("unused") final SObject self,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
       return read.read(self);
     }
@@ -422,51 +448,59 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ImportStatic(FieldAccessorNode.class)
+  @ConstantOperand(type = int.class)
   public static final class WriteField {
     @Specialization
-    public static long writeLong(final SObject self, final long value,
+    public static long writeLong(
         @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self, final long value,
         @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
       return write.write(self, value);
     }
 
     @Specialization
-    public static double writeDouble(final SObject self, final double value,
+    public static double writeDouble(
         @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self, final double value,
         @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
       return write.write(self, value);
     }
 
     @Specialization
-    public static Object writeObject(final SObject self, final Object value,
+    public static Object writeObject(
         @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self, final Object value,
         @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
       return write.write(self, value);
     }
   }
 
   @Operation
+  @ConstantOperand(type = int.class)
   @ImportStatic(FieldAccessorNode.class)
   public static final class WriteFieldAndReturnSelf {
     @Specialization
-    public static SObject writeLong(final SObject self, final long value,
+    public static SObject writeLong(
         @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self, final long value,
         @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
       write.write(self, value);
       return self;
     }
 
     @Specialization
-    public static SObject writeDouble(final SObject self, final double value,
+    public static SObject writeDouble(
         @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self, final double value,
         @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
       write.write(self, value);
       return self;
     }
 
     @Specialization
-    public static SObject writeObject(final SObject self, final Object value,
+    public static SObject writeObject(
         @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self, final Object value,
         @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
       write.write(self, value);
       return self;
@@ -475,30 +509,36 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ImportStatic(FieldAccessorNode.class)
+  @ConstantOperand(type = int.class)
   public static final class IncField {
     @Specialization
-    public static long incLong(final SObject self,
+    public static long incLong(
         @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self,
         @Cached("createIncrement(fieldIdx, self)") final IncrementLongFieldNode inc) {
       return inc.increment(self);
     }
   }
 
   @Operation
+  @ConstantOperand(type = int.class)
   public static final class WriteArgument {
     @Specialization
-    public static Object writeArg(final VirtualFrame frame, final Object value,
-        final int argIdx) {
+    public static Object writeArg(final VirtualFrame frame, final int argIdx,
+        final Object value) {
       frame.getArguments()[argIdx] = value;
       return value;
     }
   }
 
   @Operation
+  @ConstantOperand(type = int.class)
   public static final class ReturnNonLocal {
     @Specialization
-    public static Object doReturn(final VirtualFrame frame, final Object result,
-        final FrameOnStackMarker marker, int contextLevel) {
+    public static Object doReturn(final VirtualFrame frame,
+        int contextLevel,
+        final Object result,
+        final FrameOnStackMarker marker) {
       if (marker.isOnStack()) {
         throw new ReturnException(result, marker);
       } else {
@@ -526,8 +566,8 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class ExecuteEpilogExceptionalOp {
     @Specialization
     public static void doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
-                                 @SuppressWarnings("unused") final AbstractTruffleException ex,
-                                 @Bind SomOperations root) {
+        @SuppressWarnings("unused") final AbstractTruffleException ex,
+        @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
         var marker = (FrameOnStackMarker) frame.getObject(root.frameOnStackMarkerIdx);
         marker.frameNoLongerOnStack();
@@ -541,9 +581,10 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class ExecuteEpilogOp {
     @Specialization
     public static Object doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
-                                 Object object, @Bind SomOperations root) {
+        Object object, @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
-        FrameOnStackMarker marker = (FrameOnStackMarker) frame.getObject(root.frameOnStackMarkerIdx);
+        FrameOnStackMarker marker =
+            (FrameOnStackMarker) frame.getObject(root.frameOnStackMarkerIdx);
         marker.frameNoLongerOnStack();
       }
       return object;
@@ -552,7 +593,8 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Override
-  public Object interceptControlFlowException(ControlFlowException ex, VirtualFrame frame, BytecodeNode bytecodeNode, int bci) throws Throwable {
+  public Object interceptControlFlowException(ControlFlowException ex, VirtualFrame frame,
+      BytecodeNode bytecodeNode, int bci) throws Throwable {
     if (frameOnStackMarkerIdx != -1) {
       var marker = (FrameOnStackMarker) frame.getObject(frameOnStackMarkerIdx);
       marker.frameNoLongerOnStack();

@@ -149,9 +149,7 @@ public abstract class GlobalNode extends ExpressionNode
 
     @Override
     public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.beginGlobalReadOp();
-      opBuilder.dsl.emitLoadConstant(globalName);
-      opBuilder.dsl.endGlobalReadOp();
+      opBuilder.dsl.emitGlobalReadOp(globalName);
     }
   }
 
@@ -254,9 +252,7 @@ public abstract class GlobalNode extends ExpressionNode
 
     @Override
     public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.beginGlobalCachedReadOp();
-      opBuilder.dsl.emitLoadConstant(assoc);
-      opBuilder.dsl.endGlobalCachedReadOp();
+      opBuilder.dsl.emitGlobalCachedReadOp(assoc);
     }
   }
 
