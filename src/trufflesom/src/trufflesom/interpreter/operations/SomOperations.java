@@ -514,7 +514,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @Prolog
   public static final class PrologOp {
     @Specialization
-    public static void executeProlog(final VirtualFrame frame, @Bind("$root") SomOperations root) {
+    public static void executeProlog(final VirtualFrame frame, @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
         FrameOnStackMarker marker = new FrameOnStackMarker();
         frame.setObject(root.frameOnStackMarkerIdx, marker);
@@ -527,7 +527,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     @Specialization
     public static void doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
                                  @SuppressWarnings("unused") final AbstractTruffleException ex,
-                                 @Bind("$root") SomOperations root) {
+                                 @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
         var marker = (FrameOnStackMarker) frame.getObject(root.frameOnStackMarkerIdx);
         marker.frameNoLongerOnStack();
@@ -541,7 +541,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class ExecuteEpilogOp {
     @Specialization
     public static Object doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
-                                 Object object, @Bind("$root") SomOperations root) {
+                                 Object object, @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
         FrameOnStackMarker marker = (FrameOnStackMarker) frame.getObject(root.frameOnStackMarkerIdx);
         marker.frameNoLongerOnStack();
