@@ -1,5 +1,6 @@
 package trufflesom.interpreter.operations.copied;
 
+import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -13,6 +14,8 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 @Proxyable
 @NodeChild(value = "argIndex", type = ExpressionNode.class)
 @NodeChild(value = "contextLevel", type = ExpressionNode.class)
+@ConstantOperand(type = int.class)
+@ConstantOperand(type = int.class)
 public abstract class NonLocalArgumentReadOp extends Node {
   public abstract Object executeGeneric(VirtualFrame frame);
 
