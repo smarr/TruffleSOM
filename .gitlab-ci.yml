@@ -169,11 +169,17 @@ build:aarch64-test-and-rebench:
     - mx build-native --no-jit -t AST
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
 
+    - mx build-native --no-jit -t OP
+    - ./som-native-interp-op -cp Smalltalk TestSuite/TestHarness.som
+
     - mx build-native --no-jit -t BC -g ${GRAALEE_HOME}
     - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
 
     - mx build-native --no-jit -t AST -g ${GRAALEE_HOME}
     - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
+
+    - mx build-native --no-jit -t OP -g ${GRAALEE_HOME}
+    - ./som-native-interp-op-ee -cp Smalltalk TestSuite/TestHarness.som
 
     - mx tests-nodestats || true
     - mx tests-coverage || true
