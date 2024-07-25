@@ -551,14 +551,11 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     }
   }
 
-  @Prolog
-  public static final class PrologOp {
+  @Operation
+  public static final class NewOnStackMarker {
     @Specialization
-    public static void executeProlog(final VirtualFrame frame, @Bind SomOperations root) {
-      if (root.frameOnStackMarkerIdx != -1) {
-        FrameOnStackMarker marker = new FrameOnStackMarker();
-        frame.setObject(root.frameOnStackMarkerIdx, marker);
-      }
+    public static FrameOnStackMarker createMarker() {
+      return new FrameOnStackMarker();
     }
   }
 

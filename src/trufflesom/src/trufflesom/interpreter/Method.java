@@ -37,6 +37,7 @@ import trufflesom.bdt.inlining.Scope;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.MethodGenerationContext;
+import trufflesom.compiler.Variable.Argument;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -193,13 +194,24 @@ public final class Method extends Invokable {
 
     var visitor = new OpBuilder(opBuilder, scope);
 
+    BytecodeLocal onStackMarker = scope.getOnStackMarker();
+
+    if (onStackMarker != null) {
+      opBuilder.beginStoreLocal(onStackMarker);
+      opBuilder.emitNewOnStackMarker();
+      opBuilder.endStoreLocal();
+    }
+
     opBuilder.beginReturn();
     origBody.accept(visitor);
     opBuilder.endReturn();
     opBuilder.endSource();
     SomOperations newMethodBody = opBuilder.endRoot();
     newMethodBody.initialize(name, source, sourceCoord);
-    newMethodBody.setFrameOnStackMarker(scope.getOnStackMarker());
+
+    if (onStackMarker != null) {
+      newMethodBody.setFrameOnStackMarker(onStackMarker);
+    }
 
     return newMethodBody;
   }
