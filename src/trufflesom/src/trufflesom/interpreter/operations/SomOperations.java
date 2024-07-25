@@ -107,7 +107,7 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-@GenerateBytecode(languageClass = SomLanguage.class, boxingEliminationTypes = {long.class, double.class, boolean.class})
+@GenerateBytecode(languageClass = SomLanguage.class, boxingEliminationTypes = {long.class, double.class})
 @TypeSystemReference(Types.class)
 @OperationProxy(SubtractionOp.class)
 @OperationProxy(AdditionOp.class)
