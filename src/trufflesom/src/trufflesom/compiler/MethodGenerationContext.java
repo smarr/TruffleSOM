@@ -25,6 +25,9 @@
 
 package trufflesom.compiler;
 
+import static trufflesom.vm.SymbolTable.strBlockSelf;
+import static trufflesom.vm.SymbolTable.strFrameOnStack;
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symFrameOnStack;
 import static trufflesom.vm.SymbolTable.symSelf;
@@ -81,8 +84,8 @@ public class MethodGenerationContext
   protected boolean accessesVariablesOfOuterScope;
   protected boolean accessesLocalsOfOuterScope;
 
-  protected final LinkedHashMap<SSymbol, Argument> arguments;
-  protected final LinkedHashMap<SSymbol, Local>    locals;
+  protected final LinkedHashMap<String, Argument> arguments;
+  protected final LinkedHashMap<String, Local>    locals;
 
   private Internal frameOnStack;
 
@@ -169,11 +172,11 @@ public class MethodGenerationContext
 
     if (frameOnStack == null) {
       assert needsToCatchNonLocalReturn;
-      assert !locals.containsKey(symFrameOnStack);
+      assert !locals.containsKey(strFrameOnStack);
 
       int index = locals.size();
-      frameOnStack = new Internal(symFrameOnStack, coord, index);
-      locals.put(symFrameOnStack, frameOnStack);
+      frameOnStack = new Internal(strFrameOnStack, coord, index);
+      locals.put(strFrameOnStack, frameOnStack);
       currentScope.addVariable(frameOnStack);
     }
     return frameOnStack;
@@ -278,8 +281,8 @@ public class MethodGenerationContext
     signature = sig;
   }
 
-  private Argument addArgument(final SSymbol arg, final long coord) {
-    if ((symSelf == arg || symBlockSelf == arg) && arguments.size() > 0) {
+  private Argument addArgument(final String arg, final long coord) {
+    if ((strSelf.equals(arg) || strBlockSelf.equals(arg)) && arguments.size() > 0) {
       throw new IllegalStateException(
           "The self argument always has to be the first argument of a method");
     }
@@ -293,7 +296,7 @@ public class MethodGenerationContext
     return argument;
   }
 
-  public Argument addArgumentIfAbsent(final SSymbol arg, final long coord) {
+  public Argument addArgumentIfAbsent(final String arg, final long coord) {
     if (arguments.containsKey(arg)) {
       return arguments.get(arg);
     }
@@ -301,7 +304,7 @@ public class MethodGenerationContext
     return addArgument(arg, coord);
   }
 
-  public boolean hasLocal(final SSymbol local) {
+  public boolean hasLocal(final String local) {
     return locals.containsKey(local);
   }
 
@@ -309,7 +312,7 @@ public class MethodGenerationContext
     return locals.size();
   }
 
-  public Local addLocal(final SSymbol local, final long coord) {
+  public Local addLocal(final String local, final long coord) {
     int index = locals.size();
     Local l = new Local(local, coord, index);
     assert !locals.containsKey(local);
@@ -321,7 +324,7 @@ public class MethodGenerationContext
     return l;
   }
 
-  private Local addLocalAndUpdateScope(final SSymbol name, final long coord) {
+  private Local addLocalAndUpdateScope(final String name, final long coord) {
     Local l = addLocal(name, coord);
     currentScope.addVariable(l);
     return l;
@@ -345,7 +348,7 @@ public class MethodGenerationContext
     return level;
   }
 
-  public int getContextLevel(final SSymbol varName) {
+  public int getContextLevel(final String varName) {
     if (locals.containsKey(varName) || arguments.containsKey(varName)) {
       return 0;
     }
@@ -373,7 +376,7 @@ public class MethodGenerationContext
     return locals.get(embeddedName);
   }
 
-  protected Variable getVariable(final SSymbol varName) {
+  protected Variable getVariable(final String varName) {
     if (locals.containsKey(varName)) {
       return locals.get(varName);
     }
@@ -404,7 +407,7 @@ public class MethodGenerationContext
     return variable.getWriteNode(getContextLevel(variable), valExpr, coord);
   }
 
-  protected Local getLocal(final SSymbol varName) {
+  protected Local getLocal(final String varName) {
     if (locals.containsKey(varName)) {
       return locals.get(varName);
     }
@@ -428,7 +431,7 @@ public class MethodGenerationContext
   }
 
   private ExpressionNode getSelfRead(final long coord) {
-    return getVariable(symSelf).getReadNode(getContextLevel(symSelf), coord);
+    return getVariable(strSelf).getReadNode(getContextLevel(strSelf), coord);
   }
 
   public FieldReadNode getObjectFieldRead(final SSymbol fieldName,
@@ -457,7 +460,7 @@ public class MethodGenerationContext
     return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);
   }
 
-  protected void addLocal(final Local l, final SSymbol name) {
+  protected void addLocal(final Local l, final String name) {
     assert !locals.containsKey(name);
     locals.put(name, l);
     currentScope.addVariable(l);
@@ -468,7 +471,7 @@ public class MethodGenerationContext
       int slotIndex = locals.size();
       Local l = v.splitToMergeIntoOuterScope(slotIndex);
       if (l != null) { // can happen for instance for the block self, which we omit
-        SSymbol name = l.getQualifiedName(holderGenc.getSource());
+        String name = l.makeQualifiedName(holderGenc.getSource());
         addLocal(l, name);
       }
     }
@@ -503,13 +506,13 @@ public class MethodGenerationContext
     if (blockOrVal instanceof BlockNode) {
       Argument[] args = ((BlockNode) blockOrVal).getArguments();
       assert args.length == 2;
-      loopIdx = getLocal(args[1].getQualifiedName(holderGenc.getSource()));
+      loopIdx = getLocal(args[1].makeQualifiedName(holderGenc.getSource()));
     } else {
       // if it is a literal, we still need a memory location for counting, so,
       // add a synthetic local
-      loopIdx = addLocalAndUpdateScope(symbolFor(
+      loopIdx = addLocalAndUpdateScope(
           "!i" + SourceCoordinate.getLocationQualifier(
-              holderGenc.getSource(), coord)),
+              holderGenc.getSource(), coord),
           coord);
     }
     return loopIdx;

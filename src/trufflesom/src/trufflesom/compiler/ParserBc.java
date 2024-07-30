@@ -25,14 +25,14 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNNONLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitRETURNSELF;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSEND;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitSUPERSEND;
+import static trufflesom.vm.SymbolTable.strSelf;
+import static trufflesom.vm.SymbolTable.strSuper;
 import static trufflesom.vm.SymbolTable.symArray;
 import static trufflesom.vm.SymbolTable.symArraySizePlaceholder;
 import static trufflesom.vm.SymbolTable.symAtPutMsg;
 import static trufflesom.vm.SymbolTable.symMinus;
 import static trufflesom.vm.SymbolTable.symNewMsg;
 import static trufflesom.vm.SymbolTable.symPlus;
-import static trufflesom.vm.SymbolTable.symSelf;
-import static trufflesom.vm.SymbolTable.symSuper;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.ArrayList;
@@ -155,7 +155,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
   @Override
   protected ExpressionNode assignation(final BytecodeMethodGenContext mgenc)
       throws ProgramDefinitionError {
-    List<SSymbol> l = new ArrayList<>();
+    List<String> l = new ArrayList<>();
 
     assignments(mgenc, l);
     evaluation(mgenc);
@@ -163,14 +163,14 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     for (int i = 1; i <= l.size(); i++) {
       emitDUP(mgenc);
     }
-    for (SSymbol s : l) {
+    for (String s : l) {
       genPopVariable(mgenc, s);
     }
 
     return null;
   }
 
-  private void assignments(final BytecodeMethodGenContext mgenc, final List<SSymbol> l)
+  private void assignments(final BytecodeMethodGenContext mgenc, final List<String> l)
       throws ParseError {
     if (sym == Identifier) {
       // String varName = assignment();
@@ -393,12 +393,12 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     switch (sym) {
       case Identifier:
       case Primitive: {
-        SSymbol v = variable();
+        String v = variable();
 
-        if (v == symSuper) {
+        if (v.equals(strSuper)) {
           superSend = true;
           // sends to super push self as the receiver
-          v = symSelf;
+          v = strSelf;
         }
 
         genPushVariable(mgenc, v);
@@ -452,7 +452,7 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     return null;
   }
 
-  private void genPushVariable(final BytecodeMethodGenContext mgenc, final SSymbol var)
+  private void genPushVariable(final BytecodeMethodGenContext mgenc, final String var)
       throws ParseError {
     // The purpose of this function is to find out whether the variable to be
     // pushed on the stack is a local variable, argument, or object field.
@@ -463,15 +463,16 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (variable != null) {
       variable.emitPush(mgenc);
     } else {
-      if (mgenc.hasField(var)) {
-        emitPUSHFIELD(mgenc, var);
+      SSymbol varSymbol = symbolFor(var);
+      if (mgenc.hasField(varSymbol)) {
+        emitPUSHFIELD(mgenc, varSymbol);
       } else {
-        emitPUSHGLOBAL(mgenc, var, this);
+        emitPUSHGLOBAL(mgenc, varSymbol, this);
       }
     }
   }
 
-  private void genPopVariable(final BytecodeMethodGenContext mgenc, final SSymbol var)
+  private void genPopVariable(final BytecodeMethodGenContext mgenc, final String var)
       throws ParseError {
     // The purpose of this function is to find out whether the variable to be
     // popped off the stack is a local variable, argument, or object field.
@@ -482,11 +483,12 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     if (variable != null) {
       variable.emitPop(mgenc);
     } else {
-      if (!mgenc.hasField(var)) {
-        throw new ParseError("Trying to write to field with the name '" + var.getString()
+      SSymbol varSymbol = symbolFor(var);
+      if (!mgenc.hasField(varSymbol)) {
+        throw new ParseError("Trying to write to field with the name '" + var
             + "', but field does not seem exist in class.", Symbol.NONE, this);
       }
-      emitPOPFIELD(mgenc, var);
+      emitPOPFIELD(mgenc, varSymbol);
     }
   }
 }

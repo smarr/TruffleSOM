@@ -49,6 +49,7 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_2;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 
 import java.util.ArrayList;
@@ -557,7 +558,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     if (outerGenc != null) {
       self = outerGenc.getArgument(0);
     } else {
-      self = arguments.get(symSelf);
+      self = arguments.get(strSelf);
     }
     return new FieldReadNode(new LocalArgumentReadNode(self), idx);
   }

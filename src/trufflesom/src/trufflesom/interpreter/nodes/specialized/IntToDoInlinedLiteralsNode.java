@@ -39,7 +39,7 @@ public abstract class IntToDoInlinedLiteralsNode extends NoPreEvalExprNode {
   public abstract ExpressionNode getTo();
 
   public String getIndexName() {
-    return loopIdxVar.getName().getString();
+    return loopIdxVar.getName();
   }
 
   public IntToDoInlinedLiteralsNode(final ExpressionNode originalBody,

@@ -1,5 +1,6 @@
 package trufflesom.tests;
 
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
@@ -28,7 +29,7 @@ public abstract class AstTestSetup extends TruffleTestSetup {
     addAllFields();
 
     mgenc = new MethodGenerationContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, 0);
+    mgenc.addArgumentIfAbsent(strSelf, 0);
 
     ParserAst parser = new ParserAst(source, s, null);
     try {

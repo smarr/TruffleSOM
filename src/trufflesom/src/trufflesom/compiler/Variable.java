@@ -4,6 +4,8 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPLOCAL;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHLOCAL;
+import static trufflesom.vm.SymbolTable.strBlockSelf;
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
@@ -30,21 +32,21 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class Variable {
-  public final SSymbol name;
-  public final long    coord;
+  public final String name;
+  public final long   coord;
 
-  Variable(final SSymbol name, final long coord) {
+  Variable(final String name, final long coord) {
     this.name = name;
     this.coord = coord;
   }
 
-  public final SSymbol getName() {
+  public final String getName() {
     return name;
   }
 
   /** Gets the name including lexical location. */
-  public final SSymbol getQualifiedName(final Source source) {
-    return symbolFor(name.getString() + SourceCoordinate.getLocationQualifier(source, coord));
+  public final String makeQualifiedName(final Source source) {
+    return name + SourceCoordinate.getLocationQualifier(source, coord);
   }
 
   @Override
@@ -92,13 +94,13 @@ public abstract class Variable {
   public static final class Argument extends Variable {
     public final int index;
 
-    Argument(final SSymbol name, final int index, final long coord) {
+    Argument(final String name, final int index, final long coord) {
       super(name, coord);
       this.index = index;
     }
 
     public boolean isSelf() {
-      return symSelf == name || symBlockSelf == name;
+      return strSelf.equals(name) || strBlockSelf.equals(name);
     }
 
     @Override
@@ -150,12 +152,12 @@ public abstract class Variable {
 
     @CompilationFinal private FrameDescriptor descriptor;
 
-    Local(final SSymbol name, final long coord, final int index) {
+    Local(final String name, final long coord, final int index) {
       super(name, coord);
       this.slotIndex = index;
     }
 
-    Local(final SSymbol name, final long coord, final FrameDescriptor descriptor,
+    Local(final String name, final long coord, final FrameDescriptor descriptor,
         final int index) {
       super(name, coord);
       this.slotIndex = index;
@@ -216,11 +218,11 @@ public abstract class Variable {
   }
 
   public static final class Internal extends Local {
-    public Internal(final SSymbol name, final long coord, final int slotIndex) {
+    public Internal(final String name, final long coord, final int slotIndex) {
       super(name, coord, slotIndex);
     }
 
-    public Internal(final SSymbol name, final long coord,
+    public Internal(final String name, final long coord,
         final FrameDescriptor descriptor, final int slotIndex) {
       super(name, coord, descriptor, slotIndex);
     }

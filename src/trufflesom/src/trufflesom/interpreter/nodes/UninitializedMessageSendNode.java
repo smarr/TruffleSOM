@@ -65,7 +65,7 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
   }
 
   @Override
-  public SSymbol getInvocationIdentifier() {
-    return selector;
+  public String getInvocationIdentifier() {
+    return selector.getString();
   }
 }

@@ -9,7 +9,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class AbstractMessageSendNode extends ExpressionNode
-    implements PreevaluatedExpression, Invocation<SSymbol> {
+    implements PreevaluatedExpression, Invocation<String> {
 
   @Children protected final ExpressionNode[] argumentNodes;
   private final int                          numArguments;

@@ -15,7 +15,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class LocalVariableNode extends NoPreEvalExprNode
-    implements Invocation<SSymbol> {
+    implements Invocation<String> {
   protected final int   slotIndex;
   protected final Local local;
 
@@ -32,7 +32,7 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
   }
 
   @Override
-  public final SSymbol getInvocationIdentifier() {
+  public final String getInvocationIdentifier() {
     return local.name;
   }
 

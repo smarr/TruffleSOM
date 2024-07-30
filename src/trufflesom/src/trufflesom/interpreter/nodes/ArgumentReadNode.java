@@ -11,7 +11,7 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class ArgumentReadNode {
 
   public static class LocalArgumentReadNode extends NoPreEvalExprNode
-      implements Invocation<SSymbol> {
+      implements Invocation<String> {
     public final int      argumentIndex;
     public final Argument arg;
 
@@ -44,7 +44,7 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    public SSymbol getInvocationIdentifier() {
+    public String getInvocationIdentifier() {
       return arg.name;
     }
 
@@ -58,7 +58,7 @@ public abstract class ArgumentReadNode {
       if (arg == null) {
         argId = "" + argumentIndex;
       } else {
-        argId = arg.name.getString();
+        argId = arg.name;
       }
       return "ArgRead(" + argId + ")";
     }
@@ -101,7 +101,7 @@ public abstract class ArgumentReadNode {
   }
 
   public static class NonLocalArgumentReadNode extends ContextualNode
-      implements Invocation<SSymbol> {
+      implements Invocation<String> {
     protected final int   argumentIndex;
     public final Argument arg;
 
@@ -127,7 +127,7 @@ public abstract class ArgumentReadNode {
     }
 
     @Override
-    public SSymbol getInvocationIdentifier() {
+    public String getInvocationIdentifier() {
       return arg.name;
     }
 
@@ -137,7 +137,7 @@ public abstract class ArgumentReadNode {
       if (arg == null) {
         argId = "" + argumentIndex;
       } else {
-        argId = arg.name.getString();
+        argId = arg.name;
       }
       return "ArgRead(" + argId + ", ctx: " + contextLevel + ")";
     }

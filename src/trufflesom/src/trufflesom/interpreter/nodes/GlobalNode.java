@@ -55,7 +55,7 @@ import trufflesom.vmobjects.SSymbol;
 
 @GenerateWrapper
 public abstract class GlobalNode extends ExpressionNode
-    implements Invocation<SSymbol>, PreevaluatedExpression {
+    implements Invocation<String>, PreevaluatedExpression {
 
   public static boolean isPotentiallyUnknown(final SSymbol global) {
     return global != symNil && global != symTrue
@@ -100,8 +100,8 @@ public abstract class GlobalNode extends ExpressionNode
   }
 
   @Override
-  public final SSymbol getInvocationIdentifier() {
-    return globalName;
+  public final String getInvocationIdentifier() {
+    return globalName.getString();
   }
 
   @Override

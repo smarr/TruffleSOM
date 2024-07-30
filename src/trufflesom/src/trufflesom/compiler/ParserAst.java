@@ -13,6 +13,8 @@ import static trufflesom.compiler.Symbol.NewTerm;
 import static trufflesom.compiler.Symbol.OperatorSequence;
 import static trufflesom.compiler.Symbol.Period;
 import static trufflesom.compiler.Symbol.Pound;
+import static trufflesom.vm.SymbolTable.strSelf;
+import static trufflesom.vm.SymbolTable.strSuper;
 import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symSuper;
@@ -92,7 +94,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       } else if (sym == EndTerm) {
         // the end of the method has been found (EndTerm) - make it implicitly return "self"
         ExpressionNode self =
-            variableRead(mgenc, symSelf, getCoordWithLength(getStartIndex()));
+            variableRead(mgenc, strSelf, getCoordWithLength(getStartIndex()));
         expressions.add(self);
         return createSequenceNode(coord, expressions);
       }
@@ -148,7 +150,7 @@ public class ParserAst extends Parser<MethodGenerationContext> {
           " fields, but found instead a %(found)s",
           Symbol.Identifier, this);
     }
-    SSymbol variable = assignment();
+    String variable = assignment();
 
     peekForNextSymbolFromLexer();
 
@@ -163,14 +165,14 @@ public class ParserAst extends Parser<MethodGenerationContext> {
   }
 
   protected ExpressionNode variableWrite(final MethodGenerationContext mgenc,
-      final SSymbol variableName, final ExpressionNode exp, final long coord)
+      final String variableName, final ExpressionNode exp, final long coord)
       throws ParseError {
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
       return mgenc.getLocalWriteNode(variable, exp, coord);
     }
 
-    FieldNode fieldWrite = mgenc.getObjectFieldWrite(variableName, exp, coord);
+    FieldNode fieldWrite = mgenc.getObjectFieldWrite(symbolFor(variableName), exp, coord);
 
     if (fieldWrite != null) {
       return fieldWrite;
@@ -452,13 +454,13 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       case Identifier:
       case Primitive: {
         int coord = getStartIndex();
-        SSymbol v = variable();
+        String v = variable();
 
-        if (v == symSuper) {
+        if (v.equals(strSuper)) {
           assert !superSend : "Since super is consumed directly, it should never be true here";
           superSend = true;
           // sends to super push self as the receiver
-          v = symSelf;
+          v = strSelf;
         }
 
         return variableRead(mgenc, v, getCoordWithLength(coord));
