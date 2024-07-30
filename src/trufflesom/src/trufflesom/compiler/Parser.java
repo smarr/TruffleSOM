@@ -56,6 +56,8 @@ import static trufflesom.compiler.Symbol.Primitive;
 import static trufflesom.compiler.Symbol.STString;
 import static trufflesom.compiler.Symbol.Separator;
 import static trufflesom.compiler.Symbol.Star;
+import static trufflesom.vm.SymbolTable.strBlockSelf;
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symBlockSelf;
 import static trufflesom.vm.SymbolTable.symNil;
 import static trufflesom.vm.SymbolTable.symObject;
@@ -360,7 +362,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   protected SSymbol field() throws ParseError {
-    return identifier();
+    return symbolFor(identifier());
   }
 
   private void instanceFields(final ClassGenerationContext cgenc)
@@ -437,7 +439,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     expect(NewBlock);
     int coord = getStartIndex();
 
-    mgenc.addArgumentIfAbsent(symBlockSelf, getEmptyCoord());
+    mgenc.addArgumentIfAbsent(strBlockSelf, getEmptyCoord());
 
     if (sym == Colon) {
       blockPattern(mgenc);
@@ -456,7 +458,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   private void pattern(final MGenC mgenc) throws ProgramDefinitionError {
     assert Universe.selfSource != null;
-    mgenc.addArgumentIfAbsent(symSelf, Universe.selfCoord);
+    mgenc.addArgumentIfAbsent(strSelf, Universe.selfCoord);
     switch (sym) {
       case Identifier:
       case Primitive:
@@ -491,11 +493,11 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
   }
 
   protected SSymbol unarySelector() throws ParseError {
-    return identifier();
+    return symbolFor(identifier());
   }
 
   protected SSymbol unarySendSelector() throws ParseError {
-    return identifier();
+    return symbolFor(identifier());
   }
 
   private SSymbol binarySelectorImpl() throws ParseError {
@@ -518,13 +520,13 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     return binarySelectorImpl();
   }
 
-  private SSymbol identifier() throws ParseError {
+  private String identifier() throws ParseError {
     String s = new String(text);
     boolean isPrimitive = accept(Primitive);
     if (!isPrimitive) {
       expect(Identifier);
     }
-    return symbolFor(s);
+    return s;
   }
 
   protected String keyword() throws ParseError {
@@ -545,9 +547,9 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected Local local(final MGenC mgenc) throws ProgramDefinitionError {
     int coord = getStartIndex();
-    SSymbol var = variable();
+    String var = variable();
     if (mgenc.hasLocal(var)) {
-      throw new ParseError("Declared the variable " + var.getString() + " multiple times.",
+      throw new ParseError("Declared the variable " + var + " multiple times.",
           null, this);
     }
     return mgenc.addLocal(var, getCoordWithLength(coord));
@@ -589,13 +591,13 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
 
   protected abstract ExpressionNode evaluation(MGenC mgenc) throws ProgramDefinitionError;
 
-  protected SSymbol assignment() throws ParseError {
-    SSymbol v = variable();
+  protected String assignment() throws ParseError {
+    String v = variable();
     expect(Assign);
     return v;
   }
 
-  protected SSymbol variable() throws ParseError {
+  protected String variable() throws ParseError {
     return identifier();
   }
 
@@ -703,7 +705,7 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
     } while (sym == Colon);
   }
 
-  protected ExpressionNode variableRead(final MGenC mgenc, final SSymbol variableName,
+  protected ExpressionNode variableRead(final MGenC mgenc, final String variableName,
       final long coord) {
     // now look up first local variables, or method arguments
     Variable variable = mgenc.getVariable(variableName);
@@ -711,15 +713,16 @@ public abstract class Parser<MGenC extends MethodGenerationContext> {
       return mgenc.getLocalReadNode(variable, coord);
     }
 
+    SSymbol varSym = symbolFor(variableName);
     // then object fields
-    FieldReadNode fieldRead = mgenc.getObjectFieldRead(variableName, coord);
+    FieldReadNode fieldRead = mgenc.getObjectFieldRead(varSym, coord);
 
     if (fieldRead != null) {
       return fieldRead;
     }
 
     // and finally assume it is a global
-    return GlobalNode.create(variableName, mgenc).initialize(coord);
+    return GlobalNode.create(varSym, mgenc).initialize(coord);
   }
 
   private void getSymbolFromLexer() {

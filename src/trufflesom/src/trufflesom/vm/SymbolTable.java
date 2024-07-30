@@ -11,6 +11,11 @@ import trufflesom.vmobjects.SSymbol;
 public class SymbolTable {
   private static final HashMap<String, SSymbol> symbolTable;
 
+  public static final String strSelf         = "self";
+  public static final String strSuper        = "super";
+  public static final String strBlockSelf    = "$blockSelf";
+  public static final String strFrameOnStack = "!frameOnStack";
+
   public static final SSymbol symNil;
   public static final SSymbol symTrue;
   public static final SSymbol symFalse;

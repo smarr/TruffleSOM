@@ -202,7 +202,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
     Local l = m.getScope().getLocal(idx);
 
-    return l.name.getString();
+    return l.name;
   }
 
   @ExplodeLoop

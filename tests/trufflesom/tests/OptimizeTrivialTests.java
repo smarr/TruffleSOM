@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
@@ -75,7 +76,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     } else {
       mgenc = new BytecodeMethodGenContext(cgenc, probe);
     }
-    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+    mgenc.addArgumentIfAbsent(strSelf, SourceCoordinate.create(1, 1));
 
     long coord = SourceCoordinate.create(0, 10);
 
@@ -125,7 +126,7 @@ public class OptimizeTrivialTests extends TruffleTestSetup {
     } else {
       mgenc = new BytecodeMethodGenContext(cgenc, probe);
     }
-    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+    mgenc.addArgumentIfAbsent(strSelf, SourceCoordinate.create(1, 1));
 
     long coord = SourceCoordinate.create(0, 10);
 

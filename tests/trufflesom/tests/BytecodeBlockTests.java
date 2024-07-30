@@ -2,6 +2,7 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static trufflesom.compiler.bc.Disassembler.dumpMethod;
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
@@ -35,7 +36,7 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     addAllFields();
 
     mgenc = new BytecodeMethodGenContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+    mgenc.addArgumentIfAbsent(strSelf, SourceCoordinate.create(1, 1));
 
     mgenc.setSignature(symbolFor("outer"));
     mgenc.setVarsOnMethodScope();
@@ -59,9 +60,8 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     addAllFields();
 
     mgenc = new BytecodeMethodGenContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
-    mgenc.addArgumentIfAbsent(
-        symbolFor(outerMethodArgName), SourceCoordinate.create(2, 1));
+    mgenc.addArgumentIfAbsent(strSelf, SourceCoordinate.create(1, 1));
+    mgenc.addArgumentIfAbsent(outerMethodArgName, SourceCoordinate.create(2, 1));
 
     mgenc.setSignature(symbolFor("outer"));
     mgenc.setVarsOnMethodScope();

@@ -49,7 +49,7 @@ public class AstInliningTests extends AstTestSetup {
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 0);
     LocalArgumentReadNode arg = read(ifNode, "bodyNode", LocalArgumentReadNode.class);
 
-    assertEquals(argName, arg.getInvocationIdentifier().getString());
+    assertEquals(argName, arg.getInvocationIdentifier());
     assertEquals(argIdx, arg.argumentIndex);
   }
 
@@ -82,11 +82,11 @@ public class AstInliningTests extends AstTestSetup {
 
     LocalArgumentReadNode argRead = (LocalArgumentReadNode) blockExprs[0];
     assertEquals(1, argRead.argumentIndex);
-    assertEquals("arg", argRead.getInvocationIdentifier().getString());
+    assertEquals("arg", argRead.getInvocationIdentifier());
 
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) blockExprs[1];
     LocalArgumentReadNode body = read(ifNode, "bodyNode", LocalArgumentReadNode.class);
-    assertEquals("arg", body.getInvocationIdentifier().getString());
+    assertEquals("arg", body.getInvocationIdentifier());
     assertEquals(1, body.argumentIndex);
   }
 
@@ -165,7 +165,7 @@ public class AstInliningTests extends AstTestSetup {
     IntIncrementNode inc = read(ifNode, "bodyNode", IntIncrementNode.class);
     LocalArgumentReadNode arg = (LocalArgumentReadNode) inc.getRcvr();
     assertEquals(1, arg.argumentIndex);
-    assertEquals("arg", arg.getInvocationIdentifier().getString());
+    assertEquals("arg", arg.getInvocationIdentifier());
   }
 
   @Test
@@ -190,7 +190,7 @@ public class AstInliningTests extends AstTestSetup {
     assertTrue(selfRead.isSelfRead());
 
     LocalArgumentReadNode argNode = (LocalArgumentReadNode) subMsg.getArgument();
-    assertEquals("arg", argNode.getInvocationIdentifier().getString());
+    assertEquals("arg", argNode.getInvocationIdentifier());
     assertEquals(1, argNode.argumentIndex);
   }
 
@@ -218,7 +218,7 @@ public class AstInliningTests extends AstTestSetup {
         read(read(ifFalseNode, "bodyNode"), "expressions", ExpressionNode[].class);
 
     LocalVariableWriteNode write = (LocalVariableWriteNode) body[0];
-    assertEquals("h", write.getInvocationIdentifier().getString());
+    assertEquals("h", write.getInvocationIdentifier());
 
     assertThat((Object) body[1], instanceOf(ReturnLocalNode.class));
   }
@@ -248,7 +248,7 @@ public class AstInliningTests extends AstTestSetup {
     NonLocalVariableWriteNode write = (NonLocalVariableWriteNode) read(
         read(blockNode.getMethod().getInvokable(), "body"), "expressions", 0);
     assertEquals(1, write.getContextLevel());
-    assertEquals("a", write.getInvocationIdentifier().getString());
+    assertEquals("a", write.getInvocationIdentifier());
 
     IfInlinedLiteralNode ifFalseNode =
         (IfInlinedLiteralNode) read(read(ifTrueNode, "bodyNode"), "expressions", 2);
@@ -256,7 +256,7 @@ public class AstInliningTests extends AstTestSetup {
         read(read(ifFalseNode, "bodyNode"), "expressions", ExpressionNode[].class);
 
     LocalVariableWriteNode writeH = (LocalVariableWriteNode) body[0];
-    assertEquals("h", writeH.getInvocationIdentifier().getString());
+    assertEquals("h", writeH.getInvocationIdentifier());
 
     assertThat((Object) body[2], instanceOf(ReturnLocalNode.class));
   }
@@ -281,23 +281,23 @@ public class AstInliningTests extends AstTestSetup {
 
     NonLocalArgumentReadNode readA = (NonLocalArgumentReadNode) blockExprs[0];
     assertEquals(1, readA.getContextLevel());
-    assertEquals("a", readA.getInvocationIdentifier().getString());
+    assertEquals("a", readA.getInvocationIdentifier());
     assertEquals(1, (int) read(readA, "argumentIndex", Integer.class));
 
     NonLocalVariableReadNode readB = (NonLocalVariableReadNode) blockExprs[1];
     assertEquals(1, readB.getContextLevel());
-    assertEquals("b", readB.getInvocationIdentifier().getString());
+    assertEquals("b", readB.getInvocationIdentifier());
 
     blockNode = (BlockNode) blockExprs[4];
     blockExprs = getBlockExprs(blockNode);
     readA = (NonLocalArgumentReadNode) blockExprs[0];
     assertEquals(2, readA.getContextLevel());
-    assertEquals("a", readA.getInvocationIdentifier().getString());
+    assertEquals("a", readA.getInvocationIdentifier());
     assertEquals(1, (int) read(readA, "argumentIndex", Integer.class));
 
     readB = (NonLocalVariableReadNode) blockExprs[1];
     assertEquals(2, readB.getContextLevel());
-    assertEquals("b", readB.getInvocationIdentifier().getString());
+    assertEquals("b", readB.getInvocationIdentifier());
   }
 
   private void ifTrueIfFalseReturn(final String sel1, final String sel2,
@@ -356,7 +356,7 @@ public class AstInliningTests extends AstTestSetup {
 
     LocalArgumentReadNode readB =
         read(blockBIfTrue, "conditionNode", LocalArgumentReadNode.class);
-    assertEquals("b", readB.getInvocationIdentifier().getString());
+    assertEquals("b", readB.getInvocationIdentifier());
     assertEquals(1, readB.argumentIndex);
 
     UninitFieldIncNode incNode = read(blockBIfTrue, "bodyNode", UninitFieldIncNode.class);
@@ -386,17 +386,17 @@ public class AstInliningTests extends AstTestSetup {
 
     LocalArgumentReadNode readNode =
         read(blockBIfTrue, "conditionNode", LocalArgumentReadNode.class);
-    assertEquals("b", readNode.getInvocationIdentifier().getString());
+    assertEquals("b", readNode.getInvocationIdentifier());
     assertEquals(1, readNode.argumentIndex);
 
     NonLocalVariableWriteNode writeNode =
         read(blockBIfTrue, "bodyNode", NonLocalVariableWriteNode.class);
     assertEquals(1, writeNode.getContextLevel());
-    assertEquals("l2", writeNode.getInvocationIdentifier().getString());
+    assertEquals("l2", writeNode.getInvocationIdentifier());
 
     IntIncrementNode incNode = (IntIncrementNode) writeNode.getExp();
     NonLocalVariableReadNode readL2 = (NonLocalVariableReadNode) incNode.getRcvr();
-    assertEquals("l2", readL2.getInvocationIdentifier().getString());
+    assertEquals("l2", readL2.getInvocationIdentifier());
   }
 
   @Test

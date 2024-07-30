@@ -1,6 +1,7 @@
 package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
+import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
@@ -30,7 +31,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     addAllFields();
 
     mgenc = new BytecodeMethodGenContext(cgenc, probe);
-    mgenc.addArgumentIfAbsent(symSelf, SourceCoordinate.create(1, 1));
+    mgenc.addArgumentIfAbsent(strSelf, SourceCoordinate.create(1, 1));
 
     ParserBc parser = new ParserBc(source, s, probe);
     try {
