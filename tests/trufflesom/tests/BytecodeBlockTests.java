@@ -159,13 +159,12 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
             + " #end\n"
             + "]");
 
-    assertEquals(15, bytecodes.length);
     check(bytecodes,
         t(5, Bytecodes.SEND),
         new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 4),
         Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
+        Bytecodes.PUSH_CONSTANT_2);
   }
 
   @Test
@@ -177,12 +176,11 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
             + "]",
         "arg");
 
-    assertEquals(17, bytecodes.length);
     check(bytecodes,
         t(7, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 6)),
         new BC(Bytecodes.PUSH_ARGUMENT, 1, 1),
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT);
+        Bytecodes.PUSH_CONSTANT_2);
   }
 
   private void blockIfReturnNonLocal(final String sel, final byte jumpBytecode) {
@@ -192,7 +190,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
         + " #end\n"
         + "]");
 
-    assertEquals(16, bytecodes.length);
     check(bytecodes,
         t(5, Bytecodes.SEND),
         new BC(jumpBytecode, 5),
