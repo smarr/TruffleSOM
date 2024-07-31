@@ -191,14 +191,14 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   public void testIfTrueWithLiteralReturn() {
     ifTrueWithLiteralReturn("0", Bytecodes.PUSH_0);
     ifTrueWithLiteralReturn("1", Bytecodes.PUSH_1);
-    ifTrueWithLiteralReturn("-10", Bytecodes.PUSH_CONSTANT_2);
-    ifTrueWithLiteralReturn("3333", Bytecodes.PUSH_CONSTANT_2);
-    ifTrueWithLiteralReturn("'str'", Bytecodes.PUSH_CONSTANT_2);
-    ifTrueWithLiteralReturn("#sym", Bytecodes.PUSH_CONSTANT_2);
-    ifTrueWithLiteralReturn("1.1", Bytecodes.PUSH_CONSTANT_2);
-    ifTrueWithLiteralReturn("-2342.234", Bytecodes.PUSH_CONSTANT_2);
-    ifTrueWithLiteralReturn("true", Bytecodes.PUSH_CONSTANT_2);
-    ifTrueWithLiteralReturn("false", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithLiteralReturn("-10", Bytecodes.PUSH_CONSTANT_1);
+    ifTrueWithLiteralReturn("3333", Bytecodes.PUSH_CONSTANT_1);
+    ifTrueWithLiteralReturn("'str'", Bytecodes.PUSH_CONSTANT_1);
+    ifTrueWithLiteralReturn("#sym", Bytecodes.PUSH_CONSTANT_1);
+    ifTrueWithLiteralReturn("1.1", Bytecodes.PUSH_CONSTANT_1);
+    ifTrueWithLiteralReturn("-2342.234", Bytecodes.PUSH_CONSTANT_1);
+    ifTrueWithLiteralReturn("true", Bytecodes.PUSH_CONSTANT_1);
+    ifTrueWithLiteralReturn("false", Bytecodes.PUSH_CONSTANT_1);
     ifTrueWithLiteralReturn("nil", Bytecodes.PUSH_NIL);
     ifTrueWithLiteralReturn("SomeGlobal", Bytecodes.PUSH_GLOBAL);
     ifTrueWithLiteralReturn("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
@@ -212,12 +212,11 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
 
     int bcLength = Bytecodes.getBytecodeLength(bytecode);
 
-    assertEquals(10 + bcLength, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_SELF,
         Bytecodes.SEND,
         Bytecodes.JUMP_ON_FALSE_TOP_NIL,
-        Bytecodes.PUSH_CONSTANT_2,
+        Bytecodes.PUSH_CONSTANT_1,
         Bytecodes.POP,
         bytecode,
         Bytecodes.POP,
@@ -229,14 +228,14 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   public void testIfTrueWithSomethingAndLiteralReturn() {
     ifTrueWithSomethingAndLiteralReturn("0", Bytecodes.PUSH_0);
     ifTrueWithSomethingAndLiteralReturn("1", Bytecodes.PUSH_1);
-    ifTrueWithSomethingAndLiteralReturn("-10", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithSomethingAndLiteralReturn("3333", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithSomethingAndLiteralReturn("'str'", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithSomethingAndLiteralReturn("#sym", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithSomethingAndLiteralReturn("1.1", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithSomethingAndLiteralReturn("-2342.234", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithSomethingAndLiteralReturn("true", Bytecodes.PUSH_CONSTANT);
-    ifTrueWithSomethingAndLiteralReturn("false", Bytecodes.PUSH_CONSTANT);
+    ifTrueWithSomethingAndLiteralReturn("-10", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithSomethingAndLiteralReturn("3333", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithSomethingAndLiteralReturn("'str'", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithSomethingAndLiteralReturn("#sym", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithSomethingAndLiteralReturn("1.1", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithSomethingAndLiteralReturn("-2342.234", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithSomethingAndLiteralReturn("true", Bytecodes.PUSH_CONSTANT_2);
+    ifTrueWithSomethingAndLiteralReturn("false", Bytecodes.PUSH_CONSTANT_2);
     ifTrueWithSomethingAndLiteralReturn("nil", Bytecodes.PUSH_NIL);
     ifTrueWithSomethingAndLiteralReturn("SomeGlobal", Bytecodes.PUSH_GLOBAL);
     ifTrueWithSomethingAndLiteralReturn("[]", Bytecodes.PUSH_BLOCK_NO_CTX);
@@ -251,7 +250,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(13, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
         Bytecodes.POP,
@@ -260,7 +258,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         new BC(jumpBytecode, 4),
         Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_2,
         Bytecodes.RETURN_SELF);
   }
 
@@ -366,7 +364,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
         new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 12),
-        Bytecodes.PUSH_CONSTANT_2,
+        Bytecodes.PUSH_CONSTANT_1,
         new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 8),
         Bytecodes.PUSH_FIELD_0,
         Bytecodes.PUSH_ARG1,
@@ -391,16 +389,15 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "      h := 1.\n"
             + "      ^ i - j - f - g - d ] ] )");
 
-    assertEquals(47, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_LOCAL_1,
         Bytecodes.POP_LOCAL_0,
-        t(3, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 43)),
+        t(3, new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 42)),
         t(7, new BC(Bytecodes.POP_LOCAL, 5, 0)),
-        t(12, Bytecodes.POP_LOCAL_2),
-        t(15, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 31)),
-        t(19, new BC(Bytecodes.POP_LOCAL, 8, 0)),
-        t(40, new BC(Bytecodes.PUSH_LOCAL, 3, 0)));
+        t(11, Bytecodes.POP_LOCAL_2),
+        t(14, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 31)),
+        t(18, new BC(Bytecodes.POP_LOCAL, 8, 0)),
+        t(39, new BC(Bytecodes.PUSH_LOCAL, 3, 0)));
   }
 
   @Test
@@ -422,21 +419,19 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + " [ a ]\n"
             + ")");
 
-    assertEquals(31, bytecodes.length);
-
     check(bytecodes,
         // a := 1
         Bytecodes.PUSH_1,
         Bytecodes.POP_LOCAL_0, // a
 
         Bytecodes.PUSH_CONSTANT_0,
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 24),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 23),
 
         // e := 0
         Bytecodes.PUSH_0,
         Bytecodes.POP_LOCAL_2, // e
 
-        t(13, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 14)),
+        t(12, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 14)),
 
         Bytecodes.PUSH_1,
         new BC(Bytecodes.POP_LOCAL, 3, 0)); // h
@@ -446,14 +441,14 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         new BC(Bytecodes.POP_LOCAL, 0, 1, "local a"),
         new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
 
-    check(getBytecodesOfBlock(20), // [ h + a + e ].
+    check(getBytecodesOfBlock(19), // [ h + a + e ].
         // this is a bit confusing, but the order in the localsAndOuters array of the block
         // is the same as in the outer method
         new BC(Bytecodes.PUSH_LOCAL, 3, 1, "local h"),
         new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"),
         t(8, new BC(Bytecodes.PUSH_LOCAL, 2, 1, "local e")));
 
-    check(getBytecodesOfBlock(28),
+    check(getBytecodesOfBlock(27),
         new BC(Bytecodes.PUSH_LOCAL, 0, 1, "local a"));
   }
 
@@ -473,7 +468,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "     [ a := b := c := d := e := f := 4 ] ] ]\n"
             + ")");
 
-    assertEquals(40, bytecodes.length);
     check(bytecodes,
         // a := b := 0.
         Bytecodes.PUSH_0,
@@ -484,7 +478,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.POP,
 
         Bytecodes.PUSH_CONSTANT_0,
-        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 32),
+        new BC(Bytecodes.JUMP_ON_FALSE_TOP_NIL, 31),
 
         // c := d := 1.
         Bytecodes.PUSH_1,
@@ -497,7 +491,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.PUSH_BLOCK,
         Bytecodes.POP,
 
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_2,
         new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 16),
 
         // e := f := 3.
@@ -524,7 +518,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         new BC(Bytecodes.POP_LOCAL, 3, 1), // d
         Bytecodes.RETURN_LOCAL);
 
-    check(getBytecodesOfBlock(37),
+    check(getBytecodesOfBlock(36),
         // a := b := c := d := e := f := 4
         Bytecodes.PUSH_CONSTANT_0,
         Bytecodes.DUP,
@@ -596,7 +590,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + " #end\n"
             + ")");
 
-    assertEquals(17, bytecodes.length);
     check(bytecodes,
         t(5, new BC(Bytecodes.JUMP_ON_FALSE_POP, 7)),
         Bytecodes.PUSH_ARG1,
@@ -614,7 +607,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(18, bytecodes.length);
     check(bytecodes,
         t(5, new BC(Bytecodes.JUMP_ON_FALSE_POP, 8)),
         Bytecodes.PUSH_ARG1,
@@ -633,7 +625,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(18, bytecodes.length);
     check(bytecodes,
         t(5, new BC(Bytecodes.JUMP_ON_FALSE_POP, 7)),
         Bytecodes.PUSH_ARG1,
@@ -651,7 +642,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  ^ self method " + sel1 + " [ ^ arg1 ] " + sel2 + " [ arg2 ]\n"
             + ")");
 
-    assertEquals(15, bytecodes.length);
     check(bytecodes,
         t(5, new BC(jumpBytecode, 8)),
         t(10, new BC(Bytecodes.JUMP, 4)));
@@ -671,7 +661,6 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  true ifFalse: [ #a. #b. #c. #d. ]\n"
             + ")");
 
-    assertEquals(23, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
         t(2, Bytecodes.PUSH_CONSTANT_1),
@@ -692,17 +681,16 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  true ifFalse: [ #e. #f. #g. #h. ]\n"
             + ")");
 
-    assertEquals(26, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
         t(2, Bytecodes.PUSH_CONSTANT_1),
         t(4, Bytecodes.PUSH_CONSTANT_2),
         t(6, Bytecodes.PUSH_CONSTANT),
         t(11, new BC(Bytecodes.JUMP_ON_TRUE_TOP_NIL, 14)),
-        t(14, new BC(Bytecodes.PUSH_CONSTANT, 6)),
-        t(17, new BC(Bytecodes.PUSH_CONSTANT, 7)),
-        t(20, new BC(Bytecodes.PUSH_CONSTANT, 8)),
-        t(23, new BC(Bytecodes.PUSH_CONSTANT, 9)));
+        t(14, new BC(Bytecodes.PUSH_CONSTANT, 5)),
+        t(17, new BC(Bytecodes.PUSH_CONSTANT, 6)),
+        t(20, new BC(Bytecodes.PUSH_CONSTANT, 7)),
+        t(23, new BC(Bytecodes.PUSH_CONSTANT, 8)));
   }
 
   @Test
@@ -728,13 +716,12 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + "  #end\n"
             + ")");
 
-    assertEquals(17, bytecodes.length);
     check(bytecodes,
-        t(2, Bytecodes.PUSH_CONSTANT),
+        t(2, Bytecodes.PUSH_CONSTANT_1),
         jumpBytecode,
         Bytecodes.PUSH_ARG1,
         Bytecodes.POP,
-        new BC(Bytecodes.JUMP_BACKWARDS, 7),
+        new BC(Bytecodes.JUMP_BACKWARDS, 6),
         Bytecodes.PUSH_NIL,
         Bytecodes.POP);
   }
@@ -827,15 +814,14 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
     byte[] bytecodes = methodToBytecodes(
         "test = ( true " + sel + " [ #val ] )");
 
-    assertEquals(11, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
         new BC(Bytecodes.JUMP_ON_FALSE_POP, 7),
         // true branch
-        Bytecodes.PUSH_CONSTANT_2, // push the `#val`
-        new BC(Bytecodes.JUMP, 5),
+        Bytecodes.PUSH_CONSTANT_1, // push the `#val`
+        new BC(Bytecodes.JUMP, 4),
         // false branch, jump_on_false target, push false
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_CONSTANT_2,
         // target of the jump in the true branch
         Bytecodes.RETURN_SELF);
   }
@@ -855,7 +841,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.PUSH_CONSTANT_0,
         new BC(Bytecodes.JUMP_ON_TRUE_POP, 7),
         // true branch
-        Bytecodes.PUSH_CONSTANT_2, // push the `#val`
+        Bytecodes.PUSH_CONSTANT_1, // push the `#val`
         new BC(Bytecodes.JUMP, 4),
         // false branch, jump_on_false target, push false
         Bytecodes.PUSH_CONSTANT_0,
@@ -883,7 +869,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.PUSH_FIELD_0,
         new BC(Bytecodes.JUMP, 4),
         // false branch, jump_on_false target, push false
-        Bytecodes.PUSH_CONSTANT_2,
+        Bytecodes.PUSH_CONSTANT_1,
         // target of the jump in the true branch
         Bytecodes.RETURN_SELF);
   }
@@ -1011,13 +997,13 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   public void testTrivialMethodInlining() {
     trivialMethodInlining("0", Bytecodes.PUSH_0);
     trivialMethodInlining("1", Bytecodes.PUSH_1);
-    trivialMethodInlining("-10", Bytecodes.PUSH_CONSTANT_2);
-    trivialMethodInlining("'str'", Bytecodes.PUSH_CONSTANT_2);
-    trivialMethodInlining("#sym", Bytecodes.PUSH_CONSTANT_2);
-    trivialMethodInlining("1.1", Bytecodes.PUSH_CONSTANT_2);
-    trivialMethodInlining("-2342.234", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("-10", Bytecodes.PUSH_CONSTANT_1);
+    trivialMethodInlining("'str'", Bytecodes.PUSH_CONSTANT_1);
+    trivialMethodInlining("#sym", Bytecodes.PUSH_CONSTANT_1);
+    trivialMethodInlining("1.1", Bytecodes.PUSH_CONSTANT_1);
+    trivialMethodInlining("-2342.234", Bytecodes.PUSH_CONSTANT_1);
     trivialMethodInlining("true", Bytecodes.PUSH_CONSTANT_0);
-    trivialMethodInlining("false", Bytecodes.PUSH_CONSTANT_2);
+    trivialMethodInlining("false", Bytecodes.PUSH_CONSTANT_1);
     trivialMethodInlining("nil", Bytecodes.PUSH_NIL);
     trivialMethodInlining("Nil", Bytecodes.PUSH_GLOBAL);
     trivialMethodInlining("UnknownGlobal", Bytecodes.PUSH_GLOBAL);
