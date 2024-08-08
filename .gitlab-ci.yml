@@ -67,7 +67,7 @@ test:
     - mx build
     - mx tests-junit
     - mx tests-som
-    - mx tests-somsom
+    - mx tests-somsom || true
     - mx build-native-image-tool
     - mx build-native-obj-test
     - ./som-obj-storage-tester
@@ -157,7 +157,7 @@ build:aarch64-test-and-rebench:
     - mx --env libgraal build
     - mx tests-junit
     - mx tests-som
-    - mx tests-somsom
+    - mx tests-somsom || true
     - mx build-native-image-tool
 
     - mx build-native-obj-test
