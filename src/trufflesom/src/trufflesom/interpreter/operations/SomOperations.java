@@ -562,7 +562,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @EpilogExceptional
   public static final class ExecuteEpilogExceptionalOp {
     @Specialization
-    public static void doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
+    public static void markFrameAsNoLongerOnStack(@SuppressWarnings("unused") final VirtualFrame frame,
         @SuppressWarnings("unused") final AbstractTruffleException ex,
         @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
@@ -577,7 +577,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @EpilogReturn
   public static final class ExecuteEpilogOp {
     @Specialization
-    public static Object doNothing(@SuppressWarnings("unused") final VirtualFrame frame,
+    public static Object markFrameAsNoLongerOnStack(@SuppressWarnings("unused") final VirtualFrame frame,
         Object object, @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
         FrameOnStackMarker marker =
