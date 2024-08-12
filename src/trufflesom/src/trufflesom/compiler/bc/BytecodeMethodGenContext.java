@@ -49,7 +49,7 @@ import static trufflesom.interpreter.bc.Bytecodes.RETURN_FIELD_2;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_LOCAL;
 import static trufflesom.interpreter.bc.Bytecodes.RETURN_SELF;
 import static trufflesom.interpreter.bc.Bytecodes.getBytecodeLength;
-import static trufflesom.vm.SymbolTable.symSelf;
+import static trufflesom.vm.SymbolTable.strSelf;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -299,7 +299,19 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
   }
 
   public byte addLiteral(final Object lit, final ParserBc parser) throws ParseError {
-    int i = literals.size();
+    int i = 0;
+
+    // first try to use an empty slot, which may have opend up from inlining
+    for (; i < literals.size(); i += 1) {
+      if (literals.get(i) == null) {
+        literals.set(i, lit);
+        return (byte) i;
+      }
+    }
+
+    // otherwise, just add it
+    // but make sure we don't exceed the maximum number of literals
+    i = literals.size();
     if (i > Byte.MAX_VALUE) {
       String methodSignature = holderGenc.getName().getString() + ">>" + signature;
       throw new ParseError(
@@ -308,6 +320,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
               + " literal values. Please split the method. The literal to be added is: " + lit,
           Symbol.NONE, parser);
     }
+
     literals.add(lit);
     return (byte) i;
   }
@@ -557,7 +570,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     if (outerGenc != null) {
       self = outerGenc.getArgument(0);
     } else {
-      self = arguments.get(symSelf);
+      self = arguments.get(strSelf);
     }
     return new FieldReadNode(new LocalArgumentReadNode(self), idx);
   }
@@ -800,6 +813,16 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return true;
   }
 
+  /**
+   * This works only, because we have a simple forward-pass parser,
+   * and inlining, where this is used, happens right after the block was added.
+   * This also means, we need to remove blocks in reverse order.
+   */
+  private SMethod getLastBlockMethodAndFreeLiteral(final byte blockLiteralIdx) {
+    assert blockLiteralIdx == literals.size() - 1;
+    return (SMethod) literals.removeLast();
+  }
+
   public boolean inlineIfTrueOrIfFalse(final ParserBc parser, final boolean ifTrue)
       throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
@@ -818,7 +841,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     int jumpOffsetIdxToSkipTrueBranch = emitJumpOnBoolWithDummyOffset(this, ifTrue, false);
 
     // grab block's method, and inline it
-    SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+    SMethod toBeInlined = getLastBlockMethodAndFreeLiteral(blockLiteralIdx);
 
     isCurrentlyInliningBlock = true;
     toBeInlined.getInvokable().inline(this, toBeInlined);
@@ -847,8 +870,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
     // grab block's method, and inline it
-    SMethod toBeInlined1 = (SMethod) literals.get(block1LiteralIdx);
-    SMethod toBeInlined2 = (SMethod) literals.get(block2LiteralIdx);
+    SMethod toBeInlined2 = getLastBlockMethodAndFreeLiteral(block2LiteralIdx);
+    SMethod toBeInlined1 = getLastBlockMethodAndFreeLiteral(block1LiteralIdx);
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
@@ -888,7 +911,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     int jumpOffsetIdxToSkipBranch = emitJumpOnBoolWithDummyOffset(this, !isOr, true);
 
-    SMethod toBeInlined = (SMethod) literals.get(blockLiteralIdx);
+    SMethod toBeInlined = getLastBlockMethodAndFreeLiteral(blockLiteralIdx);
 
     isCurrentlyInliningBlock = true;
     toBeInlined.getInvokable().inline(this, toBeInlined);
@@ -919,8 +942,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     byte block2LiteralIdx = bytecode.get(bytecode.size() - 1);
 
     // grab block's method, and inline it
-    SMethod condMethod = (SMethod) literals.get(block1LiteralIdx);
-    SMethod bodyMethod = (SMethod) literals.get(block2LiteralIdx);
+    SMethod bodyMethod = getLastBlockMethodAndFreeLiteral(block2LiteralIdx);
+    SMethod condMethod = getLastBlockMethodAndFreeLiteral(block1LiteralIdx);
 
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 

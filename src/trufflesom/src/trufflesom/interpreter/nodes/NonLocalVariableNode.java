@@ -19,7 +19,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class NonLocalVariableNode extends ContextualNode
-    implements Invocation<SSymbol> {
+    implements Invocation<String> {
 
   protected final int   slotIndex;
   protected final Local local;
@@ -31,7 +31,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
   }
 
   @Override
-  public SSymbol getInvocationIdentifier() {
+  public String getInvocationIdentifier() {
     return local.name;
   }
 
