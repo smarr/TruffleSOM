@@ -329,7 +329,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     BackJump[] loops = inlinedLoops.toArray(new BackJump[0]);
 
     return new BytecodeLoopNode(bytecodes, locals.size(), literalsArr, maxStackDepth,
-        frameOnStackMarkerIndex, loops);
+        frameOnStackMarkerIndex, loops, getMaxContextLevel());
   }
 
   public byte[] getBytecodeArray() {

@@ -320,7 +320,9 @@ public class Disassembler {
         }
 
         case RETURN_NON_LOCAL: {
-          Universe.errorPrintln("context: " + bytecodes.get(b + 1));
+          if (m != null) {
+            Universe.errorPrintln("context: " + m.getContextLevel());
+          }
           break;
         }
 

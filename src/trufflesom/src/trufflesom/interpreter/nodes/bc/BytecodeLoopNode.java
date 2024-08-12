@@ -155,6 +155,8 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
   @Children private final Node[] quickenedField;
 
+  @CompilationFinal private int contextLevel;
+
   private final int numLocals;
   private final int maxStackDepth;
 
@@ -162,7 +164,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
   public BytecodeLoopNode(final byte[] bytecodes, final int numLocals,
       final Object[] literals, final int maxStackDepth,
-      final int frameOnStackMarkerIndex, final BackJump[] inlinedLoops) {
+      final int frameOnStackMarkerIndex, final BackJump[] inlinedLoops, int contextLevel) {
     this.bytecodesField = bytecodes;
     this.numLocals = numLocals;
     this.literalsAndConstantsField = literals;
@@ -172,13 +174,19 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
     this.frameOnStackMarkerIndex = frameOnStackMarkerIndex;
 
     this.quickenedField = new Node[bytecodes.length];
+    this.contextLevel = contextLevel;
+  }
+
+  public int getContextLevel() {
+    return contextLevel;
   }
 
   @Override
   public Node deepCopy() {
     return new BytecodeLoopNode(
         bytecodesField.clone(), numLocals, literalsAndConstantsField,
-        maxStackDepth, frameOnStackMarkerIndex, inlinedLoopsField).initialize(sourceCoord);
+        maxStackDepth, frameOnStackMarkerIndex, inlinedLoopsField, contextLevel).initialize(
+            sourceCoord);
   }
 
   public String getNameOfLocal(final int idx) {
@@ -763,7 +771,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
           Object result = stack[stackPointer];
           // stackPointer -= 1;
-          doReturnNonLocal(frame, bytecodeIndex, result);
+          doReturnNonLocal(frame, result);
           return Nil.nilObject;
         }
 
@@ -1195,11 +1203,8 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
   }
 
   @InliningCutoff
-  private void doReturnNonLocal(final VirtualFrame frame, final int bytecodeIndex,
-      final Object result) {
-    byte contextIdx = bytecodesField[bytecodeIndex + 1];
-
-    MaterializedFrame ctx = determineContext(frame, contextIdx);
+  private void doReturnNonLocal(final VirtualFrame frame, final Object result) {
+    MaterializedFrame ctx = determineContext(frame, contextLevel);
     FrameOnStackMarker marker =
         (FrameOnStackMarker) ctx.getObject(frameOnStackMarkerIndex);
 
@@ -1265,6 +1270,9 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
       }
     } else {
       boolean requiresChangesToContextLevels = inliner.outerScopeChanged();
+      if (requiresChangesToContextLevels) {
+        contextLevel -= 1;
+      }
       adapt(inliner, requiresChangesToContextLevels);
     }
   }
@@ -1532,12 +1540,10 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         }
 
         case RETURN_NON_LOCAL: {
-          byte contextIdx = bytecodes[i + 1];
-          byte newCtx = (byte) (contextIdx - 1);
-          if (newCtx == 0) {
-            emitRETURNLOCAL(mgenc);
-          } else {
+          if (mgenc.isBlockMethod()) {
             emitRETURNNONLOCAL(mgenc);
+          } else {
+            emitRETURNLOCAL(mgenc);
           }
           break;
         }
@@ -1734,22 +1740,8 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case POP_FIELD_1:
         case SEND:
         case SUPER_SEND:
-        case RETURN_LOCAL: {
-          break;
-        }
-
-        case RETURN_NON_LOCAL: {
-          byte contextIdx = bytecodes[i + 1];
-          if (requiresChangesToContextLevels && contextIdx >= inliner.contextLevel) {
-            // we don't simplify to return local, because they had different bytecode length
-            // and, well, I don't think this should happen
-            assert contextIdx - 1 > 0 : "I wouldn't expect a RETURN_LOCAL equivalent here, "
-                + " because we are in a block, or it is already a return local";
-            bytecodes[i + 1] = (byte) (contextIdx - 1);
-          }
-          break;
-        }
-
+        case RETURN_LOCAL:
+        case RETURN_NON_LOCAL:
         case RETURN_SELF:
         case RETURN_FIELD_0:
         case RETURN_FIELD_1:
