@@ -173,7 +173,7 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
   @Override
   public void constructOperation(final OpBuilder opBuilder) {
     opBuilder.dsl.beginEqualsOp();
-    opBuilder.dsl.emitLoadConstant(opBuilder);
+    opBuilder.dsl.emitLoadConstant(value);
 
     opBuilder.dsl.beginReadField(fieldIdx);
     assert arg.index == 0;
