@@ -146,7 +146,7 @@ public final class BytecodeGenerator {
   }
 
   public static void emitRETURNNONLOCAL(final BytecodeMethodGenContext mgenc) {
-    emit2(mgenc, RETURN_NON_LOCAL, mgenc.getMaxContextLevel(), 0);
+    emit1(mgenc, RETURN_NON_LOCAL, 0);
   }
 
   public static void emitRETURNFIELD(final BytecodeMethodGenContext mgenc, final byte idx) {
