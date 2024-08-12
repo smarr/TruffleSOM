@@ -219,7 +219,6 @@ def build_native_obj_test(args, **kwargs):
     svm_path = get_svm_path()
     cmd = [
         "native-image",
-        "--macro:truffle",
         "--no-fallback",
         "--initialize-at-build-time",
         "-H:+ReportExceptionStackTraces",
