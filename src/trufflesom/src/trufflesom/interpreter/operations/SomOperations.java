@@ -220,7 +220,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     public BytecodeLocal getOnStackMarker() {
       for (var e : opLocals.entrySet()) {
         if (e.getKey() instanceof Internal i) {
-          if (i.getName() == SymbolTable.symFrameOnStack) {
+          if (i.getName().equals(SymbolTable.strFrameOnStack)) {
             return e.getValue();
           }
         }

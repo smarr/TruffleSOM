@@ -257,7 +257,7 @@ public final class Method extends Invokable {
         current = current.outer;
       }
 
-      assert l != null : "Didn't find local: " + local.getName().getString();
+      assert l != null : "Didn't find local: " + local.getName();
       return l;
     }
 
