@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2013 Stefan Marr, stefan.marr@vub.ac.be
  * Software Architecture Group, Hasso Plattner Institute, Potsdam, Germany
  * http://www.hpi.uni-potsdam.de/swa/

@@ -367,7 +367,7 @@ if not args.interpreter and args.graal_branch_profile:
               '-Dpolyglot.engine.InstrumentBranchesPerInlineSite=true']
 
 if not args.interpreter and args.perf_warnings:
-    flags += ['-Dpolyglot.engine.CompilationExceptionsAreFatal=true',
+    flags += ['-Dpolyglot.engine.CompilationFailureAction=ExitVM',
               '-Dpolyglot.engine.TracePerformanceWarnings=all',
               '-Dpolyglot.engine.TraceCompilation=true',
               '-Dpolyglot.engine.TraceCompilationDetails=true']

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2013 Stefan Marr, stefan.marr@vub.ac.be
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
