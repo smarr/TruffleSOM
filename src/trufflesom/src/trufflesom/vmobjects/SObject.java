@@ -73,6 +73,7 @@ public class SObject extends SAbstractObject {
   }
 
   public SObject(final SClass instanceClass, final ObjectLayout layout) {
+    CompilerAsserts.partialEvaluationConstant(layout);
     clazz = instanceClass;
     setLayoutInitially(layout);
   }
@@ -122,7 +123,6 @@ public class SObject extends SAbstractObject {
 
   private static long[] getExtendedPrimStorage(final ObjectLayout layout) {
     int numExtFields = layout.getNumberOfUsedExtendedPrimStorageLocations();
-    CompilerAsserts.partialEvaluationConstant(numExtFields);
     if (numExtFields == 0) {
       return null;
     }
