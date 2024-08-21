@@ -30,6 +30,10 @@ public abstract class StorageLocation {
   }
 
   public interface LongStorageLocation {
+    boolean isSet(SObject obj);
+
+    long readLongSet(SObject obj);
+
     long readLong(SObject obj) throws UnexpectedResultException;
 
     void writeLong(SObject obj, long value);
@@ -38,6 +42,10 @@ public abstract class StorageLocation {
   }
 
   public interface DoubleStorageLocation {
+    boolean isSet(SObject obj);
+
+    double readDoubleSet(SObject obj);
+
     double readDouble(SObject obj) throws UnexpectedResultException;
 
     void writeDouble(SObject obj, double value);
@@ -279,6 +287,12 @@ public abstract class StorageLocation {
     }
 
     @Override
+    public double readDoubleSet(final SObject obj) {
+      assert isSet(obj);
+      return unsafe.getDouble(obj, fieldMemoryOffset);
+    }
+
+    @Override
     public void write(final SObject obj, final Object value) {
       assert value != null;
       if (value instanceof Double) {
@@ -341,6 +355,12 @@ public abstract class StorageLocation {
         CompilerDirectives.transferToInterpreter();
         throw new UnexpectedResultException(Nil.nilObject);
       }
+    }
+
+    @Override
+    public long readLongSet(final SObject obj) {
+      assert isSet(obj);
+      return unsafe.getLong(obj, fieldMemoryOffset);
     }
 
     @Override
@@ -426,6 +446,13 @@ public abstract class StorageLocation {
     }
 
     @Override
+    public long readLongSet(final SObject obj) {
+      assert isSet(obj);
+      // perhaps we should use the unsafe operations as for doubles
+      return obj.getExtendedPrimFields()[extensionIndex];
+    }
+
+    @Override
     public long increment(final SObject obj) {
       long val = obj.getExtendedPrimFields()[extensionIndex];
       long result = Math.addExact(val, 1);
@@ -498,6 +525,15 @@ public abstract class StorageLocation {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         throw new UnexpectedResultException(Nil.nilObject);
       }
+    }
+
+    @Override
+    public double readDoubleSet(final SObject obj) {
+      assert isSet(obj);
+      long[] arr = obj.getExtendedPrimFields();
+      return unsafe.getDouble(arr,
+          (long) Unsafe.ARRAY_DOUBLE_BASE_OFFSET
+              + Unsafe.ARRAY_DOUBLE_INDEX_SCALE * extensionIndex);
     }
 
     @Override

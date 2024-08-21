@@ -152,12 +152,14 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   public static final class ReadLongFieldNode extends ReadSpecializedFieldNode {
-    private final LongStorageLocation storage;
+    private final LongStorageLocation                    storage;
+    private @CompilerDirectives.CompilationFinal boolean wasSeenUnset;
 
     public ReadLongFieldNode(final int fieldIndex, final ObjectLayout layout,
         final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
       this.storage = (LongStorageLocation) layout.getStorageLocation(fieldIndex);
+      wasSeenUnset = false;
     }
 
     @Override
@@ -170,32 +172,52 @@ public abstract class FieldAccessorNode extends Node {
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
-        return dropAndReadNext(obj);
+        return dropAndReadLongNext(obj);
       }
     }
 
     @InliningCutoff
-    private long dropAndReadNext(final SObject obj) throws UnexpectedResultException {
+    private long dropAndReadLongNext(final SObject obj) throws UnexpectedResultException {
       return replace(SOMNode.unwrapIfNeeded(nextInCache)).readLong(obj);
+    }
+
+    @InliningCutoff
+    private Object dropAndReadNext(final SObject obj) {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
     }
 
     @Override
     public Object read(final SObject obj) {
       try {
-        return readLong(obj);
-      } catch (UnexpectedResultException e) {
-        return e.getResult();
+        if (hasExpectedLayout(obj)) {
+          if (!storage.isSet(obj)) {
+            if (!wasSeenUnset) {
+              CompilerDirectives.transferToInterpreterAndInvalidate();
+              wasSeenUnset = true;
+            }
+            return Nil.nilObject;
+          }
+
+          return storage.readLongSet(obj);
+        } else {
+          return respecializedNodeOrNext(obj).read(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        return dropAndReadNext(obj);
       }
     }
   }
 
   public static final class ReadDoubleFieldNode extends ReadSpecializedFieldNode {
-    private final DoubleStorageLocation storage;
+    private final DoubleStorageLocation                  storage;
+    private @CompilerDirectives.CompilationFinal boolean wasSeenUnset;
 
     public ReadDoubleFieldNode(final int fieldIndex, final ObjectLayout layout,
         final AbstractReadFieldNode next) {
       super(fieldIndex, layout, next);
       this.storage = (DoubleStorageLocation) layout.getStorageLocation(fieldIndex);
+      wasSeenUnset = false;
     }
 
     @Override
@@ -208,21 +230,39 @@ public abstract class FieldAccessorNode extends Node {
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
-        return dropAndReadNext(obj);
+        return dropAndReadDoubleNext(obj);
       }
     }
 
     @InliningCutoff
-    private double dropAndReadNext(final SObject obj) throws UnexpectedResultException {
+    private double dropAndReadDoubleNext(final SObject obj) throws UnexpectedResultException {
       return replace(SOMNode.unwrapIfNeeded(nextInCache)).readDouble(obj);
+    }
+
+    @InliningCutoff
+    private Object dropAndReadNext(final SObject obj) {
+      return replace(SOMNode.unwrapIfNeeded(nextInCache)).read(obj);
     }
 
     @Override
     public Object read(final SObject obj) {
       try {
-        return readDouble(obj);
-      } catch (UnexpectedResultException e) {
-        return e.getResult();
+        if (hasExpectedLayout(obj)) {
+          if (!storage.isSet(obj)) {
+            if (!wasSeenUnset) {
+              CompilerDirectives.transferToInterpreterAndInvalidate();
+              wasSeenUnset = true;
+            }
+            return Nil.nilObject;
+          }
+
+          return storage.readDoubleSet(obj);
+        } else {
+          return respecializedNodeOrNext(obj).read(obj);
+        }
+      } catch (InvalidAssumptionException e) {
+        CompilerDirectives.transferToInterpreterAndInvalidate();
+        return dropAndReadNext(obj);
       }
     }
   }
