@@ -174,7 +174,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
   public void patchJumpOffsetToPointToNextInstruction(final int idxOfOffset,
       final ParserBc parser) throws ParseError {
-    int instructionStart = idxOfOffset - 1;
+    final int instructionStart = idxOfOffset - 1;
     byte bytecodeBeforeOffset = bytecode.get(instructionStart);
     assert isOneOf(bytecodeBeforeOffset,
         JUMP_BYTECODES) : "Expected to patch a JUMP instruction, but got bc: "
@@ -189,10 +189,12 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
       bytecode.set(idxOfOffset, (byte) jumpOffset);
       bytecode.set(idxOfOffset + 1, (byte) 0);
     } else {
-      int offsetOfBytecode = idxOfOffset - 1;
       // we need two bytes for the jump offset
-      bytecode.set(offsetOfBytecode,
-          (byte) (bytecode.get(offsetOfBytecode) + Bytecodes.NUM_1_BYTE_JUMP_BYTECODES));
+      if (bytecodeBeforeOffset < JUMP2) {
+        // we need to convert the JUMP to a JUMP2
+        bytecode.set(instructionStart,
+            (byte) (bytecodeBeforeOffset + Bytecodes.NUM_1_BYTE_JUMP_BYTECODES));
+      }
 
       byte byte1 = (byte) jumpOffset;
       byte byte2 = (byte) (jumpOffset >> 8);
