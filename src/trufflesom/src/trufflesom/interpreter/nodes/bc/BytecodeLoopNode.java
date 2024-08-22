@@ -107,6 +107,7 @@ import trufflesom.bdt.primitives.nodes.PreevaluatedExpression;
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.Variable.Local;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
+import trufflesom.compiler.bc.Disassembler;
 import trufflesom.interpreter.EscapedBlockException;
 import trufflesom.interpreter.FrameOnStackMarker;
 import trufflesom.interpreter.Invokable;
@@ -176,6 +177,10 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
 
     this.quickenedField = new Node[bytecodes.length];
     this.contextLevel = contextLevel;
+  }
+
+  public void dump() {
+    Disassembler.dumpMethod(this, "");
   }
 
   public int getContextLevel() {

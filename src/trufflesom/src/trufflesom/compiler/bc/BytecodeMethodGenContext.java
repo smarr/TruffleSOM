@@ -122,6 +122,10 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     last4Bytecodes = new byte[4];
   }
 
+  public void dump() {
+    Disassembler.dumpMethod(this);
+  }
+
   public Object getConstant(final int bytecodeIdx) {
     return literals.get(bytecode.get(bytecodeIdx + 1));
   }
