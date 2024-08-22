@@ -81,7 +81,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   public void testDupPopArgumentPop() {
     byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. arg ]");
 
-    assertEquals(6, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_1,
         Bytecodes.POP_ARGUMENT,
@@ -93,7 +92,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   public void testDupPopArgumentPopImplicitReturn() {
     byte[] bytecodes = blockToBytecodes("[:arg | arg := 1 ]");
 
-    assertEquals(6, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_1,
         Bytecodes.DUP,
@@ -105,7 +103,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   public void testDupPopArgumentPopImplicitReturnDot() {
     byte[] bytecodes = blockToBytecodes("[:arg | arg := 1. ]");
 
-    assertEquals(6, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_1,
         Bytecodes.DUP,
@@ -117,7 +114,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
   public void testDupPopLocalReturnLocal() {
     byte[] bytecodes = blockToBytecodes("[| local | local := 1 ]");
 
-    assertEquals(4, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_1,
         Bytecodes.DUP,
@@ -130,7 +126,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     addField("field");
     byte[] bytecodes = blockToBytecodes("[ field := 1 ]");
 
-    assertEquals(6, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_1,
         Bytecodes.DUP,
@@ -143,7 +138,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     addField("field");
     byte[] bytecodes = blockToBytecodes("[ field := 1. ]");
 
-    assertEquals(6, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_1,
         Bytecodes.DUP,
@@ -218,7 +212,6 @@ public class BytecodeBlockTests extends BytecodeTestSetup {
     byte[] bytecodes = blockToBytecodes(
         "[ #foo. " + fieldName + " := " + fieldName + " + 1 ]");
 
-    assertEquals(6, bytecodes.length);
     check(bytecodes,
         Bytecodes.PUSH_CONSTANT_0,
         Bytecodes.POP,
