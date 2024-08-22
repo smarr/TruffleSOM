@@ -91,6 +91,9 @@ public class BytecodeTestSetup extends TruffleTestSetup {
         if ((Integer) tuple[0] == i) {
           expectedBc = tuple[1];
         } else {
+          if (!(((Integer) tuple[0]) > i)) {
+            dump();
+          }
           assertTrue(((Integer) tuple[0]) > i);
           i += bcLength;
           continue;
@@ -104,14 +107,17 @@ public class BytecodeTestSetup extends TruffleTestSetup {
             + " but got " + Bytecodes.getBytecodeName(actualBc), actualBc, bc.bytecode);
 
         if (bc.arg1 != null) {
+          if (actual[i + 1] != (byte) bc.arg1) {
+            dump();
+          }
           assertEquals("Bytecode " + i + " expected " + Bytecodes.getBytecodeName(bc.bytecode)
               + "(" + bc.arg1 + ", " + bc.arg2 + ") but got "
               + Bytecodes.getBytecodeName(actualBc) + "(" + actual[i + 1] + ", "
-              + actual[i + 2] + ")", actual[i + 1], (byte) bc.arg1);
+              + actual[i + 2] + ")", (byte) bc.arg1, actual[i + 1]);
         }
 
         if (bc.arg2 != null) {
-          assertEquals(actual[i + 2], (byte) bc.arg2);
+          assertEquals((byte) bc.arg2, actual[i + 2]);
         }
       } else {
         if ((byte) expectedBc != actualBc) {
