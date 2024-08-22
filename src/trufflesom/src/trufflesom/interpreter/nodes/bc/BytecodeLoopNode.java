@@ -5,6 +5,7 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3WithDummy;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPFIELD;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitPOPARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHBLOCK;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
@@ -1503,7 +1504,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case POP_ARGUMENT: {
           byte argIdx = bytecodes[i + 1];
           byte contextIdx = bytecodes[i + 2];
-          emit3(mgenc, bytecode, argIdx, (byte) (contextIdx - 1), -1);
+          emitPOPARGUMENT(mgenc, argIdx, (byte) (contextIdx - 1));
           break;
         }
 
