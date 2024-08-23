@@ -155,7 +155,7 @@ build:aarch64-test-and-rebench:
     - mx tests-coverage || true
 
     - export PATH=$PATH:/Users/gitlab-runner/Library/Python/3.12/bin
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf
 
 benchmark-y1:
   stage: benchmark
@@ -166,9 +166,9 @@ benchmark-y1:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria
     # Run Benchmarks
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria
   after_script:
     - sudo reown-project.sh
 
@@ -181,9 +181,9 @@ benchmark-y2:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria2
     # Run Benchmarks
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria2
   after_script:
     - sudo reown-project.sh
 
@@ -196,9 +196,9 @@ benchmark-y3:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria3
     # Run Benchmarks
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria3
   after_script:
     - sudo reown-project.sh
 
@@ -211,9 +211,9 @@ benchmark-y4:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria4
+    # - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria4
     # Run Benchmarks
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria4
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria4
   after_script:
     - sudo reown-project.sh
 
