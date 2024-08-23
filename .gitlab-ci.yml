@@ -34,7 +34,7 @@ before_script:
 
 test:
   stage: build-and-test
-  tags: [yuria]
+  tags: [yuria4]
   script:
     - ./som --setup labsjdk
     - mx sforceimport
