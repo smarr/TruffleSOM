@@ -9,6 +9,22 @@ variables:
   GRAALEE_VERSION: oracle-graalvm-ea-jdk-24.0.0-ea.01
   JAVA_VERSION: temurin-22.0.1+8
 
+.shared-scripts:
+  download-binaries: &DOWNLOAD_BINARIES |
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
+    sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
+    lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
+    lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
+    lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
+    lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+
+  build-graal-locally: &BUILD_GRAAL_LOCALLY |
+    ./som --setup labsjdk
+    mx sforceimport
+    mx --env libgraal build
+
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
@@ -34,7 +50,7 @@ before_script:
 
 test:
   stage: build-and-test
-  tags: [yuria]
+  tags: [yuria4]
   script:
     - ./som --setup labsjdk
     - mx sforceimport
@@ -48,6 +64,7 @@ test:
     - mx build-native-obj-test
     - ./som-obj-storage-tester
 
+    - (cd ../graal/tools && mx build)
     - mx tests-nodestats || true
     - mx tests-coverage || true
 
@@ -138,30 +155,20 @@ build:aarch64-test-and-rebench:
     - mx tests-coverage || true
 
     - export PATH=$PATH:/Users/gitlab-runner/Library/Python/3.12/bin
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf
 
 benchmark-y1:
   stage: benchmark
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - mx --env libgraal build
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-
-    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - *BUILD_GRAAL_LOCALLY
+    - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria
     # Run Benchmarks
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria
   after_script:
     - sudo reown-project.sh
 
@@ -170,23 +177,13 @@ benchmark-y2:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria2]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - mx --env libgraal build
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-
-    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - *BUILD_GRAAL_LOCALLY
+    - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria2
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria2
     # Run Benchmarks
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria2
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria2
   after_script:
     - sudo reown-project.sh
 
@@ -195,23 +192,28 @@ benchmark-y3:
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
   tags: [yuria3]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - mx --env libgraal build
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-ast-ee.lz4
-    - sftp tmp-artifacts:incoming/${CI_PIPELINE_ID}/som-native-interp-bc-ee.lz4
-
-    - lz4 -d som-native-interp-ast.lz4 som-native-interp-ast
-    - lz4 -d som-native-interp-bc.lz4  som-native-interp-bc
-    - lz4 -d som-native-interp-ast-ee.lz4 som-native-interp-ast-ee
-    - lz4 -d som-native-interp-bc-ee.lz4  som-native-interp-bc-ee
+    - *BUILD_GRAAL_LOCALLY
+    - *DOWNLOAD_BINARIES
 
     # Profile
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf profiling m:yuria3
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria3
     # Run Benchmarks
-    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" -c rebench.conf m:yuria3
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria3
+  after_script:
+    - sudo reown-project.sh
+
+benchmark-y4:
+  stage: benchmark
+  needs: ["build:native-interp-ast", "build:native-interp-bc"]
+  tags: [yuria4]
+  script:
+    - *BUILD_GRAAL_LOCALLY
+    - *DOWNLOAD_BINARIES
+
+    # Profile
+    # - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria4
+    # Run Benchmarks
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria4
   after_script:
     - sudo reown-project.sh
 
