@@ -138,9 +138,9 @@ public class Bytecodes {
     return PADDED_BYTECODE_NAMES[bytecode];
   }
 
-  public static final byte LEN_NO_ARG     = 1;
-  public static final byte LEN_TWO_ARGS   = 2;
-  public static final byte LEN_THREE_ARGS = 3;
+  public static final byte LEN_NO_ARG   = 1;
+  public static final byte LEN_ONE_ARG  = 2;
+  public static final byte LEN_TWO_ARGS = 3;
 
   public static int getBytecodeLength(final byte bytecode) {
     return BYTECODE_LENGTH[bytecode];
