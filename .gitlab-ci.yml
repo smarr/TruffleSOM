@@ -48,6 +48,7 @@ test:
     - mx build-native-obj-test
     - ./som-obj-storage-tester
 
+    - (cd ../graal/tools && mx build)
     - mx tests-nodestats || true
     - mx tests-coverage || true
 

@@ -88,7 +88,7 @@ suite = {
                 },
             },
             "dependencies": ["trufflesom"],
-            "distDependencies": ["truffle:TRUFFLE_API"],
+            "distDependencies": ["truffle:TRUFFLE_API"], # , "tools:TRUFFLE_COVERAGE", "tools:TRUFFLE_PROFILER"
         },
         "TRUFFLESOM_TEST": {
             "description": "TruffleSOM JUnit Tests",
