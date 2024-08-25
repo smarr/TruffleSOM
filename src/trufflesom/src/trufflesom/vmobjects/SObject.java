@@ -168,6 +168,10 @@ public class SObject extends SAbstractObject {
     }
   }
 
+  public final boolean hasOutdatedLayout() {
+    return !objectLayout.isValid();
+  }
+
   public final boolean updateLayoutToMatchClass() {
     ObjectLayout layoutAtClass = clazz.getLayoutForInstances();
     assert layoutAtClass.getNumberOfFields() == objectLayout.getNumberOfFields();
@@ -242,7 +246,7 @@ public class SObject extends SAbstractObject {
     primitiveUsedMap |= mask;
   }
 
-  private StorageLocation getLocation(final long index) {
+  public StorageLocation getLocation(final long index) {
     StorageLocation location = objectLayout.getStorageLocation(index);
     assert location != null;
     return location;

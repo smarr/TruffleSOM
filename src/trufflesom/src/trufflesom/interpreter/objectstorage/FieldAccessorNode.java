@@ -1,5 +1,6 @@
 package trufflesom.interpreter.objectstorage;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.HostCompilerDirectives.InliningCutoff;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
@@ -17,16 +18,18 @@ import trufflesom.vmobjects.SObject;
 
 
 public abstract class FieldAccessorNode extends Node {
+  public static final int INLINE_CACHE_SIZE = 6;
+
   protected final int fieldIndex;
 
   @InliningCutoff
   public static AbstractReadFieldNode createRead(final int fieldIndex) {
-    return new UninitializedReadFieldNode(fieldIndex);
+    return new UninitializedReadFieldNode(fieldIndex, 0);
   }
 
   @InliningCutoff
   public static AbstractWriteFieldNode createWrite(final int fieldIndex) {
-    return new UninitializedWriteFieldNode(fieldIndex);
+    return new UninitializedWriteFieldNode(fieldIndex, 0);
   }
 
   @InliningCutoff
@@ -66,9 +69,16 @@ public abstract class FieldAccessorNode extends Node {
     }
 
     @InliningCutoff
-    protected final AbstractReadFieldNode specialize(final SObject obj,
+    protected final AbstractReadFieldNode specialize(final SObject obj, int chainLength,
         final String reason, final AbstractReadFieldNode next) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
+
+      if (chainLength >= INLINE_CACHE_SIZE) {
+        GenericReadFieldNode genericReplacement = new GenericReadFieldNode(fieldIndex);
+        replace(genericReplacement, "megamorphic read node");
+        return genericReplacement;
+      }
+
       obj.updateLayoutToMatchClass();
 
       final ObjectLayout layout = obj.getObjectLayout();
@@ -79,18 +89,39 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
+  private static final class GenericReadFieldNode extends AbstractReadFieldNode {
+    GenericReadFieldNode(final int fieldIndex) {
+      super(fieldIndex);
+    }
+
+    @Override
+    public Object read(final SObject obj) {
+      if (obj.hasOutdatedLayout()) {
+        // this case is rare, we do not invalidate here, but also really don't want this to be
+        // in the compilation
+        CompilerDirectives.transferToInterpreter();
+        obj.updateLayoutToMatchClass();
+      }
+      StorageLocation location = obj.getLocation(fieldIndex);
+      return location.read(obj);
+    }
+  }
+
   private static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
 
-    UninitializedReadFieldNode(final int fieldIndex) {
+    private final int chainLength;
+
+    UninitializedReadFieldNode(final int fieldIndex, int chainLength) {
       super(fieldIndex);
+      this.chainLength = chainLength;
     }
 
     @Override
     @InliningCutoff
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      return specialize(obj, "uninitialized node",
-          new UninitializedReadFieldNode(fieldIndex)).read(obj);
+      return specialize(obj, chainLength, "uninitialized node",
+          new UninitializedReadFieldNode(fieldIndex, chainLength + 1)).read(obj);
     }
   }
 
@@ -269,6 +300,7 @@ public abstract class FieldAccessorNode extends Node {
         if (hasExpectedLayout(obj)) {
           return storage.read(obj);
         } else {
+          CompilerAsserts.partialEvaluationConstant(nextInCache);
           return nextInCache.read(obj);
         }
       } catch (InvalidAssumptionException e) {
@@ -321,23 +353,44 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   private static final class UninitializedWriteFieldNode extends AbstractWriteFieldNode {
-    UninitializedWriteFieldNode(final int fieldIndex) {
+    private final int chainLength;
+
+    UninitializedWriteFieldNode(final int fieldIndex, int chainLength) {
       super(fieldIndex);
+      this.chainLength = chainLength;
     }
 
     @Override
     @InliningCutoff
     public Object write(final SObject obj, final Object value) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-
       obj.setField(fieldIndex, value);
+
+      if (chainLength >= INLINE_CACHE_SIZE) {
+        GenericWriteFieldNode generic = new GenericWriteFieldNode(fieldIndex);
+        replace(generic, "megamorphic write node");
+        return value;
+      }
 
       final ObjectLayout layout = obj.getObjectLayout();
       final StorageLocation location = layout.getStorageLocation(fieldIndex);
       AbstractWriteFieldNode newNode = location.getWriteNode(fieldIndex, layout,
-          new UninitializedWriteFieldNode(fieldIndex));
+          new UninitializedWriteFieldNode(fieldIndex, chainLength + 1));
       replace(newNode, "initialize write field node");
 
+      return value;
+    }
+  }
+
+  private static final class GenericWriteFieldNode extends AbstractWriteFieldNode {
+    GenericWriteFieldNode(final int fieldIndex) {
+      super(fieldIndex);
+    }
+
+    @Override
+    public Object write(final SObject obj, final Object value) {
+      StorageLocation location = obj.getLocation(fieldIndex);
+      location.write(obj, value);
       return value;
     }
   }
