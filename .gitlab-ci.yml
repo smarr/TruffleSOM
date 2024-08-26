@@ -212,7 +212,7 @@ benchmark-y4:
     - *DOWNLOAD_BINARIES
 
     # Profile
-    # - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria4
+    - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf profiling m:yuria4 || true
     # Run Benchmarks
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf m:yuria4
   after_script:

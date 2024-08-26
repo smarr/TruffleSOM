@@ -1,5 +1,6 @@
 package trufflesom.interpreter.objectstorage;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.HostCompilerDirectives.InliningCutoff;
 import com.oracle.truffle.api.nodes.InvalidAssumptionException;
@@ -17,16 +18,18 @@ import trufflesom.vmobjects.SObject;
 
 
 public abstract class FieldAccessorNode extends Node {
+  public static final int INLINE_CACHE_SIZE = 6;
+
   protected final int fieldIndex;
 
   @InliningCutoff
   public static AbstractReadFieldNode createRead(final int fieldIndex) {
-    return new UninitializedReadFieldNode(fieldIndex);
+    return new UninitializedReadFieldNode(fieldIndex, 0);
   }
 
   @InliningCutoff
   public static AbstractWriteFieldNode createWrite(final int fieldIndex) {
-    return new UninitializedWriteFieldNode(fieldIndex);
+    return new UninitializedWriteFieldNode(fieldIndex, 0);
   }
 
   @InliningCutoff
@@ -65,15 +68,17 @@ public abstract class FieldAccessorNode extends Node {
       return TypesGen.expectDouble(read(obj));
     }
 
-    protected final Object specializeAndRead(final SObject obj, final String reason,
-        final AbstractReadFieldNode next) {
-      return specialize(obj, reason, next).read(obj);
-    }
-
     @InliningCutoff
-    protected final AbstractReadFieldNode specialize(final SObject obj,
+    protected final AbstractReadFieldNode specialize(final SObject obj, int chainLength,
         final String reason, final AbstractReadFieldNode next) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
+
+      if (chainLength >= INLINE_CACHE_SIZE) {
+        GenericReadFieldNode genericReplacement = new GenericReadFieldNode(fieldIndex);
+        replace(genericReplacement, "megamorphic read node");
+        return genericReplacement;
+      }
+
       obj.updateLayoutToMatchClass();
 
       final ObjectLayout layout = obj.getObjectLayout();
@@ -84,18 +89,39 @@ public abstract class FieldAccessorNode extends Node {
     }
   }
 
+  private static final class GenericReadFieldNode extends AbstractReadFieldNode {
+    GenericReadFieldNode(final int fieldIndex) {
+      super(fieldIndex);
+    }
+
+    @Override
+    public Object read(final SObject obj) {
+      if (obj.hasOutdatedLayout()) {
+        // this case is rare, we do not invalidate here, but also really don't want this to be
+        // in the compilation
+        CompilerDirectives.transferToInterpreter();
+        obj.updateLayoutToMatchClass();
+      }
+      StorageLocation location = obj.getLocation(fieldIndex);
+      return location.read(obj);
+    }
+  }
+
   private static final class UninitializedReadFieldNode extends AbstractReadFieldNode {
 
-    UninitializedReadFieldNode(final int fieldIndex) {
+    private final int chainLength;
+
+    UninitializedReadFieldNode(final int fieldIndex, int chainLength) {
       super(fieldIndex);
+      this.chainLength = chainLength;
     }
 
     @Override
     @InliningCutoff
     public Object read(final SObject obj) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      return specializeAndRead(obj, "uninitalized node",
-          new UninitializedReadFieldNode(fieldIndex));
+      return specialize(obj, chainLength, "uninitialized node",
+          new UninitializedReadFieldNode(fieldIndex, chainLength + 1)).read(obj);
     }
   }
 
@@ -115,14 +141,6 @@ public abstract class FieldAccessorNode extends Node {
       layout.checkIsLatest();
       return layout == obj.getObjectLayout();
     }
-
-    protected final AbstractReadFieldNode respecializedNodeOrNext(final SObject obj) {
-      if (layout.layoutForSameClass(obj.getObjectLayout())) {
-        return specialize(obj, "update outdated read node", nextInCache);
-      } else {
-        return nextInCache;
-      }
-    }
   }
 
   public static final class ReadUnwrittenFieldNode extends ReadSpecializedFieldNode {
@@ -137,7 +155,7 @@ public abstract class FieldAccessorNode extends Node {
         if (hasExpectedLayout(obj)) {
           return Nil.nilObject;
         } else {
-          return respecializedNodeOrNext(obj).read(obj);
+          return nextInCache.read(obj);
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -168,7 +186,7 @@ public abstract class FieldAccessorNode extends Node {
         if (hasExpectedLayout(obj)) {
           return storage.readLong(obj);
         } else {
-          return respecializedNodeOrNext(obj).readLong(obj);
+          return nextInCache.readLong(obj);
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -200,7 +218,7 @@ public abstract class FieldAccessorNode extends Node {
 
           return storage.readLongSet(obj);
         } else {
-          return respecializedNodeOrNext(obj).read(obj);
+          return nextInCache.read(obj);
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -226,7 +244,7 @@ public abstract class FieldAccessorNode extends Node {
         if (hasExpectedLayout(obj)) {
           return storage.readDouble(obj);
         } else {
-          return respecializedNodeOrNext(obj).readDouble(obj);
+          return nextInCache.readDouble(obj);
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -258,7 +276,7 @@ public abstract class FieldAccessorNode extends Node {
 
           return storage.readDoubleSet(obj);
         } else {
-          return respecializedNodeOrNext(obj).read(obj);
+          return nextInCache.read(obj);
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -282,7 +300,8 @@ public abstract class FieldAccessorNode extends Node {
         if (hasExpectedLayout(obj)) {
           return storage.read(obj);
         } else {
-          return respecializedNodeOrNext(obj).read(obj);
+          CompilerAsserts.partialEvaluationConstant(nextInCache);
+          return nextInCache.read(obj);
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -314,30 +333,64 @@ public abstract class FieldAccessorNode extends Node {
     }
 
     @InliningCutoff
-    protected final void writeAndRespecialize(final SObject obj, final Object value,
-        final String reason, final AbstractWriteFieldNode next) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
+    protected final void writeToOutdated(final SObject obj, final Object value) {
+      CompilerDirectives.transferToInterpreter();
+      assert !obj.getObjectLayout().isValid();
+      obj.setField(fieldIndex, value);
+    }
 
+    @InliningCutoff
+    protected final void writeUnexpectedTypeAndRespecialize(final SObject obj,
+        final Object value, final AbstractWriteFieldNode next) {
+      CompilerDirectives.transferToInterpreterAndInvalidate();
       obj.setField(fieldIndex, value);
 
       final ObjectLayout layout = obj.getObjectLayout();
       final StorageLocation location = layout.getStorageLocation(fieldIndex);
       AbstractWriteFieldNode newNode = location.getWriteNode(fieldIndex, layout, next);
-      replace(newNode, reason);
+      replace(newNode, "update outdated read node");
     }
   }
 
   private static final class UninitializedWriteFieldNode extends AbstractWriteFieldNode {
-    UninitializedWriteFieldNode(final int fieldIndex) {
+    private final int chainLength;
+
+    UninitializedWriteFieldNode(final int fieldIndex, int chainLength) {
       super(fieldIndex);
+      this.chainLength = chainLength;
     }
 
     @Override
     @InliningCutoff
     public Object write(final SObject obj, final Object value) {
       CompilerDirectives.transferToInterpreterAndInvalidate();
-      writeAndRespecialize(obj, value, "initialize write field node",
-          new UninitializedWriteFieldNode(fieldIndex));
+      obj.setField(fieldIndex, value);
+
+      if (chainLength >= INLINE_CACHE_SIZE) {
+        GenericWriteFieldNode generic = new GenericWriteFieldNode(fieldIndex);
+        replace(generic, "megamorphic write node");
+        return value;
+      }
+
+      final ObjectLayout layout = obj.getObjectLayout();
+      final StorageLocation location = layout.getStorageLocation(fieldIndex);
+      AbstractWriteFieldNode newNode = location.getWriteNode(fieldIndex, layout,
+          new UninitializedWriteFieldNode(fieldIndex, chainLength + 1));
+      replace(newNode, "initialize write field node");
+
+      return value;
+    }
+  }
+
+  private static final class GenericWriteFieldNode extends AbstractWriteFieldNode {
+    GenericWriteFieldNode(final int fieldIndex) {
+      super(fieldIndex);
+    }
+
+    @Override
+    public Object write(final SObject obj, final Object value) {
+      StorageLocation location = obj.getLocation(fieldIndex);
+      location.write(obj, value);
       return value;
     }
   }
@@ -362,10 +415,10 @@ public abstract class FieldAccessorNode extends Node {
   }
 
   public static final class IncrementLongFieldNode extends FieldAccessorNode {
-    protected final ObjectLayout      layout;
+    private final ObjectLayout        layout;
     private final LongStorageLocation storage;
 
-    @Child protected IncrementLongFieldNode nextInCache;
+    @Child private IncrementLongFieldNode nextInCache;
 
     public IncrementLongFieldNode(final int fieldIndex, final ObjectLayout layout) {
       super(fieldIndex);
@@ -373,7 +426,7 @@ public abstract class FieldAccessorNode extends Node {
       this.storage = (LongStorageLocation) layout.getStorageLocation(fieldIndex);
     }
 
-    protected boolean hasExpectedLayout(final SObject obj)
+    private boolean hasExpectedLayout(final SObject obj)
         throws InvalidAssumptionException {
       layout.checkIsLatest();
       return layout == obj.getObjectLayout();
@@ -424,7 +477,7 @@ public abstract class FieldAccessorNode extends Node {
           storage.writeLong(obj, value);
         } else {
           if (layout.layoutForSameClass(obj.getObjectLayout())) {
-            writeAndRespecialize(obj, value, "update outdated write node", nextInCache);
+            writeToOutdated(obj, value);
           } else {
             nextInCache.write(obj, value);
           }
@@ -445,12 +498,10 @@ public abstract class FieldAccessorNode extends Node {
     public Object write(final SObject obj, final Object value) {
       if (value instanceof Long) {
         write(obj, (long) value);
+      } else if (layout.layoutForSameClass(obj.getObjectLayout())) {
+        writeUnexpectedTypeAndRespecialize(obj, value, nextInCache);
       } else {
-        if (layout.layoutForSameClass(obj.getObjectLayout())) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
-        } else {
-          nextInCache.write(obj, (long) value);
-        }
+        nextInCache.write(obj, value);
       }
       return value;
     }
@@ -472,7 +523,7 @@ public abstract class FieldAccessorNode extends Node {
           storage.writeDouble(obj, value);
         } else {
           if (layout.layoutForSameClass(obj.getObjectLayout())) {
-            writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
+            writeToOutdated(obj, value);
           } else {
             nextInCache.write(obj, value);
           }
@@ -493,12 +544,10 @@ public abstract class FieldAccessorNode extends Node {
     public Object write(final SObject obj, final Object value) {
       if (value instanceof Double) {
         write(obj, (double) value);
+      } else if (layout.layoutForSameClass(obj.getObjectLayout())) {
+        writeUnexpectedTypeAndRespecialize(obj, value, nextInCache);
       } else {
-        if (layout.layoutForSameClass(obj.getObjectLayout())) {
-          writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
-        } else {
-          nextInCache.write(obj, (double) value);
-        }
+        nextInCache.write(obj, value);
       }
       return value;
     }
@@ -518,12 +567,10 @@ public abstract class FieldAccessorNode extends Node {
       try {
         if (hasExpectedLayout(obj)) {
           storage.write(obj, value);
+        } else if (layout.layoutForSameClass(obj.getObjectLayout())) {
+          writeToOutdated(obj, value);
         } else {
-          if (layout.layoutForSameClass(obj.getObjectLayout())) {
-            writeAndRespecialize(obj, value, "update outdated read node", nextInCache);
-          } else {
-            nextInCache.write(obj, value);
-          }
+          nextInCache.write(obj, value);
         }
       } catch (InvalidAssumptionException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();

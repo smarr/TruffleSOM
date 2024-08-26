@@ -80,7 +80,9 @@ public class Classes {
 
   public static SClass getBlockClass(final int numberOfArguments) {
     SClass result = blockClasses[numberOfArguments];
-    assert result != null || numberOfArguments == 0;
+    assert result != null || numberOfArguments == 0 : "Failed to getBlockClass. result: "
+        + result
+        + " numberOfArguments: " + numberOfArguments;
     return result;
   }
 
