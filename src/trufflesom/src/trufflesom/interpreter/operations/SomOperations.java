@@ -161,7 +161,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @CompilationFinal private int frameOnStackMarkerIdx;
 
   protected SomOperations(
-      final TruffleLanguage<?> language,
+      final SomLanguage language,
       final FrameDescriptor.Builder frameDescriptorBuilder) {
     super(null, null, 0, makeDescriptorWithNil(frameDescriptorBuilder));
     frameOnStackMarkerIdx = -1;
