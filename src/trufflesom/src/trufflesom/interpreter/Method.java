@@ -223,7 +223,7 @@ public final class Method extends Invokable {
       return null;
     }
 
-    opBuilder.beginRoot(getLanguage(SomLanguage.class));
+    opBuilder.beginRoot();
     opBuilder.beginSource(source);
 
     HashMap<Local, BytecodeLocal> opLocals = new HashMap<>();
