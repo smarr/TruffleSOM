@@ -150,7 +150,7 @@ public abstract class SourcecodeCompiler {
       SClass[] result = new SClass[1];
 
       try {
-        SomOperationsGen.create(BytecodeConfig.DEFAULT, builder -> {
+        SomOperationsGen.create(SomLanguage.getCurrent(), BytecodeConfig.DEFAULT, builder -> {
           Parser<?> parser = createParser(sourceStr, source, probe);
 
           if (parser instanceof ParserOp p) {
