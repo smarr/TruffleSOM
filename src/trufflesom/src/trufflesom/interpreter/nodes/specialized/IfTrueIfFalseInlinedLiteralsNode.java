@@ -82,7 +82,7 @@ public abstract class IfTrueIfFalseInlinedLiteralsNode extends NoPreEvalExprNode
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginConditional();
     conditionNode.accept(opBuilder);
 

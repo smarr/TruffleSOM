@@ -56,17 +56,17 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
   }
 
   @Override
-  public void beginConstructOperation(final OpBuilder opBuilder) {
+  public void beginConstructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginNewObjectPrim();
   }
 
   @Override
-  public void endConstructOperation(final OpBuilder opBuilder) {
+  public void endConstructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.endNewObjectPrim();
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginNewObjectPrim();
     getReceiver().accept(opBuilder);
     opBuilder.dsl.endNewObjectPrim();

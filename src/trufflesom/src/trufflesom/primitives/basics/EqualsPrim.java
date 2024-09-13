@@ -149,7 +149,7 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginEqualsOp();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

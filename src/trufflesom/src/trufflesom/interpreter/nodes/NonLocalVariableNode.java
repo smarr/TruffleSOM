@@ -99,10 +99,12 @@ public abstract class NonLocalVariableNode extends ContextualNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.beginLoadLocalMaterialized(opBuilder.getLocal(local));
-      opBuilder.dsl.emitDetermineContextOp(contextLevel);
-      opBuilder.dsl.endLoadLocalMaterialized();
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+      if (resultUsed) {
+        opBuilder.dsl.beginLoadLocalMaterialized(opBuilder.getLocal(local));
+        opBuilder.dsl.emitDetermineContextOp(contextLevel);
+        opBuilder.dsl.endLoadLocalMaterialized();
+      }
     }
   }
 
@@ -186,7 +188,7 @@ public abstract class NonLocalVariableNode extends ContextualNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginBlock();
 
       opBuilder.dsl.beginStoreLocalMaterialized(opBuilder.getLocal(local));
@@ -194,10 +196,11 @@ public abstract class NonLocalVariableNode extends ContextualNode
       getExp().accept(opBuilder);
       opBuilder.dsl.endStoreLocalMaterialized();
 
-      // TOOD: can we get something more optimal for this??
-      opBuilder.dsl.beginLoadLocalMaterialized(opBuilder.getLocal(local));
-      opBuilder.dsl.emitDetermineContextOp(contextLevel);
-      opBuilder.dsl.endLoadLocalMaterialized();
+      if (resultUsed) {
+        opBuilder.dsl.beginLoadLocalMaterialized(opBuilder.getLocal(local));
+        opBuilder.dsl.emitDetermineContextOp(contextLevel);
+        opBuilder.dsl.endLoadLocalMaterialized();
+      }
 
       opBuilder.dsl.endBlock();
     }
