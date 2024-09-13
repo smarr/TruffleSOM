@@ -242,10 +242,17 @@ public final class Method extends Invokable {
     public final SomOperationsGen.Builder dsl;
     private final LexicalScopeForOp       scope;
 
+    private boolean nextIsUsed;
+
     private OpBuilder(final SomOperationsGen.Builder opBuilder,
         final LexicalScopeForOp scope) {
       this.dsl = opBuilder;
       this.scope = scope;
+      this.nextIsUsed = true;
+    }
+
+    public void setNextIsUsed(final boolean isUsed) {
+      nextIsUsed = isUsed;
     }
 
     public BytecodeLocal getLocal(final Local local) {
@@ -264,7 +271,9 @@ public final class Method extends Invokable {
     @Override
     public boolean visit(final Node node) {
       if (node instanceof SOMNode somNode) {
-        somNode.constructOperation(this, true);
+        boolean isUsed = nextIsUsed;
+        nextIsUsed = true;
+        somNode.constructOperation(this, isUsed);
         // return false to indicate that the children have been visited already
         return false;
       } else {
