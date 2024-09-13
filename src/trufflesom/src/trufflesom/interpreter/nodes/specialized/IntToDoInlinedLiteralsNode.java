@@ -148,7 +148,7 @@ public abstract class IntToDoInlinedLiteralsNode extends NoPreEvalExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     BytecodeLocal idx = opBuilder.getLocal(loopIdxVar);
     BytecodeLocal from = opBuilder.dsl.createLocal();
     BytecodeLocal to = opBuilder.dsl.createLocal();

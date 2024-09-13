@@ -103,7 +103,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginIfMessageOp();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

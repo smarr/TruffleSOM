@@ -73,7 +73,7 @@ public abstract class StringEqualsNode extends UnaryExpressionNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginEqualsOp();
     opBuilder.dsl.emitLoadConstant(value);
     getReceiver().accept(opBuilder);

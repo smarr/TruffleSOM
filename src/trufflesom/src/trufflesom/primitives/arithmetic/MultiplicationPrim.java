@@ -83,7 +83,7 @@ public abstract class MultiplicationPrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginMultiplicationPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

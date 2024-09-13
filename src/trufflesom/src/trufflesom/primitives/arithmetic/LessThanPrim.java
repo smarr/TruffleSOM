@@ -63,7 +63,7 @@ public abstract class LessThanPrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginLessThanPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);
