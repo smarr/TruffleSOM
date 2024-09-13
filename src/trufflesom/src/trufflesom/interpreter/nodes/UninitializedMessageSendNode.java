@@ -72,10 +72,38 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
 
   @Override
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
-    opBuilder.dsl.beginMessageSendOp(selector);
+    switch (selector.getNumberOfSignatureArguments()) {
+      case 1:
+        opBuilder.dsl.beginUnarySendOp(selector);
+        break;
+      case 2:
+        opBuilder.dsl.beginBinarySendOp(selector);
+        break;
+      case 3:
+        opBuilder.dsl.beginTernarySendOp(selector);
+        break;
+      default:
+        opBuilder.dsl.beginNarySendOp(selector);
+        break;
+    }
+
     for (var e : argumentNodes) {
       e.accept(opBuilder);
     }
-    opBuilder.dsl.endMessageSendOp();
+
+    switch (selector.getNumberOfSignatureArguments()) {
+      case 1:
+        opBuilder.dsl.endUnarySendOp();
+        break;
+      case 2:
+        opBuilder.dsl.endBinarySendOp();
+        break;
+      case 3:
+        opBuilder.dsl.endTernarySendOp();
+        break;
+      default:
+        opBuilder.dsl.endNarySendOp();
+        break;
+    }
   }
 }
