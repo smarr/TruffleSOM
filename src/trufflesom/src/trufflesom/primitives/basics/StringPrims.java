@@ -54,7 +54,7 @@ public class StringPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginConcatPrim();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);
@@ -62,12 +62,12 @@ public class StringPrims {
     }
 
     @Override
-    public void beginConstructOperation(final OpBuilder opBuilder) {
+    public void beginConstructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginConcatPrim();
     }
 
     @Override
-    public void endConstructOperation(final OpBuilder opBuilder) {
+    public void endConstructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.endConcatPrim();
     }
   }
@@ -118,7 +118,7 @@ public class StringPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginCharAtOp();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);

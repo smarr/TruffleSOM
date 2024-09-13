@@ -46,7 +46,7 @@ public abstract class BitXorPrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginBitXorPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

@@ -71,7 +71,7 @@ public final class UninitializedMessageSendNode extends AbstractMessageSendNode 
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginMessageSendOp(selector);
     for (var e : argumentNodes) {
       e.accept(opBuilder);

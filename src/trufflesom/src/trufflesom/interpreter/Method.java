@@ -264,7 +264,7 @@ public final class Method extends Invokable {
     @Override
     public boolean visit(final Node node) {
       if (node instanceof SOMNode somNode) {
-        somNode.constructOperation(this);
+        somNode.constructOperation(this, true);
         // return false to indicate that the children have been visited already
         return false;
       } else {

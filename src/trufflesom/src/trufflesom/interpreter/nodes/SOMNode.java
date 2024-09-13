@@ -125,15 +125,18 @@ public abstract class SOMNode extends Node implements ScopeReference, WithSource
     return node;
   }
 
-  public void constructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder) {
+  public void constructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder,
+      boolean resultUsed) {
     throw new NotYetImplementedException("Class not yet supported: " + getClass().getName());
   }
 
-  public void beginConstructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder) {
+  public void beginConstructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder,
+      boolean resultUsed) {
     throw new NotYetImplementedException("Class not yet supported: " + getClass().getName());
   }
 
-  public void endConstructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder) {
+  public void endConstructOperation(@SuppressWarnings("unused") final OpBuilder opBuilder,
+      boolean resultUsed) {
     throw new NotYetImplementedException("Class not yet supported: " + getClass().getName());
   }
 }

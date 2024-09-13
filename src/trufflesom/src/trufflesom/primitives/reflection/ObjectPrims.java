@@ -67,7 +67,7 @@ public final class ObjectPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginInstVarAtPrim();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);
@@ -102,7 +102,7 @@ public final class ObjectPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginInstVarAtPutPrim();
       getReceiver().accept(opBuilder);
       getArg1().accept(opBuilder);
@@ -222,7 +222,7 @@ public final class ObjectPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginIsNil();
       getReceiver().accept(opBuilder);
       opBuilder.dsl.endIsNil();
@@ -239,7 +239,7 @@ public final class ObjectPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginNotNil();
       getReceiver().accept(opBuilder);
       opBuilder.dsl.endNotNil();

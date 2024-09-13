@@ -118,7 +118,7 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginAdditionOp();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

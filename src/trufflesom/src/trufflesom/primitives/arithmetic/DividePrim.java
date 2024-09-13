@@ -52,7 +52,7 @@ public abstract class DividePrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginDividePrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

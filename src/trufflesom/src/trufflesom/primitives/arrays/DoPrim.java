@@ -168,7 +168,7 @@ public abstract class DoPrim extends BinaryMsgExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginArrayDoOp();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

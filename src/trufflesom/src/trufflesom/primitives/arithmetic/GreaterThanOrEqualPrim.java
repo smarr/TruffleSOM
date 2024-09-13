@@ -63,7 +63,7 @@ public abstract class GreaterThanOrEqualPrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginGreaterThanOrEqualPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);
