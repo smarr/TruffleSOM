@@ -86,7 +86,7 @@ public final class MessageSendNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginSuperSendOp(cachedSuperMethod.getCallTarget());
       for (var arg : argumentNodes) {
         arg.accept(opBuilder);
@@ -130,17 +130,18 @@ public final class MessageSendNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       if (expr instanceof LiteralNode) {
-        expr.accept(opBuilder);
+        if (resultUsed)
+          expr.accept(opBuilder);
         return;
       }
 
-      expr.beginConstructOperation(opBuilder);
+      expr.beginConstructOperation(opBuilder, true);
       for (var arg : argumentNodes) {
         arg.accept(opBuilder);
       }
-      expr.endConstructOperation(opBuilder);
+      expr.endConstructOperation(opBuilder, true);
     }
   }
 }

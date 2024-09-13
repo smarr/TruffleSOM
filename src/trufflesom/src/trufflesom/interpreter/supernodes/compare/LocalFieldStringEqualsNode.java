@@ -171,7 +171,7 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginEqualsOp();
     opBuilder.dsl.emitLoadConstant(value);
 

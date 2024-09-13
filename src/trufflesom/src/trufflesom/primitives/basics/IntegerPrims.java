@@ -54,7 +54,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginAs32BitSignedValue();
       getReceiver().accept(opBuilder);
       opBuilder.dsl.endAs32BitSignedValue();
@@ -78,7 +78,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginAs32BitUnsignedValue();
       getReceiver().accept(opBuilder);
       opBuilder.dsl.endAs32BitUnsignedValue();
@@ -102,7 +102,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginAsDoubleValue();
       getReceiver().accept(opBuilder);
       opBuilder.dsl.endAsDoubleValue();
@@ -132,7 +132,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginNegatedValue();
       getReceiver().accept(opBuilder);
       opBuilder.dsl.endNegatedValue();
@@ -202,7 +202,7 @@ public abstract class IntegerPrims {
     }
       
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginLeftShiftPrim();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);
@@ -225,7 +225,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginUnsignedRightShiftPrim();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);
@@ -267,7 +267,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginMinIntPrim();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);
@@ -309,7 +309,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginMaxIntPrim();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);
@@ -338,7 +338,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginToPrim();
       getReceiver().accept(opBuilder);
       getArgument().accept(opBuilder);
@@ -388,7 +388,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginAbsPrim();
       getReceiver().accept(opBuilder);
       opBuilder.dsl.endAbsPrim();

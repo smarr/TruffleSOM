@@ -178,7 +178,7 @@ public abstract class PutAllNode extends BinaryExpressionNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginArrayPutAllOp();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

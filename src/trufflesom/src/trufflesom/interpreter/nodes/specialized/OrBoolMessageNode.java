@@ -17,7 +17,7 @@ public abstract class OrBoolMessageNode extends BinaryExpressionNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginOrBoolMessage();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

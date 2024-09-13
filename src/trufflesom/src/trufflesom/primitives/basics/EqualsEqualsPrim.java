@@ -34,7 +34,7 @@ public abstract class EqualsEqualsPrim extends BinaryExpressionNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginEqualsEqualsPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);
