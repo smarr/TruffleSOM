@@ -41,7 +41,7 @@ public abstract class WhileTruePrimitiveNode extends WhilePrimitiveNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginWhileFalsePrimitive();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

@@ -74,7 +74,7 @@ public abstract class BooleanInlinedLiteralNode extends NoPreEvalExprNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginConditional();
       receiverNode.accept(opBuilder);
       argumentNode.accept(opBuilder);
@@ -107,7 +107,7 @@ public abstract class BooleanInlinedLiteralNode extends NoPreEvalExprNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginConditional();
       receiverNode.accept(opBuilder);
       opBuilder.dsl.emitLoadConstant(true);

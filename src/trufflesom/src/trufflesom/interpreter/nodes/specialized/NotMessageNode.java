@@ -21,7 +21,7 @@ public abstract class NotMessageNode extends UnaryExpressionNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginNotMessage();
     getReceiver().accept(opBuilder);
     opBuilder.dsl.endNotMessage();

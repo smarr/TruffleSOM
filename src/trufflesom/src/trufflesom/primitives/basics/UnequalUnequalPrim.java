@@ -33,7 +33,7 @@ public abstract class UnequalUnequalPrim extends BinaryExpressionNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginUnequalUnequalPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

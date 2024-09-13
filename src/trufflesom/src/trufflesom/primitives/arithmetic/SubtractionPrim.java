@@ -81,7 +81,7 @@ public abstract class SubtractionPrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginSubtractionOp();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

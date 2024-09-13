@@ -156,7 +156,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginReadField(getFieldIndex());
       getSelf().accept(opBuilder);
       opBuilder.dsl.endReadField();
@@ -254,7 +254,7 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginWriteField(write.getFieldIndex());
       getSelf().accept(opBuilder);
       getValue().accept(opBuilder);
@@ -301,13 +301,13 @@ public abstract class FieldNode extends ExpressionNode {
     }
 
     @Override
-    public void beginConstructOperation(final OpBuilder opBuilder) {
+    public void beginConstructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       FieldWriteNode n = (FieldWriteNode) write;
       opBuilder.dsl.beginWriteFieldAndReturnSelf(n.getFieldIndex());
     }
 
     @Override
-    public void endConstructOperation(final OpBuilder opBuilder) {
+    public void endConstructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.endWriteFieldAndReturnSelf();
     }
   }

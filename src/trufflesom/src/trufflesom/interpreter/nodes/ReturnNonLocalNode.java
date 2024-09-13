@@ -91,7 +91,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginReturnNonLocal(contextLevel);
     expression.accept(opBuilder); // return value for the non-local return
 
@@ -147,10 +147,10 @@ public final class ReturnNonLocalNode extends ContextualNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       opBuilder.dsl.beginBlock();
       opBuilder.dsl.beginReturn();
-      expression.constructOperation(opBuilder);
+      expression.constructOperation(opBuilder, true);
       opBuilder.dsl.endReturn();
       opBuilder.dsl.emitLoadConstant(
           "Hack to avoid Op DSL issue with returns in `Conditional`");

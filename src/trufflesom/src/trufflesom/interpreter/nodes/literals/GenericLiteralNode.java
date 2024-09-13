@@ -41,7 +41,8 @@ public final class GenericLiteralNode extends LiteralNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
-    opBuilder.dsl.emitLoadConstant(value);
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    if (resultUsed)
+      opBuilder.dsl.emitLoadConstant(value);
   }
 }

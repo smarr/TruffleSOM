@@ -83,7 +83,7 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginArrayDoIndexesOp();
 
     getReceiver().accept(opBuilder);

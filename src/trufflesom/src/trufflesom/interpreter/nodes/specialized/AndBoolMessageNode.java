@@ -27,7 +27,7 @@ public abstract class AndBoolMessageNode extends BinaryMsgExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginAndBoolMessage();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);
