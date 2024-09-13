@@ -418,30 +418,61 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @Operation
   @ConstantOperand(type = int.class)
   @ImportStatic(FieldAccessorNode.class)
-  public static final class ReadField {
+  public static final class LocalReadField {
     @Specialization(rewriteOn = UnexpectedResultException.class)
     public static long readLong(
+            final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
-        @SuppressWarnings("unused") final SObject self,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
         throws UnexpectedResultException {
+      return read.readLong((SObject) frame.getArguments()[0]);
+    }
+
+    @Specialization(rewriteOn = UnexpectedResultException.class)
+    public static double readDouble(
+            final VirtualFrame frame,
+        @SuppressWarnings("unused") final int fieldIdx,
+        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
+        throws UnexpectedResultException {
+      return read.readDouble((SObject) frame.getArguments()[0]);
+    }
+
+    @Specialization
+    public static Object readObject(
+            final VirtualFrame frame,
+        @SuppressWarnings("unused") final int fieldIdx,
+        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
+      return read.read((SObject) frame.getArguments()[0]);
+    }
+  }
+
+  @Operation
+  @ConstantOperand(type = int.class)
+  @ImportStatic(FieldAccessorNode.class)
+  public static final class NonLocalReadField {
+    @Specialization(rewriteOn = UnexpectedResultException.class)
+    public static long readLong(
+            @SuppressWarnings("unused") final int fieldIdx,
+            final SObject self,
+            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
+            throws UnexpectedResultException {
       return read.readLong(self);
     }
 
     @Specialization(rewriteOn = UnexpectedResultException.class)
     public static double readDouble(
-        @SuppressWarnings("unused") final int fieldIdx,
-        @SuppressWarnings("unused") final SObject self,
-        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
-        throws UnexpectedResultException {
+            @SuppressWarnings("unused") final int fieldIdx,
+            final SObject self,
+            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
+            throws UnexpectedResultException {
       return read.readDouble(self);
     }
 
     @Specialization
     public static Object readObject(
-        @SuppressWarnings("unused") final int fieldIdx,
-        @SuppressWarnings("unused") final SObject self,
-        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
+            @SuppressWarnings("unused") final int fieldIdx,
+            final SObject self,
+            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
       return read.read(self);
     }
   }
