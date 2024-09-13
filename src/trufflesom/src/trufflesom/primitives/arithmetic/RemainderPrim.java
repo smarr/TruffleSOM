@@ -61,7 +61,7 @@ public abstract class RemainderPrim extends ArithmeticPrim {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginRemainderPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);

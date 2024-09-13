@@ -128,7 +128,7 @@ public abstract class UnequalsPrim extends BinaryMsgExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginUnequalsPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);
