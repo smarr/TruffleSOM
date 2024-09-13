@@ -242,16 +242,64 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @Operation
   @ImportStatic(Types.class)
   @ConstantOperand(type = SSymbol.class)
-  public static final class MessageSendOp {
+  public static final class UnarySendOp {
+    @Specialization
+    public static Object doCached(final VirtualFrame frame,
+        @SuppressWarnings("unused") final SSymbol selector,
+        final Object rcvr,
+        @Cached("create(selector)") final AbstractDispatchNode dispatch) {
+      return dispatch.executeDispatch(frame, new Object[] {rcvr});
+    }
+
+    // TODO: uncached case
+  }
+
+  @Operation
+  @ImportStatic(Types.class)
+  @ConstantOperand(type = SSymbol.class)
+  public static final class BinarySendOp {
+    @Specialization
+    public static Object doCached(final VirtualFrame frame,
+                                  @SuppressWarnings("unused") final SSymbol selector,
+                                  final Object rcvr,
+                                  final Object arg,
+                                  @Cached("create(selector)") final AbstractDispatchNode dispatch) {
+      return dispatch.executeDispatch(frame, new Object[] {rcvr, arg});
+    }
+
+    // TODO: uncached case
+  }
+
+  @Operation
+  @ImportStatic(Types.class)
+  @ConstantOperand(type = SSymbol.class)
+  public static final class TernarySendOp {
+    @Specialization
+    public static Object doCached(final VirtualFrame frame,
+                                  @SuppressWarnings("unused") final SSymbol selector,
+                                  final Object rcvr,
+                                  final Object arg1,
+                                  final Object arg2,
+                                  @Cached("create(selector)") final AbstractDispatchNode dispatch) {
+      return dispatch.executeDispatch(frame, new Object[] {rcvr, arg1, arg2});
+    }
+
+    // TODO: uncached case
+  }
+
+  @Operation
+  @ImportStatic(Types.class)
+  @ConstantOperand(type = SSymbol.class)
+  public static final class NarySendOp {
     public static Object getRcvr(final Object[] arguments) {
       return arguments[0];
     }
 
     @Specialization
     public static Object doCached(final VirtualFrame frame,
-        @SuppressWarnings("unused") final SSymbol selector,
-        @Variadic final Object[] arguments,
-        @Cached("create(selector)") final AbstractDispatchNode dispatch) {
+                                  @SuppressWarnings("unused") final SSymbol selector,
+                                  @Variadic final Object[] arguments,
+                                  @Cached("create(selector)") final AbstractDispatchNode dispatch) {
       return dispatch.executeDispatch(frame, arguments);
     }
 
