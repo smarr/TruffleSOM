@@ -157,9 +157,14 @@ public abstract class FieldNode extends ExpressionNode {
 
     @Override
     public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
-      opBuilder.dsl.beginReadField(getFieldIndex());
-      getSelf().accept(opBuilder);
-      opBuilder.dsl.endReadField();
+      if (self instanceof NonLocalArgumentReadNode arg) {
+        opBuilder.dsl.beginNonLocalReadField(getFieldIndex());
+        getSelf().accept(opBuilder);
+        opBuilder.dsl.endNonLocalReadField();
+        return;
+      }
+
+      opBuilder.dsl.emitLocalReadField(read.getFieldIndex());
     }
   }
 
