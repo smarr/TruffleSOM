@@ -87,7 +87,7 @@ public final class MessageSendNode {
 
     @Override
     public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.beginSuperSendOp(cachedSuperMethod);
+      opBuilder.dsl.beginSuperSendOp(cachedSuperMethod.getCallTarget());
       for (var arg : argumentNodes) {
         arg.accept(opBuilder);
       }
