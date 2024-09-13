@@ -3,16 +3,15 @@ package trufflesom.interpreter.operations;
 import java.util.HashMap;
 
 import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.bytecode.BytecodeNode;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
 import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.EpilogExceptional;
 import com.oracle.truffle.api.bytecode.EpilogReturn;
-import com.oracle.truffle.api.bytecode.Prolog;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.LocalSetter;
 import com.oracle.truffle.api.bytecode.Operation;
@@ -260,11 +259,12 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @ConstantOperand(type = DirectCallNode.class)
+  @ConstantOperand(type = CallTarget.class)
   public static final class SuperSendOp {
     @Specialization
-    public static Object doSuper(final DirectCallNode callNode,
-        @Variadic final Object[] arguments) {
+    public static Object doSuper(final CallTarget callTarget,
+                                 @Variadic final Object[] arguments,
+                                 @Cached("create(callTarget)") DirectCallNode callNode) {
       return callNode.call(arguments);
     }
   }
