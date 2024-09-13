@@ -148,7 +148,8 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+      if (resultUsed)
       opBuilder.dsl.emitGlobalReadOp(globalName);
     }
   }
@@ -251,7 +252,8 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+      if (resultUsed)
       opBuilder.dsl.emitGlobalCachedReadOp(assoc);
     }
   }
@@ -292,7 +294,8 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+      if (resultUsed)
       opBuilder.dsl.emitLoadConstant(true);
     }
   }
@@ -333,7 +336,8 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+      if (resultUsed)
       opBuilder.dsl.emitLoadConstant(false);
     }
   }
@@ -369,7 +373,8 @@ public abstract class GlobalNode extends ExpressionNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+      if (resultUsed)
       opBuilder.dsl.emitLoadConstant(Nil.nilObject);
     }
   }

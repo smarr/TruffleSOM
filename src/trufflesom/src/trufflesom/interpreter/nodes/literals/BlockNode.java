@@ -112,8 +112,9 @@ public class BlockNode extends LiteralNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     assert blockMethod.isConverted();
+    if (resultUsed)
     opBuilder.dsl.emitPushBlockWithoutContextOp(blockMethod);
   }
 
@@ -158,8 +159,9 @@ public class BlockNode extends LiteralNode {
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       assert blockMethod.isConverted();
+      if (resultUsed)
       opBuilder.dsl.emitPushBlockWithContextOp(blockMethod);
     }
   }

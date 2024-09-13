@@ -47,7 +47,8 @@ public final class IntegerLiteralNode extends LiteralNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    if (resultUsed)
     opBuilder.dsl.emitLoadConstant(value);
   }
 }
