@@ -119,8 +119,12 @@ public final class SequenceNode extends NoPreEvalExprNode {
   @Override
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginBlock();
+    int lastI = expressions.length - 1;
+    int i = 0;
     for (var e : expressions) {
+      opBuilder.setNextIsUsed(i == lastI);
       e.accept(opBuilder);
+      i += 1;
     }
     opBuilder.dsl.endBlock();
   }
