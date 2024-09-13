@@ -93,8 +93,9 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
-      opBuilder.dsl.emitLoadLocal(opBuilder.getLocal(local));
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+      if (resultUsed)
+        opBuilder.dsl.emitLoadLocal(opBuilder.getLocal(local));
     }
   }
 
@@ -178,14 +179,17 @@ public abstract class LocalVariableNode extends NoPreEvalExprNode
     }
 
     @Override
-    public void constructOperation(final OpBuilder opBuilder) {
+    public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
       BytecodeLocal l = opBuilder.getLocal(this.local);
       opBuilder.dsl.beginBlock();
 
       opBuilder.dsl.beginStoreLocal(l);
       getExp().accept(opBuilder);
       opBuilder.dsl.endStoreLocal();
-      opBuilder.dsl.emitLoadLocal(l);
+
+      if (resultUsed) {
+        opBuilder.dsl.emitLoadLocal(l);
+      }
 
       opBuilder.dsl.endBlock();
     }

@@ -41,7 +41,7 @@ public final class IfNotNilInlinedLiteralNode extends NoPreEvalExprNode {
   }
 
   @Override
-  public void constructOperation(final OpBuilder opBuilder) {
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     BytecodeLocal receiverObj = opBuilder.dsl.createLocal();
 
     opBuilder.dsl.beginConditional();
