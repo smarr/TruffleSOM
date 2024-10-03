@@ -1,5 +1,6 @@
 package trufflesom.interpreter.nodes.bc;
 
+import static trufflesom.interpreter.nodes.ContextualNode.frameType;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit1;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3WithDummy;
@@ -147,8 +148,7 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReference {
-  private static final ValueProfile frameType = ValueProfile.createClassProfile();
-  private static final LiteralNode  dummyNode = new IntegerLiteralNode(0);
+  private static final LiteralNode dummyNode = new IntegerLiteralNode(0);
 
   @CompilationFinal(dimensions = 1) private final byte[]   bytecodesField;
   @CompilationFinal(dimensions = 1) private final Object[] literalsAndConstantsField;
