@@ -28,9 +28,6 @@ package trufflesom.compiler;
 import static trufflesom.vm.SymbolTable.strBlockSelf;
 import static trufflesom.vm.SymbolTable.strFrameOnStack;
 import static trufflesom.vm.SymbolTable.strSelf;
-import static trufflesom.vm.SymbolTable.symBlockSelf;
-import static trufflesom.vm.SymbolTable.symFrameOnStack;
-import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.ArrayList;
@@ -59,6 +56,8 @@ import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
+import trufflesom.interpreter.supernodes.NonLocalVariableSquareNode;
 import trufflesom.primitives.Primitives;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
@@ -404,7 +403,18 @@ public class MethodGenerationContext
 
   public ExpressionNode getLocalWriteNode(final Variable variable,
       final ExpressionNode valExpr, final long coord) {
-    return variable.getWriteNode(getContextLevel(variable), valExpr, coord);
+    int ctxLevel = getContextLevel(variable);
+
+    if (valExpr instanceof LocalVariableSquareNode l) {
+      return variable.getReadSquareWriteNode(ctxLevel, coord, l.getLocal(), 0);
+    }
+
+    if (valExpr instanceof NonLocalVariableSquareNode nl) {
+      return variable.getReadSquareWriteNode(ctxLevel, coord, nl.getLocal(),
+          nl.getContextLevel());
+    }
+
+    return variable.getWriteNode(ctxLevel, valExpr, coord);
   }
 
   protected Local getLocal(final String varName) {

@@ -35,7 +35,9 @@ import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
 import trufflesom.interpreter.nodes.GlobalNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
 import trufflesom.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
@@ -45,7 +47,9 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
@@ -305,6 +309,20 @@ public class ParserAst extends Parser<MethodGenerationContext> {
           }
 
           return StringEqualsNodeGen.create(s, operand).initialize(coordWithL);
+        }
+      }
+    } else if (binSelector.equals("*")) {
+      if (receiver instanceof LocalVariableReadNode rcvr
+          && operand instanceof LocalVariableReadNode op) {
+        if (rcvr.isSameLocal(op)) {
+          return LocalVariableSquareNodeGen.create(rcvr.getLocal()).initialize(coordWithL);
+        }
+      } else if (receiver instanceof NonLocalVariableReadNode rcvr
+          && operand instanceof NonLocalVariableReadNode op) {
+        if (rcvr.isSameLocal(op)) {
+          assert rcvr.getContextLevel() == op.getContextLevel();
+          return NonLocalVariableSquareNodeGen.create(
+              rcvr.getContextLevel(), rcvr.getLocal()).initialize(coordWithL);
         }
       }
     }
