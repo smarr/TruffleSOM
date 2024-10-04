@@ -13,7 +13,6 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.GlobalNode.FalseGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.NilGlobalNode;
 import trufflesom.interpreter.nodes.GlobalNode.TrueGlobalNode;
@@ -35,7 +34,9 @@ import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
 import trufflesom.interpreter.nodes.specialized.whileloops.WhileInlinedLiteralsNode;
-import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.inc.IncExpWithValueNode;
+import trufflesom.interpreter.supernodes.inc.IncNonLocalVarWithValueNode;
+import trufflesom.interpreter.supernodes.inc.UninitIncFieldWithValueNode;
 import trufflesom.primitives.arithmetic.SubtractionPrim;
 import trufflesom.primitives.arrays.DoPrim;
 
@@ -144,7 +145,8 @@ public class AstInliningTests extends AstTestSetup {
             + "(self key: 5) ifTrue: [ field := field + 1 ]. #end )");
 
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 1);
-    UninitFieldIncNode incNode = read(ifNode, "bodyNode", UninitFieldIncNode.class);
+    UninitIncFieldWithValueNode incNode =
+        read(ifNode, "bodyNode", UninitIncFieldWithValueNode.class);
 
     int fieldIdx = read(incNode, "fieldIndex", Integer.class);
     assertEquals(0, fieldIdx);
@@ -162,7 +164,7 @@ public class AstInliningTests extends AstTestSetup {
 
     IfInlinedLiteralNode ifNode = (IfInlinedLiteralNode) read(seq, "expressions", 1);
 
-    IntIncrementNode inc = read(ifNode, "bodyNode", IntIncrementNode.class);
+    IncExpWithValueNode inc = read(ifNode, "bodyNode", IncExpWithValueNode.class);
     LocalArgumentReadNode arg = (LocalArgumentReadNode) inc.getRcvr();
     assertEquals(1, arg.argumentIndex);
     assertEquals("arg", arg.getInvocationIdentifier());
@@ -359,7 +361,8 @@ public class AstInliningTests extends AstTestSetup {
     assertEquals("b", readB.getInvocationIdentifier());
     assertEquals(1, readB.argumentIndex);
 
-    UninitFieldIncNode incNode = read(blockBIfTrue, "bodyNode", UninitFieldIncNode.class);
+    UninitIncFieldWithValueNode incNode =
+        read(blockBIfTrue, "bodyNode", UninitIncFieldWithValueNode.class);
     NonLocalArgumentReadNode selfNode = (NonLocalArgumentReadNode) incNode.getSelf();
     assertEquals(2, selfNode.getContextLevel());
     assertEquals(0, (int) read(incNode, "fieldIndex", Integer.class));
@@ -389,14 +392,10 @@ public class AstInliningTests extends AstTestSetup {
     assertEquals("b", readNode.getInvocationIdentifier());
     assertEquals(1, readNode.argumentIndex);
 
-    NonLocalVariableWriteNode writeNode =
-        read(blockBIfTrue, "bodyNode", NonLocalVariableWriteNode.class);
-    assertEquals(1, writeNode.getContextLevel());
-    assertEquals("l2", writeNode.getInvocationIdentifier());
-
-    IntIncrementNode incNode = (IntIncrementNode) writeNode.getExp();
-    NonLocalVariableReadNode readL2 = (NonLocalVariableReadNode) incNode.getRcvr();
-    assertEquals("l2", readL2.getInvocationIdentifier());
+    IncNonLocalVarWithValueNode incNode =
+        read(blockBIfTrue, "bodyNode", IncNonLocalVarWithValueNode.class);
+    assertEquals(1, incNode.getContextLevel());
+    assertEquals("l2", incNode.getInvocationIdentifier());
   }
 
   @Test

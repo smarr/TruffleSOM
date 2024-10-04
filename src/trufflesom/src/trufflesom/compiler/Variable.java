@@ -6,9 +6,6 @@ import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHARGUMENT;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHLOCAL;
 import static trufflesom.vm.SymbolTable.strBlockSelf;
 import static trufflesom.vm.SymbolTable.strSelf;
-import static trufflesom.vm.SymbolTable.symBlockSelf;
-import static trufflesom.vm.SymbolTable.symSelf;
-import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.util.Objects;
 
@@ -23,16 +20,22 @@ import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ArgumentReadNode.NonLocalArgumentWriteNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
+import trufflesom.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeGen;
+import trufflesom.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeGen;
 import trufflesom.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeGen;
 import trufflesom.interpreter.supernodes.LocalVariableReadSquareWriteNodeGen;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalVariableReadSquareWriteNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNodeGen;
+import trufflesom.interpreter.supernodes.inc.IncLocalVarWithExpNodeGen;
+import trufflesom.interpreter.supernodes.inc.IncLocalVarWithValueNodeGen;
+import trufflesom.interpreter.supernodes.inc.IncNonLocalVarWithExpNodeGen;
+import trufflesom.interpreter.supernodes.inc.IncNonLocalVarWithValueNodeGen;
+import trufflesom.primitives.arithmetic.AdditionPrim;
 import trufflesom.vm.NotYetImplementedException;
-import trufflesom.vmobjects.SSymbol;
 
 
 public abstract class Variable {
@@ -67,6 +70,8 @@ public abstract class Variable {
 
   public abstract ExpressionNode getReadSquareWriteNode(int writeContextLevel, long coord,
       Local readLocal, int readContextLevel);
+
+  public abstract ExpressionNode getIncNode(int contextLevel, long incValue, long coord);
 
   protected abstract void emitPop(BytecodeMethodGenContext mgenc);
 
@@ -157,6 +162,12 @@ public abstract class Variable {
     }
 
     @Override
+    public ExpressionNode getIncNode(final int contextLevel, final long incValue,
+        final long coord) {
+      throw new NotYetImplementedException();
+    }
+
+    @Override
     public void emitPop(final BytecodeMethodGenContext mgenc) {
       emitPOPARGUMENT(mgenc, (byte) index, (byte) mgenc.getContextLevel(this));
     }
@@ -215,6 +226,16 @@ public abstract class Variable {
       return LocalVariableReadSquareWriteNodeGen.create(this, readLocal).initialize(coord);
     }
 
+    @Override
+    public ExpressionNode getIncNode(final int contextLevel, final long incValue,
+        final long coord) {
+      if (contextLevel > 0) {
+        return IncNonLocalVarWithValueNodeGen.create(contextLevel, this, incValue)
+                                             .initialize(coord);
+      }
+      return IncLocalVarWithValueNodeGen.create(this, incValue).initialize(coord);
+    }
+
     public final int getIndex() {
       return slotIndex;
     }
@@ -231,6 +252,31 @@ public abstract class Variable {
 
     public ExpressionNode getWriteNode(final int contextLevel,
         final ExpressionNode valueExpr, final long coordinate) {
+      if (valueExpr instanceof AdditionPrim add) {
+        ExpressionNode rcvr = add.getReceiver();
+        ExpressionNode arg = add.getArgument();
+
+        if (contextLevel > 0) {
+          if (rcvr instanceof NonLocalVariableReadNode nl && nl.getLocal() == this) {
+            return IncNonLocalVarWithExpNodeGen.create(contextLevel, this, arg)
+                                               .initialize(coord);
+          }
+
+          if (arg instanceof NonLocalVariableReadNode nl && nl.getLocal() == this) {
+            return IncNonLocalVarWithExpNodeGen.create(contextLevel, this, rcvr)
+                                               .initialize(coord);
+          }
+        } else {
+          if (rcvr instanceof LocalVariableReadNode l && l.getLocal() == this) {
+            return IncLocalVarWithExpNodeGen.create(this, arg).initialize(coord);
+          }
+
+          if (arg instanceof LocalVariableReadNode l && l.getLocal() == this) {
+            return IncLocalVarWithExpNodeGen.create(this, rcvr).initialize(coord);
+          }
+        }
+      }
+
       if (contextLevel > 0) {
         return NonLocalVariableWriteNodeGen.create(contextLevel, this, valueExpr)
                                            .initialize(coordinate);
@@ -284,6 +330,14 @@ public abstract class Variable {
         final Local readLocal, final int writeContextLevel) {
       throw new UnsupportedOperationException(
           "There shouldn't be any language-level square nodes for internal slots. ");
+    }
+
+    @Override
+    public ExpressionNode getIncNode(final int contextLevel, final long incValue,
+        final long coord) {
+      throw new UnsupportedOperationException(
+          "There shouldn't be any language-level inc nodes for internal slots. "
+              + "They are used directly by other nodes.");
     }
 
     @Override
