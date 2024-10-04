@@ -124,19 +124,21 @@ def build_native_image_tool(args, **kwargs):
     svm_path = get_svm_path()
     mx.run_mx(["build"], svm_path)
 
+
 BASE_DIR = suite.dir
-TRUFFLE_DIR = BASE_DIR + '/../graal'
+TRUFFLE_DIR = BASE_DIR + "/../graal"
 
 MODULE_PATH_ENTRIES = [
-  BASE_DIR + '/mxbuild/dists/trufflesom.jar',
-  TRUFFLE_DIR + '/sdk/mxbuild/dists/graal-sdk.jar',
-  TRUFFLE_DIR + '/sdk/mxbuild/dists/collections.jar',
-  TRUFFLE_DIR + '/sdk/mxbuild/dists/polyglot.jar',
-  TRUFFLE_DIR + '/sdk/mxbuild/dists/word.jar',
-  TRUFFLE_DIR + '/sdk/mxbuild/dists/jniutils.jar',
-  TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-runtime.jar',
-  TRUFFLE_DIR + '/substratevm/mxbuild/dists/truffle-runtime-svm.jar',
-  TRUFFLE_DIR + '/truffle/mxbuild/dists/truffle-api.jar']
+    BASE_DIR + "/mxbuild/dists/trufflesom.jar",
+    TRUFFLE_DIR + "/sdk/mxbuild/dists/graal-sdk.jar",
+    TRUFFLE_DIR + "/sdk/mxbuild/dists/collections.jar",
+    TRUFFLE_DIR + "/sdk/mxbuild/dists/polyglot.jar",
+    TRUFFLE_DIR + "/sdk/mxbuild/dists/word.jar",
+    TRUFFLE_DIR + "/sdk/mxbuild/dists/jniutils.jar",
+    TRUFFLE_DIR + "/truffle/mxbuild/dists/truffle-runtime.jar",
+    TRUFFLE_DIR + "/substratevm/mxbuild/dists/truffle-runtime-svm.jar",
+    TRUFFLE_DIR + "/truffle/mxbuild/dists/truffle-api.jar",
+]
 
 
 @mx.command(
@@ -173,7 +175,8 @@ def build_native(args, **kwargs):
         "--no-fallback",
         "--link-at-build-time",
         "-H:+ReportExceptionStackTraces",
-        "-H:+UnlockExperimentalVMOptions", "-H:-DeleteLocalSymbols",
+        "-H:+UnlockExperimentalVMOptions",
+        "-H:-DeleteLocalSymbols",
         "-Dsom.interp=" + opt.type,
     ]
 
@@ -197,12 +200,13 @@ def build_native(args, **kwargs):
     # -H:+EnforceMaxRuntimeCompileMethods
 
     cmd += [
-        '--module-path', ':'.join(MODULE_PATH_ENTRIES),
+        "--module-path",
+        ":".join(MODULE_PATH_ENTRIES),
         "-o",
         suite.dir + output_name,
     ]
 
-    if opt.use_g1 and opt.graalvm and os.uname().sysname != 'Darwin':
+    if opt.use_g1 and opt.graalvm and os.uname().sysname != "Darwin":
         cmd += ["--gc=G1"]
 
     cmd += ["trufflesom.Launcher"]
