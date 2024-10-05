@@ -358,21 +358,21 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     SSymbol msg = symbolFor(kw.toString());
 
-    long coodWithL = getCoordWithLength(coord);
+    long coordWithL = getCoordWithLength(coord);
 
     ExpressionNode[] args = arguments.toArray(new ExpressionNode[0]);
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
-          mgenc.getHolder().getSuperClass(), msg, args, coodWithL);
+          mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
     }
 
-    ExpressionNode inlined = inlinableNodes.inline(msg, args, mgenc, coodWithL);
+    ExpressionNode inlined = inlinableNodes.inline(msg, args, mgenc, coordWithL);
     if (inlined != null) {
       assert !isSuperSend;
       return inlined;
     }
 
-    return MessageSendNode.create(msg, args, coodWithL);
+    return MessageSendNode.create(msg, args, coordWithL);
   }
 
   private ExpressionNode formula(final MethodGenerationContext mgenc)
