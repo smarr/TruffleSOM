@@ -43,6 +43,10 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
+import trufflesom.interpreter.supernodes.compare.GreaterThanIntNodeGen;
+import trufflesom.interpreter.supernodes.compare.LessThanIntNodeGen;
+import trufflesom.interpreter.supernodes.compare.LocalArgGreaterThanInt;
+import trufflesom.interpreter.supernodes.compare.LocalArgLessThanInt;
 import trufflesom.interpreter.supernodes.compare.LocalFieldStringEqualsNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.compare.NonLocalFieldStringEqualsNode;
@@ -329,6 +333,20 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     } else if (msg == SymbolTable.symMinus && operand instanceof IntegerLiteralNode lit) {
       long litValue = lit.executeLong(null);
       return IncExpWithValueNodeGen.create(-litValue, true, receiver).initialize(coordWithL);
+    } else if (binSelector.equals(">") && operand instanceof IntegerLiteralNode lit) {
+      long litValue = lit.executeLong(null);
+
+      if (receiver instanceof LocalArgumentReadNode arg) {
+        return new LocalArgGreaterThanInt(arg.getArg(), litValue).initialize(coordWithL);
+      }
+      return GreaterThanIntNodeGen.create(litValue, receiver).initialize(coordWithL);
+    } else if (binSelector.equals("<") && operand instanceof IntegerLiteralNode lit) {
+      long litValue = lit.executeLong(null);
+
+      if (receiver instanceof LocalArgumentReadNode arg) {
+        return new LocalArgLessThanInt(arg.getArg(), litValue).initialize(coordWithL);
+      }
+      return LessThanIntNodeGen.create(litValue, receiver).initialize(coordWithL);
     }
 
     ExpressionNode inlined =
