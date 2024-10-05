@@ -99,7 +99,6 @@ import com.oracle.truffle.api.nodes.ExplodeLoop.LoopExplosionKind;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.nodes.ScopeReference;
@@ -866,7 +865,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             break;
           }
 
-          ((IncrementLongFieldNode) node).increment(obj);
+          ((IncrementLongFieldNode) node).increment(obj, 1);
           bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
           break;
         }
@@ -890,7 +889,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
             break;
           }
 
-          long value = ((IncrementLongFieldNode) node).increment(obj);
+          long value = ((IncrementLongFieldNode) node).increment(obj, 1);
           stackPointer += 1;
           stack[stackPointer] = value;
           bytecodeIndex += Bytecodes.LEN_TWO_ARGS;

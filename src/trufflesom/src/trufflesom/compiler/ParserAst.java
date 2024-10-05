@@ -45,12 +45,12 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
-import trufflesom.interpreter.supernodes.IntIncrementNodeGen;
 import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalFieldStringEqualsNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
+import trufflesom.interpreter.supernodes.inc.IncExpWithValueNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
 import trufflesom.vm.NotYetImplementedException;
@@ -325,6 +325,12 @@ public class ParserAst extends Parser<MethodGenerationContext> {
               rcvr.getContextLevel(), rcvr.getLocal()).initialize(coordWithL);
         }
       }
+    } else if (msg == SymbolTable.symPlus && operand instanceof IntegerLiteralNode lit) {
+      long litValue = lit.executeLong(null);
+      return IncExpWithValueNodeGen.create(litValue, false, receiver).initialize(coordWithL);
+    } else if (msg == SymbolTable.symMinus && operand instanceof IntegerLiteralNode lit) {
+      long litValue = lit.executeLong(null);
+      return IncExpWithValueNodeGen.create(-litValue, true, receiver).initialize(coordWithL);
     }
 
     ExpressionNode inlined =
@@ -334,11 +340,6 @@ public class ParserAst extends Parser<MethodGenerationContext> {
       return inlined;
     }
 
-    if (msg == SymbolTable.symPlus && operand instanceof IntegerLiteralNode lit) {
-      if (lit.executeLong(null) == 1) {
-        return IntIncrementNodeGen.create(receiver);
-      }
-    }
     return MessageSendNode.create(msg, args, coordWithL);
   }
 

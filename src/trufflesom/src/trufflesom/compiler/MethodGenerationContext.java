@@ -50,15 +50,16 @@ import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNode.FieldReadNode;
-import trufflesom.interpreter.nodes.FieldNode.UninitFieldIncNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode;
 import trufflesom.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.supernodes.IntIncrementNode;
+import trufflesom.interpreter.supernodes.inc.IncExpWithValueNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNode;
+import trufflesom.interpreter.supernodes.inc.UninitIncFieldWithExpNode;
 import trufflesom.primitives.Primitives;
+import trufflesom.primitives.arithmetic.AdditionPrim;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SInvokable;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -405,6 +406,10 @@ public class MethodGenerationContext
       final ExpressionNode valExpr, final long coord) {
     int ctxLevel = getContextLevel(variable);
 
+    if (valExpr instanceof IncExpWithValueNode inc && inc.doesAccessVariable(variable)) {
+      return inc.createIncVarNode((Local) variable, ctxLevel);
+    }
+
     if (valExpr instanceof LocalVariableSquareNode l) {
       return variable.getReadSquareWriteNode(ctxLevel, coord, l.getLocal(), 0);
     }
@@ -450,8 +455,9 @@ public class MethodGenerationContext
       return null;
     }
 
-    return new FieldReadNode(getSelfRead(coord),
-        holderGenc.getFieldIndex(fieldName)).initialize(coord);
+    byte fieldIndex = holderGenc.getFieldIndex(fieldName);
+    ExpressionNode selfNode = getSelfRead(coord);
+    return new FieldReadNode(selfNode, fieldIndex).initialize(coord);
   }
 
   public FieldNode getObjectFieldWrite(final SSymbol fieldName, final ExpressionNode exp,
@@ -460,11 +466,22 @@ public class MethodGenerationContext
       return null;
     }
 
-    int fieldIndex = holderGenc.getFieldIndex(fieldName);
+    byte fieldIndex = holderGenc.getFieldIndex(fieldName);
     ExpressionNode self = getSelfRead(coord);
-    if (exp instanceof IntIncrementNode
-        && ((IntIncrementNode) exp).doesAccessField(fieldIndex)) {
-      return new UninitFieldIncNode(self, fieldIndex, coord);
+    if (exp instanceof IncExpWithValueNode incNode && incNode.doesAccessField(fieldIndex)) {
+      return incNode.createIncFieldNode(self, fieldIndex, coord);
+    }
+
+    if (exp instanceof AdditionPrim add) {
+      ExpressionNode rcvr = add.getReceiver();
+      ExpressionNode arg = add.getArgument();
+
+      if (rcvr instanceof FieldReadNode fr && fieldIndex == fr.getFieldIndex()) {
+        return new UninitIncFieldWithExpNode(self, arg, true, fieldIndex, coord);
+      }
+      if (arg instanceof FieldReadNode fr && fieldIndex == fr.getFieldIndex()) {
+        return new UninitIncFieldWithExpNode(self, rcvr, false, fieldIndex, coord);
+      }
     }
 
     return FieldWriteNodeGen.create(fieldIndex, self, exp).initialize(coord);
