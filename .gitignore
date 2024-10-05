@@ -2,8 +2,12 @@
 *.txt
 *.yml
 *.zip
+*.log
+*.iml
+*.dist
 .classpath
 .factorypath
+.idea
 .project
 .pydevproject
 .settings
