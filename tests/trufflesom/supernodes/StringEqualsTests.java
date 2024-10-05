@@ -8,9 +8,9 @@ import org.junit.Test;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.SequenceNode;
 import trufflesom.interpreter.nodes.literals.BlockNode;
-import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
-import trufflesom.interpreter.supernodes.NonLocalFieldStringEqualsNode;
-import trufflesom.interpreter.supernodes.StringEqualsNode;
+import trufflesom.interpreter.supernodes.compare.LocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.compare.NonLocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.compare.StringEqualsNode;
 import trufflesom.tests.AstTestSetup;
 
 
