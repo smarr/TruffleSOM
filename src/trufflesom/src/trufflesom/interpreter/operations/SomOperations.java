@@ -106,7 +106,7 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-@GenerateBytecode(languageClass = SomLanguage.class, boxingEliminationTypes = {long.class, double.class})
+@GenerateBytecode(languageClass = SomLanguage.class, boxingEliminationTypes = {long.class, double.class}, defaultLocalValue = "NIL")
 @TypeSystemReference(Types.class)
 @OperationProxy(SubtractionOp.class)
 @OperationProxy(AdditionOp.class)
@@ -154,6 +154,7 @@ import trufflesom.vmobjects.SSymbol;
 @OperationProxy(InstVarAtPutPrim.class)
 @OperationProxy(IfMessageOp.class)
 public abstract class SomOperations extends Invokable implements BytecodeRootNode {
+  static final SObject NIL = Nil.nilObject;
 
   @CompilationFinal private BytecodeLocal frameOnStackMarker;
 
@@ -161,8 +162,8 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   protected SomOperations(
       final SomLanguage language,
-      final FrameDescriptor.Builder frameDescriptorBuilder) {
-    super(null, null, 0, makeDescriptorWithNil(frameDescriptorBuilder));
+      final FrameDescriptor frameDescriptor) {
+    super(null, null, 0, frameDescriptor);
     frameOnStackMarkerIdx = -1;
   }
 
@@ -177,11 +178,6 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
       this.frameOnStackMarker = frameOnStackMarker;
       this.frameOnStackMarkerIdx = frameOnStackMarker.getLocalOffset() + 1; // hack. DSL bug???
     }
-  }
-
-  private static FrameDescriptor makeDescriptorWithNil(final FrameDescriptor.Builder builder) {
-    builder.defaultValue(Nil.nilObject);
-    return builder.build();
   }
 
   @Override
