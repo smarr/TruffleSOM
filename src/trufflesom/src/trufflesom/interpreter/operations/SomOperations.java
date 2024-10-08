@@ -13,7 +13,7 @@ import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.EpilogExceptional;
 import com.oracle.truffle.api.bytecode.EpilogReturn;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
-import com.oracle.truffle.api.bytecode.LocalSetter;
+import com.oracle.truffle.api.bytecode.LocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.bytecode.OperationProxy;
 import com.oracle.truffle.api.bytecode.Variadic;
@@ -176,7 +176,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public void setFrameOnStackMarker(final BytecodeLocal frameOnStackMarker) {
     if (frameOnStackMarker != null) {
       this.frameOnStackMarker = frameOnStackMarker;
-      this.frameOnStackMarkerIdx = frameOnStackMarker.getLocalOffset() + 1; // hack. DSL bug???
+      this.frameOnStackMarkerIdx = frameOnStackMarker.getLocalOffset();
     }
   }
 
@@ -416,46 +416,42 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @ConstantOperand(type = LocalSetter.class)
+  @ConstantOperand(type = LocalAccessor.class)
   public static final class UnsafeLoopIncrement {
     @Specialization
     public static void increment(final VirtualFrame frame,
-        final LocalSetter setter,
+        final LocalAccessor setter,
         final long currentValue,
-        @Bind BytecodeNode bytecodeNode,
-        @Bind("$bytecodeIndex") int bci) {
-      setter.setLong(bytecodeNode, bci, frame, currentValue + 1);
+        @Bind BytecodeNode bytecodeNode) {
+      setter.setLong(bytecodeNode, frame, currentValue + 1);
     }
 
     @Specialization
     public static void increment(final VirtualFrame frame,
-        final LocalSetter setter,
+        final LocalAccessor setter,
         final double currentValue,
-        @Bind BytecodeNode bytecodeNode,
-        @Bind("$bytecodeIndex") int bci) {
-      setter.setDouble(bytecodeNode, bci, frame, currentValue + 1.0);
+        @Bind BytecodeNode bytecodeNode) {
+      setter.setDouble(bytecodeNode, frame, currentValue + 1.0);
     }
   }
 
   @Operation
-  @ConstantOperand(type = LocalSetter.class)
+  @ConstantOperand(type = LocalAccessor.class)
   public static final class UnsafeLoopDecrement {
     @Specialization
     public static void increment(final VirtualFrame frame,
-        final LocalSetter setter,
+        final LocalAccessor setter,
         final long currentValue,
-        @Bind BytecodeNode bytecodeNode,
-        @Bind("$bytecodeIndex") int bci) {
-      setter.setLong(bytecodeNode, bci, frame, currentValue - 1);
+        @Bind BytecodeNode bytecodeNode) {
+      setter.setLong(bytecodeNode, frame, currentValue - 1);
     }
 
     @Specialization
     public static void increment(final VirtualFrame frame,
-        final LocalSetter setter,
+        final LocalAccessor setter,
         final double currentValue,
-        @Bind BytecodeNode bytecodeNode,
-        @Bind("$bytecodeIndex") int bci) {
-      setter.setDouble(bytecodeNode, bci, frame, currentValue - 1.0);
+        @Bind BytecodeNode bytecodeNode) {
+      setter.setDouble(bytecodeNode, frame, currentValue - 1.0);
     }
   }
 
