@@ -6,6 +6,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.LocalVariableNode;
 
 
@@ -39,9 +40,14 @@ public abstract class IncLocalVarWithValueNode extends LocalVariableNode {
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
     ScopeElement se = inliner.getAdaptedVar(local);
     if (se.var != local || se.contextLevel < 0) {
-      replace(se.var.getIncNode(se.contextLevel, incValue, sourceCoord));
+//      replace(se.var.getIncNode(se.contextLevel, incValue, sourceCoord));
     } else {
       assert 0 == se.contextLevel;
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.emitIncLocalVarWithValue(opBuilder.getLocal(local), incValue);
   }
 }

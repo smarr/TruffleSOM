@@ -139,8 +139,8 @@ public abstract class NonLocalVariableReadSquareWriteNode extends NonLocalVariab
 
     if (seWrite.var != local || seWrite.contextLevel < contextLevel) {
       assert seRead.var != readLocal || seRead.contextLevel < contextLevel;
-      replace(seWrite.var.getReadSquareWriteNode(seWrite.contextLevel, sourceCoord,
-          (Local) seRead.var, seRead.contextLevel));
+//      replace(seWrite.var.getReadSquareWriteNode(seWrite.contextLevel, sourceCoord,
+//          (Local) seRead.var, seRead.contextLevel));
     } else {
       assert contextLevel == seWrite.contextLevel;
     }

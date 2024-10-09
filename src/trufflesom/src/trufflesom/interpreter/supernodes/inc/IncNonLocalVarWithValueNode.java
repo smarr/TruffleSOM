@@ -10,6 +10,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode;
 
@@ -48,9 +49,14 @@ public abstract class IncNonLocalVarWithValueNode extends NonLocalVariableNode {
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
     ScopeElement se = inliner.getAdaptedVar(local);
     if (se.var != local || se.contextLevel < contextLevel) {
-      replace(se.var.getIncNode(se.contextLevel, incValue, sourceCoord));
+//      replace(se.var.getIncNode(se.contextLevel, incValue, sourceCoord));
     } else {
       assert contextLevel == se.contextLevel;
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.emitIncNonLocalVarWithValue(opBuilder.getLocal(local), incValue, contextLevel);
   }
 }

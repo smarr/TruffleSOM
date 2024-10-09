@@ -106,11 +106,13 @@ public abstract class IncExpWithValueNode extends ExpressionNode {
     return new UninitIncFieldWithValueNode(self, fieldIndex, coord, incValue);
   }
 
-  public final ExpressionNode createIncVarNode(final Local local, final int ctxLevel) {
-    if (ctxLevel == 0) {
-      return IncLocalVarWithValueNodeGen.create(local, incValue).initialize(sourceCoord);
-    }
-    return IncNonLocalVarWithValueNodeGen.create(ctxLevel, local, incValue)
-                                         .initialize(sourceCoord);
+//  public final ExpressionNode createIncVarNode(final Local local, final int ctxLevel) {
+//    if (ctxLevel == 0) {
+//      return IncLocalVarWithValueNodeGen.create(local, incValue).initialize(sourceCoord);
+//    }
+//    return IncNonLocalVarWithValueNodeGen.create(ctxLevel, local, incValue)
+//                                         .initialize(sourceCoord);
+//  }
+
   }
 }

@@ -75,8 +75,8 @@ public abstract class LocalVariableReadSquareWriteNode extends LocalVariableNode
 
     if (seWrite.var != local || seWrite.contextLevel < 0) {
       assert seRead.var != readLocal || seRead.contextLevel < 0;
-      replace(seWrite.var.getReadSquareWriteNode(seWrite.contextLevel, sourceCoord,
-          (Local) seRead.var, seRead.contextLevel));
+//      replace(seWrite.var.getReadSquareWriteNode(seWrite.contextLevel, sourceCoord,
+//          (Local) seRead.var, seRead.contextLevel));
     } else {
       assert 0 == seWrite.contextLevel;
     }

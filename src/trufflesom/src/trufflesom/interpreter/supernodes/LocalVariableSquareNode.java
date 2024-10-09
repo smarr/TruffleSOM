@@ -33,7 +33,7 @@ public abstract class LocalVariableSquareNode extends LocalVariableNode {
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
     ScopeElement se = inliner.getAdaptedVar(local);
     if (se.var != local || se.contextLevel < 0) {
-      replace(se.var.getSquareNode(se.contextLevel, sourceCoord));
+//      replace(se.var.getSquareNode(se.contextLevel, sourceCoord));
     } else {
       assert 0 == se.contextLevel;
     }

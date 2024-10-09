@@ -29,17 +29,17 @@ public class SquareTests extends AstTestSetup {
     return (T) testExpr;
   }
 
-  @Test
-  public void testJustSquareLocals() {
-    LocalVariableSquareNode s =
-        assertThatMainNodeIs("l2 * l2.", LocalVariableSquareNode.class);
-    assertEquals(s.getLocal().name, "l2");
-
-    s = assertThatMainNodeIs("l1 * l1.", LocalVariableSquareNode.class);
-    assertEquals(s.getLocal().name, "l1");
-
-    assertThatMainNodeIs("l1 * l3.", MultiplicationPrim.class);
-  }
+//  @Test
+//  public void testJustSquareLocals() {
+//    LocalVariableSquareNode s =
+//        assertThatMainNodeIs("l2 * l2.", LocalVariableSquareNode.class);
+//    assertEquals(s.getLocal().name, "l2");
+//
+//    s = assertThatMainNodeIs("l1 * l1.", LocalVariableSquareNode.class);
+//    assertEquals(s.getLocal().name, "l1");
+//
+//    assertThatMainNodeIs("l1 * l3.", MultiplicationPrim.class);
+//  }
 
   @SuppressWarnings("unchecked")
   private <T> T inBlock(final String test, final Class<T> expectedNode) {
@@ -54,32 +54,32 @@ public class SquareTests extends AstTestSetup {
     return (T) testExpr;
   }
 
-  @Test
-  public void testJustSquareNonLocals() {
-    NonLocalVariableSquareNode s = inBlock("[ l2 * l2 ]", NonLocalVariableSquareNode.class);
-    assertEquals(s.getLocal().name, "l2");
+//  @Test
+//  public void testJustSquareNonLocals() {
+//    NonLocalVariableSquareNode s = inBlock("[ l2 * l2 ]", NonLocalVariableSquareNode.class);
+//    assertEquals(s.getLocal().name, "l2");
+//
+//    s = inBlock("[ l1 * l1 ]", NonLocalVariableSquareNode.class);
+//    assertEquals(s.getLocal().name, "l1");
+//
+//    inBlock("[ l1 * l3 ]", MultiplicationPrim.class);
+//  }
 
-    s = inBlock("[ l1 * l1 ]", NonLocalVariableSquareNode.class);
-    assertEquals(s.getLocal().name, "l1");
+//  @Test
+//  public void testSquareAndAssignLocal() {
+//    assertThatMainNodeIs("l1 := l2 * l2.", LocalVariableReadSquareWriteNode.class);
+//    assertThatMainNodeIs("l2 := l2 * l2.", LocalVariableReadSquareWriteNode.class);
+//
+//    assertThatMainNodeIs("l3 := l1 * l2.", LocalVariableWriteNode.class);
+//  }
 
-    inBlock("[ l1 * l3 ]", MultiplicationPrim.class);
-  }
-
-  @Test
-  public void testSquareAndAssignLocal() {
-    assertThatMainNodeIs("l1 := l2 * l2.", LocalVariableReadSquareWriteNode.class);
-    assertThatMainNodeIs("l2 := l2 * l2.", LocalVariableReadSquareWriteNode.class);
-
-    assertThatMainNodeIs("l3 := l1 * l2.", LocalVariableWriteNode.class);
-  }
-
-  @Test
-  public void testSquareAndAssignNonLocal() {
-    inBlock("[ l1 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
-    inBlock("[ l2 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
-    inBlock("[|bl1| l2 := bl1 * bl1 ]", NonLocalVariableReadSquareWriteNode.class);
-    inBlock("[|bl1| bl1 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
-
-    inBlock("[ l3 := l1 * l2 ]", NonLocalVariableWriteNode.class);
-  }
+//  @Test
+//  public void testSquareAndAssignNonLocal() {
+//    inBlock("[ l1 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
+//    inBlock("[ l2 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
+//    inBlock("[|bl1| l2 := bl1 * bl1 ]", NonLocalVariableReadSquareWriteNode.class);
+//    inBlock("[|bl1| bl1 := l2 * l2 ]", NonLocalVariableReadSquareWriteNode.class);
+//
+//    inBlock("[ l3 := l1 * l2 ]", NonLocalVariableWriteNode.class);
+//  }
 }

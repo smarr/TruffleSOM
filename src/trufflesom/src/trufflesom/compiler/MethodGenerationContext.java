@@ -406,18 +406,18 @@ public class MethodGenerationContext
       final ExpressionNode valExpr, final long coord) {
     int ctxLevel = getContextLevel(variable);
 
-    if (valExpr instanceof IncExpWithValueNode inc && inc.doesAccessVariable(variable)) {
-      return inc.createIncVarNode((Local) variable, ctxLevel);
-    }
+//    if (valExpr instanceof IncExpWithValueNode inc && inc.doesAccessVariable(variable)) {
+//      return inc.createIncVarNode((Local) variable, ctxLevel);
+//    }
 
-    if (valExpr instanceof LocalVariableSquareNode l) {
-      return variable.getReadSquareWriteNode(ctxLevel, coord, l.getLocal(), 0);
-    }
-
-    if (valExpr instanceof NonLocalVariableSquareNode nl) {
-      return variable.getReadSquareWriteNode(ctxLevel, coord, nl.getLocal(),
-          nl.getContextLevel());
-    }
+//    if (valExpr instanceof LocalVariableSquareNode l) {
+//      return variable.getReadSquareWriteNode(ctxLevel, coord, l.getLocal(), 0);
+//    }
+//
+//    if (valExpr instanceof NonLocalVariableSquareNode nl) {
+//      return variable.getReadSquareWriteNode(ctxLevel, coord, nl.getLocal(),
+//          nl.getContextLevel());
+//    }
 
     return variable.getWriteNode(ctxLevel, valExpr, coord);
   }

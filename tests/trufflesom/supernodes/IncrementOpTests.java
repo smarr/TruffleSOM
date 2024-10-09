@@ -105,24 +105,24 @@ public class IncrementOpTests extends AstTestSetup {
     incWithExpr("field := field + arg", UninitIncFieldWithExpNode.class);
   }
 
-  @Test
-  public void testLocalIncWithExpression() {
-    incWithExpr("var := var + (23 + 434)", IncLocalVarWithExpNode.class);
-    incWithExpr("var := var + var", IncLocalVarWithExpNode.class);
-    incWithExpr("var := var + arg", IncLocalVarWithExpNode.class);
+//  @Test
+//  public void testLocalIncWithExpression() {
+//    incWithExpr("var := var + (23 + 434)", IncLocalVarWithExpNode.class);
+//    incWithExpr("var := var + var", IncLocalVarWithExpNode.class);
+//    incWithExpr("var := var + arg", IncLocalVarWithExpNode.class);
+//
+//    incWithExpr("var := (23 + 434) + var", IncLocalVarWithExpNode.class);
+//    incWithExpr("var := var + var", IncLocalVarWithExpNode.class);
+//    incWithExpr("var := arg + var", IncLocalVarWithExpNode.class);
+//  }
 
-    incWithExpr("var := (23 + 434) + var", IncLocalVarWithExpNode.class);
-    incWithExpr("var := var + var", IncLocalVarWithExpNode.class);
-    incWithExpr("var := arg + var", IncLocalVarWithExpNode.class);
-  }
-
-  @Test
-  public void testLocalInc() {
-    basicAddOrSubtract("var := var + 1", 1, IncLocalVarWithValueNode.class);
-    basicAddOrSubtract("var := var - 1", -1, IncLocalVarWithValueNode.class);
-    basicAddOrSubtract("var := var + 1123", 1123, IncLocalVarWithValueNode.class);
-    basicAddOrSubtract("var := var - 234234", -234234, IncLocalVarWithValueNode.class);
-  }
+//  @Test
+//  public void testLocalInc() {
+//    basicAddOrSubtract("var := var + 1", 1, IncLocalVarWithValueNode.class);
+//    basicAddOrSubtract("var := var - 1", -1, IncLocalVarWithValueNode.class);
+//    basicAddOrSubtract("var := var + 1123", 1123, IncLocalVarWithValueNode.class);
+//    basicAddOrSubtract("var := var - 234234", -234234, IncLocalVarWithValueNode.class);
+//  }
 
   private void inBlock(final String test, final long literalValue,
       final Class<?> nodeType) {
@@ -138,13 +138,13 @@ public class IncrementOpTests extends AstTestSetup {
     assertEquals(literalValue, value);
   }
 
-  @Test
-  public void testNonLocalInc() {
-    inBlock("[ var := var + 1 ]", 1, IncNonLocalVarWithValueNode.class);
-    inBlock("[ var := var - 1 ]", -1, IncNonLocalVarWithValueNode.class);
-    inBlock("[ var := var + 1123 ]", 1123, IncNonLocalVarWithValueNode.class);
-    inBlock("[ var := var - 234234 ]", -234234, IncNonLocalVarWithValueNode.class);
-  }
+//  @Test
+//  public void testNonLocalInc() {
+//    inBlock("[ var := var + 1 ]", 1, IncNonLocalVarWithValueNode.class);
+//    inBlock("[ var := var - 1 ]", -1, IncNonLocalVarWithValueNode.class);
+//    inBlock("[ var := var + 1123 ]", 1123, IncNonLocalVarWithValueNode.class);
+//    inBlock("[ var := var - 234234 ]", -234234, IncNonLocalVarWithValueNode.class);
+//  }
 
   private void incWithExprInBlock(final String test, final Class<?> nodeType) {
     addField("field");
@@ -157,14 +157,14 @@ public class IncrementOpTests extends AstTestSetup {
     assertThat(testExpr, instanceOf(nodeType));
   }
 
-  @Test
-  public void testNonLocalIncWithExpression() {
-    incWithExprInBlock("[ var := var + (23 + 434) ]", IncNonLocalVarWithExpNode.class);
-    incWithExprInBlock("[ var := var + var ]", IncNonLocalVarWithExpNode.class);
-    incWithExprInBlock("[ var := var + arg ]", IncNonLocalVarWithExpNode.class);
-
-    incWithExprInBlock("[ var := (23 + 434) + var ]", IncNonLocalVarWithExpNode.class);
-    incWithExprInBlock("[ var := var + var ]", IncNonLocalVarWithExpNode.class);
-    incWithExprInBlock("[ var := arg + var ]", IncNonLocalVarWithExpNode.class);
-  }
+//  @Test
+//  public void testNonLocalIncWithExpression() {
+//    incWithExprInBlock("[ var := var + (23 + 434) ]", IncNonLocalVarWithExpNode.class);
+//    incWithExprInBlock("[ var := var + var ]", IncNonLocalVarWithExpNode.class);
+//    incWithExprInBlock("[ var := var + arg ]", IncNonLocalVarWithExpNode.class);
+//
+//    incWithExprInBlock("[ var := (23 + 434) + var ]", IncNonLocalVarWithExpNode.class);
+//    incWithExprInBlock("[ var := var + var ]", IncNonLocalVarWithExpNode.class);
+//    incWithExprInBlock("[ var := arg + var ]", IncNonLocalVarWithExpNode.class);
+//  }
 }
