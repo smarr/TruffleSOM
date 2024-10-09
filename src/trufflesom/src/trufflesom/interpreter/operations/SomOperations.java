@@ -595,6 +595,20 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
+  @ImportStatic(FieldAccessorNode.class)
+  @ConstantOperand(type = int.class)
+  public static final class IncFieldWithExp {
+    @Specialization
+    public static long incLong(
+            @SuppressWarnings("unused") final int fieldIdx,
+            final SObject self,
+            final long incValue,
+            @Cached("createIncrement(fieldIdx, self)") final IncrementLongFieldNode inc) {
+      return inc.increment(self, incValue);
+    }
+  }
+
+  @Operation
   @ConstantOperand(type = LocalAccessor.class)
   public static final class IncLocalVarWithExp {
     @Specialization
