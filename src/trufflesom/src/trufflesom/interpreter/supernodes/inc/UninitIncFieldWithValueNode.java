@@ -2,6 +2,7 @@ package trufflesom.interpreter.supernodes.inc;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode;
@@ -63,5 +64,12 @@ public class UninitIncFieldWithValueNode extends FieldNode {
     node.notifyAsInserted();
 
     return longVal;
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginIncFieldWithValue(fieldIndex, incValue);
+    getSelf().accept(opBuilder);
+    opBuilder.dsl.endIncFieldWithValue();
   }
 }
