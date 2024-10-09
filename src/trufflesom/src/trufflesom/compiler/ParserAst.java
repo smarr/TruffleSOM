@@ -46,9 +46,7 @@ import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
 import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
-import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.NonLocalFieldStringEqualsNode;
-import trufflesom.interpreter.supernodes.NonLocalVariableSquareNodeGen;
 import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
 import trufflesom.interpreter.supernodes.inc.IncExpWithValueNodeGen;
 import trufflesom.primitives.Primitives;
@@ -316,20 +314,20 @@ public class ParserAst extends Parser<MethodGenerationContext> {
           return StringEqualsNodeGen.create(s, operand).initialize(coordWithL);
         }
       }
-    } else if (binSelector.equals("*")) {
-      if (receiver instanceof LocalVariableReadNode rcvr
-          && operand instanceof LocalVariableReadNode op) {
-        if (rcvr.isSameLocal(op)) {
-          return LocalVariableSquareNodeGen.create(rcvr.getLocal()).initialize(coordWithL);
-        }
-      } else if (receiver instanceof NonLocalVariableReadNode rcvr
-          && operand instanceof NonLocalVariableReadNode op) {
-        if (rcvr.isSameLocal(op)) {
-          assert rcvr.getContextLevel() == op.getContextLevel();
-          return NonLocalVariableSquareNodeGen.create(
-              rcvr.getContextLevel(), rcvr.getLocal()).initialize(coordWithL);
-        }
-      }
+//    } else if (binSelector.equals("*")) {
+//      if (receiver instanceof LocalVariableReadNode rcvr
+//          && operand instanceof LocalVariableReadNode op) {
+//        if (rcvr.isSameLocal(op)) {
+//          return LocalVariableSquareNodeGen.create(rcvr.getLocal()).initialize(coordWithL);
+//        }
+//      } else if (receiver instanceof NonLocalVariableReadNode rcvr
+//          && operand instanceof NonLocalVariableReadNode op) {
+//        if (rcvr.isSameLocal(op)) {
+//          assert rcvr.getContextLevel() == op.getContextLevel();
+//          return NonLocalVariableSquareNodeGen.create(
+//              rcvr.getContextLevel(), rcvr.getLocal()).initialize(coordWithL);
+//        }
+//      }
     } else if (msg == SymbolTable.symPlus && operand instanceof IntegerLiteralNode lit) {
       long litValue = lit.executeLong(null);
       return IncExpWithValueNodeGen.create(litValue, false, receiver).initialize(coordWithL);
