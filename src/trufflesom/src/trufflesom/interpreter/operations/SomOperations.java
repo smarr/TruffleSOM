@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import com.oracle.truffle.api.Assumption;
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.bytecode.BytecodeLocal;
@@ -19,6 +20,7 @@ import com.oracle.truffle.api.bytecode.OperationProxy;
 import com.oracle.truffle.api.bytecode.Variadic;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -62,7 +64,6 @@ import trufflesom.interpreter.operations.copied.EqualsOp;
 import trufflesom.interpreter.operations.copied.IfMessageOp;
 import trufflesom.interpreter.operations.copied.NonLocalArgumentReadOp;
 import trufflesom.interpreter.operations.copied.SubtractionOp;
-import trufflesom.interpreter.supernodes.IntIncrementNode;
 import trufflesom.primitives.arithmetic.BitXorPrim;
 import trufflesom.primitives.arithmetic.DividePrim;
 import trufflesom.primitives.arithmetic.DoubleDivPrim;
@@ -121,7 +122,7 @@ import trufflesom.vmobjects.SSymbol;
 @OperationProxy(ArrayDoOp.class)
 @OperationProxy(ArrayDoIndexesOp.class)
 @OperationProxy(ArrayPutAllOp.class)
-@OperationProxy(IntIncrementNode.class)
+//@OperationProxy(IntIncrementNode.class)
 @OperationProxy(LessThanPrim.class)
 @OperationProxy(LessThanOrEqualPrim.class)
 @OperationProxy(GreaterThanPrim.class)
@@ -581,13 +582,168 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @Operation
   @ImportStatic(FieldAccessorNode.class)
   @ConstantOperand(type = int.class)
-  public static final class IncField {
+  @ConstantOperand(type = long.class)
+  public static final class IncFieldWithValue {
     @Specialization
     public static long incLong(
         @SuppressWarnings("unused") final int fieldIdx,
+        final long incValue,
         final SObject self,
         @Cached("createIncrement(fieldIdx, self)") final IncrementLongFieldNode inc) {
-      return inc.increment(self);
+      return inc.increment(self, incValue);
+    }
+  }
+
+  @Operation
+  @ImportStatic(FieldAccessorNode.class)
+  @ConstantOperand(type = int.class)
+  public static final class IncFieldWithExp {
+    @Specialization
+    public static long incLong(
+            @SuppressWarnings("unused") final int fieldIdx,
+            final SObject self,
+            final long incValue,
+            @Cached("createIncrement(fieldIdx, self)") final IncrementLongFieldNode inc) {
+      return inc.increment(self, incValue);
+    }
+
+    @Specialization
+    public static Object concat(
+            @SuppressWarnings("unused") final int fieldIdx,
+            final SObject self,
+            final String incValue,
+            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read,
+            @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
+      String str = (String) read.read(self);
+      return write.write(self, concatStr(str, incValue));
+    }
+  }
+
+  @Operation
+  @ConstantOperand(type = LocalAccessor.class)
+  public static final class IncLocalVarWithExp {
+    @Specialization
+    public static long increment(final VirtualFrame frame,
+                                 final LocalAccessor accessor,
+                                 final long incValue,
+                                 @Bind BytecodeNode bytecodeNode) {
+      try {
+        long currentValue = accessor.getLong(bytecodeNode, frame);
+        accessor.setLong(bytecodeNode, frame,  Math.addExact(currentValue, incValue));
+        return currentValue;
+      } catch (UnexpectedResultException e) {
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Specialization
+    public static String increment(final VirtualFrame frame,
+                                 final LocalAccessor accessor,
+                                 final String incValue,
+                                 @Bind BytecodeNode bytecodeNode) {
+      String currentValue = (String) accessor.getObject(bytecodeNode, frame);
+      accessor.setObject(bytecodeNode, frame,  concatStr(currentValue, incValue));
+      return currentValue;
+    }
+  }
+
+  @TruffleBoundary
+  private static String concatStr(final String a, final String b) {
+    return a.concat(b);
+  }
+
+  @Operation
+//  @ConstantOperand(type = LocalAccessor.class)
+  @ConstantOperand(type = int.class)
+  @ConstantOperand(type = int.class)
+  public static final class IncNonLocalVarWithExp {
+    @Specialization
+    public static long increment(final VirtualFrame frame,
+//                                 final LocalAccessor accessor,
+                                 final int localIdxWithoutOffset,
+                                 final int contextLevel,
+                                 final long incValue,
+                                 @Bind BytecodeNode bytecodeNode) {
+      int localIdx = localIdxWithoutOffset + 2;
+      MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+//      try {
+//        long currentValue = accessor.getLong(bytecodeNode, ctx);
+        long currentValue = ctx.getLong(localIdx);
+//        accessor.setLong(bytecodeNode, ctx,  Math.addExact(currentValue, incValue));
+        ctx.setLong(localIdx, Math.addExact(currentValue, incValue));
+        return currentValue;
+//      } catch (UnexpectedResultException e) {
+//        CompilerDirectives.transferToInterpreter();
+//        throw new RuntimeException(e);
+//      }
+    }
+  }
+
+  @Operation
+  @ConstantOperand(type = LocalAccessor.class)
+  @ConstantOperand(type = long.class)
+  public static final class IncLocalVarWithValue {
+    @Specialization
+    public static long increment(final VirtualFrame frame,
+                                 final LocalAccessor accessor,
+                                 final long incValue,
+                                 @Bind BytecodeNode bytecodeNode) {
+      try {
+        long currentValue = accessor.getLong(bytecodeNode, frame);
+        accessor.setLong(bytecodeNode, frame,  Math.addExact(currentValue, incValue));
+        return currentValue;
+      } catch (UnexpectedResultException e) {
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  @Operation
+  @ConstantOperand(type = LocalAccessor.class)
+  @ConstantOperand(type = long.class)
+  @ConstantOperand(type = int.class)
+  public static final class IncNonLocalVarWithValue {
+    @Specialization
+    public static long increment(final VirtualFrame frame,
+                                 final LocalAccessor accessor,
+                                 final long incValue,
+                                 final int contextLevel,
+                                 @Bind BytecodeNode bytecodeNode) {
+      MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+      try {
+        long currentValue = accessor.getLong(bytecodeNode, ctx);
+        accessor.setLong(bytecodeNode, ctx,  Math.addExact(currentValue, incValue));
+        return currentValue;
+      } catch (UnexpectedResultException e) {
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  @Operation
+  @ConstantOperand(type = long.class)
+  public static final class IncExpWithValue {
+    @Specialization
+    public static long increment(final long incValue, long rcvr) {
+      try {
+        return Math.addExact(incValue, rcvr);
+      } catch (ArithmeticException e) {
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Specialization
+    public static Object fallbackToNormalSend(VirtualFrame frame, long incValue, Object rcvr, @Cached final AbstractDispatchNode dispatch) {
+      return dispatch.executeDispatch(frame, new Object[] {rcvr, incValue});
+    }
+
+    @NeverDefault
+    public static AbstractDispatchNode create() {
+      return AbstractDispatchNode.create(SymbolTable.symPlus);
     }
   }
 
