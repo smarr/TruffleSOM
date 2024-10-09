@@ -606,6 +606,17 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
             @Cached("createIncrement(fieldIdx, self)") final IncrementLongFieldNode inc) {
       return inc.increment(self, incValue);
     }
+
+    @Specialization
+    public static Object concat(
+            @SuppressWarnings("unused") final int fieldIdx,
+            final SObject self,
+            final String incValue,
+            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read,
+            @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
+      String str = (String) read.read(self);
+      return write.write(self, concatStr(str, incValue));
+    }
   }
 
   @Operation
@@ -632,13 +643,13 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
                                  final String incValue,
                                  @Bind BytecodeNode bytecodeNode) {
       String currentValue = (String) accessor.getObject(bytecodeNode, frame);
-      accessor.setObject(bytecodeNode, frame,  concat(currentValue, incValue));
+      accessor.setObject(bytecodeNode, frame,  concatStr(currentValue, incValue));
       return currentValue;
     }
   }
 
   @TruffleBoundary
-  private static String concat(final String a, final String b) {
+  private static String concatStr(final String a, final String b) {
     return a.concat(b);
   }
 
