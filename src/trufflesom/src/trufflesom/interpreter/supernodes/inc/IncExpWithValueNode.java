@@ -8,6 +8,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 import trufflesom.compiler.Variable;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.AbstractMessageSendNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -114,5 +115,10 @@ public abstract class IncExpWithValueNode extends ExpressionNode {
 //                                         .initialize(sourceCoord);
 //  }
 
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginIncExpWithValue(incValue);
+    getRcvr().accept(opBuilder);
+    opBuilder.dsl.endIncExpWithValue();
   }
 }
