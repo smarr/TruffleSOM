@@ -3,6 +3,7 @@ package trufflesom.interpreter.supernodes.inc;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.FieldNode;
 import trufflesom.interpreter.nodes.FieldNodeFactory.FieldWriteNodeGen;
@@ -91,5 +92,18 @@ public final class UninitIncFieldWithExpNode extends FieldNode {
     node.notifyAsInserted();
 
     return longVal;
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginIncFieldWithExp(fieldIndex);
+    if (valueExprIsArg) {
+      getSelf().accept(opBuilder);
+      valueExpr.accept(opBuilder);
+    } else {
+      valueExpr.accept(opBuilder);
+      getSelf().accept(opBuilder);
+    }
+    opBuilder.dsl.endIncFieldWithExp();
   }
 }
