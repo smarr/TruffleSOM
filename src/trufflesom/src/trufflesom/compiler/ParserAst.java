@@ -16,8 +16,6 @@ import static trufflesom.compiler.Symbol.Pound;
 import static trufflesom.vm.SymbolTable.strSelf;
 import static trufflesom.vm.SymbolTable.strSuper;
 import static trufflesom.vm.SymbolTable.symNil;
-import static trufflesom.vm.SymbolTable.symSelf;
-import static trufflesom.vm.SymbolTable.symSuper;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
 import java.math.BigInteger;
@@ -45,11 +43,15 @@ import trufflesom.interpreter.nodes.literals.DoubleLiteralNode;
 import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
 import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.literals.LiteralNode;
-import trufflesom.interpreter.supernodes.LocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.compare.GreaterThanIntNodeGen;
+import trufflesom.interpreter.supernodes.compare.LessThanIntNodeGen;
+import trufflesom.interpreter.supernodes.compare.LocalArgGreaterThanInt;
+import trufflesom.interpreter.supernodes.compare.LocalArgLessThanInt;
+import trufflesom.interpreter.supernodes.compare.LocalFieldStringEqualsNode;
 import trufflesom.interpreter.supernodes.LocalVariableSquareNodeGen;
-import trufflesom.interpreter.supernodes.NonLocalFieldStringEqualsNode;
+import trufflesom.interpreter.supernodes.compare.NonLocalFieldStringEqualsNode;
 import trufflesom.interpreter.supernodes.NonLocalVariableSquareNodeGen;
-import trufflesom.interpreter.supernodes.StringEqualsNodeGen;
+import trufflesom.interpreter.supernodes.compare.StringEqualsNodeGen;
 import trufflesom.interpreter.supernodes.inc.IncExpWithValueNodeGen;
 import trufflesom.primitives.Primitives;
 import trufflesom.vm.Globals;
@@ -331,6 +333,20 @@ public class ParserAst extends Parser<MethodGenerationContext> {
     } else if (msg == SymbolTable.symMinus && operand instanceof IntegerLiteralNode lit) {
       long litValue = lit.executeLong(null);
       return IncExpWithValueNodeGen.create(-litValue, true, receiver).initialize(coordWithL);
+    } else if (binSelector.equals(">") && operand instanceof IntegerLiteralNode lit) {
+      long litValue = lit.executeLong(null);
+
+      if (receiver instanceof LocalArgumentReadNode arg) {
+        return new LocalArgGreaterThanInt(arg.getArg(), litValue).initialize(coordWithL);
+      }
+      return GreaterThanIntNodeGen.create(litValue, receiver).initialize(coordWithL);
+    } else if (binSelector.equals("<") && operand instanceof IntegerLiteralNode lit) {
+      long litValue = lit.executeLong(null);
+
+      if (receiver instanceof LocalArgumentReadNode arg) {
+        return new LocalArgLessThanInt(arg.getArg(), litValue).initialize(coordWithL);
+      }
+      return LessThanIntNodeGen.create(litValue, receiver).initialize(coordWithL);
     }
 
     ExpressionNode inlined =
@@ -360,21 +376,21 @@ public class ParserAst extends Parser<MethodGenerationContext> {
 
     SSymbol msg = symbolFor(kw.toString());
 
-    long coodWithL = getCoordWithLength(coord);
+    long coordWithL = getCoordWithLength(coord);
 
     ExpressionNode[] args = arguments.toArray(new ExpressionNode[0]);
     if (isSuperSend) {
       return MessageSendNode.createSuperSend(
-          mgenc.getHolder().getSuperClass(), msg, args, coodWithL);
+          mgenc.getHolder().getSuperClass(), msg, args, coordWithL);
     }
 
-    ExpressionNode inlined = inlinableNodes.inline(msg, args, mgenc, coodWithL);
+    ExpressionNode inlined = inlinableNodes.inline(msg, args, mgenc, coordWithL);
     if (inlined != null) {
       assert !isSuperSend;
       return inlined;
     }
 
-    return MessageSendNode.create(msg, args, coodWithL);
+    return MessageSendNode.create(msg, args, coordWithL);
   }
 
   private ExpressionNode formula(final MethodGenerationContext mgenc)

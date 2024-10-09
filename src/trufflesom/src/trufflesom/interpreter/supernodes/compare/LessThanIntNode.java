@@ -1,65 +1,54 @@
-package trufflesom.interpreter.supernodes;
+package trufflesom.interpreter.supernodes.compare;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
 import trufflesom.interpreter.nodes.MessageSendNode;
 import trufflesom.interpreter.nodes.bc.BytecodeLoopNode;
-import trufflesom.interpreter.nodes.literals.GenericLiteralNode;
+import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.nary.UnaryExpressionNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vm.VmSettings;
-import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SSymbol;
 
 
-public abstract class StringEqualsNode extends UnaryExpressionNode {
-  private final String value;
+public abstract class LessThanIntNode extends UnaryExpressionNode {
+  private final long intValue;
 
-  protected static final Object nil = Nil.nilObject;
-
-  protected StringEqualsNode(final String value) {
-    this.value = value;
+  public LessThanIntNode(final long intValue) {
+    this.intValue = intValue;
   }
 
   @Override
   public abstract ExpressionNode getReceiver();
 
   @Specialization
-  public final boolean doString(final String rcvr) {
-    return value.equals(rcvr);
+  public final boolean doLong(final long rcvr) {
+    return rcvr < intValue;
   }
 
-  @Specialization(guards = "rcvr == nil")
-  public static final boolean doNil(@SuppressWarnings("unused") final Object rcvr) {
-    return false;
+  @Specialization
+  public final boolean doDouble(final double rcvr) {
+    return rcvr < intValue;
   }
 
   @Fallback
   public final Object makeGenericSend(final VirtualFrame frame,
       final Object receiver) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    return makeGenericSend(SymbolTable.symbolFor("=")).doPreEvaluated(frame,
-        new Object[] {receiver, value});
+    return makeGenericSend(SymbolTable.symbolFor("<")).doPreEvaluated(frame,
+        new Object[] {receiver, intValue});
   }
 
   @Override
   protected GenericMessageSendNode makeGenericSend(final SSymbol selector) {
     CompilerDirectives.transferToInterpreterAndInvalidate();
-    ExpressionNode[] children;
-    if (VmSettings.UseAstInterp) {
-      children = new ExpressionNode[] {getReceiver(), new GenericLiteralNode(value)};
-    } else {
-      children = null;
-    }
-
-    GenericMessageSendNode send =
-        MessageSendNode.createGeneric(selector, children, sourceCoord);
+    GenericMessageSendNode send = MessageSendNode.createGeneric(selector,
+        new ExpressionNode[] {getReceiver(), new IntegerLiteralNode(intValue)}, sourceCoord);
 
     if (VmSettings.UseAstInterp) {
       replace(send);
