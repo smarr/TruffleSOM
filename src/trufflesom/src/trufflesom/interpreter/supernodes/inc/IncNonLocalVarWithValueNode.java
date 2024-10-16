@@ -57,6 +57,7 @@ public abstract class IncNonLocalVarWithValueNode extends NonLocalVariableNode {
 
   @Override
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
-    opBuilder.dsl.emitIncNonLocalVarWithValue(opBuilder.getLocal(local), incValue, contextLevel);
+    opBuilder.dsl.emitIncNonLocalVarWithValue(opBuilder.getLocal(local), incValue,
+        contextLevel);
   }
 }
