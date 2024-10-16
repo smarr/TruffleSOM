@@ -20,7 +20,6 @@ import com.oracle.truffle.api.bytecode.OperationProxy;
 import com.oracle.truffle.api.bytecode.Variadic;
 import com.oracle.truffle.api.dsl.Bind;
 import com.oracle.truffle.api.dsl.Cached;
-import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NeverDefault;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -654,29 +653,25 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-//  @ConstantOperand(type = LocalAccessor.class)
+  @ConstantOperand(type = LocalAccessor.class)
   @ConstantOperand(type = int.class)
-  @ConstantOperand(type = int.class)
+  @ImportStatic(ContextualNode.class)
   public static final class IncNonLocalVarWithExp {
     @Specialization
     public static long increment(final VirtualFrame frame,
-//                                 final LocalAccessor accessor,
-                                 final int localIdxWithoutOffset,
+                                 final LocalAccessor accessor,
                                  final int contextLevel,
                                  final long incValue,
-                                 @Bind BytecodeNode bytecodeNode) {
-      int localIdx = localIdxWithoutOffset + 2;
+                                 @Cached(value = "determineContextNode(frame, contextLevel)", adopt = false) BytecodeNode bytecodeNode) {
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
-//      try {
-//        long currentValue = accessor.getLong(bytecodeNode, ctx);
-        long currentValue = ctx.getLong(localIdx);
-//        accessor.setLong(bytecodeNode, ctx,  Math.addExact(currentValue, incValue));
-        ctx.setLong(localIdx, Math.addExact(currentValue, incValue));
+      try {
+        long currentValue = accessor.getLong(bytecodeNode, ctx);
+        accessor.setLong(bytecodeNode, ctx,  Math.addExact(currentValue, incValue));
         return currentValue;
-//      } catch (UnexpectedResultException e) {
-//        CompilerDirectives.transferToInterpreter();
-//        throw new RuntimeException(e);
-//      }
+      } catch (UnexpectedResultException e) {
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -700,6 +695,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     }
   }
 
+  @ImportStatic(ContextualNode.class)
   @Operation
   @ConstantOperand(type = LocalAccessor.class)
   @ConstantOperand(type = long.class)
@@ -710,7 +706,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
                                  final LocalAccessor accessor,
                                  final long incValue,
                                  final int contextLevel,
-                                 @Bind BytecodeNode bytecodeNode) {
+                                 @Cached(value = "determineContextNode(frame, contextLevel)", adopt = false) BytecodeNode bytecodeNode) {
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
       try {
         long currentValue = accessor.getLong(bytecodeNode, ctx);

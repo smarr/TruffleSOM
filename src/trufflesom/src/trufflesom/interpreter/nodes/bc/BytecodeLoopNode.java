@@ -1543,7 +1543,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
               targetContextLevel + 1, true, true, false);
           SMethod newMethod = new SMethod(blockMethod.getSignature(), adapted,
               blockMethod.getEmbeddedBlocks());
-          newMethod.setHolder(blockMethod.getHolder());
+          newMethod.setHolder(blockMethod.getHolder(), blockMethod.getOuterMethod());
           mgenc.addLiteralIfAbsent(newMethod, null);
           emitPUSHBLOCK(mgenc, newMethod, bytecodes[i] == PUSH_BLOCK);
           break;
