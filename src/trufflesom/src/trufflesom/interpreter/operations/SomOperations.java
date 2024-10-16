@@ -106,7 +106,8 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
-@GenerateBytecode(languageClass = SomLanguage.class, boxingEliminationTypes = {long.class, double.class}, defaultLocalValue = "NIL")
+@GenerateBytecode(languageClass = SomLanguage.class,
+    boxingEliminationTypes = {long.class, double.class}, defaultLocalValue = "NIL")
 @TypeSystemReference(Types.class)
 @OperationProxy(SubtractionOp.class)
 @OperationProxy(AdditionOp.class)
@@ -121,7 +122,7 @@ import trufflesom.vmobjects.SSymbol;
 @OperationProxy(ArrayDoOp.class)
 @OperationProxy(ArrayDoIndexesOp.class)
 @OperationProxy(ArrayPutAllOp.class)
-//@OperationProxy(IntIncrementNode.class)
+// @OperationProxy(IntIncrementNode.class)
 @OperationProxy(LessThanPrim.class)
 @OperationProxy(LessThanOrEqualPrim.class)
 @OperationProxy(GreaterThanPrim.class)
@@ -256,10 +257,10 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class BinarySendOp {
     @Specialization
     public static Object doCached(final VirtualFrame frame,
-                                  @SuppressWarnings("unused") final SSymbol selector,
-                                  final Object rcvr,
-                                  final Object arg,
-                                  @Cached("create(selector)") final AbstractDispatchNode dispatch) {
+        @SuppressWarnings("unused") final SSymbol selector,
+        final Object rcvr,
+        final Object arg,
+        @Cached("create(selector)") final AbstractDispatchNode dispatch) {
       return dispatch.executeDispatch(frame, new Object[] {rcvr, arg});
     }
 
@@ -272,11 +273,11 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class TernarySendOp {
     @Specialization
     public static Object doCached(final VirtualFrame frame,
-                                  @SuppressWarnings("unused") final SSymbol selector,
-                                  final Object rcvr,
-                                  final Object arg1,
-                                  final Object arg2,
-                                  @Cached("create(selector)") final AbstractDispatchNode dispatch) {
+        @SuppressWarnings("unused") final SSymbol selector,
+        final Object rcvr,
+        final Object arg1,
+        final Object arg2,
+        @Cached("create(selector)") final AbstractDispatchNode dispatch) {
       return dispatch.executeDispatch(frame, new Object[] {rcvr, arg1, arg2});
     }
 
@@ -293,9 +294,9 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static Object doCached(final VirtualFrame frame,
-                                  @SuppressWarnings("unused") final SSymbol selector,
-                                  @Variadic final Object[] arguments,
-                                  @Cached("create(selector)") final AbstractDispatchNode dispatch) {
+        @SuppressWarnings("unused") final SSymbol selector,
+        @Variadic final Object[] arguments,
+        @Cached("create(selector)") final AbstractDispatchNode dispatch) {
       return dispatch.executeDispatch(frame, arguments);
     }
 
@@ -307,8 +308,8 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class SuperSendOp {
     @Specialization
     public static Object doSuper(final CallTarget callTarget,
-                                 @Variadic final Object[] arguments,
-                                 @Cached("create(callTarget)") DirectCallNode callNode) {
+        @Variadic final Object[] arguments,
+        @Cached("create(callTarget)") DirectCallNode callNode) {
       return callNode.call(arguments);
     }
   }
@@ -461,7 +462,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class LocalReadField {
     @Specialization(rewriteOn = UnexpectedResultException.class)
     public static long readLong(
-            final VirtualFrame frame,
+        final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
         throws UnexpectedResultException {
@@ -470,7 +471,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization(rewriteOn = UnexpectedResultException.class)
     public static double readDouble(
-            final VirtualFrame frame,
+        final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
         throws UnexpectedResultException {
@@ -479,7 +480,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static Object readObject(
-            final VirtualFrame frame,
+        final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
       return read.read((SObject) frame.getArguments()[0]);
@@ -492,27 +493,27 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class NonLocalReadField {
     @Specialization(rewriteOn = UnexpectedResultException.class)
     public static long readLong(
-            @SuppressWarnings("unused") final int fieldIdx,
-            final SObject self,
-            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
-            throws UnexpectedResultException {
+        @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self,
+        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
+        throws UnexpectedResultException {
       return read.readLong(self);
     }
 
     @Specialization(rewriteOn = UnexpectedResultException.class)
     public static double readDouble(
-            @SuppressWarnings("unused") final int fieldIdx,
-            final SObject self,
-            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
-            throws UnexpectedResultException {
+        @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self,
+        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
+        throws UnexpectedResultException {
       return read.readDouble(self);
     }
 
     @Specialization
     public static Object readObject(
-            @SuppressWarnings("unused") final int fieldIdx,
-            final SObject self,
-            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
+        @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self,
+        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
       return read.read(self);
     }
   }
@@ -599,20 +600,20 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class IncFieldWithExp {
     @Specialization
     public static long incLong(
-            @SuppressWarnings("unused") final int fieldIdx,
-            final SObject self,
-            final long incValue,
-            @Cached("createIncrement(fieldIdx, self)") final IncrementLongFieldNode inc) {
+        @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self,
+        final long incValue,
+        @Cached("createIncrement(fieldIdx, self)") final IncrementLongFieldNode inc) {
       return inc.increment(self, incValue);
     }
 
     @Specialization
     public static Object concat(
-            @SuppressWarnings("unused") final int fieldIdx,
-            final SObject self,
-            final String incValue,
-            @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read,
-            @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
+        @SuppressWarnings("unused") final int fieldIdx,
+        final SObject self,
+        final String incValue,
+        @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read,
+        @Cached("createWrite(fieldIdx)") final AbstractWriteFieldNode write) {
       String str = (String) read.read(self);
       return write.write(self, concatStr(str, incValue));
     }
@@ -623,13 +624,13 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class IncLocalVarWithExp {
     @Specialization
     public static long increment(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final long incValue,
-                                 @Bind BytecodeNode bytecodeNode) {
+        final LocalAccessor accessor,
+        final long incValue,
+        @Bind BytecodeNode bytecodeNode) {
       try {
         long currentValue = accessor.getLong(bytecodeNode, frame);
         long result = Math.addExact(currentValue, incValue);
-        accessor.setLong(bytecodeNode, frame,  result);
+        accessor.setLong(bytecodeNode, frame, result);
         return result;
       } catch (UnexpectedResultException e) {
         if (e.getResult() instanceof Long l) {
@@ -644,9 +645,9 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static double increment(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final double incValue,
-                                 @Bind BytecodeNode bytecodeNode) {
+        final LocalAccessor accessor,
+        final double incValue,
+        @Bind BytecodeNode bytecodeNode) {
       try {
         double currentValue = accessor.getDouble(bytecodeNode, frame);
         double result = currentValue + incValue;
@@ -660,12 +661,13 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static String increment(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final String incValue,
-                                 @Bind BytecodeNode bytecodeNode) {
+        final LocalAccessor accessor,
+        final String incValue,
+        @Bind BytecodeNode bytecodeNode) {
       String currentValue = (String) accessor.getObject(bytecodeNode, frame);
-      accessor.setObject(bytecodeNode, frame,  concatStr(currentValue, incValue));
-      return currentValue;
+      String result = concatStr(currentValue, incValue);
+      accessor.setObject(bytecodeNode, frame, result);
+      return result;
     }
   }
 
@@ -681,10 +683,11 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class IncNonLocalVarWithExp {
     @Specialization
     public static long increment(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final int contextLevel,
-                                 final long incValue,
-                                 @Cached(value = "determineContextNode(frame, contextLevel)", adopt = false) BytecodeNode bytecodeNode) {
+        final LocalAccessor accessor,
+        final int contextLevel,
+        final long incValue,
+        @Cached(value = "determineContextNode(frame, contextLevel)",
+            adopt = false) BytecodeNode bytecodeNode) {
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
       try {
         long currentValue = accessor.getLong(bytecodeNode, ctx);
@@ -710,9 +713,9 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class IncLocalVarWithValue {
     @Specialization
     public static long increment(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final long incValue,
-                                 @Bind BytecodeNode bytecodeNode) {
+        final LocalAccessor accessor,
+        final long incValue,
+        @Bind BytecodeNode bytecodeNode) {
       try {
         long currentValue = accessor.getLong(bytecodeNode, frame);
         long result = Math.addExact(currentValue, incValue);
@@ -733,10 +736,11 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   public static final class IncNonLocalVarWithValue {
     @Specialization
     public static long increment(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final long incValue,
-                                 final int contextLevel,
-                                 @Cached(value = "determineContextNode(frame, contextLevel)", adopt = false) BytecodeNode bytecodeNode) {
+        final LocalAccessor accessor,
+        final long incValue,
+        final int contextLevel,
+        @Cached(value = "determineContextNode(frame, contextLevel)",
+            adopt = false) BytecodeNode bytecodeNode) {
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
       try {
         long currentValue = accessor.getLong(bytecodeNode, ctx);
@@ -764,7 +768,8 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     }
 
     @Specialization
-    public static Object fallbackToNormalSend(VirtualFrame frame, long incValue, Object rcvr, @Cached final AbstractDispatchNode dispatch) {
+    public static Object fallbackToNormalSend(VirtualFrame frame, long incValue, Object rcvr,
+        @Cached final AbstractDispatchNode dispatch) {
       return dispatch.executeDispatch(frame, new Object[] {rcvr, incValue});
     }
 
@@ -816,7 +821,8 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @EpilogExceptional
   public static final class ExecuteEpilogExceptionalOp {
     @Specialization
-    public static void markFrameAsNoLongerOnStack(@SuppressWarnings("unused") final VirtualFrame frame,
+    public static void markFrameAsNoLongerOnStack(
+        @SuppressWarnings("unused") final VirtualFrame frame,
         @SuppressWarnings("unused") final AbstractTruffleException ex,
         @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
@@ -831,7 +837,8 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   @EpilogReturn
   public static final class ExecuteEpilogOp {
     @Specialization
-    public static Object markFrameAsNoLongerOnStack(@SuppressWarnings("unused") final VirtualFrame frame,
+    public static Object markFrameAsNoLongerOnStack(
+        @SuppressWarnings("unused") final VirtualFrame frame,
         Object object, @Bind SomOperations root) {
       if (root.frameOnStackMarkerIdx != -1) {
         FrameOnStackMarker marker =
