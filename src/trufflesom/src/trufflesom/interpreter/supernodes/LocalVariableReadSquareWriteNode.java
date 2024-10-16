@@ -8,6 +8,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.LocalVariableNode;
 
 
@@ -80,5 +81,14 @@ public abstract class LocalVariableReadSquareWriteNode extends LocalVariableNode
     } else {
       assert 0 == seWrite.contextLevel;
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginStoreLocal(opBuilder.getLocal(local));
+    opBuilder.dsl.beginSquare();
+    opBuilder.dsl.emitLoadLocal(opBuilder.getLocal(local));
+    opBuilder.dsl.endSquare();
+    opBuilder.dsl.endStoreLocal();
   }
 }
