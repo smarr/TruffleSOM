@@ -628,8 +628,30 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
                                  @Bind BytecodeNode bytecodeNode) {
       try {
         long currentValue = accessor.getLong(bytecodeNode, frame);
-        accessor.setLong(bytecodeNode, frame,  Math.addExact(currentValue, incValue));
-        return currentValue;
+        long result = Math.addExact(currentValue, incValue);
+        accessor.setLong(bytecodeNode, frame,  result);
+        return result;
+      } catch (UnexpectedResultException e) {
+        if (e.getResult() instanceof Long l) {
+          long result = Math.addExact(l, incValue);
+          accessor.setObject(bytecodeNode, frame, result);
+          return result;
+        }
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Specialization
+    public static double increment(final VirtualFrame frame,
+                                 final LocalAccessor accessor,
+                                 final double incValue,
+                                 @Bind BytecodeNode bytecodeNode) {
+      try {
+        double currentValue = accessor.getDouble(bytecodeNode, frame);
+        double result = currentValue + incValue;
+        accessor.setDouble(bytecodeNode, frame, result);
+        return result;
       } catch (UnexpectedResultException e) {
         CompilerDirectives.transferToInterpreter();
         throw new RuntimeException(e);
@@ -666,10 +688,17 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
       try {
         long currentValue = accessor.getLong(bytecodeNode, ctx);
-        accessor.setLong(bytecodeNode, ctx,  Math.addExact(currentValue, incValue));
-        return currentValue;
+        long result = Math.addExact(currentValue, incValue);
+        accessor.setLong(bytecodeNode, ctx, result);
+        return result;
       } catch (UnexpectedResultException e) {
         CompilerDirectives.transferToInterpreter();
+
+        if (e.getResult() instanceof Long l) {
+          long result = Math.addExact(l, incValue);
+          accessor.setObject(bytecodeNode, ctx, result);
+          return result;
+        }
         throw new RuntimeException(e);
       }
     }
@@ -686,8 +715,9 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
                                  @Bind BytecodeNode bytecodeNode) {
       try {
         long currentValue = accessor.getLong(bytecodeNode, frame);
-        accessor.setLong(bytecodeNode, frame,  Math.addExact(currentValue, incValue));
-        return currentValue;
+        long result = Math.addExact(currentValue, incValue);
+        accessor.setLong(bytecodeNode, frame, result);
+        return result;
       } catch (UnexpectedResultException e) {
         CompilerDirectives.transferToInterpreter();
         throw new RuntimeException(e);
@@ -710,8 +740,9 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
       try {
         long currentValue = accessor.getLong(bytecodeNode, ctx);
-        accessor.setLong(bytecodeNode, ctx,  Math.addExact(currentValue, incValue));
-        return currentValue;
+        long result = Math.addExact(currentValue, incValue);
+        accessor.setLong(bytecodeNode, ctx, result);
+        return result;
       } catch (UnexpectedResultException e) {
         CompilerDirectives.transferToInterpreter();
         throw new RuntimeException(e);
