@@ -707,6 +707,25 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
     }
 
     @Specialization
+    public static double increment(final VirtualFrame frame,
+                                 final LocalAccessor accessor,
+                                 final int contextLevel,
+                                 final double incValue,
+                                 @Cached(value = "determineContextNode(frame, contextLevel)",
+                                         adopt = false) BytecodeNode bytecodeNode) {
+      MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+      try {
+        double currentValue = accessor.getDouble(bytecodeNode, ctx);
+        double result = currentValue * incValue;
+        accessor.setDouble(bytecodeNode, ctx, result);
+        return result;
+      } catch (UnexpectedResultException e) {
+        CompilerDirectives.transferToInterpreter();
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Specialization
     public static String concatStrings(final VirtualFrame frame,
                                  final LocalAccessor accessor,
                                  final int contextLevel,
