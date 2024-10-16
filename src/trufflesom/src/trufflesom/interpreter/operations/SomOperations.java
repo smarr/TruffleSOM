@@ -705,6 +705,20 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
         throw new RuntimeException(e);
       }
     }
+
+    @Specialization
+    public static String concatStrings(final VirtualFrame frame,
+                                 final LocalAccessor accessor,
+                                 final int contextLevel,
+                                 final String incValue,
+                                 @Cached(value = "determineContextNode(frame, contextLevel)",
+                                         adopt = false) BytecodeNode bytecodeNode) {
+      MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+      String currentValue = (String) accessor.getObject(bytecodeNode, ctx);
+      String result = concatStr(currentValue, incValue);
+      accessor.setObject(bytecodeNode, ctx, result);
+      return result;
+    }
   }
 
   @Operation
