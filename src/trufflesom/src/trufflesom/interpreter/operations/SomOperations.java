@@ -794,6 +794,19 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
+  public static final class Square {
+    @Specialization
+    public static long doLong(long value) {
+      return Math.multiplyExact(value, value);
+    }
+
+    @Specialization
+    public static double doDouble(double value) {
+      return value * value;
+    }
+  }
+
+  @Operation
   @ConstantOperand(type = int.class)
   public static final class WriteArgument {
     @Specialization
