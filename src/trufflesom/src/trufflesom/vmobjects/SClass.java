@@ -171,7 +171,7 @@ public final class SClass extends SObject {
 
     // Make sure this class is the holder of all invokables
     for (SInvokable i : invokablesTable.values()) {
-      i.setHolder(this);
+      i.setHolder(this, null);
     }
   }
 
@@ -234,7 +234,7 @@ public final class SClass extends SObject {
   public void addPrimitive(final SInvokable value) {
     CompilerAsserts.neverPartOfCompilation("SClass.addInstanceInvokable(.)");
 
-    value.setHolder(this);
+    value.setHolder(this, null);
     invokablesTable.put(value.getSignature(), value);
   }
 

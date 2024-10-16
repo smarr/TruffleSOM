@@ -8,6 +8,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.LocalVariableNode;
 
@@ -68,4 +69,10 @@ public abstract class IncLocalVarWithExpNode extends LocalVariableNode {
     }
   }
 
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginIncLocalVarWithExp(opBuilder.getLocal(local));
+    getValue().constructOperation(opBuilder, true);
+    opBuilder.dsl.endIncLocalVarWithExp();
+  }
 }
