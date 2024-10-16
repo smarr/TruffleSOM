@@ -12,6 +12,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Local;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NonLocalVariableNode;
 import trufflesom.primitives.arithmetic.AdditionPrim;
@@ -98,5 +99,12 @@ public abstract class IncNonLocalVarWithExpNode extends NonLocalVariableNode {
     } else {
       assert contextLevel == se.contextLevel;
     }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginIncNonLocalVarWithExp(opBuilder.getLocal(local), contextLevel);
+    getValue().constructOperation(opBuilder, true);
+    opBuilder.dsl.endIncNonLocalVarWithExp();
   }
 }
