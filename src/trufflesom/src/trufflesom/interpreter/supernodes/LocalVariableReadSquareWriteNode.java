@@ -87,7 +87,7 @@ public abstract class LocalVariableReadSquareWriteNode extends LocalVariableNode
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     opBuilder.dsl.beginStoreLocal(opBuilder.getLocal(local));
     opBuilder.dsl.beginSquare();
-    opBuilder.dsl.emitLoadLocal(opBuilder.getLocal(local));
+    opBuilder.dsl.emitLoadLocal(opBuilder.getLocal(readLocal));
     opBuilder.dsl.endSquare();
     opBuilder.dsl.endStoreLocal();
   }
