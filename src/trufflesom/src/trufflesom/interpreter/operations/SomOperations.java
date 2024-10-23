@@ -15,6 +15,7 @@ import com.oracle.truffle.api.bytecode.EpilogExceptional;
 import com.oracle.truffle.api.bytecode.EpilogReturn;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.LocalAccessor;
+import com.oracle.truffle.api.bytecode.MaterializedLocalAccessor;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.bytecode.OperationProxy;
 import com.oracle.truffle.api.bytecode.Variadic;
@@ -489,32 +490,39 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @Operation
   @ConstantOperand(type = int.class)
+  @ConstantOperand(type = int.class)
   @ImportStatic(FieldAccessorNode.class)
   public static final class NonLocalReadField {
     @Specialization(rewriteOn = UnexpectedResultException.class)
-    public static long readLong(
+    public static long readLong(final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
-        final SObject self,
+        final int contextLevel,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
         throws UnexpectedResultException {
-      return read.readLong(self);
+      MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+      SObject rcvr = (SObject) ctx.getArguments()[0];
+      return read.readLong(rcvr);
     }
 
     @Specialization(rewriteOn = UnexpectedResultException.class)
-    public static double readDouble(
+    public static double readDouble(final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
-        final SObject self,
+        final int contextLevel,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read)
         throws UnexpectedResultException {
-      return read.readDouble(self);
+      MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+      SObject rcvr = (SObject) ctx.getArguments()[0];
+      return read.readDouble(rcvr);
     }
 
     @Specialization
-    public static Object readObject(
+    public static Object readObject(final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
-        final SObject self,
+        final int contextLevel,
         @Cached("createRead(fieldIdx)") final AbstractReadFieldNode read) {
-      return read.read(self);
+      MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
+      SObject rcvr = (SObject) ctx.getArguments()[0];
+      return read.read(rcvr);
     }
   }
 
@@ -677,13 +685,13 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
   }
 
   @Operation
-  @ConstantOperand(type = LocalAccessor.class)
+  @ConstantOperand(type = MaterializedLocalAccessor.class)
   @ConstantOperand(type = int.class)
   @ImportStatic(ContextualNode.class)
   public static final class IncNonLocalVarWithExp {
     @Specialization
     public static long increment(final VirtualFrame frame,
-        final LocalAccessor accessor,
+        final MaterializedLocalAccessor accessor,
         final int contextLevel,
         final long incValue,
         @Cached(value = "determineContextNode(frame, contextLevel)",
@@ -708,11 +716,11 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static double increment(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final int contextLevel,
-                                 final double incValue,
-                                 @Cached(value = "determineContextNode(frame, contextLevel)",
-                                         adopt = false) BytecodeNode bytecodeNode) {
+        final MaterializedLocalAccessor accessor,
+        final int contextLevel,
+        final double incValue,
+        @Cached(value = "determineContextNode(frame, contextLevel)",
+            adopt = false) BytecodeNode bytecodeNode) {
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
       try {
         double currentValue = accessor.getDouble(bytecodeNode, ctx);
@@ -727,11 +735,11 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
     @Specialization
     public static String concatStrings(final VirtualFrame frame,
-                                 final LocalAccessor accessor,
-                                 final int contextLevel,
-                                 final String incValue,
-                                 @Cached(value = "determineContextNode(frame, contextLevel)",
-                                         adopt = false) BytecodeNode bytecodeNode) {
+        final MaterializedLocalAccessor accessor,
+        final int contextLevel,
+        final String incValue,
+        @Cached(value = "determineContextNode(frame, contextLevel)",
+            adopt = false) BytecodeNode bytecodeNode) {
       MaterializedFrame ctx = ContextualNode.determineContext(frame, contextLevel);
       String currentValue = (String) accessor.getObject(bytecodeNode, ctx);
       String result = concatStr(currentValue, incValue);
@@ -763,13 +771,13 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
 
   @ImportStatic(ContextualNode.class)
   @Operation
-  @ConstantOperand(type = LocalAccessor.class)
+  @ConstantOperand(type = MaterializedLocalAccessor.class)
   @ConstantOperand(type = long.class)
   @ConstantOperand(type = int.class)
   public static final class IncNonLocalVarWithValue {
     @Specialization
     public static long increment(final VirtualFrame frame,
-        final LocalAccessor accessor,
+        final MaterializedLocalAccessor accessor,
         final long incValue,
         final int contextLevel,
         @Cached(value = "determineContextNode(frame, contextLevel)",
