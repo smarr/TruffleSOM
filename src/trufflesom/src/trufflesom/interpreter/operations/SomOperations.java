@@ -108,7 +108,8 @@ import trufflesom.vmobjects.SSymbol;
 
 
 @GenerateBytecode(languageClass = SomLanguage.class,
-    boxingEliminationTypes = {long.class, double.class}, defaultLocalValue = "NIL")
+    boxingEliminationTypes = {long.class, double.class}, defaultLocalValue = "NIL",
+    enableMaterializedLocalAccesses = true)
 @TypeSystemReference(Types.class)
 @OperationProxy(SubtractionOp.class)
 @OperationProxy(AdditionOp.class)
@@ -479,7 +480,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
       return read.readDouble((SObject) frame.getArguments()[0]);
     }
 
-    @Specialization
+    @Specialization(replaces = {"readLong", "readDouble"})
     public static Object readObject(
         final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
@@ -515,7 +516,7 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
       return read.readDouble(rcvr);
     }
 
-    @Specialization
+    @Specialization(replaces = {"readLong", "readDouble"})
     public static Object readObject(final VirtualFrame frame,
         @SuppressWarnings("unused") final int fieldIdx,
         final int contextLevel,
