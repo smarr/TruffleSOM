@@ -79,18 +79,12 @@ suite = {
                 "exports": [
                     "trufflesom.* to org.graalvm.truffle",
                 ],
-                "requires": ["jdk.unsupported"],  # sun.misc.Unsafe
-                "requiresConcealed": {
-                    "org.graalvm.truffle": [
-                        "com.oracle.truffle.api",
-                        "com.oracle.truffle.api.instrumentation",
-                    ],
-                },
+                "requires": ["jdk.unsupported", "org.graalvm.collections", "org.graalvm.polyglot"],  # sun.misc.Unsafe
             },
             "dependencies": ["trufflesom"],
             "distDependencies": [
                 "truffle:TRUFFLE_API"
-            ],  # , "tools:TRUFFLE_COVERAGE", "tools:TRUFFLE_PROFILER"
+            ],  # "tools:TRUFFLE_COVERAGE", "tools:TRUFFLE_PROFILER"
         },
         "TRUFFLESOM_TEST": {
             "description": "TruffleSOM JUnit Tests",
