@@ -6,6 +6,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor;
 import trufflesom.bdt.inlining.ScopeAdaptationVisitor.ScopeElement;
 import trufflesom.compiler.Variable.Argument;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ArgumentReadNode.LocalArgumentReadNode;
 import trufflesom.interpreter.nodes.ExpressionNode;
@@ -100,6 +101,16 @@ public final class LocalArgGreaterThanInt extends ExpressionNode {
       }
     } else {
       assert 0 == se.contextLevel;
+    }
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    if (resultUsed) {
+      opBuilder.dsl.beginGreaterThanPrim();
+      opBuilder.dsl.emitLoadArgument(argIdx);
+      opBuilder.dsl.emitLoadConstant(intValue);
+      opBuilder.dsl.endGreaterThanPrim();
     }
   }
 }
