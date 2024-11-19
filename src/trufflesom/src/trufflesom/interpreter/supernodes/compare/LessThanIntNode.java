@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
@@ -47,5 +48,13 @@ public abstract class LessThanIntNode extends UnaryExpressionNode {
       final Object receiver,
       @Cached("create(getSelector())") final AbstractDispatchNode dispatch) {
     return dispatch.executeDispatch(frame, new Object[] {receiver, intValue});
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginLessThanPrim();
+    getReceiver().constructOperation(opBuilder, true);
+    opBuilder.dsl.emitLoadConstant(intValue);
+    opBuilder.dsl.endLessThanPrim();
   }
 }
