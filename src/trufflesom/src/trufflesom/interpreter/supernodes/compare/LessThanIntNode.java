@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import trufflesom.interpreter.Method.OpBuilder;
 import trufflesom.interpreter.bc.RespecializeException;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.GenericMessageSendNode;
@@ -58,5 +59,13 @@ public abstract class LessThanIntNode extends UnaryExpressionNode {
 
     assert getParent() instanceof BytecodeLoopNode : "This node was expected to be a direct child of a `BytecodeLoopNode`.";
     throw new RespecializeException(send);
+  }
+
+  @Override
+  public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
+    opBuilder.dsl.beginLessThanPrim();
+    getReceiver().constructOperation(opBuilder, true);
+    opBuilder.dsl.emitLoadConstant(intValue);
+    opBuilder.dsl.endLessThanPrim();
   }
 }
