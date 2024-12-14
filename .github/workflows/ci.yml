@@ -34,7 +34,8 @@ jobs:
       - name: Run Style Gate
         run: |
           export ECLIPSE_EXE=${GITHUB_WORKSPACE}/../eclipse/eclipse
-          mx gate --tags style
+          export JAVA_HOME=$JAVA_HOME_21_X64
+          mx --java-home=${JAVA_HOME} gate --tags style
 
   test_som:
     runs-on: ubuntu-22.04
