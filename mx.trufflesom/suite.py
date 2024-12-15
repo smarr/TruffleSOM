@@ -1,6 +1,6 @@
 suite = {
     "name": "trufflesom",
-    "mxversion": "7.27.2",
+    "mxversion": "7.36.3",
     "versionConflictResolution": "latest",
     "version": "0.0.1",
     "release": False,
@@ -16,17 +16,17 @@ suite = {
             {
                 "name": "truffle",
                 "subdir": True,
-                "version": "6339bcd8f1ca06eee25877838d92ca1256cbbf02",
+                "version": "6ffde64c948a451708aca033ded95223e8eaac90",
                 "urls": [{"url": "https://github.com/oracle/graal", "kind": "git"}],
             },
         ]
     },
     "libraries": {
-        "CHECKSTYLE_10.9.3": {
+        "CHECKSTYLE_10.21.0": {
             "urls": [
-                "https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.9.3/checkstyle-10.9.3-all.jar"
+                "https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.21.0/checkstyle-10.21.0-all.jar"
             ],
-            "digest": "sha512:57443ea697a02630cea080e78296545586ce2fa40c72d4d5e3d24c511287fc5d460e274ef49a6c0fc386682df248c4306a232b5f13d844c2ef4d1613d5b37e92",
+            "digest": "sha512:401940e1475a333afee636535708fa842b1a11b30f9fd43518589aaf94c2cf601b24f83176e95ffc171e2befe968267262b24a0a3931a009b39531a6fe570e60",
             "licence": "LGPLv21",
         },
         "LABS_JDK": {
@@ -50,7 +50,7 @@ suite = {
             "requiresConcealed": {
                 "java.base": ["jdk.internal.module"],
             },
-            "checkstyleVersion": "10.9.3",
+            "checkstyleVersion": "10.21.0",
             "jacoco": "include",
             "javaCompliance": "17+",
             "annotationProcessors": ["truffle:TRUFFLE_DSL_PROCESSOR"],
