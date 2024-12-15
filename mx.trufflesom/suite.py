@@ -79,13 +79,11 @@ suite = {
                 "exports": [
                     "trufflesom.* to org.graalvm.truffle",
                 ],
-                "requires": ["jdk.unsupported"],  # sun.misc.Unsafe
-                "requiresConcealed": {
-                    "org.graalvm.truffle": [
-                        "com.oracle.truffle.api",
-                        "com.oracle.truffle.api.instrumentation",
-                    ],
-                },
+                "requires": [
+                    "jdk.unsupported",
+                    "org.graalvm.collections",
+                    "org.graalvm.polyglot",
+                ],
             },
             "dependencies": ["trufflesom"],
             "distDependencies": [
