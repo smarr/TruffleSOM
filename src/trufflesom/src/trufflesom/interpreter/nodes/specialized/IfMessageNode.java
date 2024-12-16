@@ -91,10 +91,10 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
   }
 
   @Specialization(guards = {"notABlock(arg)"})
-  public final Object literal(final boolean rcvr, final Object arg,
+  public static final Object literal(final boolean rcvr, final Object arg,
       @Shared("all") @Cached final InlinedCountingConditionProfile condProf,
       @Bind final Node node) {
-    if (condProf.profile(node, rcvr == expected)) {
+    if (condProf.profile(node, rcvr == ((IfMessageNode) node).expected)) {
       return arg;
     } else {
       return Nil.nilObject;
