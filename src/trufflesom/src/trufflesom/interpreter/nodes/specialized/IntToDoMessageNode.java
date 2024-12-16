@@ -27,7 +27,7 @@ public abstract class IntToDoMessageNode extends TernaryMsgExprNode {
   protected static final int LIMIT = 3;
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("to:do:");
   }
 

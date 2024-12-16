@@ -41,7 +41,7 @@ public abstract class NewPrim extends BinaryMsgExprNode {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symNewMsg;
   }
 }

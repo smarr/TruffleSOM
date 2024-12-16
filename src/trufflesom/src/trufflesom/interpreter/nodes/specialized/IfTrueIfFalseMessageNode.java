@@ -65,7 +65,7 @@ public abstract class IfTrueIfFalseMessageNode extends TernaryMsgExprNode {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("ifTrue:ifFalse:");
   }
 

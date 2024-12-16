@@ -23,7 +23,7 @@ public class StringPrims {
   @Primitive(className = "String", primitive = "concatenate:")
   public abstract static class ConcatPrim extends BinaryMsgExprNode {
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("concatenate:");
     }
 
@@ -64,7 +64,7 @@ public class StringPrims {
     @CompilationFinal private boolean branchTaken;
 
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("charAt:");
     }
 

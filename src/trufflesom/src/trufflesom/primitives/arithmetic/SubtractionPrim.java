@@ -17,7 +17,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "-")
 public abstract class SubtractionPrim extends ArithmeticPrim {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("-");
   }
 

@@ -132,7 +132,7 @@ public abstract class IntegerPrims {
   public abstract static class LeftShiftPrim extends ArithmeticPrim {
 
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("<<");
     }
 
@@ -162,7 +162,7 @@ public abstract class IntegerPrims {
   @Primitive(className = "Integer", primitive = ">>>", selector = ">>>")
   public abstract static class UnsignedRightShiftPrim extends ArithmeticPrim {
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor(">>>");
     }
 
@@ -177,7 +177,7 @@ public abstract class IntegerPrims {
   @Primitive(selector = "min:")
   public abstract static class MinIntPrim extends ArithmeticPrim {
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("min:");
     }
 
@@ -210,7 +210,7 @@ public abstract class IntegerPrims {
   @Primitive(selector = "max:")
   public abstract static class MaxIntPrim extends ArithmeticPrim {
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("max:");
     }
 
@@ -243,7 +243,7 @@ public abstract class IntegerPrims {
       receiverType = Long.class, disabled = true)
   public abstract static class ToPrim extends BinaryMsgExprNode {
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("to:");
     }
 
@@ -294,7 +294,7 @@ public abstract class IntegerPrims {
     }
 
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("abs");
     }
   }

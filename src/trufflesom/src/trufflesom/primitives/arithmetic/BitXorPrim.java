@@ -17,7 +17,7 @@ public abstract class BitXorPrim extends ArithmeticPrim {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("bitXor:");
   }
 }

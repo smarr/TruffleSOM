@@ -39,7 +39,7 @@ public abstract class OrMessageNode extends BinaryMsgExprNode {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     if (getSourceChar(0) == '|') {
       return SymbolTable.symbolFor("||");
     }

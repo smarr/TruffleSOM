@@ -19,7 +19,7 @@ import trufflesom.vmobjects.SSymbol;
 @GenerateNodeFactory
 public abstract class UnequalsPrim extends BinaryMsgExprNode {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("<>");
   }
 

@@ -20,7 +20,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "//")
 public abstract class DoubleDivPrim extends ArithmeticPrim {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("//");
   }
 

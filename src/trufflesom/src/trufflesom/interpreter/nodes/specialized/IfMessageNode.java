@@ -31,7 +31,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     }
 
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("ifTrue:");
     }
   }
@@ -44,7 +44,7 @@ public abstract class IfMessageNode extends BinaryMsgExprNode {
     }
 
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("ifFalse:");
     }
   }

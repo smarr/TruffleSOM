@@ -15,7 +15,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(className = "Integer", primitive = "/", selector = "/")
 public abstract class DividePrim extends ArithmeticPrim {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("/");
   }
 

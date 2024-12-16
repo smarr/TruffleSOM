@@ -58,7 +58,7 @@ public final class ObjectPrims {
     }
 
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("instVarAt:");
     }
   }
@@ -91,7 +91,7 @@ public final class ObjectPrims {
   @Primitive(className = "Object", primitive = "instVarNamed:", selector = "instVarNamed:")
   public abstract static class InstVarNamedPrim extends BinaryMsgExprNode {
     @Override
-    public SSymbol getSelector() {
+    public final SSymbol getSelector() {
       return SymbolTable.symbolFor("instVarNamed:");
     }
 
