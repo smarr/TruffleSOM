@@ -17,7 +17,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(selector = "*")
 public abstract class MultiplicationPrim extends ArithmeticPrim {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("*");
   }
 

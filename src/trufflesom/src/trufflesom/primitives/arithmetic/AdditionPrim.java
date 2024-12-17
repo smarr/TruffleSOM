@@ -19,7 +19,7 @@ import trufflesom.vmobjects.SSymbol;
 public abstract class AdditionPrim extends ArithmeticPrim {
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("+");
   }
 

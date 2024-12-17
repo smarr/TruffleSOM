@@ -31,7 +31,7 @@ public abstract class IntToByDoMessageNode extends QuaternaryMsgExprNode {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("to:by:do:");
   }
 

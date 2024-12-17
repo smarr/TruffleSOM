@@ -21,7 +21,7 @@ public abstract class SqrtPrim extends UnaryExpressionNode {
 
   @Specialization
   public static final Object doLong(final long receiver,
-      @Cached final InlinedConditionProfile longOrDouble, @Bind("this") final Node node) {
+      @Cached final InlinedConditionProfile longOrDouble, @Bind final Node node) {
     double result = Math.sqrt(receiver);
 
     if (longOrDouble.profile(node, result == Math.rint(result))) {

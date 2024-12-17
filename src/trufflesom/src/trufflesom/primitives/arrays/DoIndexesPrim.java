@@ -29,7 +29,7 @@ public abstract class DoIndexesPrim extends BinaryMsgExprNode {
   @Child private LengthPrim   length;
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("doIndexes:");
   }
 

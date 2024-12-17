@@ -15,7 +15,7 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(className = "Integer", primitive = "rem:", selector = "rem:")
 public abstract class RemainderPrim extends ArithmeticPrim {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("rem:");
   }
 

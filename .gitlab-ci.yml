@@ -25,6 +25,12 @@ variables:
     mx sforceimport
     mx --env libgraal build
 
+  ensure_labsjdk: &ENSURE_LABSJDK_AND_GRAAL_VERSION |
+    ./som --setup labsjdk
+    mx sforceimport
+    rm libs/jvmci || true
+    ./som --setup labsjdk
+
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
   - git submodule update --init
@@ -52,10 +58,8 @@ test:
   stage: build-and-test
   tags: [yuria4]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
     - mx build
     - mx tests-junit
     - mx tests-som
@@ -73,10 +77,8 @@ build:native-interp-ast:
   stage: build-and-test
   tags: [yuria2]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
     - mx build
     - mx build-native --no-jit -t AST -bn
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
@@ -98,10 +100,8 @@ build:native-interp-bc:
   stage: build-and-test
   tags: [yuria3]
   script:
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
+
     - mx build
     - mx build-native --no-jit -t BC -bn
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
@@ -125,10 +125,7 @@ build:aarch64-test-and-rebench:
     - pmset -g live
     - pmset -g systemstate
 
-    - ./som --setup labsjdk
-    - mx sforceimport
-    - rm libs/jvmci || true
-    - ./som --setup labsjdk
+    - *ENSURE_LABSJDK_AND_GRAAL_VERSION
 
     - mx build
     - mx --env libgraal build

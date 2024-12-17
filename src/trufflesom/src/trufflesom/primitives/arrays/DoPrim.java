@@ -28,7 +28,7 @@ public abstract class DoPrim extends BinaryMsgExprNode {
   @Child private ValueOnePrim block = ValueOnePrimFactory.create(null, null);
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("do:");
   }
 

@@ -16,7 +16,7 @@ import trufflesom.vmobjects.SSymbol;
     receiverType = SArray.class, inParser = false)
 public abstract class AtPrim extends BinaryMsgExprNode {
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     return SymbolTable.symbolFor("at:");
   }
 

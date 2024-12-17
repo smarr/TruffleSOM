@@ -304,7 +304,10 @@ TWEAK_INLINING = ['-Dpolyglot.engine.CompilationThreshold=191',
                   '-Dpolyglot.engine.InliningMaxCallerSize=10000',
                   '-Dpolyglot.engine.SplittingMaxCalleeSize=100000']
 
-JAVA_ARGS = ['-server', '-XX:+UseParallelGC']
+JAVA_ARGS = [
+    '-server', '-XX:+UseParallelGC',
+    '--enable-native-access=org.graalvm.truffle'
+]
 
 ##
 ## Processing Parameters and Assembling Command Line

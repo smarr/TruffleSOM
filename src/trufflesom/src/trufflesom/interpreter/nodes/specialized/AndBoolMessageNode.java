@@ -16,7 +16,7 @@ public abstract class AndBoolMessageNode extends BinaryMsgExprNode {
   }
 
   @Override
-  public SSymbol getSelector() {
+  public final SSymbol getSelector() {
     if (getSourceChar(0) == '&') {
       return SymbolTable.symbolFor("&&");
     }
