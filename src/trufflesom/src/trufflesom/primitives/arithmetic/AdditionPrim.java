@@ -20,7 +20,7 @@ public abstract class AdditionPrim extends ArithmeticPrim {
 
   @Override
   public final SSymbol getSelector() {
-    return SymbolTable.symbolFor("+");
+    return SymbolTable.symPlus;
   }
 
   @Specialization(rewriteOn = ArithmeticException.class)
