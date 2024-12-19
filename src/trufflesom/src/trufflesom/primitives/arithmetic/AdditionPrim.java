@@ -88,6 +88,12 @@ public abstract class AdditionPrim extends ArithmeticPrim {
 
   @Specialization
   @TruffleBoundary
+  public static final String doString(final String left, final long right) {
+    return left + right;
+  }
+
+  @Specialization
+  @TruffleBoundary
   public static final String doString(final String left, final SClass right) {
     return left + right.getName().getString();
   }
