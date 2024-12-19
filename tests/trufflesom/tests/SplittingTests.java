@@ -31,7 +31,6 @@ public class SplittingTests extends AstTestSetup {
 
   @Test
   public void testCorrectFrameDescriptorUpdatesInBlocks() {
-
     ExpressionNode body = parseMethod("""
         methodToBeSplit = (
           | local |
