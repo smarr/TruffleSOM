@@ -30,6 +30,10 @@ import trufflesom.interpreter.nodes.literals.IntegerLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.AndInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.BooleanInlinedLiteralNode.OrInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfNilInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfNilNotNilInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfNotNilInlinedLiteralNode;
+import trufflesom.interpreter.nodes.specialized.IfNotNilNilInlinedLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.FalseIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IfTrueIfFalseInlinedLiteralsNode.TrueIfElseLiteralNode;
 import trufflesom.interpreter.nodes.specialized.IntToDoInlinedLiteralsNode;
@@ -318,6 +322,29 @@ public class AstInliningTests extends AstTestSetup {
   public void testIfTrueIfFalseReturn() {
     ifTrueIfFalseReturn("ifTrue:", "ifFalse:", TrueIfElseLiteralNode.class);
     ifTrueIfFalseReturn("ifFalse:", "ifTrue:", FalseIfElseLiteralNode.class);
+  }
+
+  private void ifNil(final String sel, final Class<?> cls) {
+    SequenceNode seq = (SequenceNode) parseMethod(
+        "test: arg1 = (\n"
+            + "   #start.\n"
+            + "   ^ self method " + sel + " [ arg1 ]\n"
+            + "   )");
+
+    Node ifNode = read(seq, "expressions", 1);
+    assertThat(ifNode, instanceOf(cls));
+  }
+
+  @Test
+  public void testIfNil() {
+    ifNil("ifNil:", IfNilInlinedLiteralNode.class);
+    ifNil("ifNotNil:", IfNotNilInlinedLiteralNode.class);
+  }
+
+  @Test
+  public void testIfNilIfNotNil() {
+    ifTrueIfFalseReturn("ifNil:", "ifNotNil:", IfNilNotNilInlinedLiteralNode.class);
+    ifTrueIfFalseReturn("ifNotNil:", "ifNil:", IfNotNilNilInlinedLiteralNode.class);
   }
 
   private void whileInlining(final String whileSel, final boolean expectedBool) {
