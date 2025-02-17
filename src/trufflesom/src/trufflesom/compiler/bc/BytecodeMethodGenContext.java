@@ -1,7 +1,7 @@
 package trufflesom.compiler.bc;
 
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpBackwardsWithOffset;
-import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnBoolWithDummyOffset;
+import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpOnWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitJumpWithDummyOffset;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emitPUSHCONSTANT;
@@ -83,6 +83,9 @@ import trufflesom.vmobjects.SSymbol;
 
 
 public class BytecodeMethodGenContext extends MethodGenerationContext {
+  public enum JumpCondition {
+    ON_NIL, ON_NOT_NIL, ON_TRUE, ON_FALSE
+  }
 
   private final List<Object> literals;
 
@@ -829,7 +832,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return (SMethod) literals.removeLast();
   }
 
-  public boolean inlineIfTrueOrIfFalse(final ParserBc parser, final boolean ifTrue)
+  public boolean inlineThenBranch(final ParserBc parser, final JumpCondition condition)
       throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
@@ -844,7 +847,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodeAt(0); // remove the PUSH_BLOCK
 
-    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnBoolWithDummyOffset(this, ifTrue, false);
+    int jumpOffsetIdxToSkipTrueBranch = emitJumpOnWithDummyOffset(this, condition, false);
 
     // grab block's method, and inline it
     SMethod toBeInlined = getLastBlockMethodAndFreeLiteral(blockLiteralIdx);
@@ -860,7 +863,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     return true;
   }
 
-  public boolean inlineIfTrueIfFalse(final ParserBc parser, final boolean isIfTrueIfFalse)
+  public boolean inlineThenElseBranches(final ParserBc parser, final JumpCondition condition)
       throws ParseError {
     // HACK: we do assume that the receiver on the stack is a boolean
     // HACK: similar to the {@see IfInlinedLiteralNode}
@@ -882,7 +885,7 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     removeLastBytecodes(2); // remove the PUSH_BLOCK bytecodes
 
     int jumpOffsetIdxToSkipTrueBranch =
-        emitJumpOnBoolWithDummyOffset(this, isIfTrueIfFalse, true);
+        emitJumpOnWithDummyOffset(this, condition, true);
 
     isCurrentlyInliningBlock = true;
     toBeInlined1.getInvokable().inline(this, toBeInlined1);
@@ -915,7 +918,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
 
     removeLastBytecodes(1);
 
-    int jumpOffsetIdxToSkipBranch = emitJumpOnBoolWithDummyOffset(this, !isOr, true);
+    int jumpOffsetIdxToSkipBranch = emitJumpOnWithDummyOffset(this,
+        isOr ? JumpCondition.ON_TRUE : JumpCondition.ON_FALSE, true);
 
     SMethod toBeInlined = getLastBlockMethodAndFreeLiteral(blockLiteralIdx);
 
@@ -958,7 +962,8 @@ public class BytecodeMethodGenContext extends MethodGenerationContext {
     isCurrentlyInliningBlock = true;
     condMethod.getInvokable().inline(this, condMethod);
 
-    int jumpOffsetIdxToSkipLoopBody = emitJumpOnBoolWithDummyOffset(this, isWhileTrue, true);
+    int jumpOffsetIdxToSkipLoopBody = emitJumpOnWithDummyOffset(this,
+        isWhileTrue ? JumpCondition.ON_FALSE : JumpCondition.ON_TRUE, true);
 
     bodyMethod.getInvokable().inline(this, bodyMethod);
 

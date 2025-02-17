@@ -43,6 +43,7 @@ import com.oracle.truffle.api.source.Source;
 import trufflesom.bdt.basic.ProgramDefinitionError;
 import trufflesom.bdt.tools.structure.StructuralProbe;
 import trufflesom.compiler.bc.BytecodeMethodGenContext;
+import trufflesom.compiler.bc.BytecodeMethodGenContext.JumpCondition;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SClass;
@@ -286,10 +287,22 @@ public class ParserBc extends Parser<BytecodeMethodGenContext> {
     String kwStr = kw.toString();
 
     if (!isSuperSend) {
-      if (("ifTrue:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, true)) ||
-          ("ifFalse:".equals(kwStr) && mgenc.inlineIfTrueOrIfFalse(this, false)) ||
-          ("ifTrue:ifFalse:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, true)) ||
-          ("ifFalse:ifTrue:".equals(kwStr) && mgenc.inlineIfTrueIfFalse(this, false)) ||
+      if (("ifTrue:".equals(kwStr) && mgenc.inlineThenBranch(this, JumpCondition.ON_FALSE)) ||
+          ("ifFalse:".equals(kwStr) && mgenc.inlineThenBranch(this, JumpCondition.ON_TRUE)) ||
+          ("ifTrue:ifFalse:".equals(kwStr)
+              && mgenc.inlineThenElseBranches(this, JumpCondition.ON_FALSE))
+          ||
+          ("ifFalse:ifTrue:".equals(kwStr)
+              && mgenc.inlineThenElseBranches(this, JumpCondition.ON_TRUE))
+          ||
+          ("ifNil:".equals(kwStr) && mgenc.inlineThenBranch(this, JumpCondition.ON_NOT_NIL)) ||
+          ("ifNotNil:".equals(kwStr) && mgenc.inlineThenBranch(this, JumpCondition.ON_NIL)) ||
+          ("ifNil:ifNotNil:".equals(kwStr)
+              && mgenc.inlineThenElseBranches(this, JumpCondition.ON_NOT_NIL))
+          ||
+          ("ifNotNil:ifNil:".equals(kwStr)
+              && mgenc.inlineThenElseBranches(this, JumpCondition.ON_NIL))
+          ||
           ("whileTrue:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, true)) ||
           ("whileFalse:".equals(kwStr) && mgenc.inlineWhileTrueOrFalse(this, false)) ||
           ("or:".equals(kwStr) && mgenc.inlineAndOr(this, true)) ||

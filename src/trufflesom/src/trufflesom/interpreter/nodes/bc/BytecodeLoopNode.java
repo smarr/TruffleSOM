@@ -1,6 +1,13 @@
 package trufflesom.interpreter.nodes.bc;
 
-import static trufflesom.interpreter.nodes.ContextualNode.frameType;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NIL_TOP_TOP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NOT_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NOT_NIL_TOP_TOP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NIL_TOP_TOP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NOT_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NOT_NIL_TOP_TOP;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit1;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3;
 import static trufflesom.compiler.bc.BytecodeGenerator.emit3WithDummy;
@@ -936,6 +943,56 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
           break;
         }
 
+        case JUMP_ON_NOT_NIL_TOP_TOP: {
+          Object val = stack[stackPointer];
+          if (val != Nil.nilObject) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            bytecodeIndex += offset;
+            // stack[stackPointer] = stack[stackPointer];
+          } else {
+            stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          break;
+        }
+
+        case JUMP_ON_NIL_TOP_TOP: {
+          Object val = stack[stackPointer];
+          if (val == Nil.nilObject) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            bytecodeIndex += offset;
+            // stack[stackPointer] = stack[stackPointer];
+          } else {
+            stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          break;
+        }
+
+        case JUMP_ON_NOT_NIL_POP: {
+          Object val = stack[stackPointer];
+          if (val != Nil.nilObject) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
+        case JUMP_ON_NIL_POP: {
+          Object val = stack[stackPointer];
+          if (val == Nil.nilObject) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
         case JUMP_BACKWARDS: {
           int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1]);
           bytecodeIndex -= offset;
@@ -997,6 +1054,60 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case JUMP2_ON_FALSE_POP: {
           Object val = stack[stackPointer];
           if (val == Boolean.FALSE) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
+        case JUMP2_ON_NOT_NIL_TOP_TOP: {
+          Object val = stack[stackPointer];
+          if (val != Nil.nilObject) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            bytecodeIndex += offset;
+            // stack[stackPointer] = stack[stackPointer];
+          } else {
+            stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          break;
+        }
+
+        case JUMP2_ON_NIL_TOP_TOP: {
+          Object val = stack[stackPointer];
+          if (val == Nil.nilObject) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            bytecodeIndex += offset;
+            // stack[stackPointer] = stack[stackPointer];
+          } else {
+            stackPointer -= 1;
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          break;
+        }
+
+        case JUMP2_ON_NOT_NIL_POP: {
+          Object val = stack[stackPointer];
+          if (val != Nil.nilObject) {
+            int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
+                + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
+            bytecodeIndex += offset;
+          } else {
+            bytecodeIndex += Bytecodes.LEN_TWO_ARGS;
+          }
+          stackPointer -= 1;
+          break;
+        }
+
+        case JUMP2_ON_NIL_POP: {
+          Object val = stack[stackPointer];
+          if (val == Nil.nilObject) {
             int offset = Byte.toUnsignedInt(bytecodes[bytecodeIndex + 1])
                 + (Byte.toUnsignedInt(bytecodes[bytecodeIndex + 2]) << 8);
             bytecodeIndex += offset;
@@ -1567,7 +1678,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case JUMP_ON_TRUE_TOP_NIL:
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP_ON_FALSE_TOP_NIL:
-        case JUMP2_ON_FALSE_TOP_NIL: {
+        case JUMP2_ON_FALSE_TOP_NIL:
+        case JUMP_ON_NOT_NIL_TOP_TOP:
+        case JUMP2_ON_NOT_NIL_TOP_TOP:
+        case JUMP_ON_NIL_TOP_TOP:
+        case JUMP2_ON_NIL_TOP_TOP: {
           int offset = getJumpOffset(bytecodes[i + 1], bytecodes[i + 2]);
 
           int idxOffset = emit3WithDummy(mgenc, bytecode, 0);
@@ -1578,7 +1693,11 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case JUMP_ON_TRUE_POP:
         case JUMP2_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
-        case JUMP2_ON_FALSE_POP: {
+        case JUMP2_ON_FALSE_POP:
+        case JUMP_ON_NOT_NIL_POP:
+        case JUMP2_ON_NOT_NIL_POP:
+        case JUMP_ON_NIL_POP:
+        case JUMP2_ON_NIL_POP: {
           int offset = getJumpOffset(bytecodes[i + 1], bytecodes[i + 2]);
 
           int idxOffset = emit3WithDummy(mgenc, bytecode, -1);
@@ -1751,12 +1870,20 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
+        case JUMP_ON_NOT_NIL_TOP_TOP:
+        case JUMP_ON_NIL_TOP_TOP:
+        case JUMP_ON_NOT_NIL_POP:
+        case JUMP_ON_NIL_POP:
         case JUMP_BACKWARDS:
         case JUMP2:
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL:
         case JUMP2_ON_TRUE_POP:
         case JUMP2_ON_FALSE_POP:
+        case JUMP2_ON_NOT_NIL_TOP_TOP:
+        case JUMP2_ON_NIL_TOP_TOP:
+        case JUMP2_ON_NOT_NIL_POP:
+        case JUMP2_ON_NIL_POP:
         case JUMP2_BACKWARDS: {
           break;
         }

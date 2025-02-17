@@ -2,7 +2,6 @@ package trufflesom.tests;
 
 import static org.junit.Assert.assertEquals;
 import static trufflesom.vm.SymbolTable.strSelf;
-import static trufflesom.vm.SymbolTable.symSelf;
 import static trufflesom.vm.SymbolTable.symbolFor;
 
 import org.junit.Ignore;
@@ -253,6 +252,8 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   public void testIfArg() {
     ifArg("ifTrue:", Bytecodes.JUMP_ON_FALSE_TOP_NIL);
     ifArg("ifFalse:", Bytecodes.JUMP_ON_TRUE_TOP_NIL);
+    ifArg("ifNil:", Bytecodes.JUMP_ON_NOT_NIL_TOP_TOP);
+    ifArg("ifNotNil:", Bytecodes.JUMP_ON_NIL_TOP_TOP);
   }
 
   @Test
@@ -636,7 +637,13 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
   }
 
   @Test
-  public void testIfPushConsantSame() {
+  public void testIfNilIfNotNilReturn() {
+    ifTrueIfFalseReturn("ifNil:", "ifNotNil:", Bytecodes.JUMP_ON_NOT_NIL_POP);
+    ifTrueIfFalseReturn("ifNotNil:", "ifNil:", Bytecodes.JUMP_ON_NIL_POP);
+  }
+
+  @Test
+  public void testIfPushConstantSame() {
     byte[] bytecodes = methodToBytecodes(
         "test = (\n"
             + "  #a. #b. #c. #d.\n"

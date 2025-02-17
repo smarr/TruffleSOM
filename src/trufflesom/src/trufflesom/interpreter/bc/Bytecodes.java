@@ -93,29 +93,37 @@ public class Bytecodes {
   public static final byte INC_FIELD      = 42;
   public static final byte INC_FIELD_PUSH = 43;
 
-  public static final byte JUMP                  = 44;
-  public static final byte JUMP_ON_TRUE_TOP_NIL  = 45;
-  public static final byte JUMP_ON_FALSE_TOP_NIL = 46;
-  public static final byte JUMP_ON_TRUE_POP      = 47;
-  public static final byte JUMP_ON_FALSE_POP     = 48;
-  public static final byte JUMP_BACKWARDS        = 49;
+  public static final byte JUMP                    = 44;
+  public static final byte JUMP_ON_TRUE_TOP_NIL    = 45;
+  public static final byte JUMP_ON_FALSE_TOP_NIL   = 46;
+  public static final byte JUMP_ON_TRUE_POP        = 47;
+  public static final byte JUMP_ON_FALSE_POP       = 48;
+  public static final byte JUMP_ON_NOT_NIL_TOP_TOP = 49;
+  public static final byte JUMP_ON_NIL_TOP_TOP     = 50;
+  public static final byte JUMP_ON_NOT_NIL_POP     = 51;
+  public static final byte JUMP_ON_NIL_POP         = 52;
+  public static final byte JUMP_BACKWARDS          = 53;
 
-  public static final byte JUMP2                  = 50;
-  public static final byte JUMP2_ON_TRUE_TOP_NIL  = 51;
-  public static final byte JUMP2_ON_FALSE_TOP_NIL = 52;
-  public static final byte JUMP2_ON_TRUE_POP      = 53;
-  public static final byte JUMP2_ON_FALSE_POP     = 54;
-  public static final byte JUMP2_BACKWARDS        = 55;
+  public static final byte JUMP2                    = 54;
+  public static final byte JUMP2_ON_TRUE_TOP_NIL    = 55;
+  public static final byte JUMP2_ON_FALSE_TOP_NIL   = 56;
+  public static final byte JUMP2_ON_TRUE_POP        = 57;
+  public static final byte JUMP2_ON_FALSE_POP       = 58;
+  public static final byte JUMP2_ON_NOT_NIL_TOP_TOP = 59;
+  public static final byte JUMP2_ON_NIL_TOP_TOP     = 60;
+  public static final byte JUMP2_ON_NOT_NIL_POP     = 61;
+  public static final byte JUMP2_ON_NIL_POP         = 62;
+  public static final byte JUMP2_BACKWARDS          = 63;
 
-  public static final byte Q_PUSH_GLOBAL = 56;
-  public static final byte Q_SEND        = 57;
-  public static final byte Q_SEND_1      = 58;
-  public static final byte Q_SEND_2      = 59;
-  public static final byte Q_SEND_3      = 60;
+  public static final byte Q_PUSH_GLOBAL = 64;
+  public static final byte Q_SEND        = 65;
+  public static final byte Q_SEND_1      = 66;
+  public static final byte Q_SEND_2      = 67;
+  public static final byte Q_SEND_3      = 68;
 
   public static final byte INVALID = -1;
 
-  public static final byte NUM_1_BYTE_JUMP_BYTECODES = 6;
+  public static final byte NUM_1_BYTE_JUMP_BYTECODES = 10;
 
   private static final String[] PADDED_BYTECODE_NAMES;
   private static final String[] BYTECODE_NAMES;
@@ -150,10 +158,26 @@ public class Bytecodes {
   @CompilationFinal(dimensions = 1) private static final int[] BYTECODE_LENGTH;
 
   public static final byte[] JUMP_BYTECODES = new byte[] {
-      JUMP, JUMP_ON_TRUE_TOP_NIL, JUMP_ON_TRUE_POP,
-      JUMP_ON_FALSE_TOP_NIL, JUMP_ON_FALSE_POP, JUMP_BACKWARDS,
-      JUMP2, JUMP2_ON_TRUE_TOP_NIL, JUMP2_ON_TRUE_POP,
-      JUMP2_ON_FALSE_TOP_NIL, JUMP2_ON_FALSE_POP, JUMP_BACKWARDS
+      JUMP,
+      JUMP_ON_TRUE_TOP_NIL,
+      JUMP_ON_TRUE_POP,
+      JUMP_ON_FALSE_TOP_NIL,
+      JUMP_ON_FALSE_POP,
+      JUMP_ON_NOT_NIL_TOP_TOP,
+      JUMP_ON_NIL_TOP_TOP,
+      JUMP_ON_NOT_NIL_POP,
+      JUMP_ON_NIL_POP,
+      JUMP_BACKWARDS,
+      JUMP2,
+      JUMP2_ON_TRUE_TOP_NIL,
+      JUMP2_ON_TRUE_POP,
+      JUMP2_ON_FALSE_TOP_NIL,
+      JUMP2_ON_FALSE_POP,
+      JUMP2_ON_NOT_NIL_TOP_TOP,
+      JUMP2_ON_NIL_TOP_TOP,
+      JUMP2_ON_NOT_NIL_POP,
+      JUMP2_ON_NIL_POP,
+      JUMP_BACKWARDS
   };
 
   public static final boolean isOneOf(final byte bytecode, final byte[] arr) {
@@ -233,6 +257,10 @@ public class Bytecodes {
         "JUMP_ON_FALSE_TOP_NIL",
         "JUMP_ON_TRUE_POP",
         "JUMP_ON_FALSE_POP",
+        "JUMP_ON_NOT_NIL_TOP_TOP",
+        "JUMP_ON_NIL_TOP_TOP",
+        "JUMP_ON_NOT_NIL_POP",
+        "JUMP_ON_NIL_POP",
         "JUMP_BACKWARDS  ",
 
         "JUMP2           ",
@@ -240,6 +268,10 @@ public class Bytecodes {
         "JUMP2_ON_FALSE_TOP_NIL",
         "JUMP2_ON_TRUE_POP",
         "JUMP2_ON_FALSE_POP",
+        "JUMP2_ON_NOT_NIL_TOP_TOP",
+        "JUMP2_ON_NIL_TOP_TOP",
+        "JUMP2_ON_NOT_NIL_POP",
+        "JUMP2_ON_NIL_POP",
         "JUMP2_BACKWARDS ",
 
         "Q_PUSH_GLOBAL   ",
@@ -315,6 +347,10 @@ public class Bytecodes {
         3, // JUMP_ON_FALSE_TOP_NIL
         3, // JUMP_ON_TRUE_POP
         3, // JUMP_ON_FALSE_POP
+        3, // JUMP_ON_NOT_NIL_TOP_TOP
+        3, // JUMP_ON_NIL_TOP_TOP
+        3, // JUMP_ON_NOT_NIL_POP
+        3, // JUMP_ON_NIL_POP
         3, // JUMP_BACKWARDS
 
         3, // JUMP2
@@ -322,6 +358,10 @@ public class Bytecodes {
         3, // JUMP2_ON_FALSE_TOP_NIL
         3, // JUMP2_ON_TRUE_POP
         3, // JUMP2_ON_FALSE_POP
+        3, // JUMP2_ON_NOT_NIL_TOP_TOP,
+        3, // JUMP2_ON_NIL_TOP_TOP,
+        3, // JUMP2_ON_NOT_NIL_POP,
+        3, // JUMP2_ON_NIL_POP,
         3, // JUMP2_BACKWARDS
 
         2, // Q_PUSH_GLOBAL
