@@ -883,7 +883,7 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
         Bytecodes.RETURN_SELF);
   }
 
-  @Ignore("TODO")
+  @Ignore("to:do: inlining isn't implemented yet")
   @Test
   public void testToDoBlockBlockInlinedSelf() {
     addField("field");
@@ -898,8 +898,8 @@ public class BytecodeMethodTests extends BytecodeTestSetup {
             + ")");
 
     check(bytecodes,
-        Bytecodes.PUSH_CONSTANT,
-        Bytecodes.PUSH_CONSTANT,
+        Bytecodes.PUSH_1,
+        Bytecodes.PUSH_CONSTANT_0,
         -1, // TODO: Bytecodes.DUP_SECOND, // stack: Top[1, 2, 1]
         -1, // TODO new BC(Bytecodes.jump_if_greater, 21), // consume only on jump
         Bytecodes.DUP,
