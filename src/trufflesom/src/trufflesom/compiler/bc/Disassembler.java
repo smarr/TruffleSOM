@@ -34,11 +34,19 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP2;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NIL_TOP_TOP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NOT_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_NOT_NIL_TOP_TOP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP2_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NIL_TOP_TOP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NOT_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NOT_NIL_TOP_TOP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP_ARGUMENT;
@@ -270,11 +278,19 @@ public class Disassembler {
         case JUMP_ON_FALSE_TOP_NIL:
         case JUMP_ON_TRUE_POP:
         case JUMP_ON_FALSE_POP:
+        case JUMP_ON_NOT_NIL_TOP_TOP:
+        case JUMP_ON_NIL_TOP_TOP:
+        case JUMP_ON_NOT_NIL_POP:
+        case JUMP_ON_NIL_POP:
         case JUMP2:
         case JUMP2_ON_TRUE_TOP_NIL:
         case JUMP2_ON_FALSE_TOP_NIL:
         case JUMP2_ON_TRUE_POP:
-        case JUMP2_ON_FALSE_POP: {
+        case JUMP2_ON_FALSE_POP:
+        case JUMP2_ON_NOT_NIL_TOP_TOP:
+        case JUMP2_ON_NIL_TOP_TOP:
+        case JUMP2_ON_NOT_NIL_POP:
+        case JUMP2_ON_NIL_POP: {
           int offset = getJumpOffset(bytecodes.get(b + 1), bytecodes.get(b + 2));
 
           Universe.errorPrintln(

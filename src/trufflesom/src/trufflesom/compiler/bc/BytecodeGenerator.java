@@ -35,6 +35,10 @@ import static trufflesom.interpreter.bc.Bytecodes.JUMP2_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_BACKWARDS;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_FALSE_TOP_NIL;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NIL_TOP_TOP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NOT_NIL_POP;
+import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_NOT_NIL_TOP_TOP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_POP;
 import static trufflesom.interpreter.bc.Bytecodes.JUMP_ON_TRUE_TOP_NIL;
 import static trufflesom.interpreter.bc.Bytecodes.POP;
@@ -81,6 +85,7 @@ import static trufflesom.vm.SymbolTable.symTrue;
 
 import trufflesom.compiler.Parser.ParseError;
 import trufflesom.compiler.ParserBc;
+import trufflesom.compiler.bc.BytecodeMethodGenContext.JumpCondition;
 import trufflesom.interpreter.nodes.GlobalNode;
 import trufflesom.vm.constants.Nil;
 import trufflesom.vmobjects.SInvokable.SMethod;
@@ -348,17 +353,19 @@ public final class BytecodeGenerator {
     emit2(mgenc, PUSH_CONSTANT, literalIndex, 1);
   }
 
-  public static int emitJumpOnBoolWithDummyOffset(final BytecodeMethodGenContext mgenc,
-      final boolean isIfTrue, final boolean needsPop) {
-    // Remember: true and false seem flipped here
-    // this is because if the test passes, the block is inlined directly.
-    // if the test fails, we need to jump.
-    // Thus, an #ifTrue: needs to generated a JUMP_ON_FALSE.
-    if (isIfTrue) {
-      emit1(mgenc, needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL, needsPop ? -1 : 0);
-    } else {
-      emit1(mgenc, needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL, needsPop ? -1 : 0);
-    }
+  public static int emitJumpOnWithDummyOffset(
+      final BytecodeMethodGenContext mgenc,
+      final JumpCondition condition,
+      final boolean needsPop) {
+    byte bytecode = switch (condition) {
+      case ON_TRUE -> needsPop ? JUMP_ON_TRUE_POP : JUMP_ON_TRUE_TOP_NIL;
+      case ON_FALSE -> needsPop ? JUMP_ON_FALSE_POP : JUMP_ON_FALSE_TOP_NIL;
+      case ON_NIL -> needsPop ? JUMP_ON_NIL_POP : JUMP_ON_NIL_TOP_TOP;
+      case ON_NOT_NIL -> needsPop ? JUMP_ON_NOT_NIL_POP : JUMP_ON_NOT_NIL_TOP_TOP;
+    };
+
+    emit1(mgenc, bytecode, needsPop ? -1 : 0);
+
     int idx = mgenc.addBytecodeArgumentAndGetIndex((byte) 0);
     mgenc.addBytecodeArgument((byte) 0);
     return idx;
