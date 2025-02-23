@@ -9,6 +9,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
+import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
@@ -145,5 +146,10 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   @SuppressWarnings("unused")
   public static final boolean doSSymbol(final SSymbol receiver, final SObject argument) {
     return false;
+  }
+
+  @Specialization
+  public static final boolean doClasses(final SClass left, final SClass right) {
+    return left == right;
   }
 }
