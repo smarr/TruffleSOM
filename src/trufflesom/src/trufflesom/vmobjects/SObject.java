@@ -187,7 +187,7 @@ public class SObject extends SAbstractObject {
   }
 
   private void setLayoutAndTransferFields(final ObjectLayout layout) {
-    CompilerDirectives.transferToInterpreterAndInvalidate();
+    CompilerAsserts.neverPartOfCompilation("setLayoutAndTransferFields");
 
     Object[] fieldValues = getAllFields();
 
