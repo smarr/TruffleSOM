@@ -39,6 +39,7 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
 
   public LocalFieldStringEqualsNode(final int fieldIdx, final Argument arg,
       final String value) {
+    assert arg.index == 0;
     this.fieldIdx = fieldIdx;
     this.arg = arg;
     this.value = value;

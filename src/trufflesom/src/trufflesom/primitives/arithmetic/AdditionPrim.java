@@ -20,7 +20,7 @@ public abstract class AdditionPrim extends ArithmeticPrim {
 
   @Override
   public final SSymbol getSelector() {
-    return SymbolTable.symbolFor("+");
+    return SymbolTable.symPlus;
   }
 
   @Specialization(rewriteOn = ArithmeticException.class)
@@ -83,6 +83,12 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   @Specialization
   @TruffleBoundary
   public static final String doString(final String left, final String right) {
+    return left + right;
+  }
+
+  @Specialization
+  @TruffleBoundary
+  public static final String doString(final String left, final long right) {
     return left + right;
   }
 

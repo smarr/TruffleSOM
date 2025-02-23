@@ -92,13 +92,11 @@ public final class LocalArgGreaterThanInt extends ExpressionNode {
   public void replaceAfterScopeChange(final ScopeAdaptationVisitor inliner) {
     ScopeElement se = inliner.getAdaptedVar(arg);
     if (se.var != arg || se.contextLevel < 0) {
-      if (se.var instanceof Argument arg) {
-        replace(new LocalArgGreaterThanInt(arg, intValue).initialize(sourceCoord));
+      if (se.var instanceof Argument a) {
+        replace(new LocalArgGreaterThanInt(a, intValue).initialize(sourceCoord));
       } else {
-        replace(MessageSendNode.createGeneric(SymbolTable.symbolFor(">"),
-            new ExpressionNode[] {se.var.getReadNode(se.contextLevel, sourceCoord),
-                new IntegerLiteralNode(intValue)},
-            sourceCoord));
+        replace(GreaterThanIntNodeGen.create(intValue,
+            se.var.getReadNode(se.contextLevel, sourceCoord)));
       }
     } else {
       assert 0 == se.contextLevel;
