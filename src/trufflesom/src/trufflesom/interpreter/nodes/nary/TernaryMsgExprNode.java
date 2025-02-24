@@ -20,7 +20,7 @@ public abstract class TernaryMsgExprNode extends TernaryExpressionNode {
   }
 
   @Fallback
-  public static final Object makeGenericSend(final VirtualFrame frame,
+  public static final Object genericSend(final VirtualFrame frame,
       final Object receiver, final Object arg1, final Object arg2, @Bind Node self,
       @Cached("createDispatch(self)") final AbstractDispatchNode dispatch) {
     return dispatch.executeDispatch(frame, new Object[] {receiver, arg1, arg2});

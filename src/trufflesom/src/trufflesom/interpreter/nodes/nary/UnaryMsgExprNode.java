@@ -20,7 +20,7 @@ public abstract class UnaryMsgExprNode extends UnaryExpressionNode {
   }
 
   @Fallback
-  public static final Object makeGenericSend(final VirtualFrame frame, final Object receiver,
+  public static final Object genericSend(final VirtualFrame frame, final Object receiver,
       @Bind Node self,
       @Cached("createDispatch(self)") final AbstractDispatchNode dispatch) {
     return dispatch.executeDispatch(frame, new Object[] {receiver});
