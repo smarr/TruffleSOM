@@ -32,6 +32,7 @@ public class SymbolTable {
 
   public static final SSymbol symPlus;
   public static final SSymbol symMinus;
+  public static final SSymbol symEquals;
 
   public static IdProvider<SSymbol> SymbolProvider = new Provider();
 
@@ -74,6 +75,7 @@ public class SymbolTable {
 
     symPlus = symbolFor("+");
     symMinus = symbolFor("-");
+    symEquals = symbolFor("=");
 
     // Name for the frameOnStack slot,
     // starting with ! to make it a name that's not possible in Smalltalk
