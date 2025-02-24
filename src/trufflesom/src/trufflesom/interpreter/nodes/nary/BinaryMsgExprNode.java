@@ -21,7 +21,7 @@ public abstract class BinaryMsgExprNode extends BinaryExpressionNode {
   }
 
   @Fallback
-  public static final Object makeGenericSend(final VirtualFrame frame,
+  public static final Object genericSend(final VirtualFrame frame,
       final Object receiver, final Object argument,
       @Bind Node self,
       @Cached("createDispatch(self)") final AbstractDispatchNode dispatch) {
