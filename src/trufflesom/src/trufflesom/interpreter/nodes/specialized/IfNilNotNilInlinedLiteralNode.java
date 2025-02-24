@@ -1,8 +1,10 @@
 package trufflesom.interpreter.nodes.specialized;
 
+import com.oracle.truffle.api.bytecode.BytecodeLocal;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.CountingConditionProfile;
 import trufflesom.bdt.inlining.Inline;
+import trufflesom.interpreter.Method;
 import trufflesom.interpreter.nodes.ExpressionNode;
 import trufflesom.interpreter.nodes.NoPreEvalExprNode;
 import trufflesom.vm.constants.Nil;
@@ -41,5 +43,25 @@ public final class IfNilNotNilInlinedLiteralNode extends NoPreEvalExprNode {
       return arg1.executeGeneric(frame);
     }
     return arg2.executeGeneric(frame);
+  }
+
+  @Override
+  public void constructOperation(final Method.OpBuilder opBuilder, boolean resultUsed) {
+    BytecodeLocal receiverObj = opBuilder.dsl.createLocal();
+
+    opBuilder.dsl.beginConditional();
+
+    opBuilder.dsl.beginIsNil();
+    opBuilder.dsl.beginBlock();
+    opBuilder.dsl.beginStoreLocal(receiverObj);
+    rcvr.accept(opBuilder);
+    opBuilder.dsl.endStoreLocal();
+    opBuilder.dsl.emitLoadLocal(receiverObj);
+    opBuilder.dsl.endBlock();
+    opBuilder.dsl.endIsNil();
+
+    arg1.accept(opBuilder);
+    arg2.accept(opBuilder);
+    opBuilder.dsl.endConditional();
   }
 }
