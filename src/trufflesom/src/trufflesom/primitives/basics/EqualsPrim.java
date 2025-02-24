@@ -4,11 +4,19 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.Method.OpBuilder;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.interpreter.nodes.nary.BinaryMsgExprNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SClass;
@@ -22,11 +30,8 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(className = "String", primitive = "=")
 @Primitive(selector = "=")
 @GenerateNodeFactory
-public abstract class EqualsPrim extends BinaryMsgExprNode {
-  @Override
-  public final SSymbol getSelector() {
-    return SymbolTable.symbolFor("=");
-  }
+@ImportStatic(SymbolTable.class)
+public abstract class EqualsPrim extends BinaryExpressionNode {
 
   @Specialization
   public static final boolean doBoolean(final boolean left, final boolean right) {
@@ -154,6 +159,14 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   @Specialization
   public static final boolean doClasses(final SClass left, final SClass right) {
     return left == right;
+  }
+
+  @Fallback
+  public static final Object genericSend(final VirtualFrame frame,
+      final Object receiver, final Object argument,
+      @Bind Node self,
+      @Cached("create(symEquals)") final AbstractDispatchNode dispatch) {
+    return dispatch.executeDispatch(frame, new Object[] {receiver, argument});
   }
 
   @Override
