@@ -174,11 +174,11 @@ public final class LocalFieldStringEqualsNode extends ExpressionNode {
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
     assert arg.index == 0;
 
-    opBuilder.dsl.beginEqualsOp();
+    opBuilder.dsl.beginEqualsPrim();
     opBuilder.dsl.emitLoadConstant(value);
 
     opBuilder.dsl.emitLocalReadField(fieldIdx);
 
-    opBuilder.dsl.endEqualsOp();
+    opBuilder.dsl.endEqualsPrim();
   }
 }

@@ -55,15 +55,14 @@ import trufflesom.interpreter.objectstorage.FieldAccessorNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractReadFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.AbstractWriteFieldNode;
 import trufflesom.interpreter.objectstorage.FieldAccessorNode.IncrementLongFieldNode;
-import trufflesom.interpreter.operations.copied.AdditionOp;
 import trufflesom.interpreter.operations.copied.ArrayDoIndexesOp;
 import trufflesom.interpreter.operations.copied.ArrayDoOp;
 import trufflesom.interpreter.operations.copied.ArrayPutAllOp;
 import trufflesom.interpreter.operations.copied.CharAtOp;
-import trufflesom.interpreter.operations.copied.EqualsOp;
 import trufflesom.interpreter.operations.copied.IfMessageOp;
 import trufflesom.interpreter.operations.copied.NonLocalArgumentReadOp;
 import trufflesom.interpreter.operations.copied.SubtractionOp;
+import trufflesom.primitives.arithmetic.AdditionPrim;
 import trufflesom.primitives.arithmetic.BitXorPrim;
 import trufflesom.primitives.arithmetic.DividePrim;
 import trufflesom.primitives.arithmetic.DoubleDivPrim;
@@ -76,6 +75,7 @@ import trufflesom.primitives.arithmetic.ModuloPrim;
 import trufflesom.primitives.arithmetic.MultiplicationPrim;
 import trufflesom.primitives.arithmetic.RemainderPrim;
 import trufflesom.primitives.basics.EqualsEqualsPrim;
+import trufflesom.primitives.basics.EqualsPrim;
 import trufflesom.primitives.basics.IntegerPrims.AbsPrim;
 import trufflesom.primitives.basics.IntegerPrims.As32BitSignedValue;
 import trufflesom.primitives.basics.IntegerPrims.As32BitUnsignedValue;
@@ -111,10 +111,10 @@ import trufflesom.vmobjects.SSymbol;
     boxingEliminationTypes = {long.class, double.class}, defaultLocalValue = "NIL",
     enableMaterializedLocalAccesses = true)
 @TypeSystemReference(Types.class)
+@OperationProxy(AdditionPrim.class)
 @OperationProxy(SubtractionOp.class)
-@OperationProxy(AdditionOp.class)
 @OperationProxy(MultiplicationPrim.class)
-@OperationProxy(EqualsOp.class)
+@OperationProxy(EqualsPrim.class)
 @OperationProxy(EqualsEqualsPrim.class)
 @OperationProxy(UnequalsPrim.class)
 @OperationProxy(NotMessageNode.class)

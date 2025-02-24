@@ -3,6 +3,7 @@ package trufflesom.primitives.basics;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
@@ -15,6 +16,7 @@ import trufflesom.vmobjects.SObject;
 import trufflesom.vmobjects.SSymbol;
 
 
+@Proxyable
 @Primitive(className = "Integer", primitive = "=")
 @Primitive(className = "Double", primitive = "=")
 @Primitive(className = "String", primitive = "=")
@@ -156,9 +158,9 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
 
   @Override
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
-    opBuilder.dsl.beginEqualsOp();
+    opBuilder.dsl.beginEqualsPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);
-    opBuilder.dsl.endEqualsOp();
+    opBuilder.dsl.endEqualsPrim();
   }
 }
