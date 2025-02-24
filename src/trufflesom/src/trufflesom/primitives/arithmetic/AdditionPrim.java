@@ -3,6 +3,7 @@ package trufflesom.primitives.arithmetic;
 import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 
@@ -13,6 +14,7 @@ import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
 
 
+@Proxyable
 @GenerateNodeFactory
 @Primitive(className = "Integer", primitive = "+")
 @Primitive(className = "Double", primitive = "+")
@@ -119,9 +121,9 @@ public abstract class AdditionPrim extends ArithmeticPrim {
 
   @Override
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
-    opBuilder.dsl.beginAdditionOp();
+    opBuilder.dsl.beginAdditionPrim();
     getReceiver().accept(opBuilder);
     getArgument().accept(opBuilder);
-    opBuilder.dsl.endAdditionOp();
+    opBuilder.dsl.endAdditionPrim();
   }
 }
