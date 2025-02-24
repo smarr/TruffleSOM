@@ -56,9 +56,9 @@ public abstract class StringEqualsNode extends UnaryExpressionNode {
 
   @Override
   public void constructOperation(final OpBuilder opBuilder, boolean resultUsed) {
-    opBuilder.dsl.beginEqualsOp();
+    opBuilder.dsl.beginEqualsPrim();
     opBuilder.dsl.emitLoadConstant(value);
     getReceiver().accept(opBuilder);
-    opBuilder.dsl.endEqualsOp();
+    opBuilder.dsl.endEqualsPrim();
   }
 }
