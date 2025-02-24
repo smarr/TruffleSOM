@@ -4,14 +4,24 @@ import java.math.BigInteger;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.bytecode.OperationProxy.Proxyable;
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Specialization;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import trufflesom.bdt.primitives.Primitive;
 import trufflesom.interpreter.Method.OpBuilder;
+import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
+import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
 import trufflesom.vm.SymbolTable;
 import trufflesom.vmobjects.SClass;
 import trufflesom.vmobjects.SSymbol;
+
+import static trufflesom.primitives.arithmetic.ArithmeticPrim.reduceToLongIfPossible;
 
 
 @Proxyable
@@ -19,12 +29,8 @@ import trufflesom.vmobjects.SSymbol;
 @Primitive(className = "Integer", primitive = "+")
 @Primitive(className = "Double", primitive = "+")
 @Primitive(selector = "+")
-public abstract class AdditionPrim extends ArithmeticPrim {
-
-  @Override
-  public final SSymbol getSelector() {
-    return SymbolTable.symPlus;
-  }
+@ImportStatic(SymbolTable.class)
+public abstract class AdditionPrim extends BinaryExpressionNode {
 
   @Specialization(rewriteOn = ArithmeticException.class)
   public static final long doLong(final long left, final long argument) {
@@ -117,6 +123,14 @@ public abstract class AdditionPrim extends ArithmeticPrim {
   @TruffleBoundary
   public static final SSymbol doSSymbol(final SSymbol left, final String right) {
     return SymbolTable.symbolFor(left.getString() + right);
+  }
+
+  @Fallback
+  public static final Object genericSend(final VirtualFrame frame,
+      final Object receiver, final Object argument,
+      @Bind Node self,
+      @Cached("create(symPlus)") final AbstractDispatchNode dispatch) {
+    return dispatch.executeDispatch(frame, new Object[] {receiver, argument});
   }
 
   @Override
