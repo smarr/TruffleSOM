@@ -156,6 +156,15 @@ public abstract class IntegerPrims {
 
       return BigInteger.valueOf(receiver).shiftLeft((int) right);
     }
+
+    @Specialization
+    @TruffleBoundary
+    public static final BigInteger doBigInt(final BigInteger receiver, final long right) {
+      assert right >= 0; // currently not defined for negative values of right
+      assert right <= Integer.MAX_VALUE;
+
+      return receiver.shiftLeft((int) right);
+    }
   }
 
   @GenerateNodeFactory
