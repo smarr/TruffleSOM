@@ -89,6 +89,22 @@ jobs:
           ./som -G -cp core-lib/Smalltalk:core-lib/TestSuite:core-lib/SomSom/src/compiler:core-lib/SomSom/src/vm:core-lib/SomSom/src/vmobjects:core-lib/SomSom/src/interpreter:core-lib/SomSom/src/primitives \
             core-lib/SomSom/tests/SomSomTests.som
 
+      - name: Integration Tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+          export CLASSPATH=Smalltalk
+          export AWFY=core-lib/Examples/AreWeFastYet/Core
+
+          export TEST_EXPECTATIONS=./integration-tests-ast.yml
+          export VM="./som -G -Dsom.interp=AST"
+          pytest --tb=short core-lib/IntegrationTests
+
+          export TEST_EXPECTATIONS=./integration-tests-bc.yml
+          export VM="./som -G -Dsom.interp=BC"
+          pytest --tb=short core-lib/IntegrationTests
+
       - name: Checkout AWFY
         uses: actions/checkout@v4
         with:
