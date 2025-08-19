@@ -44,14 +44,14 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   }
 
   @Specialization(guards = {"receiver.isEmptyType()"})
-  public static final long doEmptySArray(final SArray receiver, final long index,
+  public static final Object doEmptySArray(final SArray receiver, final long index,
       final long value) {
     long idx = index - 1;
     assert idx >= 0;
     assert idx < receiver.getEmptyStorage();
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isEmptyType()"})
@@ -62,7 +62,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     assert idx < receiver.getEmptyStorage();
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isEmptyType()"})
@@ -73,7 +73,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     assert idx < receiver.getEmptyStorage();
 
     receiver.transitionFromEmptyToPartiallyEmptyWith(idx, value);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isEmptyType()", "valueIsNotNil(value)",
@@ -91,7 +91,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
 
     newStorage[idx] = value;
     receiver.transitionTo(newStorage);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isEmptyType()", "valueIsNil(value)"})
@@ -100,7 +100,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     long idx = index - 1;
     assert idx >= 0;
     assert idx < receiver.getEmptyStorage();
-    return value;
+    return receiver;
   }
 
   private static void setValue(final long idx, final Object value,
@@ -115,24 +115,24 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
   }
 
   @Specialization(guards = "receiver.isPartiallyEmptyType()")
-  public static final long doPartiallyEmptySArray(final SArray receiver,
+  public static final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final long value) {
     setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.LONG);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = "receiver.isPartiallyEmptyType()")
-  public static final double doPartiallyEmptySArray(final SArray receiver,
+  public static final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final double value) {
     setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.DOUBLE);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = "receiver.isPartiallyEmptyType()")
-  public static final boolean doPartiallyEmptySArray(final SArray receiver,
+  public static final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final boolean value) {
     setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.BOOLEAN);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isPartiallyEmptyType()", "valueIsNil(value)"})
@@ -147,14 +147,14 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       storage.incEmptyElements();
       storage.set(idx, Nil.nilObject);
     }
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isPartiallyEmptyType()", "valueIsNotNil(value)"})
   public static final Object doPartiallyEmptySArray(final SArray receiver,
       final long index, final Object value) {
     setAndPossiblyTransition(receiver, index, value, PartiallyEmptyArray.Type.OBJECT);
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = "receiver.isObjectType()")
@@ -162,7 +162,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final Object value) {
     long idx = index - 1;
     receiver.getObjectStorage()[(int) idx] = value;
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = "receiver.isLongType()")
@@ -170,7 +170,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final long value) {
     long idx = index - 1;
     receiver.getLongStorage()[(int) idx] = value;
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isLongType()", "valueIsNotLong(value)"})
@@ -190,7 +190,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final double value) {
     long idx = index - 1;
     receiver.getDoubleStorage()[(int) idx] = value;
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isDoubleType()", "valueIsNotDouble(value)"})
@@ -210,7 +210,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
       final boolean value) {
     long idx = index - 1;
     receiver.getBooleanStorage()[(int) idx] = value;
-    return value;
+    return receiver;
   }
 
   @Specialization(guards = {"receiver.isBooleanType()", "valueIsNotBoolean(value)"})
@@ -231,7 +231,7 @@ public abstract class AtPutPrim extends TernaryExpressionNode {
     long idx = index - 1;
     receiver.transitionTo(newStorage);
     newStorage[(int) idx] = value;
-    return value;
+    return receiver;
   }
 
   private static void setAndPossiblyTransition(final SArray receiver,

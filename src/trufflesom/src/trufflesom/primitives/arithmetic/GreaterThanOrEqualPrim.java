@@ -34,12 +34,12 @@ public abstract class GreaterThanOrEqualPrim extends ArithmeticPrim {
 
   @Specialization
   public static final boolean doLong(final long left, final double right) {
-    return doDouble(left, right);
+    return left >= right;
   }
 
   @Specialization
   public static final boolean doDouble(final double left, final long right) {
-    return doDouble(left, right);
+    return left >= right;
   }
 
   @Specialization

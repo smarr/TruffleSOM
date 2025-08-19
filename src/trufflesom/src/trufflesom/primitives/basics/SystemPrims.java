@@ -70,7 +70,7 @@ public final class SystemPrims {
         final SSymbol global,
         final Object value) {
       Globals.setGlobal(global, value);
-      return value;
+      return receiver;
     }
   }
 

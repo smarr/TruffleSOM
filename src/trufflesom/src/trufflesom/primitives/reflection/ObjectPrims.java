@@ -71,7 +71,7 @@ public final class ObjectPrims {
     @Specialization
     public final Object doSObject(final SObject receiver, final long idx, final Object val) {
       dispatch.executeDispatch(receiver, (int) idx - 1, val);
-      return val;
+      return receiver;
     }
 
     @Override

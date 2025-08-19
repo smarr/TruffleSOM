@@ -1,0 +1,146 @@
+known_failures: []
+
+
+failing_as_unspecified:
+  - Tests/arbint_double_div_err.som
+  - Tests/arbint_double_div_zero_err.som
+  - Tests/arbint_modulus_err.som
+  - Tests/array_at_idx0_err.som
+  - Tests/array_at_idx2_err.som
+  - Tests/array_at_idx_err.som
+  - Tests/array_at_negative_idx_err.som
+  - Tests/array_at_put_idx0_err.som
+  - Tests/array_at_put_idx2_err.som
+  - Tests/call2.som
+
+  # I think this one is about E vs e, but maybe also double rendering
+  - Tests/double2.som
+  - Tests/double_double_div.som
+  - Tests/int_double_div.som
+  # - Tests/integer_asdouble.som
+  - Tests/int26.som
+
+  # I think IEEE allows for infinities here, and we probably want that
+  - Tests/double3.som
+  - Tests/double4.som
+  - Tests/double5.som
+  - Tests/double6.som
+  - Tests/double7.som
+  - Tests/double8.som
+  - Tests/double9.som
+  - Tests/double11.som
+  - Tests/double13.som
+
+  # Java seems to do some rounding in the transition, but it's also requiring bigints
+  - Tests/double_asinteger.som
+
+
+  - Tests/double_double_div_err.som
+  - Tests/double_double_div_zero_err1.som
+  - Tests/double_double_div_zero_err2.som
+  - Tests/double_double_div_zero_err3.som
+  - Tests/double_double_div_zero_err4.som
+  - Tests/double_modulus.som
+  - Tests/double_modulus_err.som
+
+  - Tests/exit_double.som
+  - Tests/exit_int_too_big.som
+  - Tests/exit_string.som
+
+  - Tests/fromstring_double_err.som
+  - Tests/fromstring_err.som
+
+  - Tests/hashcode2.som
+
+  - Tests/inst_var_at_bad_idx.som
+  - Tests/inst_var_at_put_bad_idx.som
+
+  - Tests/instance_fields_overlap/test.som
+  - Tests/instance_fields_overlap2.som
+
+  - Tests/int5.som
+  - Tests/int8.som
+  - Tests/int9.som
+
+  - Tests/int10.som
+  - Tests/int11.som
+  - Tests/int12.som
+  - Tests/int13.som
+  - Tests/int14.som
+  - Tests/int15.som
+  - Tests/int16.som
+  - Tests/int17.som
+
+  # too large shifts would take too much memory to support
+  # need to specify this some how
+  - Tests/int20.som
+  - Tests/int21.som
+  - Tests/int22.som
+  - Tests/int23.som
+  - Tests/int25.som
+  - Tests/int27.som
+  - Tests/int28.som
+  - Tests/int31.som
+
+  # return type of sqrt
+  - Tests/int29.som
+
+  - Tests/int_double_div_err.som
+  - Tests/int_double_div_zero_err.som
+  - Tests/int_modulus.som
+  - Tests/int_modulus_err.som
+
+  - Tests/load_string.som
+
+  - Tests/mutate_fields.som
+  - Tests/mutate_methods.som
+  - Tests/mutate_superclass_method/test.som
+
+  - Tests/nested_backtrace1.som
+  - Tests/nested_backtrace2.som
+
+  - Tests/obj2.som
+
+  - Tests/perform_string.som
+  - Tests/perform_witharguments_wrong.som
+
+  # - Tests/positive_infinity.som
+
+  - Tests/remainder_zero.som
+  - Tests/round.som
+
+  - Tests/shift_right.som
+  - Tests/shift_right_too_big.som
+  - Tests/shift_right_type_err.som
+
+  - Tests/str_escape_unknown.som
+
+  - Tests/system2.som
+  - Tests/system_global_lookup_string.som
+  - Tests/system_global_put_string.som
+
+  - Tests/test_literals_limit_1.som
+  - Tests/test_literals_limit_2.som
+  - Tests/unknown_field_write.som
+
+  # methods array should be specified as being unstable
+  - Tests/hashcode.som
+  
+  # specify true, false, nil as literals, not globals
+  - Tests/system_global.som
+  
+
+unsupported:
+  # to be implemented
+  - Tests/binary_super.som
+  - Tests/binary_super/test.som
+  # - Tests/bool4.som
+  # - Tests/bool5.som
+  
+  # just broken
+  - Tests/perform_in_superclass_with_args.som
+
+  - Tests/int4.som
+  - Tests/to32bits.som
+
+do_not_run: []

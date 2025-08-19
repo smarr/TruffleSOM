@@ -70,6 +70,12 @@ public abstract class EqualsPrim extends BinaryMsgExprNode {
   }
 
   @Specialization
+  @SuppressWarnings("unused")
+  public static final boolean doBigInt(final BigInteger left, final String right) {
+    return false;
+  }
+
+  @Specialization
   @TruffleBoundary
   public static final boolean doBigInteger(final BigInteger left, final long right) {
     return left.compareTo(BigInteger.valueOf(right)) == 0;
