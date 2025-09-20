@@ -6,8 +6,8 @@ stages:
 variables:
   PYTHONUNBUFFERED: "true"
   JVMCI_VERSION_CHECK: ignore
-  GRAALEE_VERSION: oracle-graalvm-ea-jdk-26.0.0-ea.02
-  JAVA_VERSION: temurin-24.0.1+9
+  GRAALEE_VERSION: oracle-graalvm-ea-jdk-25.0.0-ea.36
+  JAVA_VERSION: temurin-24.0.2+12
 
 .shared-scripts:
   download-binaries: &DOWNLOAD_BINARIES |
