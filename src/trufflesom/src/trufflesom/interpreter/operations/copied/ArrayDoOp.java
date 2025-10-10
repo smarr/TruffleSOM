@@ -13,6 +13,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
+import trufflesom.interpreter.Invokable;
 import trufflesom.interpreter.Types;
 import trufflesom.interpreter.nodes.dispatch.AbstractDispatchNode;
 import trufflesom.interpreter.nodes.nary.BinaryExpressionNode;
@@ -188,7 +189,11 @@ public abstract class ArrayDoOp extends BinaryExpressionNode {
       current = current.getParent();
     }
     if (current != null) {
-      ((SomOperations) current).propagateLoopCountThroughoutLexicalScope(count);
+        if (current instanceof Invokable i) {
+            i.propagateLoopCountThroughoutLexicalScope(count);
+        } else {
+            ((SomOperations) current).propagateLoopCountThroughoutLexicalScope(count);
+        }
     }
   }
 }
