@@ -31,7 +31,6 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.nodes.InvalidAssumptionException;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.Source;
@@ -362,15 +361,9 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
       return assoc.getAssumption();
     }
 
-    @Specialization//(assumptions = "cachedAssumption")
+    @Specialization(assumptions = "cachedAssumption")
     public static Object doCached(final Association assoc,
         @Cached("get(assoc)") final Assumption cachedAssumption) {
-        try {
-            cachedAssumption.check();
-        } catch (InvalidAssumptionException e) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            throw new RuntimeException(e);
-        }
       return assoc.getValue();
     }
   }
