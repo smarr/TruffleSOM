@@ -15,6 +15,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.TruffleOptions;
 import com.oracle.truffle.api.dsl.GenerateNodeFactory;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameInstance;
@@ -295,6 +296,11 @@ public final class SystemPrims {
 
     @Specialization
     public static final long doSObject(@SuppressWarnings("unused") final Object receiver) {
+      if (TruffleOptions.AOT) {
+        // native image does not throw an exceptio when accessing the bean
+        return 0L;
+      }
+
       if (bean == null) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         bean = ManagementFactory.getCompilationMXBean();
