@@ -362,15 +362,9 @@ public abstract class SomOperations extends Invokable implements BytecodeRootNod
       return assoc.getAssumption();
     }
 
-    @Specialization//(assumptions = "cachedAssumption")
+    @Specialization(assumptions = "cachedAssumption")
     public static Object doCached(final Association assoc,
         @Cached("get(assoc)") final Assumption cachedAssumption) {
-        try {
-            cachedAssumption.check();
-        } catch (InvalidAssumptionException e) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            throw new RuntimeException(e);
-        }
       return assoc.getValue();
     }
   }
