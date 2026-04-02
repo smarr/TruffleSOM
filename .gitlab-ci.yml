@@ -34,6 +34,7 @@ variables:
     mx sforceimport
     rm libs/jvmci || true
     ./som --setup labsjdk
+    (cd ../graal && mx --root-suites clean --aggressive --all || true)
 
 before_script:
   - (cd core-lib && git remote add smarr https://github.com/smarr/SOM.git || true; git fetch --all)
