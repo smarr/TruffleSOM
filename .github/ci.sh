@@ -21,6 +21,7 @@ ensure_labsjdk_and_graal_version() {
   mx sforceimport
   rm libs/jvmci || true
   ./som --setup labsjdk
+  (cd ../graal && mx --root-suites clean --aggressive --all || true)
 }
 
 reown_graal() {
