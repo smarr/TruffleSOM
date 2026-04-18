@@ -16,7 +16,7 @@ suite = {
             {
                 "name": "truffle",
                 "subdir": True,
-                "version": "2a1f00ba7227ff8e2bddb1d0d5c2cf6b8fee82bf",
+                "version": "2f0bd1c316c776369bcf6b6feb711a6dc385eade",
                 "urls": [{"url": "https://github.com/oracle/graal", "kind": "git"}],
             },
         ]
