@@ -4,7 +4,7 @@ TruffleSOM - The Simple Object Machine Smalltalk implemented using the Truffle F
 Introduction
 ------------
 
-This is the repository for TruffleSOM, an implementation of the Simple Object
+TruffleSOM is an implementation of the Simple Object
 Machine (SOM). SOM is a minimal Smalltalk dialect that was used to teach VM
 construction at the [Hasso Plattner Institute][SOM]. It was originally built at
 the University of Århus (Denmark) where it was used for teaching and as the
@@ -54,11 +54,12 @@ A simple Hello World program is executed with:
     ./som -G -cp Smalltalk Examples/Hello.som
 
 To work on TruffleSOM, mx can generate project definitions for
-Eclipse, IntelliJ, and NetBeans. Chose the one you prefer:
+Eclipse, IntelliJ, NetBeans, and VS Code. Chose the one you prefer:
 
     mx eclipseinit
     mx intellijinit
     mx netbeansinit
+    mx vscodeinit
 
 TruffleSOM uses the Graal compiler to reach state-of-the-art performance.
 To use it, we need to compile it together with TruffleSOM:
@@ -80,17 +81,6 @@ Build Status
 Thanks to GitHub Actions, all commits of this repository are tested.
 The current build status is: ![Build Status](https://github.com/SOM-st/TruffleSOM/actions/workflows/ci.yml/badge.svg)
 
-YourKit
-------------
-This Project makes use of the Yourkit profiler to help find performance bugs and aid in our research of profilers.
-
-YourKit supports open source projects with innovative and intelligent tools
-for monitoring and profiling Java and .NET applications.
-YourKit is the creator of <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>,
-<a href="https://www.yourkit.com/dotnet-profiler/features/">YourKit .NET Profiler</a>,
-and <a href="https://www.yourkit.com/youmonitor/download/">YourKit YouMonitor</a>.
-
-![Yourkit Logo](https://www.yourkit.com/images/yklogo.png)
 
  [SOM]: https://www.hpi.uni-potsdam.de/hirschfeld/projects/som/
  [SOMst]: https://github.com/SOM-st/TruffleSOM/actions
