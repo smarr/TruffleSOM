@@ -56,7 +56,7 @@ before_script:
 
 test:
   stage: build-and-test
-  tags: [yuria4]
+  tags: [kent-yuria4]
   script:
     - *ENSURE_LABSJDK_AND_GRAAL_VERSION
 
@@ -75,7 +75,7 @@ test:
 
 build:native-interp-ast:
   stage: build-and-test
-  tags: [yuria2]
+  tags: [kent-yuria2]
   script:
     - *ENSURE_LABSJDK_AND_GRAAL_VERSION
 
@@ -98,7 +98,7 @@ build:native-interp-ast:
 
 build:native-interp-bc:
   stage: build-and-test
-  tags: [yuria3]
+  tags: [kent-yuria3]
   script:
     - *ENSURE_LABSJDK_AND_GRAAL_VERSION
 
@@ -120,7 +120,7 @@ build:native-interp-bc:
 
 build:aarch64-test-and-rebench:
   stage: build-and-test
-  tags: [zullie1]
+  tags: [kent-zullie1]
   script:
     - pmset -g live
     - pmset -g systemstate
@@ -158,7 +158,7 @@ build:aarch64-test-and-rebench:
 benchmark-y1:
   stage: benchmark
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
-  tags: [yuria]
+  tags: [kent-yuria]
   script:
     - *BUILD_GRAAL_LOCALLY
     - *DOWNLOAD_BINARIES
@@ -173,7 +173,7 @@ benchmark-y1:
 benchmark-y2:
   stage: benchmark
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
-  tags: [yuria2]
+  tags: [kent-yuria2]
   script:
     - *BUILD_GRAAL_LOCALLY
     - *DOWNLOAD_BINARIES
@@ -188,7 +188,7 @@ benchmark-y2:
 benchmark-y3:
   stage: benchmark
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
-  tags: [yuria3]
+  tags: [kent-yuria3]
   script:
     - *BUILD_GRAAL_LOCALLY
     - *DOWNLOAD_BINARIES
@@ -203,7 +203,7 @@ benchmark-y3:
 benchmark-y4:
   stage: benchmark
   needs: ["build:native-interp-ast", "build:native-interp-bc"]
-  tags: [yuria4]
+  tags: [kent-yuria4]
   script:
     - *BUILD_GRAAL_LOCALLY
     - *DOWNLOAD_BINARIES
@@ -217,6 +217,6 @@ benchmark-y4:
 
 report-completion:
   stage: benchmark-completion
-  tags: [yuria]
+  tags: [kent-yuria]
   script:
     - rebench --experiment="CI ID $CI_PIPELINE_ID" --report-completion rebench.conf
