@@ -125,7 +125,7 @@ build:native-interp-bc:
 
 build:native-interp-op:
   stage: build-and-test
-  tags: [kent-yuria]
+  tags: [kent-yuria3]
   script:
     - *ENSURE_LABSJDK_AND_GRAAL_VERSION
 
