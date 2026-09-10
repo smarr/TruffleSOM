@@ -13,8 +13,8 @@ variables:
   download-binaries: &DOWNLOAD_BINARIES |
     download_and_decompress som-native-interp-ast
     download_and_decompress som-native-interp-bc
-    download_and_decompress som-native-interp-ast-ee
-    download_and_decompress som-native-interp-bc-ee
+    download_and_decompress som-native-interp-ast-ee || true
+    download_and_decompress som-native-interp-bc-ee  || true
 
 before_script:
   - source .github/ci.sh
@@ -48,6 +48,8 @@ test:
 build:native-interp-ast:
   stage: build-and-test
   tags: [kent-yuria2]
+  allow_failure:
+    exit_codes: 70 # EE failed building
   script:
     - ensure_labsjdk_and_graal_version
 
@@ -56,13 +58,21 @@ build:native-interp-ast:
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
     - compress_and_upload som-native-interp-ast
 
-    - mx build-native --no-jit -t AST -g ${GRAALEE_HOME}
-    - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
-    - compress_and_upload som-native-interp-ast-ee
+    - |
+      EE_FAILED=0
+      if mx build-native --no-jit -t AST -g ${GRAALEE_HOME}; then
+        ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
+        compress_and_upload som-native-interp-ast-ee
+      else
+        EE_FAILED=70
+      fi
+      exit $EE_FAILED
 
 build:native-interp-bc:
   stage: build-and-test
   tags: [kent-yuria3]
+  allow_failure:
+    exit_codes: 70 # EE failed building
   script:
     - ensure_labsjdk_and_graal_version
 
@@ -71,9 +81,15 @@ build:native-interp-bc:
     - ./som-native-interp-bc -cp Smalltalk TestSuite/TestHarness.som
     - compress_and_upload som-native-interp-bc
 
-    - mx build-native --no-jit -t BC -g ${GRAALEE_HOME}
-    - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
-    - compress_and_upload som-native-interp-bc-ee
+    - |
+      EE_FAILED=0
+      if mx build-native --no-jit -t BC -g ${GRAALEE_HOME}; then
+        ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
+        compress_and_upload som-native-interp-bc-ee
+      else
+        EE_FAILED=70
+      fi
+      exit $EE_FAILED
 
 build:aarch64-test-and-rebench:
   stage: build-and-test
@@ -100,17 +116,27 @@ build:aarch64-test-and-rebench:
     - mx build-native --no-jit -t AST
     - ./som-native-interp-ast -cp Smalltalk TestSuite/TestHarness.som
 
-    - mx build-native --no-jit -t BC -g ${GRAALEE_HOME}
-    - ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
+    - |
+      EE_FAILED=0
+      if mx build-native --no-jit -t BC -g ${GRAALEE_HOME}; then
+        ./som-native-interp-bc-ee -cp Smalltalk TestSuite/TestHarness.som
+      else
+        EE_FAILED=70
+      fi
 
-    - mx build-native --no-jit -t AST -g ${GRAALEE_HOME}
-    - ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
+    - |
+      if mx build-native --no-jit -t AST -g ${GRAALEE_HOME}; then
+        ./som-native-interp-ast-ee -cp Smalltalk TestSuite/TestHarness.som
+      else
+        EE_FAILED=70
+      fi
 
     - mx tests-nodestats || true
     - mx tests-coverage || true
 
     - export PATH=$PATH:/Users/gitlab-runner/Library/Python/3.12/bin
     - rebench -c --experiment="CI ID $CI_PIPELINE_ID" --branch="$CI_COMMIT_REF_NAME" rebench.conf
+    - exit $EE_FAILED
 
 benchmark-y1:
   stage: benchmark
