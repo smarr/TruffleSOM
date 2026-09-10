@@ -54,10 +54,8 @@ jobs:
 
       - name: Get LabsJDK and Get Graal
         run: |
-          ./som --setup labsjdk
-          mx sforceimport
-          rm libs/jvmci || true
-          ./som --setup labsjdk
+          source .github/ci.sh
+          ensure_labsjdk_and_graal_version
 
       - name: Compile TruffleSOM
         run: |
