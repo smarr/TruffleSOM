@@ -1545,7 +1545,7 @@ public class BytecodeLoopNode extends NoPreEvalExprNode implements ScopeReferenc
               blockMethod.getEmbeddedBlocks());
           newMethod.setHolder(blockMethod.getHolder());
           mgenc.addLiteralIfAbsent(newMethod, null);
-          emitPUSHBLOCK(mgenc, newMethod, bytecodes[i] == PUSH_BLOCK);
+          emitPUSHBLOCK(mgenc, newMethod, bytecode == PUSH_BLOCK);
           break;
         }
 
