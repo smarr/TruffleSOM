@@ -433,7 +433,8 @@ if 'Havlak' in args.args:
 
 flags += [
   '--module-path=' + ':'.join(MODULE_PATH_ENTRIES),
-  '--upgrade-module-path=' + LIBGRAAL_JAR
+  '--upgrade-module-path=' + LIBGRAAL_JAR,
+  '-Dpolyglotimpl.DisableVersionChecks=true'
 ]
 
 all_args = JAVA_ARGS + flags + SOM_ARGS + unknown_args + args.args
