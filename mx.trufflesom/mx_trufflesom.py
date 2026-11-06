@@ -175,6 +175,7 @@ def build_native(args, **kwargs):
     cmd += [
         "--no-fallback",
         "--link-at-build-time",
+        "-Dpolyglotimpl.DisableVersionChecks=true",
         "-H:+ReportExceptionStackTraces",
         "-H:+UnlockExperimentalVMOptions",
         "-H:-DeleteLocalSymbols",
